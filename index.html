@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RL-on-NPU Research Dashboard · Ascend &amp; LLMs</title>
+  <meta name="description" content="A live research dashboard tracking RL training for LLMs, the Ascend/NPU ecosystem, LLM modeling advances, and concrete project ideas." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◈</span>
+      <div>
+        <h1>RL&nbsp;on&nbsp;NPU <span class="dim">/ Research Dashboard</span></h1>
+        <p class="tagline">Reinforcement learning for LLMs on Ascend-class accelerators — papers, frameworks, hardware, and project ideas.</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <input id="search" type="search" placeholder="Search papers, frameworks, ideas…  (press /)" aria-label="Search" />
+      <a class="ghost-btn" href="https://github.com/lloo099/mission44" target="_blank" rel="noopener">Repo ↗</a>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="rl">RL for LLMs</button>
+    <button class="tab" data-tab="ascend">Ascend / NPU</button>
+    <button class="tab" data-tab="modeling">LLM Modeling</button>
+    <button class="tab" data-tab="live">Live Papers</button>
+    <button class="tab" data-tab="ideas">Project Ideas</button>
+  </nav>
+
+  <main id="main">
+    <!-- Overview -->
+    <section class="panel active" id="overview">
+      <div class="hero">
+        <h2>Where reinforcement learning meets domestic AI silicon</h2>
+        <p>
+          This dashboard tracks three converging fronts: (1) the rapid evolution of <strong>RL post-training</strong>
+          for reasoning LLMs (GRPO, RLVR and successors), (2) the maturing <strong>Huawei Ascend / NPU</strong>
+          software–hardware stack, and (3) <strong>LLM modeling</strong> advances that matter on memory-constrained
+          accelerators. The goal: help you find a concrete, fundable project at the intersection.
+        </p>
+      </div>
+      <div class="stat-grid" id="stat-grid"><!-- filled by JS --></div>
+      <div class="overview-cols">
+        <div class="ov-card">
+          <h3>How to use this</h3>
+          <ol>
+            <li>Skim each domain tab to map the landscape.</li>
+            <li>Use tag filters + search to find adjacent work.</li>
+            <li>Open <strong>Project Ideas</strong> for synthesized, feasibility-rated directions.</li>
+            <li>Refresh <strong>Live Papers</strong> with the included script to stay current.</li>
+          </ol>
+        </div>
+        <div class="ov-card">
+          <h3>The core thesis</h3>
+          <p>
+            RL post-training is now the dominant lever for frontier capability, but almost all tooling assumes CUDA.
+            Ascend NPUs offer abundant, increasingly available compute with a maturing stack (CANN, MindSpeed,
+            vLLM-Ascend). The open opportunity is making efficient RL training <em>actually work and scale</em> on NPUs.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Domain panels: populated from data/*.json -->
+    <section class="panel" id="rl">
+      <div class="panel-head">
+        <h2>RL for LLMs</h2>
+        <p class="panel-sub">Post-training algorithms, reasoning models, and training frameworks.</p>
+        <div class="filterbar" data-filterbar="rl"></div>
+      </div>
+      <div class="cards" data-cards="rl"></div>
+    </section>
+
+    <section class="panel" id="ascend">
+      <div class="panel-head">
+        <h2>Ascend / NPU Ecosystem</h2>
+        <p class="panel-sub">Hardware, CANN software stack, training &amp; inference frameworks, RL-on-Ascend status.</p>
+        <div class="filterbar" data-filterbar="ascend"></div>
+      </div>
+      <div class="cards" data-cards="ascend"></div>
+    </section>
+
+    <section class="panel" id="modeling">
+      <div class="panel-head">
+        <h2>LLM Modeling &amp; Architecture</h2>
+        <p class="panel-sub">MoE, attention, long context, and low-precision training that matter on NPUs.</p>
+        <div class="filterbar" data-filterbar="modeling"></div>
+      </div>
+      <div class="cards" data-cards="modeling"></div>
+    </section>
+
+    <!-- Live papers -->
+    <section class="panel" id="live">
+      <div class="panel-head">
+        <h2>Live Papers</h2>
+        <p class="panel-sub">
+          Latest arXiv hits for RL + LLM + NPU queries. Loaded from <code>data/feed.json</code>,
+          refreshable via <code>scripts/fetch_arxiv.py</code>. A best-effort client-side fetch is attempted too.
+        </p>
+        <div class="live-controls">
+          <button id="live-refresh" class="ghost-btn">↻ Try live fetch</button>
+          <span id="live-status" class="dim"></span>
+        </div>
+      </div>
+      <div class="cards" data-cards="live"></div>
+    </section>
+
+    <!-- Ideas -->
+    <section class="panel" id="ideas">
+      <div class="panel-head">
+        <h2>Project Ideas</h2>
+        <p class="panel-sub">Synthesized directions for RL-on-NPU work, rated by impact, difficulty, and novelty.</p>
+        <div class="filterbar" data-filterbar="ideas"></div>
+      </div>
+      <div class="ideas-grid" data-cards="ideas"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span id="last-updated" class="dim"></span>
+    <span class="dim">Built as a research aid · data is hand-curated + script-refreshable · verify primary sources before citing.</span>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
