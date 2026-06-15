@@ -1,6 +1,115 @@
 {
-  "updated": null,
-  "source": "arXiv API",
-  "count": 0,
-  "items": []
+  "updated": "2026-06-15",
+  "source": "seeded (run scripts/fetch_arxiv.py to refresh from the arXiv API)",
+  "count": 12,
+  "items": [
+    {
+      "title": "MindSpeed-RL: Distributed RL Post-Training on Ascend NPU",
+      "org": "Huawei (Ascend)",
+      "year": "2025-07",
+      "category": "ascend-npu",
+      "summary": "Native distributed GRPO-family RL on Ascend, with experiments up to DeepSeek-R1-MoE-671B on a 384-NPU superpod — the strongest large-scale RL-on-Ascend evidence to date.",
+      "url": "https://arxiv.org/abs/2507.19017",
+      "tags": ["live", "ascend-npu"]
+    },
+    {
+      "title": "AsyncFlow: Asynchronous Streaming RL Post-Training",
+      "org": "research",
+      "year": "2025-07",
+      "category": "ascend-npu",
+      "summary": "An async streaming RL framework targeting the throughput limits of synchronous/colocated RL — directly relevant to NPU constraints like the missing vLLM sleep mode.",
+      "url": "https://arxiv.org/abs/2507.01663",
+      "tags": ["live", "ascend-npu", "async-rl"]
+    },
+    {
+      "title": "DeepSeek-R1: Incentivizing Reasoning via Reinforcement Learning",
+      "org": "DeepSeek-AI",
+      "year": "2025-01",
+      "category": "reasoning-rl",
+      "summary": "Pure large-scale RL (GRPO + verifiable rewards) elicits emergent reasoning with no SFT (R1-Zero); catalyzed the 2025 RLVR wave.",
+      "url": "https://arxiv.org/abs/2501.12948",
+      "tags": ["live", "reasoning-rl"]
+    },
+    {
+      "title": "GSPO: Group Sequence Policy Optimization",
+      "org": "Qwen Team, Alibaba",
+      "year": "2025-07",
+      "category": "rl-llm",
+      "summary": "Sequence-level importance ratios and clipping fix GRPO instability and notably stabilize MoE RL; contributed to Qwen3.",
+      "url": "https://arxiv.org/abs/2507.18071",
+      "tags": ["live", "rl-llm"]
+    },
+    {
+      "title": "DAPO: An Open-Source LLM RL System at Scale",
+      "org": "ByteDance Seed / Tsinghua AIR",
+      "year": "2025-03",
+      "category": "rl-llm",
+      "summary": "GRPO + Clip-Higher, dynamic sampling, token-level loss, and overlong reward shaping; 50 on AIME 2024 with Qwen2.5-32B at half the steps.",
+      "url": "https://arxiv.org/abs/2503.14476",
+      "tags": ["live", "rl-llm"]
+    },
+    {
+      "title": "ProRL: Prolonged RL Expands Reasoning Boundaries",
+      "org": "NVIDIA",
+      "year": "2025-05",
+      "category": "reasoning-rl",
+      "summary": "Stabilizes very long RL runs (KL control, reference resetting) and shows prolonged RL uncovers genuinely new reasoning strategies.",
+      "url": "https://arxiv.org/abs/2505.24864",
+      "tags": ["live", "reasoning-rl"]
+    },
+    {
+      "title": "MiniMax-M1: Test-Time Compute with Lightning Attention (CISPO)",
+      "org": "MiniMax",
+      "year": "2025-06",
+      "category": "reasoning-rl",
+      "summary": "Open hybrid-attention reasoner trained with CISPO (clips IS-weights, not tokens); full RL on 512 H800s in ~3 weeks.",
+      "url": "https://arxiv.org/abs/2506.13585",
+      "tags": ["live", "reasoning-rl", "efficient-llm"]
+    },
+    {
+      "title": "AReaL: Large-Scale Asynchronous RL for Language Reasoning",
+      "org": "Ant Group / Tsinghua",
+      "year": "2025-05",
+      "category": "rl-llm",
+      "summary": "Fully decouples rollout from training with staleness-enhanced PPO for ~2.77x speedup; now ships a stable Ascend branch.",
+      "url": "https://arxiv.org/abs/2505.24298",
+      "tags": ["live", "rl-llm", "async-rl"]
+    },
+    {
+      "title": "Native Sparse Attention (NSA)",
+      "org": "DeepSeek-AI / Peking U. / UW",
+      "year": "2025-02",
+      "category": "efficient-llm",
+      "summary": "Trainable, hardware-aligned hierarchical sparse attention matching full attention with large speedups at 64K length.",
+      "url": "https://arxiv.org/abs/2502.11089",
+      "tags": ["live", "efficient-llm"]
+    },
+    {
+      "title": "The Entropy Mechanism of RL for Reasoning LLMs",
+      "org": "Shanghai AI Lab / Tsinghua",
+      "year": "2025-05",
+      "category": "rl-llm",
+      "summary": "Explains policy-entropy collapse via log-prob/advantage covariance and proposes Clip-Cov / KL-Cov to sustain exploration.",
+      "url": "https://arxiv.org/abs/2505.22617",
+      "tags": ["live", "rl-llm"]
+    },
+    {
+      "title": "Pretraining LLMs with NVFP4",
+      "org": "NVIDIA",
+      "year": "2025-09",
+      "category": "efficient-llm",
+      "summary": "Large-scale 4-bit (NVFP4) pretraining of a 12B model on 10T tokens matching FP8 — the most ambitious FP4 training run reported.",
+      "url": "https://arxiv.org/abs/2509.25149",
+      "tags": ["live", "efficient-llm"]
+    },
+    {
+      "title": "GLM-4.5: Agentic, Reasoning, and Coding Foundation Models",
+      "org": "Z.ai (Zhipu)",
+      "year": "2025-08",
+      "category": "reasoning-rl",
+      "summary": "Hybrid thinking/direct MoE (355B/32B) trained with a difficulty-based RL curriculum on the open-source 'slime' framework.",
+      "url": "https://arxiv.org/abs/2508.06471",
+      "tags": ["live", "reasoning-rl"]
+    }
+  ]
 }

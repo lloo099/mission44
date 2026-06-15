@@ -1,0 +1,325 @@
+{
+  "updated": "2026-06-15",
+  "items": [
+    {
+      "title": "DeepSeekMoE",
+      "org": "DeepSeek-AI",
+      "year": "2024-01",
+      "category": "moe",
+      "innovation": "Fine-grained expert segmentation + isolated shared experts",
+      "summary": "Splits FFN experts into more, smaller units at fixed param count and dedicates a few always-active shared experts to absorb common knowledge so routed experts specialize. The MoE foundation for the entire DeepSeek-V2/V3 line.",
+      "url": "https://arxiv.org/abs/2401.06066",
+      "tags": ["MoE", "expert-specialization"]
+    },
+    {
+      "title": "Auxiliary-Loss-Free Load Balancing",
+      "org": "DeepSeek-AI / Peking U.",
+      "year": "2024-08",
+      "category": "moe",
+      "innovation": "Per-expert routing bias nudged by load — no auxiliary loss",
+      "summary": "Instead of penalizing imbalance with an auxiliary loss (which hurts quality), a per-expert bias is added to affinity scores before top-K and adjusted by recent load. Yields better balance and better quality; used to train DeepSeek-V3.",
+      "url": "https://arxiv.org/abs/2408.15664",
+      "tags": ["MoE", "load-balancing"]
+    },
+    {
+      "title": "Mixtral of Experts",
+      "org": "Mistral AI",
+      "year": "2024-01",
+      "category": "moe",
+      "innovation": "Open-weight sparse MoE — 8 experts/layer, top-2 routing",
+      "summary": "Mixtral 8x7B has 47B total params but activates ~13B/token, beating Llama-2 70B on math, code, and multilingual. Apache-2.0; the most influential early open MoE release.",
+      "url": "https://arxiv.org/abs/2401.04088",
+      "tags": ["MoE", "open-weights"]
+    },
+    {
+      "title": "Qwen3 (MoE design)",
+      "org": "Qwen Team, Alibaba",
+      "year": "2025-05",
+      "category": "moe",
+      "innovation": "Drops shared experts; global-batch load-balancing loss",
+      "summary": "Family from 0.6B to 235B-total/22B-active, Apache-2.0, 119 languages. Qwen3-MoE removes the shared experts of Qwen2.5-MoE and relies on a global-batch load-balancing loss to push specialization.",
+      "url": "https://arxiv.org/abs/2505.09388",
+      "tags": ["MoE", "open-weights"]
+    },
+    {
+      "title": "Drop-Upcycling",
+      "org": "Nakamura et al. (ICLR 2025)",
+      "year": "2025-02",
+      "category": "moe",
+      "innovation": "Dense→MoE upcycling with partial expert re-initialization",
+      "summary": "Pure upcycling yields near-identical, slow-to-specialize experts; Drop-Upcycling re-initializes a fraction of weights to break symmetry. A 5.9B-active MoE matches a 13B dense model at ~1/4 the training FLOPs.",
+      "url": "https://arxiv.org/abs/2502.19261",
+      "tags": ["MoE", "upcycling", "efficiency"]
+    },
+    {
+      "title": "Scaling Laws for Optimal MoE Sparsity",
+      "org": "Apple",
+      "year": "2025-01",
+      "category": "moe",
+      "innovation": "Optimal active-vs-total params under fixed compute",
+      "summary": "Characterizes the total-vs-active parameter tradeoff given a compute budget, showing higher sparsity is often optimal as compute grows. Practical guidance for choosing expert counts and activation ratios.",
+      "url": "https://arxiv.org/abs/2501.12370",
+      "tags": ["MoE", "scaling-laws"]
+    },
+    {
+      "title": "Multi-head Latent Attention (DeepSeek-V2)",
+      "org": "DeepSeek-AI",
+      "year": "2024-05",
+      "category": "attention",
+      "innovation": "Low-rank joint KV compression — ~93% smaller KV cache",
+      "summary": "MLA projects keys/values into a compact latent space so only a small latent KV vector is cached during decoding, slashing memory-bandwidth demands. Paired with DeepSeekMoE in a 236B/21B-active model; carried into V3/R1.",
+      "url": "https://arxiv.org/abs/2405.04434",
+      "tags": ["attention", "MLA", "kv-cache"]
+    },
+    {
+      "title": "Grouped-Query Attention (GQA)",
+      "org": "Google Research",
+      "year": "2023-05",
+      "category": "attention",
+      "innovation": "Query heads share KV projections in groups",
+      "summary": "Interpolates between MHA and MQA; MHA checkpoints can be uptrained into GQA with ~5% of pretraining compute. Near-MHA quality at near-MQA speed — now the default KV-saving scheme in Llama, Mistral, and most open LLMs.",
+      "url": "https://arxiv.org/abs/2305.13245",
+      "tags": ["attention", "kv-cache", "foundational"]
+    },
+    {
+      "title": "Sliding Window Attention (Mistral 7B)",
+      "org": "Mistral AI",
+      "year": "2023-10",
+      "category": "attention",
+      "innovation": "Local window per token; stacking extends receptive field",
+      "summary": "SWA bounds attention cost and caps the KV cache to W tokens via a rotating buffer, while layer stacking propagates info beyond a window. Popularized the SWA+GQA combo carried into 2024-2026 models.",
+      "url": "https://arxiv.org/abs/2310.06825",
+      "tags": ["attention", "kv-cache", "efficiency"]
+    },
+    {
+      "title": "FlashAttention-3",
+      "org": "Colfax / NVIDIA / Together / Princeton",
+      "year": "2024-07",
+      "category": "attention",
+      "innovation": "Hopper async (warp-specialization, TMA) + FP8 blocks",
+      "summary": "Overlaps compute and data movement with warp-specialized async pipelines and interleaves block matmul with softmax, plus FP8 support. Reaches ~840 TFLOPs/s (~85% util) BF16 on H100 — 1.5–2.0x over FA-2.",
+      "url": "https://arxiv.org/abs/2407.08608",
+      "tags": ["attention", "kernels", "fp8"]
+    },
+    {
+      "title": "Mamba-2 / SSM-Attention Duality",
+      "org": "Princeton / CMU (ICML 2024)",
+      "year": "2024-05",
+      "category": "attention",
+      "innovation": "SSD framework unifying SSMs and attention; 2–8x faster",
+      "summary": "Proves a class of SSMs is equivalent to causal linear attention via structured semiseparable matrices. Mamba-2's SSD layer expands state ~8x and trains 2–8x faster while staying competitive with Transformers.",
+      "url": "https://arxiv.org/abs/2405.21060",
+      "tags": ["ssm", "linear-attention", "efficiency"]
+    },
+    {
+      "title": "Jamba (Transformer-Mamba hybrid)",
+      "org": "AI21 Labs",
+      "year": "2024-03",
+      "category": "attention",
+      "innovation": "Interleaved Mamba + attention (1:7) with periodic MoE",
+      "summary": "Combines Transformer expressiveness with SSM efficiency to fit a 12B-active/52B-total model on one 80GB GPU at 256K context. Apache-2.0; scaled in Jamba-1.5.",
+      "url": "https://arxiv.org/abs/2403.19887",
+      "tags": ["ssm", "hybrid", "long-context"]
+    },
+    {
+      "title": "Native Sparse Attention (NSA)",
+      "org": "DeepSeek-AI / Peking U. / UW (ACL 2025 best paper)",
+      "year": "2025-02",
+      "category": "attention",
+      "innovation": "Trainable hierarchical sparse attention, hardware-aligned",
+      "summary": "Three parallel branches (compressed, selected blocks, local sliding) with GPU-optimized kernels so sparsity is learned during pretraining, not bolted on. Matches/beats full attention with large speedups at 64K length.",
+      "url": "https://arxiv.org/abs/2502.11089",
+      "tags": ["attention", "sparse", "long-context"]
+    },
+    {
+      "title": "MoBA (Mixture of Block Attention)",
+      "org": "Moonshot AI / Tsinghua",
+      "year": "2025-02",
+      "category": "attention",
+      "innovation": "MoE-style routing applied to attention KV blocks",
+      "summary": "Partitions context into blocks and uses a learned router to pick the most relevant blocks per query, avoiding hand-designed sparsity. Switches seamlessly between full and sparse attention; in production for Kimi long-context.",
+      "url": "https://arxiv.org/abs/2502.13189",
+      "tags": ["attention", "sparse", "long-context"]
+    },
+    {
+      "title": "Position Interpolation (PI)",
+      "org": "Meta",
+      "year": "2023-06",
+      "category": "long-context",
+      "innovation": "Linearly down-scale RoPE indices instead of extrapolating",
+      "summary": "Rescales position indices so out-of-range positions map back inside the trained range, reaching 32K with ~1000 fine-tuning steps. The basis for NTK-aware scaling and YaRN.",
+      "url": "https://arxiv.org/abs/2306.15595",
+      "tags": ["long-context", "rope", "foundational"]
+    },
+    {
+      "title": "YaRN",
+      "org": "Nous Research / EleutherAI (ICLR 2024)",
+      "year": "2023-08",
+      "category": "long-context",
+      "innovation": "NTK-by-parts frequency interpolation + attention temp scaling",
+      "summary": "Interpolates RoPE frequencies non-uniformly and adds length-dependent attention scaling, extending to 64K–128K with 10x fewer tokens than PI. The de facto RoPE-extension recipe used by Qwen and DeepSeek long-context variants.",
+      "url": "https://arxiv.org/abs/2309.00071",
+      "tags": ["long-context", "rope"]
+    },
+    {
+      "title": "Ring Attention",
+      "org": "UC Berkeley (ICLR 2024)",
+      "year": "2023-10",
+      "category": "long-context",
+      "innovation": "Distribute sequence across devices; overlap KV comm with compute",
+      "summary": "Devices form a ring passing KV blocks while each computes blockwise attention/FFN, hiding communication behind computation — exact, no approximation. Removes per-device memory as the context bottleneck for 100M+ tokens.",
+      "url": "https://arxiv.org/abs/2310.01889",
+      "tags": ["long-context", "distributed", "exact"]
+    },
+    {
+      "title": "LongRoPE",
+      "org": "Microsoft Research (ICML 2024)",
+      "year": "2024-02",
+      "category": "long-context",
+      "innovation": "Evolutionary search over non-uniform RoPE rescaling to 2M",
+      "summary": "Exploits two forms of positional-interpolation non-uniformity found via search, then progressively extends and readjusts at 8K to preserve short-context quality. Demonstrated 2M-token context; integrated into Phi-3.",
+      "url": "https://arxiv.org/abs/2402.13753",
+      "tags": ["long-context", "rope", "search"]
+    },
+    {
+      "title": "Gemini 1.5 (1M+ context)",
+      "org": "Google DeepMind",
+      "year": "2024-03",
+      "category": "long-context",
+      "innovation": "Sparse-MoE multimodal with near-perfect multi-M-token recall",
+      "summary": "Processes up to 10M tokens with ~99.7% needle-in-haystack recall at 1M across text/video/audio. Productionized the 1M+ frontier while matching Gemini 1.0 Ultra on standard benchmarks.",
+      "url": "https://arxiv.org/abs/2403.05530",
+      "tags": ["long-context", "multimodal", "MoE"]
+    },
+    {
+      "title": "ChunkKV",
+      "org": "Liu et al. (ICML 2025)",
+      "year": "2025-02",
+      "category": "long-context",
+      "innovation": "KV-cache compression at semantic-chunk granularity",
+      "summary": "Retains contiguous semantically meaningful chunks (not per-token) and reuses indices across layers (~26.5% throughput gain). Targets long-context inference where the KV cache can consume up to 70% of GPU memory.",
+      "url": "https://arxiv.org/abs/2502.00299",
+      "tags": ["long-context", "kv-cache", "compression"]
+    },
+    {
+      "title": "DeepSeek-V3 FP8 Training",
+      "org": "DeepSeek-AI",
+      "year": "2024-12",
+      "category": "efficiency-precision",
+      "innovation": "First validated FP8 training at frontier (671B MoE) scale",
+      "summary": "Runs most GEMMs in FP8 with 1×128 tile-wise and 128×128 block-wise scaling while keeping sensitive modules higher-precision, holding relative error under ~0.25%. Proved FP8 viable for frontier-scale training.",
+      "url": "https://arxiv.org/abs/2412.19437",
+      "tags": ["fp8", "mixed-precision", "MoE"]
+    },
+    {
+      "title": "FP4 Training Framework",
+      "org": "Microsoft Research",
+      "year": "2025-01",
+      "category": "efficiency-precision",
+      "innovation": "End-to-end FP4 via differentiable estimator + outlier clamping",
+      "summary": "Tackles FP4's severe error with a differentiable quantization estimator and outlier clamping to prevent activation collapse. Matches BF16/FP8 accuracy up to 13B params / 100B tokens.",
+      "url": "https://arxiv.org/abs/2501.17116",
+      "tags": ["fp4", "low-precision"]
+    },
+    {
+      "title": "NVFP4 Pretraining",
+      "org": "NVIDIA",
+      "year": "2025-09",
+      "category": "efficiency-precision",
+      "innovation": "Large-scale microscaled-FP4 pretraining on Blackwell",
+      "summary": "Pretrains a 12B hybrid Mamba-Transformer on 10T tokens entirely in NVFP4 with Random Hadamard transforms, 2D consistent quantization, and stochastic rounding, matching FP8. 2–3x throughput, ~half memory.",
+      "url": "https://arxiv.org/abs/2509.25149",
+      "tags": ["fp4", "low-precision", "blackwell"]
+    },
+    {
+      "title": "AWQ (Activation-aware Weight Quantization)",
+      "org": "MIT / MIT-IBM (MLSys 2024 Best Paper)",
+      "year": "2023-06",
+      "category": "efficiency-precision",
+      "innovation": "Protect ~1% salient channels via activation-based scaling",
+      "summary": "Weight-only low-bit PTQ that scales salient channels using activation statistics, preserving accuracy without reconstruction or backprop. The standard companion/alternative to GPTQ for 4-bit deployment.",
+      "url": "https://arxiv.org/abs/2306.00978",
+      "tags": ["quantization", "ptq", "inference"]
+    },
+    {
+      "title": "muP / muTransfer (Tensor Programs V)",
+      "org": "Microsoft Research / OpenAI",
+      "year": "2022-03",
+      "category": "efficiency-precision",
+      "innovation": "Width-invariant HPs — tune small, transfer to large",
+      "summary": "Scales init variances and learning rates so training dynamics stay stable as width grows, letting you tune on a small proxy and transfer to billion-param targets. Extensions: U-muP (ICLR 2025) and muP-for-MoE.",
+      "url": "https://arxiv.org/abs/2203.03466",
+      "tags": ["hyperparameters", "scaling", "stability"]
+    },
+    {
+      "title": "Compute-Optimal QAT",
+      "org": "Google DeepMind",
+      "year": "2025-09",
+      "category": "efficiency-precision",
+      "innovation": "Scaling laws for when to switch to quantization-aware training",
+      "summary": "Studies how to allocate compute between full-precision pretraining and the QAT phase, deriving when/how long to apply QAT for best low-bit accuracy. Practical recipes so QAT yields strong quantized models without wasting compute.",
+      "url": "https://arxiv.org/abs/2509.22935",
+      "tags": ["quantization", "qat", "scaling-laws"]
+    },
+    {
+      "title": "DeepSeek-V3 Technical Report",
+      "org": "DeepSeek-AI",
+      "year": "2024-12",
+      "category": "model-report",
+      "innovation": "MLA + DeepSeekMoE + loss-free balancing + MTP + FP8",
+      "summary": "671B-total/37B-active MoE trained on 14.8T tokens for ~2.788M H800 GPU-hours, reaching GPT-4-class quality at a fraction of typical compute. The reference recipe for efficient frontier-scale MoE training.",
+      "url": "https://arxiv.org/abs/2412.19437",
+      "tags": ["model-report", "MoE", "fp8"]
+    },
+    {
+      "title": "Kimi K2 (MuonClip)",
+      "org": "Moonshot AI",
+      "year": "2025-07",
+      "category": "model-report",
+      "innovation": "MuonClip (Muon + QK-Clip) — zero-loss-spike 1T-param MoE training",
+      "summary": "A 1T-total / 32B-active open-weight MoE for agentic tasks, trained on 15.5T tokens with QK-Clip bounding attention logits as the headline stability technique. Top open-weight model on LMSYS Arena at release.",
+      "url": "https://arxiv.org/abs/2507.20534",
+      "tags": ["model-report", "MoE", "optimizer", "stability"]
+    },
+    {
+      "title": "MiniMax-01 (Lightning Attention)",
+      "org": "MiniMax",
+      "year": "2025-01",
+      "category": "model-report",
+      "innovation": "Production-scale linear attention hybridized with MoE",
+      "summary": "456B-total/45.9B-active MoE (32 experts) trained at 1M-token context, extrapolating to 4M at inference. Matches GPT-4o / Claude-3.5-Sonnet while offering a 20–32x longer context window.",
+      "url": "https://arxiv.org/abs/2501.08313",
+      "tags": ["model-report", "linear-attention", "MoE", "long-context"]
+    },
+    {
+      "title": "Gemma 3",
+      "org": "Google DeepMind",
+      "year": "2025-03",
+      "category": "model-report",
+      "innovation": "Higher local-to-global attention ratio to cut KV-cache cost",
+      "summary": "Lightweight open multimodal models (1B–27B) adding vision, 128K+ context, and wider language coverage via distillation. 27B-IT approaches Gemini-1.5-Pro; 4B-IT rivals prior Gemma2-27B-IT.",
+      "url": "https://arxiv.org/abs/2503.19786",
+      "tags": ["model-report", "small-model", "kv-cache"]
+    },
+    {
+      "title": "Llama 4 Herd (Scout / Maverick)",
+      "org": "Meta AI",
+      "year": "2025-04",
+      "category": "model-report",
+      "innovation": "Native-multimodal MoE; iRoPE for a 10M-token context",
+      "summary": "Scout ~17B-active/109B-total (16 experts, 10M context); Maverick ~17B-active/400B-total (128 experts) surpasses GPT-4o on several benchmarks. Both distilled from the 2T 'Behemoth' (blog only, no arXiv report).",
+      "url": "https://ai.meta.com/blog/llama-4-multimodal-intelligence/",
+      "tags": ["model-report", "MoE", "multimodal", "long-context"]
+    },
+    {
+      "title": "OLMo 2",
+      "org": "Allen Institute for AI",
+      "year": "2025-01",
+      "category": "model-report",
+      "innovation": "Fully open (weights+data+code) with training-stability fixes",
+      "summary": "Dense 7B/13B/32B models on the performance-vs-compute Pareto frontier, matching/beating Llama 3.1, Qwen 2.5, Gemma 2 with full transparency and the late-stage Dolmino data curriculum.",
+      "url": "https://arxiv.org/abs/2501.00656",
+      "tags": ["model-report", "open-science", "stability"]
+    }
+  ]
+}

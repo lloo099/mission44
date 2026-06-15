@@ -1,0 +1,558 @@
+{
+  "updated": "2026-06-15",
+  "items": [
+    {
+      "title": "InstructGPT / PPO-RLHF",
+      "org": "OpenAI",
+      "year": "2022-03",
+      "category": "algorithm",
+      "innovation": "Canonical 3-stage RLHF: SFT → reward model → PPO",
+      "summary": "Established the standard RLHF recipe where a reward model trained on human preferences supplies the PPO signal, with a KL penalty to the SFT reference. A 1.3B InstructGPT was preferred over 175B GPT-3, making PPO the default RLHF optimizer.",
+      "url": "https://arxiv.org/abs/2203.02155",
+      "tags": ["PPO", "RLHF", "foundational"]
+    },
+    {
+      "title": "GRPO (DeepSeekMath)",
+      "org": "DeepSeek-AI",
+      "year": "2024-02",
+      "category": "algorithm",
+      "innovation": "Drops the critic; advantages from group-normalized rewards",
+      "summary": "For each prompt GRPO samples a group of responses and uses the within-group mean/std to compute relative advantages, eliminating PPO's value network and its memory cost. It is the backbone of DeepSeek-V3/R1 and the most widely adopted base for reasoning RL.",
+      "url": "https://arxiv.org/abs/2402.03300",
+      "tags": ["GRPO", "critic-free", "reasoning"]
+    },
+    {
+      "title": "RLVR (Tülu 3)",
+      "org": "Allen Institute for AI",
+      "year": "2024-11",
+      "category": "algorithm",
+      "innovation": "Replaces the reward model with a deterministic verifier",
+      "summary": "RL with Verifiable Rewards applies the RLHF objective to checkable tasks (math, instruction constraints), giving reward 1 for verified-correct outputs and 0 otherwise. Introduced/named in the Tülu 3 pipeline, it underpins most subsequent reasoning-RL work.",
+      "url": "https://arxiv.org/abs/2411.15124",
+      "tags": ["RLVR", "verifiable-rewards", "reasoning"]
+    },
+    {
+      "title": "RLOO (REINFORCE Leave-One-Out)",
+      "org": "Cohere For AI",
+      "year": "2024-02",
+      "category": "algorithm",
+      "innovation": "Leave-one-out baseline; unbiased, low-variance, no critic",
+      "summary": "Each completion's baseline is the average reward of the other samples for the same prompt, giving a simple multi-sample REINFORCE estimator. Trains ~3x faster with ~70% less memory than tuned PPO at 6.9B scale.",
+      "url": "https://arxiv.org/abs/2402.14740",
+      "tags": ["REINFORCE", "critic-free", "efficiency"]
+    },
+    {
+      "title": "ReMax",
+      "org": "CUHK-Shenzhen",
+      "year": "2023-10",
+      "category": "algorithm",
+      "innovation": "Greedy-decoding baseline REINFORCE for RLHF",
+      "summary": "Exploits RLHF's deterministic transitions and trajectory-level rewards with a greedy-decode baseline for variance reduction, dropping PPO's critic and 4+ hyperparameters. Cuts GPU memory ~46% on a 7B model while staying stable.",
+      "url": "https://arxiv.org/abs/2310.10505",
+      "tags": ["REINFORCE", "critic-free", "efficiency"]
+    },
+    {
+      "title": "DPO (Direct Preference Optimization)",
+      "org": "Stanford",
+      "year": "2023-05",
+      "category": "algorithm",
+      "innovation": "Preferences as a simple classification loss — no RM, no RL sampling",
+      "summary": "Reparameterizes the RLHF reward in terms of the policy itself, reducing alignment to a logistic loss on preference pairs against a frozen reference. Matches or beats PPO-RLHF on sentiment, summarization, and dialogue while being far simpler.",
+      "url": "https://arxiv.org/abs/2305.18290",
+      "tags": ["DPO", "offline", "preference-optimization"]
+    },
+    {
+      "title": "IPO (Identity Preference Optimization)",
+      "org": "Google DeepMind",
+      "year": "2023-10",
+      "category": "algorithm",
+      "innovation": "ΨPO theory; squared-loss objective robust to deterministic prefs",
+      "summary": "Generalizes RLHF/DPO into a ΨPO objective; with Ψ=identity it avoids the Bradley-Terry assumption and DPO's overfitting on near-deterministic preferences. Provides a unified theory of preference learning.",
+      "url": "https://arxiv.org/abs/2310.12036",
+      "tags": ["IPO", "offline", "theory"]
+    },
+    {
+      "title": "KTO (Kahneman-Tversky Optimization)",
+      "org": "Stanford / Contextual AI",
+      "year": "2024-02",
+      "category": "algorithm",
+      "innovation": "Aligns from unpaired thumbs-up/down via prospect theory",
+      "summary": "Maximizes a loss-averse human-utility function instead of preference log-likelihood, needing only a binary desirable/undesirable label per example. Practical for imbalanced or unpaired feedback while matching or exceeding DPO.",
+      "url": "https://arxiv.org/abs/2402.01306",
+      "tags": ["KTO", "offline", "unpaired"]
+    },
+    {
+      "title": "ORPO",
+      "org": "KAIST AI",
+      "year": "2024-03",
+      "category": "algorithm",
+      "innovation": "Odds-ratio penalty folds alignment into SFT — no reference model",
+      "summary": "Appends a log odds-ratio term to the NLL loss during SFT, removing the separate preference phase and reference model. Trained on UltraFeedback alone it surpasses larger Llama-2-Chat/Zephyr on AlpacaEval 2.0 and MT-Bench.",
+      "url": "https://arxiv.org/abs/2403.07691",
+      "tags": ["ORPO", "offline", "reference-free"]
+    },
+    {
+      "title": "SimPO",
+      "org": "Princeton",
+      "year": "2024-05",
+      "category": "algorithm",
+      "innovation": "Length-normalized average log-prob as a reference-free reward",
+      "summary": "Aligns the implicit reward with the generation metric and adds a target reward margin, eliminating the reference model. Outperforms DPO and variants across Mistral, Llama 3, and Gemma 2 (NeurIPS 2024).",
+      "url": "https://arxiv.org/abs/2405.14734",
+      "tags": ["SimPO", "offline", "reference-free"]
+    },
+    {
+      "title": "DAPO",
+      "org": "ByteDance Seed / Tsinghua AIR",
+      "year": "2025-03",
+      "category": "algorithm",
+      "innovation": "GRPO + Clip-Higher, dynamic sampling, token-level loss, overlong shaping",
+      "summary": "Targets entropy collapse and length/exploration issues in GRPO and ships as a fully open RL system. On Qwen2.5-32B it reaches 50 on AIME 2024, beating DeepSeek-R1-Zero-Qwen-32B with ~50% fewer steps.",
+      "url": "https://arxiv.org/abs/2503.14476",
+      "tags": ["DAPO", "GRPO", "reasoning", "open-source"]
+    },
+    {
+      "title": "Dr. GRPO",
+      "org": "Sea AI Lab / NUS",
+      "year": "2025-03",
+      "category": "algorithm",
+      "innovation": "Removes GRPO length & std-norm biases that inflate response length",
+      "summary": "Diagnoses an optimization bias in GRPO that rewards longer (not better) responses and fixes it for a more token-efficient optimizer. A minimalist R1-Zero recipe with the fix hits 43.3% on AIME 2024 with a 7B base.",
+      "url": "https://arxiv.org/abs/2503.20783",
+      "tags": ["GRPO", "bias-fix", "reasoning"]
+    },
+    {
+      "title": "VAPO",
+      "org": "ByteDance Seed",
+      "year": "2025-04",
+      "category": "algorithm",
+      "innovation": "Value-based PPO for long-CoT with length-adaptive GAE",
+      "summary": "Reasserts the critic paradigm for long reasoning, combining DAPO/VC-PPO tricks with Length-Adaptive and Decoupled GAE plus positive-example LM loss. Scores SOTA 60.4 on AIME 2024 on Qwen2.5-32B in ~5,000 steps.",
+      "url": "https://arxiv.org/abs/2504.05118",
+      "tags": ["PPO", "value-based", "reasoning"]
+    },
+    {
+      "title": "GSPO (Group Sequence Policy Optimization)",
+      "org": "Qwen Team, Alibaba",
+      "year": "2025-07",
+      "category": "algorithm",
+      "innovation": "Sequence-level importance ratios & clipping — stabilizes MoE RL",
+      "summary": "Attributes GRPO's instability to mis-applied token-level importance weights whose variance grows with length. Sequence-level optimization is more stable, notably for MoE RL, and contributed to Qwen3.",
+      "url": "https://arxiv.org/abs/2507.18071",
+      "tags": ["GSPO", "MoE", "stability"]
+    },
+    {
+      "title": "CISPO (MiniMax-M1)",
+      "org": "MiniMax",
+      "year": "2025-06",
+      "category": "algorithm",
+      "innovation": "Clips IS-weights, not token updates — keeps pivotal low-prob tokens",
+      "summary": "Bounds variance via importance-sampling-weight clipping while keeping every token's gradient contribution, so 'reflection' tokens (Wait, Aha) still update. ~2x speedup over DAPO; enabled M1's full RL run on 512 H800s in ~3 weeks.",
+      "url": "https://arxiv.org/abs/2506.13585",
+      "tags": ["CISPO", "off-policy", "efficiency"]
+    },
+    {
+      "title": "ProRL",
+      "org": "NVIDIA",
+      "year": "2025-05",
+      "category": "algorithm",
+      "innovation": "Prolonged RL uncovers genuinely new reasoning strategies",
+      "summary": "Stabilizes very long RL runs via KL control, reference-policy resetting, and a diverse task suite, showing prolonged RL expands reasoning boundaries rather than just amplifying base behaviors. Produced Nemotron-Research-Reasoning-Qwen-1.5B.",
+      "url": "https://arxiv.org/abs/2505.24864",
+      "tags": ["prolonged-rl", "stability", "reasoning"]
+    },
+
+    {
+      "title": "DeepSeek-R1 / R1-Zero",
+      "org": "DeepSeek-AI",
+      "year": "2025-01",
+      "category": "model",
+      "innovation": "Reasoning emerges from pure RL (GRPO) with no SFT (R1-Zero)",
+      "summary": "R1-Zero is trained by RL only and self-evolves chain-of-thought, reflection, and verification; R1 adds cold-start + multi-stage RL to reach o1-level (AIME 2024 pass@1 79.8%). The main reason GRPO+verifiable-reward RL became the 2025 paradigm.",
+      "url": "https://arxiv.org/abs/2501.12948",
+      "tags": ["reasoning", "GRPO", "open-weights"]
+    },
+    {
+      "title": "OpenAI o1",
+      "org": "OpenAI",
+      "year": "2024-09",
+      "category": "model",
+      "innovation": "Large-scale RL teaches a long internal chain-of-thought",
+      "summary": "Trained with large-scale RL to think productively before answering — decomposing, self-correcting, exploring alternatives. Performance scales with both more RL training and more test-time thinking.",
+      "url": "https://openai.com/index/learning-to-reason-with-llms/",
+      "tags": ["reasoning", "test-time-compute", "closed"]
+    },
+    {
+      "title": "OpenAI o3 / o4-mini",
+      "org": "OpenAI",
+      "year": "2025-04",
+      "category": "model",
+      "innovation": "Scaled RL reasoning + agentic tool use inside the chain-of-thought",
+      "summary": "o3 is OpenAI's most capable reasoner (~88% ARC-AGI, 96.7% AIME 2024); o4-mini is cheaper/faster. First o-series models trained to fully use tools (web, Python, vision) agentically within reasoning.",
+      "url": "https://openai.com/index/introducing-o3-and-o4-mini/",
+      "tags": ["reasoning", "agentic", "tools"]
+    },
+    {
+      "title": "QwQ-32B",
+      "org": "Qwen Team, Alibaba",
+      "year": "2025-03",
+      "category": "model",
+      "innovation": "32B dense rivals 671B R1 via scaled RL with rule-based verifiers",
+      "summary": "Applies scaled RL from a cold-start checkpoint, first on math/coding with outcome verifiers then a general stage. Matches DeepSeek-R1-class reasoning at 32B, released Apache 2.0.",
+      "url": "https://qwenlm.github.io/blog/qwq-32b/",
+      "tags": ["reasoning", "open-weights", "verifiers"]
+    },
+    {
+      "title": "Qwen3",
+      "org": "Qwen Team, Alibaba",
+      "year": "2025-05",
+      "category": "model",
+      "innovation": "Unified thinking/non-thinking modes with a tunable thinking budget",
+      "summary": "Dense + MoE (0.6B–235B) integrate reasoning and fast modes in one model via a four-stage post-training pipeline (long-CoT SFT + RL + fusion + general RL). Notes strong-to-weak distillation beating RL at ~1/10 cost for small models.",
+      "url": "https://arxiv.org/abs/2505.09388",
+      "tags": ["reasoning", "MoE", "open-weights"]
+    },
+    {
+      "title": "Kimi k1.5",
+      "org": "Moonshot AI",
+      "year": "2025-01",
+      "category": "model",
+      "innovation": "Simplified RL scaling context length; no MCTS/value/PRM",
+      "summary": "Multimodal model trained with a streamlined online-mirror-descent RL recipe that treats context length as a key lever. Matches o1 (77.5 AIME, 96.2 MATH-500) and adds long2short transfer to short-CoT models.",
+      "url": "https://arxiv.org/abs/2501.12599",
+      "tags": ["reasoning", "long-cot", "multimodal"]
+    },
+    {
+      "title": "MiniMax-M1",
+      "org": "MiniMax",
+      "year": "2025-06",
+      "category": "model",
+      "innovation": "Open hybrid (lightning-attention + MoE) reasoner trained with CISPO",
+      "summary": "456B total / 45.9B active, native 1M-token context; lightning attention makes long-CoT ~25% of R1's FLOPs at 100K tokens. Full RL on 512 H800s in three weeks (~$535K).",
+      "url": "https://arxiv.org/abs/2506.13585",
+      "tags": ["reasoning", "linear-attention", "MoE", "open-weights"]
+    },
+    {
+      "title": "Llama-Nemotron",
+      "org": "NVIDIA",
+      "year": "2025-05",
+      "category": "model",
+      "innovation": "Open reasoning family with a dynamic reasoning on/off toggle",
+      "summary": "Nano/Super/Ultra built via NAS + distillation then SFT and large-scale RL. LN-Ultra beats DeepSeek-R1 while fitting on a single 8xH100 node; models, data, and code released.",
+      "url": "https://arxiv.org/abs/2505.00949",
+      "tags": ["reasoning", "open-weights", "efficiency"]
+    },
+    {
+      "title": "Phi-4-reasoning(-plus)",
+      "org": "Microsoft Research",
+      "year": "2025-05",
+      "category": "model",
+      "innovation": "Small-model reasoning from curated SFT + short outcome-based RL",
+      "summary": "14B model SFT'd on 'teachable' prompts with o3-mini traces; the -plus variant adds a brief outcome-based RL stage that lengthens reasoning traces. Rivals DeepSeek-R1-class performance while far smaller.",
+      "url": "https://arxiv.org/abs/2504.21318",
+      "tags": ["reasoning", "small-model", "distillation"]
+    },
+    {
+      "title": "Magistral",
+      "org": "Mistral AI",
+      "year": "2025-06",
+      "category": "model",
+      "innovation": "Ground-up async RL stack; strong reasoning from RL on text alone",
+      "summary": "Magistral Medium trained by RL only (GRPO-based) on Mistral Medium 3; Small adds cold-start distillation (Apache 2.0). A rare detailed industrial account of scalable async RLVR infrastructure.",
+      "url": "https://arxiv.org/abs/2506.10910",
+      "tags": ["reasoning", "async-rl", "open-weights"]
+    },
+    {
+      "title": "Seed1.5-Thinking",
+      "org": "ByteDance Seed",
+      "year": "2025-04",
+      "category": "model",
+      "innovation": "RL with a verifiable/general/hybrid triple data engine + stabilizers",
+      "summary": "Compact MoE (20B active / 200B total) reaching 86.7 AIME 2024 and 77.3 GPQA, using value pretraining, decoupled GAE, and online data adaptation. Generalizes well beyond reasoning.",
+      "url": "https://arxiv.org/abs/2504.13914",
+      "tags": ["reasoning", "MoE", "stability"]
+    },
+    {
+      "title": "GLM-4.5",
+      "org": "Z.ai (Zhipu)",
+      "year": "2025-08",
+      "category": "model",
+      "innovation": "Hybrid reasoning MoE; ARC (agentic/reasoning/coding) post-training",
+      "summary": "355B total / 32B active MoE with thinking and direct modes, trained on 23T tokens with expert-model iteration + RL; 91.0% AIME 2024, 64.2% SWE-bench Verified. RLCS extends to multimodal in GLM-V.",
+      "url": "https://arxiv.org/abs/2508.06471",
+      "tags": ["reasoning", "MoE", "agentic", "open-weights"]
+    },
+    {
+      "title": "Grok 3 (Think)",
+      "org": "xAI",
+      "year": "2025-02",
+      "category": "model",
+      "innovation": "Reasoning refined via large-scale RL on the Colossus cluster",
+      "summary": "Uses large-scale RL to think for seconds to minutes, backtracking and exploring alternatives via 'Think' mode, integrated with DeepSearch. Reports 93.3% AIME 2025, 84.6% GPQA.",
+      "url": "https://x.ai/news/grok-3",
+      "tags": ["reasoning", "agentic", "closed"]
+    },
+
+    {
+      "title": "verl (HybridFlow)",
+      "org": "ByteDance Seed + community",
+      "year": "2024-09",
+      "category": "framework",
+      "innovation": "Hybrid-controller dataflow; first-class Ascend NPU support",
+      "summary": "Supports PPO/GRPO/GSPO/DAPO/RLOO/PRIME and VLM RL with FSDP/Megatron training + vLLM/SGLang rollout, scaling to 671B. The only major framework with confirmed NVIDIA + AMD ROCm + Ascend support.",
+      "url": "https://github.com/verl-project/verl",
+      "tags": ["framework", "ascend-ready", "multi-node", "GRPO"]
+    },
+    {
+      "title": "OpenRLHF",
+      "org": "OpenRLHF community",
+      "year": "2024-05",
+      "category": "framework",
+      "innovation": "First Ray + vLLM RLHF framework; async agentic RL",
+      "summary": "Distributes Actor/Critic/Reward/Reference across GPUs on DeepSpeed ZeRO-3 + Ray + vLLM, supporting PPO/GRPO/REINFORCE++/DAPO at 70B+ scale. Ascend support is WIP.",
+      "url": "https://github.com/OpenRLHF/OpenRLHF",
+      "tags": ["framework", "ray", "multi-node"]
+    },
+    {
+      "title": "TRL",
+      "org": "Hugging Face",
+      "year": "2025",
+      "category": "framework",
+      "innovation": "Tight Transformers/PEFT integration; simple GRPO/DPO trainers",
+      "summary": "GRPOTrainer/DPOTrainer/PPOTrainer/RewardTrainer scale via Accelerate (DDP/DeepSpeed/FSDP). The easiest on-ramp for RL fine-tuning in the HF ecosystem.",
+      "url": "https://github.com/huggingface/trl",
+      "tags": ["framework", "huggingface", "accessible"]
+    },
+    {
+      "title": "NeMo-RL / NeMo-Aligner",
+      "org": "NVIDIA",
+      "year": "2025",
+      "category": "framework",
+      "innovation": "Megatron-Core + Ray post-training to thousands of GPUs / 100B+",
+      "summary": "Supports GRPO/DAPO/PPO/DPO/RM and on-policy distillation with Megatron parallelism and Ray orchestration. Influenced verl, SkyRL, and ROLL.",
+      "url": "https://github.com/NVIDIA-NeMo/RL",
+      "tags": ["framework", "megatron", "multi-node"]
+    },
+    {
+      "title": "AReaL",
+      "org": "Ant Group / Tsinghua IIIS",
+      "year": "2025-05",
+      "category": "framework",
+      "innovation": "Fully asynchronous RL: decouples generation from training (~2.77x)",
+      "summary": "Rollout workers generate continuously while trainers update asynchronously with staleness-enhanced PPO. AReaL-lite offers an algorithm-first async API; uses SGLang for rollout.",
+      "url": "https://github.com/inclusionAI/AReaL",
+      "tags": ["framework", "async-rl", "efficiency"]
+    },
+    {
+      "title": "slime",
+      "org": "THUDM / Zhipu",
+      "year": "2025",
+      "category": "framework",
+      "innovation": "Thin Megatron↔SGLang glue — the RL stack behind GLM-4.5/4.6",
+      "summary": "Wires Megatron training directly to SGLang rollout with minimal abstraction plus a Data Buffer module, validated on SOTA GLM releases.",
+      "url": "https://github.com/THUDM/slime",
+      "tags": ["framework", "megatron", "production"]
+    },
+    {
+      "title": "ROLL",
+      "org": "Alibaba",
+      "year": "2025-06",
+      "category": "framework",
+      "innovation": "Multi-role Ray architecture for RLHF/RLVR/agentic",
+      "summary": "Flexible resource allocation across roles integrating Megatron-Core, vLLM and SGLang for preference, RLVR, and multi-turn agentic RL. Ascend support is an open RFC.",
+      "url": "https://github.com/alibaba/ROLL",
+      "tags": ["framework", "ray", "agentic"]
+    },
+    {
+      "title": "SkyRL",
+      "org": "UC Berkeley (NovaSky)",
+      "year": "2025-06",
+      "category": "framework",
+      "innovation": "Modular full-stack RL for multi-turn, long-horizon agents",
+      "summary": "skyrl-train / -gym / -agent / -tx with async dispatching and backend interop (verl, Tinker); skyrl-tx aims at cross-platform backends.",
+      "url": "https://github.com/NovaSky-AI/SkyRL",
+      "tags": ["framework", "agentic", "modular"]
+    },
+    {
+      "title": "PRIME",
+      "org": "Tsinghua / Shanghai AI Lab",
+      "year": "2025-02",
+      "category": "framework",
+      "innovation": "Implicit process rewards — dense per-token rewards, no process labels",
+      "summary": "Online RL with process rewards from an ORM-trained PRM and no separate value model; integrated as an algorithm in verl.",
+      "url": "https://github.com/PRIME-RL/PRIME",
+      "tags": ["framework", "process-reward", "reasoning"]
+    },
+    {
+      "title": "prime-rl (Prime Intellect)",
+      "org": "Prime Intellect",
+      "year": "2025",
+      "category": "framework",
+      "innovation": "Decentralized, fully async off-policy RL (INTELLECT-2/3)",
+      "summary": "Globally distributed async RL using FSDP2 + vLLM with FP8, PD disaggregation and EP/CP parallelism, plus TOPLOC rollout verification and SHARDCAST weight broadcast. Designed for 1000+ GPUs.",
+      "url": "https://github.com/PrimeIntellect-ai/prime-rl",
+      "tags": ["framework", "decentralized", "async-rl"]
+    },
+    {
+      "title": "open-instruct",
+      "org": "Allen Institute for AI",
+      "year": "2024",
+      "category": "framework",
+      "innovation": "Introduced RLVR; trained Tülu 3 / OLMo 2",
+      "summary": "SFT, DPO, PPO and GRPO-based RLVR scalable with Ray + vLLM. The reference implementation of verifiable-reward RL.",
+      "url": "https://github.com/allenai/open-instruct",
+      "tags": ["framework", "RLVR", "open-science"]
+    },
+    {
+      "title": "Unsloth (RL)",
+      "org": "Unsloth AI",
+      "year": "2025",
+      "category": "framework",
+      "innovation": "GRPO on a single small GPU (~5GB) via custom Triton kernels",
+      "summary": "Memory-efficient GRPO with LoRA/QLoRA, vLLM-backed generation, long-context RL and FP8, optimized for single-GPU/local use.",
+      "url": "https://github.com/unslothai/unsloth",
+      "tags": ["framework", "low-resource", "single-gpu"]
+    },
+    {
+      "title": "Axolotl (RL)",
+      "org": "Axolotl AI",
+      "year": "2025-02",
+      "category": "framework",
+      "innovation": "Config-driven GRPO on TRL with async generation + replay",
+      "summary": "GRPO/GDPO plus DPO with vLLM serving, importance-sampling correction, replay buffers, FSDP and DeepSpeed ZeRO-3 multi-GPU scaling.",
+      "url": "https://github.com/axolotl-ai-cloud/axolotl",
+      "tags": ["framework", "config-driven", "multi-node"]
+    },
+
+    {
+      "title": "Let's Verify Step by Step (PRM800K)",
+      "org": "OpenAI",
+      "year": "2023-05",
+      "category": "trend",
+      "innovation": "Step-level process supervision beats outcome supervision",
+      "summary": "Trains a process reward model on per-step human feedback, solving 78% of a MATH subset and outperforming outcome-only RMs. Released the 800K-label PRM800K dataset anchoring modern process supervision.",
+      "url": "https://arxiv.org/abs/2305.20050",
+      "tags": ["process-reward", "math", "foundational"]
+    },
+    {
+      "title": "Qwen2.5-Math-PRM",
+      "org": "Qwen Team, Alibaba",
+      "year": "2025-01",
+      "category": "trend",
+      "innovation": "MC estimation + LLM-as-judge consensus filtering for PRMs",
+      "summary": "Shows naive MC step labeling is noisy and BoN eval is misled by correct-answer/flawed-process cases, then fixes it with consensus filtering. Releases strong open PRM-7B/72B baselines.",
+      "url": "https://arxiv.org/abs/2501.07301",
+      "tags": ["process-reward", "math", "open-weights"]
+    },
+    {
+      "title": "Scaling Test-Time Compute",
+      "org": "UC Berkeley / Google DeepMind",
+      "year": "2024-08",
+      "category": "trend",
+      "innovation": "Compute-optimal inference can beat a ~14x larger model",
+      "summary": "Analyzes how to spend a fixed inference budget across verifier-guided search and sequential revision, finding adaptive strategies beat best-of-N. Provides the scaling rationale behind long-CoT and verifier-driven RL.",
+      "url": "https://arxiv.org/abs/2408.03314",
+      "tags": ["test-time-compute", "scaling", "verifiers"]
+    },
+    {
+      "title": "ExGRPO",
+      "org": "Shanghai AI Lab / U. Macau",
+      "year": "2025-10",
+      "category": "trend",
+      "innovation": "Prioritized experience replay for RLVR (off-policy)",
+      "summary": "Buckets past trajectories by correctness/entropy and reuses high-value ones with a mixed on/off-policy objective. +3.5/+7.6 point gains over on-policy RLVR and stabilizes runs that otherwise collapse.",
+      "url": "https://arxiv.org/abs/2510.02245",
+      "tags": ["off-policy", "experience-replay", "stability"]
+    },
+    {
+      "title": "Search-R1",
+      "org": "UIUC",
+      "year": "2025-03",
+      "category": "trend",
+      "innovation": "RL teaches interleaved multi-turn search within reasoning",
+      "summary": "The model autonomously issues search queries during reasoning, trained stably by masking retrieved tokens from the loss. +41% QA accuracy (Qwen2.5-7B) over strong RAG baselines.",
+      "url": "https://arxiv.org/abs/2503.09516",
+      "tags": ["agentic-rl", "tool-use", "search"]
+    },
+    {
+      "title": "ReTool",
+      "org": "ByteDance Seed",
+      "year": "2025-04",
+      "category": "trend",
+      "innovation": "Outcome-driven RL for strategic code-interpreter use",
+      "summary": "Cold-starts on code-augmented traces then RL refines tool-invocation strategy with emergent code self-correction. Reaches 67.0% AIME 2024 (Qwen2.5-32B) in only 400 steps.",
+      "url": "https://arxiv.org/abs/2504.11536",
+      "tags": ["agentic-rl", "tool-use", "code"]
+    },
+    {
+      "title": "RAGEN / StarPO",
+      "org": "Northwestern / Stanford / Microsoft",
+      "year": "2025-04",
+      "category": "trend",
+      "innovation": "Trajectory-level multi-turn agent RL; 'Echo Trap' stabilization",
+      "summary": "StarPO trains agents across stochastic environments; StarPO-S counters reward-variance cliffs and gradient spikes via trajectory filtering and critic baselining. A systematic recipe for self-evolving agents.",
+      "url": "https://arxiv.org/abs/2504.20073",
+      "tags": ["agentic-rl", "multi-turn", "stability"]
+    },
+    {
+      "title": "Self-Rewarding Language Models",
+      "org": "Meta AI / NYU",
+      "year": "2024-01",
+      "category": "trend",
+      "innovation": "Model generates its own rewards via LLM-as-judge during iterative DPO",
+      "summary": "The policy judges its own outputs to build preference pairs, so instruction-following and self-judging improve together. Iterated self-rewarding can surpass models trained on human preference data.",
+      "url": "https://arxiv.org/abs/2401.10020",
+      "tags": ["self-rewarding", "llm-as-judge"]
+    },
+    {
+      "title": "Spurious Rewards",
+      "org": "U. Washington / AI2",
+      "year": "2025-06",
+      "category": "trend",
+      "innovation": "Random/wrong rewards still boost RLVR on Qwen — but model-specific",
+      "summary": "Random, format, or wrong-label rewards lift Qwen2.5-Math MATH-500 by 21–26 points (vs 29.1 for true rewards) by amplifying latent code reasoning, yet fail on Llama/OLMo. A caution that RLVR 'gains' may elicit pre-existing behaviors.",
+      "url": "https://arxiv.org/abs/2506.10947",
+      "tags": ["RLVR", "analysis", "caution"]
+    },
+    {
+      "title": "1-shot RLVR",
+      "org": "U. Washington / USC / MSR",
+      "year": "2025-04",
+      "category": "trend",
+      "innovation": "A single training example nearly matches thousands via RLVR",
+      "summary": "One example raises Qwen2.5-Math-1.5B MATH500 from 36.0% to 73.6% with cross-domain generalization. Strong evidence that RLVR largely elicits latent capability, driven mainly by the policy-gradient loss.",
+      "url": "https://arxiv.org/abs/2504.20571",
+      "tags": ["RLVR", "data-efficiency", "analysis"]
+    },
+    {
+      "title": "Entropy Mechanism of RL",
+      "org": "Shanghai AI Lab / Tsinghua",
+      "year": "2025-05",
+      "category": "trend",
+      "innovation": "Clip-Cov / KL-Cov prevent policy-entropy collapse",
+      "summary": "Links performance saturation to entropy collapse via log-prob/advantage covariance and clips/penalizes high-covariance tokens to sustain exploration. A widely-cited entropy-collapse fix.",
+      "url": "https://arxiv.org/abs/2505.22617",
+      "tags": ["entropy-collapse", "exploration", "stability"]
+    },
+    {
+      "title": "TTRL (Test-Time RL)",
+      "org": "Tsinghua / Shanghai AI Lab",
+      "year": "2025-04",
+      "category": "trend",
+      "innovation": "Majority-vote pseudo-reward enables RL on unlabeled test data",
+      "summary": "Estimates rewards at inference from self-consistency voting, needing no ground truth. Boosts Qwen2.5-Math-7B pass@1 on AIME 2024 by ~159% using only unlabeled test data.",
+      "url": "https://arxiv.org/abs/2504.16084",
+      "tags": ["test-time-rl", "unlabeled", "self-consistency"]
+    },
+    {
+      "title": "Reward Shaping vs Reward Hacking",
+      "org": "research",
+      "year": "2025-02",
+      "category": "trend",
+      "innovation": "Bounded reward shaping (PAR) resists proxy over-optimization",
+      "summary": "Unifies reward-hacking defenses (robust RM training vs RL regularization) and proposes Preference-As-Reward shaping using the RM's latent signal. Part of the active reward-robustness line alongside ensembles and uncertainty RMs.",
+      "url": "https://arxiv.org/abs/2502.18770",
+      "tags": ["reward-hacking", "robustness", "RLHF"]
+    }
+  ]
+}
