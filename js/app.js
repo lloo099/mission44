@@ -135,7 +135,10 @@ function cardHTML(e) {
     <div class="tags">${tags}</div>
     <div class="card-actions">
       ${e.url ? `<a class="link" href="${escapeAttr(e.url)}" target="_blank" rel="noopener">Open source ↗</a>` : "<span></span>"}
-      <button class="analyze-btn" data-entry="${escapeAttr(slim)}">✨ Analyze</button>
+      <span class="card-act-right">
+        ${(window.hasSavedAnalysis && window.hasSavedAnalysis(e)) ? `<span class="saved-badge" title="Saved analysis available">★ analyzed</span>` : ""}
+        <button class="analyze-btn" data-entry="${escapeAttr(slim)}">✨ Analyze</button>
+      </span>
     </div>
   </article>`;
 }
@@ -368,5 +371,8 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 function escapeAttr(s) { return escapeHtml(s); }
+
+// re-render all card panels (used by analyst.js after saving an analysis)
+window.refreshDashboard = () => ["rl", "ascend", "modeling", "live"].forEach(renderPanel);
 
 init();
