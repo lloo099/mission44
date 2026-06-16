@@ -1,7 +1,7 @@
 {
-  "updated": "2026-06-16T02:39:33.874659Z",
+  "updated": "2026-06-16T11:36:51.927009Z",
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 57,
+  "count": 56,
   "pinned": 22,
   "items": [
     {
@@ -290,6 +290,45 @@
       ]
     },
     {
+      "title": "Context-Aware RL for Agentic and Multimodal LLMs",
+      "org": "Peiyang Xu +6",
+      "year": "2026-06-15",
+      "summary": "Large language models (LLMs) often fail when answering requires identifying a small but decisive piece of evidence within a long or complex context, such as a single line in a tool trace or a subtle detail in an image. We propose ContextRL, a context-aware reinforcement learning (RL) method that imp…",
+      "url": "http://arxiv.org/abs/2606.17053v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "DEEPRUBRIC: Evidence-Tree Rubric Supervision for Efficient Reinforcement Learning of Deep Research Agents",
+      "org": "Minghang Zhu +5",
+      "year": "2026-06-15",
+      "summary": "Deep research agents synthesize long-form reports by searching and reasoning over retrieved evidence. Reinforcement learning with rubric-based rewards improves these agents by optimizing them against checkable criteria that translate report quality into reward signals, but its efficiency depends on …",
+      "url": "http://arxiv.org/abs/2606.17029v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "ExpRL: Exploratory RL for LLM Mid-Training",
+      "org": "Violet Xiang +4",
+      "year": "2026-06-15",
+      "summary": "Sparse reward reinforcement learning (RL) has become a standard tool for improving LLM reasoning, but its success depends critically on the coverage present in the base model. In practice, models are often primed for RL through \\emph{mid-training} on curated reasoning traces that teach useful primit…",
+      "url": "http://arxiv.org/abs/2606.17024v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
       "title": "Exploring Extrinsic and Intrinsic Properties for Effective Reasoning with Code Interpreter",
       "org": "Patomporn Payoungkhamdee +10",
       "year": "2026-06-15",
@@ -381,15 +420,15 @@
       ]
     },
     {
-      "title": "daVinci-kernel: Co-Evolving Skill Selection, Summarization, and Utilization via RL for GPU Kernel Optimization",
-      "org": "Dayuan Fu +7",
+      "title": "How Post-Training Shapes Biological Reasoning Models",
+      "org": "Lukas Fesser +7",
       "year": "2026-06-15",
-      "summary": "GPU kernel optimization represents a paradigm where functional correctness is assumed and execution efficiency is the objective. We present daVinci-kernel, a reinforcement learning framework that couples skill discovery with skill exploitation through a dynamically evolving skill library. daVinci-ke…",
-      "url": "http://arxiv.org/abs/2606.16497v1",
-      "category": "rl-llm",
+      "summary": "Scientific reasoning models for biology combine language models with foundation models trained on multimodal biological data, including DNA, RNA, and proteins. These models are built through post-training, yet how each stage shapes reasoning and generalization remains poorly understood. We study whe…",
+      "url": "http://arxiv.org/abs/2606.16517v1",
+      "category": "reasoning-rl",
       "tags": [
         "live",
-        "rl-llm",
+        "reasoning-rl",
         "auto"
       ]
     },
@@ -399,10 +438,10 @@
       "year": "2026-06-15",
       "summary": "Agentic GraphRAG trains language-model agents to iteratively retrieve and reason over graph-structured evidence, enabling more accurate and context-aware decision-making by efficiently navigating complex information networks. However, outcome-only reinforcement learning suffers from \\textit{\\textbf{…",
       "url": "http://arxiv.org/abs/2606.16409v1",
-      "category": "rl-llm",
+      "category": "reasoning-rl",
       "tags": [
         "live",
-        "rl-llm",
+        "reasoning-rl",
         "auto"
       ]
     },
@@ -412,19 +451,6 @@
       "year": "2026-06-15",
       "summary": "Retrieving external knowledge is essential for solving real-world tasks, yet it remains challenging when the relationship between a query and its relevant knowledge involves implicit and complex reasoning beyond surface-level semantic or lexical matching (e.g., mathematical problems relying on the s…",
       "url": "http://arxiv.org/abs/2606.16316v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "How Post-Training Shapes Biological Reasoning Models",
-      "org": "Lukas Fesser +7",
-      "year": "2026-06-15",
-      "summary": "Scientific reasoning models for biology combine language models with foundation models trained on multimodal biological data, including DNA, RNA, and proteins. These models are built through post-training, yet how each stage shapes reasoning and generalization remains poorly understood. We study whe…",
-      "url": "http://arxiv.org/abs/2606.16517v1",
       "category": "reasoning-rl",
       "tags": [
         "live",
@@ -446,41 +472,15 @@
       ]
     },
     {
-      "title": "A Gradient Perspective on RLVR Stability and Winner Advantage Policy Optimization",
-      "org": "Prasanth YSS +8",
+      "title": "KVEraser: Learning to Steer KV Cache for Efficient Localized Context Erasing",
+      "org": "Mufei Li +7",
       "year": "2026-06-15",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) improves language-model reasoning, but GRPO-style optimization remains prone to collapse. We analyse this instability through token-level gradient dynamics, deriving a taxonomy that predicts how updates affect next-token probabilities and entropy…",
-      "url": "http://arxiv.org/abs/2606.16154v1",
-      "category": "reasoning-rl",
+      "summary": "Post-hoc context erasing over the KV cache is challenging because a local edit has a global consequence: once a span has been processed, its influence propagates into the cached states of all subsequent tokens. This issue arises naturally in long-context LLM applications, where stale retrieved facts…",
+      "url": "http://arxiv.org/abs/2606.17034v1",
+      "category": "efficient-llm",
       "tags": [
         "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "GRACE: Step-Level Benchmark for Faithful Reasoning over Context",
-      "org": "Hoang Pham +2",
-      "year": "2026-06-15",
-      "summary": "Many reasoning tasks require models to reason over input context, from document-grounded question answering to rule-based deduction. Chain-of-Thought (CoT) prompting produces traces that appear transparent, yet individual steps can silently deviate from the source evidence, even when the final answe…",
-      "url": "http://arxiv.org/abs/2606.16151v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "VibeThinker-3B: Exploring the Frontier of Verifiable Reasoning in Small Language Models",
-      "org": "Sen Xu +8",
-      "year": "2026-06-15",
-      "summary": "This technical report introduces VibeThinker-3B, a compact dense model with 3B parameters developed to investigate how far verifiable reasoning can be pushed within a strictly small-model regime. Building upon the Spectrum-to-Signal post-training paradigm, we systematically enhance the model through…",
-      "url": "http://arxiv.org/abs/2606.16140v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
+        "efficient-llm",
         "auto"
       ]
     },
@@ -594,19 +594,6 @@
       "year": "2026-06-15",
       "summary": "Post-traumatic epilepsy (PTE) is a severe complication of traumatic brain injury (TBI), yet early identification remains challenging due to the complex structural and functional alterations it induces in the brain. To address this, we propose a dynamic multimodal Mixture-of-Experts (MoE) framework t…",
       "url": "http://arxiv.org/abs/2606.16203v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Long-Context Modeling via GSS-Transformer Hybrid Architecture with Learnable Mixing",
-      "org": "Kuzey Torlak +4",
-      "year": "2026-06-15",
-      "summary": "Modeling long-range dependencies remains a central challenge in natural language processing. Transformer architectures achieve strong performance via self-attention but scale quadratically ($O(N^2)$) with sequence length, while State Space Models (SSMs) scale linearly ($O(N)$) but suffer from a sele…",
-      "url": "http://arxiv.org/abs/2606.16093v1",
       "category": "efficient-llm",
       "tags": [
         "live",
