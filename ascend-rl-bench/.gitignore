@@ -1,0 +1,7 @@
+# scaffold outputs — not source
+captures/
+logs/*
+!logs/.gitkeep
+data/gsm8k/
+*.npz
+__pycache__/

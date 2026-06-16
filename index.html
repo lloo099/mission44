@@ -29,6 +29,7 @@
     <button class="tab" data-tab="ascend">Ascend / NPU</button>
     <button class="tab" data-tab="modeling">LLM Modeling</button>
     <button class="tab" data-tab="live">Live Papers</button>
+    <button class="tab" data-tab="training">Training Curves</button>
     <button class="tab" data-tab="ideas">Project Ideas</button>
   </nav>
 
@@ -111,6 +112,25 @@
         </div>
       </div>
       <div class="cards" data-cards="live"></div>
+    </section>
+
+    <!-- Training curves -->
+    <section class="panel" id="training">
+      <div class="panel-head">
+        <h2>Training Curves</h2>
+        <p class="panel-sub">
+          GRPO runs from <code>ascend-rl-bench</code>, plotted from <code>data/curves.json</code>.
+          Generate it with <code>tools/logs_to_dashboard.py</code> (parse a real <code>train.log</code>
+          or <code>--synthetic</code> for a demo). GPU vs NPU show on the same axes.
+        </p>
+        <div class="live-controls">
+          <label class="dim" for="curve-metric">Metric:</label>
+          <select id="curve-metric" class="ghost-btn"></select>
+          <span id="curve-status" class="dim"></span>
+        </div>
+      </div>
+      <div id="curve-chart" class="curve-chart"></div>
+      <div id="curve-legend" class="curve-legend"></div>
     </section>
 
     <!-- Ideas -->

@@ -39,6 +39,7 @@ async function init() {
   wireTabs();
   wireSearch();
   wireLive();
+  wireCurves();
   setLastUpdated();
 }
 
@@ -263,6 +264,91 @@ async function tryArxivLive() {
   }
 }
 const text = (el, sel) => { const n = el.querySelector(sel); return n ? n.textContent : ""; };
+
+/* ---------- training curves (SVG, no deps) ---------- */
+let curvesData = null;
+const METRIC_LABELS = {
+  reward_mean: "Reward (mean)", kl: "KL", entropy: "Entropy",
+  response_length: "Response length",
+};
+const DEVICE_COLORS = { gpu: "#5ad1a0", npu: "#f0a85a" };
+const FALLBACK_COLORS = ["#6aa6ff", "#c98bff", "#ff8a8a", "#e2c84b"];
+const metricLabel = (m) => METRIC_LABELS[m] || m;
+const curveColor = (device, i) => DEVICE_COLORS[device] || FALLBACK_COLORS[i % FALLBACK_COLORS.length];
+
+async function wireCurves() {
+  const status = document.getElementById("curve-status");
+  const sel = document.getElementById("curve-metric");
+  if (!sel) return;
+  const payload = await loadJSON("data/curves.json");
+  if (!payload || !payload.experiments || !payload.experiments.length) {
+    if (status) status.textContent = "No data/curves.json yet — run tools/logs_to_dashboard.py --synthetic.";
+    return;
+  }
+  curvesData = payload;
+  const metrics = [];
+  payload.experiments.forEach((e) =>
+    Object.keys(e.metrics || {}).forEach((m) => { if (!metrics.includes(m)) metrics.push(m); }));
+  sel.innerHTML = metrics.map((m) => `<option value="${escapeAttr(m)}">${escapeHtml(metricLabel(m))}</option>`).join("");
+  sel.addEventListener("change", () => renderCurve(sel.value));
+  if (status) {
+    const upd = payload.updated ? ` · updated ${String(payload.updated).slice(0, 10)}` : "";
+    status.textContent = `${payload.experiments.length} run(s)${upd}`;
+  }
+  if (metrics.length) renderCurve(metrics[0]);
+}
+
+function renderCurve(metric) {
+  const chart = document.getElementById("curve-chart");
+  const legend = document.getElementById("curve-legend");
+  if (!chart || !curvesData) return;
+  const series = [];
+  curvesData.experiments.forEach((e, i) => {
+    const pts = (e.metrics || {})[metric];
+    if (pts && pts.length) series.push({ label: `${e.name} · ${e.device}`, color: curveColor(e.device, i), points: pts });
+  });
+  if (!series.length) {
+    chart.innerHTML = `<div class="empty">No data for ${escapeHtml(metric)}.</div>`;
+    legend.innerHTML = "";
+    return;
+  }
+  chart.innerHTML = svgLineChart(series, metricLabel(metric));
+  legend.innerHTML = series.map((s) =>
+    `<span class="lg"><span class="sw" style="background:${s.color}"></span>${escapeHtml(s.label)}</span>`).join("");
+}
+
+function svgLineChart(series, title) {
+  const W = 860, H = 340, padL = 52, padR = 16, padT = 18, padB = 36;
+  const xs = [], ys = [];
+  series.forEach((s) => s.points.forEach((p) => { xs.push(p[0]); ys.push(p[1]); }));
+  let xmin = Math.min(...xs), xmax = Math.max(...xs);
+  let ymin = Math.min(...ys), ymax = Math.max(...ys);
+  if (xmin === xmax) xmax = xmin + 1;
+  if (ymin === ymax) { ymin -= 1; ymax += 1; }
+  const pad = (ymax - ymin) * 0.08; ymin -= pad; ymax += pad;
+  const X = (x) => padL + ((x - xmin) / (xmax - xmin)) * (W - padL - padR);
+  const Y = (y) => H - padB - ((y - ymin) / (ymax - ymin)) * (H - padT - padB);
+  const fmt = (v) => (Math.abs(v) >= 1000 || (v !== 0 && Math.abs(v) < 0.01)) ? v.toPrecision(3) : (Math.round(v * 1000) / 1000);
+
+  let g = "";
+  for (let i = 0; i <= 4; i++) {
+    const yv = ymin + (i / 4) * (ymax - ymin), y = Y(yv);
+    g += `<line class="grid" x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}"/>`;
+    g += `<text class="tick" x="${padL - 6}" y="${y + 3}" text-anchor="end">${fmt(yv)}</text>`;
+  }
+  [xmin, (xmin + xmax) / 2, xmax].forEach((xv) => {
+    g += `<text class="tick" x="${X(xv)}" y="${H - padB + 16}" text-anchor="middle">${Math.round(xv)}</text>`;
+  });
+  const axes = `<line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H - padB}"/>` +
+    `<line class="axis" x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}"/>`;
+  const lines = series.map((s) => {
+    const d = s.points.map((p) => `${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(" ");
+    return `<polyline class="ser" points="${d}" stroke="${s.color}"/>`;
+  }).join("");
+  const labels = `<text class="tick" x="${padL}" y="${padT - 4}">${escapeHtml(title)}</text>` +
+    `<text class="tick" x="${W - padR}" y="${H - 4}" text-anchor="end">step →</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${escapeAttr(title)} curve">${g}${axes}${lines}${labels}</svg>`;
+}
 
 /* ---------- utils ---------- */
 function setLastUpdated() {

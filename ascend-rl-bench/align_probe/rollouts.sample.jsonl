@@ -1,0 +1,8 @@
+{"group_id": 0, "prompt": "What is 17 + 26?", "response": "17 + 26 = 43.\n#### 43", "reward": 1.0}
+{"group_id": 0, "prompt": "What is 17 + 26?", "response": "It is about forty.\n#### 40", "reward": 0.0}
+{"group_id": 0, "prompt": "What is 17 + 26?", "response": "Adding gives 43.\n#### 43", "reward": 1.0}
+{"group_id": 0, "prompt": "What is 17 + 26?", "response": "I think 44.\n#### 44", "reward": 0.0}
+{"group_id": 1, "prompt": "A pen costs 3 dollars, a notebook 5. Total for 2 pens and 1 notebook?", "response": "2*3 + 5 = 11.\n#### 11", "reward": 1.0}
+{"group_id": 1, "prompt": "A pen costs 3 dollars, a notebook 5. Total for 2 pens and 1 notebook?", "response": "6 + 5 = 11.\n#### 11", "reward": 1.0}
+{"group_id": 1, "prompt": "A pen costs 3 dollars, a notebook 5. Total for 2 pens and 1 notebook?", "response": "Maybe 13.\n#### 13", "reward": 0.0}
+{"group_id": 1, "prompt": "A pen costs 3 dollars, a notebook 5. Total for 2 pens and 1 notebook?", "response": "2 pens = 6, plus 5 is 11.\n#### 11", "reward": 1.0}

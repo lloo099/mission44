@@ -129,6 +129,18 @@ main { padding: 28px; max-width: 1280px; margin: 0 auto; }
 .card .t { font-size: 10.5px; color: var(--dim); background: var(--bg-3); border-radius: 6px; padding: 2px 7px; }
 .card .link { font-size: 12.5px; margin-top: 2px; }
 
+/* Training curves */
+.curve-chart { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; overflow-x: auto; }
+.curve-chart svg { display: block; width: 100%; height: auto; }
+.curve-chart .axis { stroke: var(--line); stroke-width: 1; }
+.curve-chart .grid { stroke: var(--line); stroke-width: 1; opacity: .35; }
+.curve-chart .tick { fill: var(--dim); font-size: 10px; }
+.curve-chart .ser { fill: none; stroke-width: 2; }
+.curve-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
+.curve-legend .lg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--dim); }
+.curve-legend .sw { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+#curve-metric { padding: 4px 8px; }
+
 /* Ideas */
 .ideas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
 .idea {
