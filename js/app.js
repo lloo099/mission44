@@ -40,6 +40,7 @@ async function init() {
   wireSearch();
   wireLive();
   wireCurves();
+  wireCompare();
   setLastUpdated();
 }
 
@@ -293,6 +294,38 @@ async function tryArxivLive() {
   }
 }
 const text = (el, sel) => { const n = el.querySelector(sel); return n ? n.textContent : ""; };
+
+/* ---------- 2026 model comparison (Overview) ---------- */
+async function wireCompare() {
+  const wrap = document.getElementById("compare-wrap");
+  if (!wrap) return;
+  const d = await loadJSON("data/compare.json");
+  if (!d) return;
+
+  const table = (t, opts = {}) => {
+    const head = `<tr>${t.columns.map((c, i) => `<th${i === 0 && opts.firstCol ? ' class="rowhead"' : ""}>${escapeHtml(c)}</th>`).join("")}</tr>`;
+    const body = t.rows.map((r) => `<tr>${r.map((cell, i) => {
+      const tag = i === 0 ? "th" : "td";
+      const cls = i === 0 ? ' class="rowhead"' : (opts.badge && i > 0 && /^(ready|partial|none)$/.test(cell) ? ` class="cmp-${cell}"` : "");
+      const txt = (opts.badge && /^(ready|partial|none)$/.test(cell))
+        ? ({ ready: "✅ ready", partial: "⚠️ partial", none: "❌ none" }[cell]) : cell;
+      return `<${tag}${cls}>${escapeHtml(txt)}</${tag}>`;
+    }).join("")}</tr>`).join("");
+    return `<div class="cmp-scroll"><table class="cmp">${head}${body}</table></div>`;
+  };
+
+  const takeaways = (d.takeaways || []).map((t) => `<li>${escapeHtml(t)}</li>`).join("");
+  wrap.innerHTML = `
+    <div class="cmp-head">
+      <h3>2026 frontier models · quick compare</h3>
+      <a class="link" href="${escapeAttr(d.doc || "#")}" target="_blank" rel="noopener">Full deep-dive ↗</a>
+    </div>
+    ${table(d.models, { badge: true })}
+    <h4 class="cmp-sub">Sparse-attention designs (the 2026 dividing line)</h4>
+    ${table(d.attention)}
+    ${takeaways ? `<div class="cmp-take"><strong>For RL-on-NPU:</strong><ul>${takeaways}</ul></div>` : ""}
+    <div class="cmp-note">${escapeHtml(d.note || "")} <span class="dim">* provisional</span></div>`;
+}
 
 /* ---------- training curves (SVG, no deps) ---------- */
 let curvesData = null;

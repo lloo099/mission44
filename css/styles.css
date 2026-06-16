@@ -167,6 +167,26 @@ mark { background: rgba(245,196,81,.32); color: inherit; border-radius: 2px; pad
 .analyst-input textarea { flex: 1; resize: none; background: var(--bg-3); color: var(--fg, #e6e9f0); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; max-height: 120px; }
 .analyst-note { font-size: 10.5px; color: var(--dim); padding: 0 18px 12px; }
 
+/* 2026 model comparison */
+.compare-wrap { margin-top: 22px; }
+.cmp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.cmp-head h3 { margin: 0; font-size: 15px; }
+.cmp-sub { font-size: 13px; color: var(--accent); margin: 18px 0 8px; }
+.cmp-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+table.cmp { border-collapse: collapse; width: 100%; font-size: 12.5px; min-width: 560px; }
+table.cmp th, table.cmp td { text-align: left; padding: 8px 11px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.cmp tr:last-child th, table.cmp tr:last-child td { border-bottom: none; }
+table.cmp tr:first-child th { background: var(--bg-3); color: var(--dim); font-weight: 600; position: sticky; top: 0; }
+table.cmp .rowhead { color: #c2c9d8; font-weight: 600; background: var(--bg-2); }
+table.cmp td { color: #aeb6c8; }
+table.cmp td.cmp-ready { color: #6ee7a8; }
+table.cmp td.cmp-partial { color: #f5c451; }
+table.cmp td.cmp-none { color: #f08a8a; }
+.cmp-take { margin-top: 14px; font-size: 12.5px; color: #c2c9d8; background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.cmp-take ul { margin: 6px 0 0; padding-left: 18px; }
+.cmp-take li { margin: 4px 0; }
+.cmp-note { font-size: 11px; color: var(--dim); margin-top: 10px; }
+
 /* Training curves */
 .curve-chart { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; overflow-x: auto; }
 .curve-chart svg { display: block; width: 100%; height: auto; }

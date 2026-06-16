@@ -1,0 +1,34 @@
+{
+  "updated": "2026-06-16",
+  "doc": "docs/2026-frontier-models.md",
+  "note": "Benchmark numbers are vendor/media/third-party and provisional — verify against official reports.",
+  "models": {
+    "columns": ["", "DeepSeek-V4", "MiniMax-M3", "GLM-5.2", "DeepSeek-V3.2 (ref)"],
+    "rows": [
+      ["Released", "2026-04", "2026-06", "2026-06", "2025-12"],
+      ["Scale", "V4-Pro ~1.6T / 49B act", "109B (multimodal)", "open weights", "671B MoE"],
+      ["Context", "1M", "1M", "1M*", "long"],
+      ["Attention", "CSA + HCA (hybrid)", "MSA (block-sparse on GQA)", "GLM-5 lineage", "DSA (token top-k on MLA)"],
+      ["License", "open weights", "open weights", "MIT", "open weights"],
+      ["~Output $/1M", "~$3.48 (Pro)", "~$1.20 (promo)", "—", "—"],
+      ["SWE-bench Verified*", "~80.6% (Pro-Max)", "~80.5%", "n/a in tables", "—"],
+      ["Agentic (agg.)*", "~59", "~71.9", "—", "—"],
+      ["Ascend", "ready", "partial", "partial", "ready"]
+    ]
+  },
+  "attention": {
+    "columns": ["Scheme", "Base", "Mechanism", "Trade-off"],
+    "rows": [
+      ["DSA (V3.2)", "MLA", "lightning indexer → token-level top-k", "stable quality; heavy kernels"],
+      ["NSA (early)", "GQA", "3 branches (compress/select/slide) + gating", "highest ceiling; most complex"],
+      ["CSA + HCA (V4)", "—", "compress every m tokens' KV → top-k; layers alternate", "best long-ctx memory; costly port"],
+      ["MSA (M3)", "GQA", "block selection but attention on REAL KV", "pragmatic — reuses existing kernels, fast"]
+    ]
+  },
+  "takeaways": [
+    "Best Ascend port targets: MiniMax-M3 (plain GQA → easiest on NPU, fast decode) + GLM-5.2 (MIT base for RL post-training); DeepSeek-V4 as the already-supported large rollout/eval baseline.",
+    "Decode-side sparse attention directly eases Ascend's no-sleep-mode rollout/train memory contention — quantify it in the benchmark.",
+    "Custom attention (CSA/HCA/DSA/MSA) re-implemented on NPU raises numeric-drift risk — exactly what align-probe should diagnose.",
+    "V4's validated FP8 training + Ascend 950 native FP8 make FP8 RL on Ascend a viable, high-novelty topic."
+  ]
+}
