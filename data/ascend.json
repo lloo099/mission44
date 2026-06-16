@@ -10,7 +10,12 @@
       "analysis": "Innovation: first Ascend generation with Huawei's own HBM and native low-precision formats (FP8/MXFP8/HiF8/MXFP4) — 950PR (inference, ~Q1 2026) and 950DT (training/decode, ~Q4 2026; 144GB HBM @ ~4TB/s). Performance: ~1 PFLOPS FP8 / ~2 PFLOPS MXFP4 per analyst/vendor reporting — treat as approximate until silicon ships. Fit for RL-on-NPU: native FP8 directly unlocks FP8 RL training on Ascend (a near-empty research area), and the self-built HBM eases the memory bottleneck that currently forces rollout/train time-slicing on 910B.",
       "summary": "Announced at Huawei Connect 2025. 950PR (inference, ~Q1 2026) pairs HiBL 1.0 HBM (128 GB, ~1.6 TB/s); 950DT (training/decode, ~Q4 2026) uses HiZQ 2.0 (144 GB, ~4 TB/s, 2 TB/s interconnect). Adds FP8/MXFP8/HiF8/MXFP4 — ~1 PFLOPS FP8, ~2 PFLOPS MXFP4. Directly enables FP8 RL on Ascend. Specs from vendor/analyst reporting — treat as approximate.",
       "url": "https://www.techpowerup.com/341123/huawei-unveils-homegrown-hbm-and-ascend-950-bets-on-massive-superclusters",
-      "tags": ["950", "FP8", "2026", "roadmap"]
+      "tags": [
+        "950",
+        "FP8",
+        "2026",
+        "roadmap"
+      ]
     },
     {
       "title": "vLLM-Ascend v0.13.0",
@@ -20,7 +25,11 @@
       "innovation": "Latest Ascend rollout backend — broader model coverage + perf",
       "summary": "The vLLM Ascend plugin reached v0.13.0 in Feb 2026, extending model coverage and performance after large-scale Expert Parallelism (EP) landed in v0.9.1 (Sep 2025). It is the rollout engine RL stacks (verl / MindSpeed-RL) target on NPU; the sleep/offload gap vs CUDA vLLM remains the key constraint.",
       "url": "https://github.com/vllm-project/vllm-ascend",
-      "tags": ["vllm-ascend", "rollout", "2026"]
+      "tags": [
+        "vllm-ascend",
+        "rollout",
+        "2026"
+      ]
     },
     {
       "title": "vLLM-Ascend model support: V4 / GLM-5 / Qwen3.5 / MiniMax (2026)",
@@ -30,7 +39,12 @@
       "innovation": "Latest frontier models running on 910B via vLLM-Ascend",
       "summary": "Per the 2026 support matrix: DeepSeek-V4 is supported on 910B with custom operators, KV-pool adaptation, and separated MTP-layer KV-cache sharding for speculative decoding; GLM-5 has perf optimizations + W8A8C8 quant + optimized KV cache; Qwen3.5 is supported (incl. LoRA on dense models); W8A8 quant spans the Qwen3 / DeepSeek / MiniMax families (MiniMax-M2.x via W8A8/QuaRot). MiniMax-M3 is not yet listed by name. Inference support generally lands first; training-side (verl / MindSpeed-RL) trails.",
       "url": "https://docs.vllm.ai/projects/ascend/en/main/user_guide/support_matrix/supported_models.html",
-      "tags": ["vllm-ascend", "model-support", "910B", "2026"]
+      "tags": [
+        "vllm-ascend",
+        "model-support",
+        "910B",
+        "2026"
+      ]
     },
     {
       "title": "Ascend 910B",
@@ -40,7 +54,12 @@
       "innovation": "Mainstream domestic training NPU; ~A100-class in practice",
       "summary": "~256–280 TFLOPS BF16, 64 GB HBM2e at ~1.2 TB/s, SMIC 7nm; ships in Atlas 800T A2 servers (8 NPUs/node). The most widely-available Ascend part for training through 2024–2025.",
       "url": "https://www.hiascend.com/en/hardware/product",
-      "tags": ["910B", "Atlas A2", "specs"]
+      "tags": [
+        "910B",
+        "Atlas A2",
+        "specs"
+      ],
+      "analysis": "What it is: the mainstream domestic training NPU (~256–280 TFLOPS BF16, 64GB HBM2e, 8/node in Atlas 800T A2), roughly A100-class in practice. Why it matters: it's the most available Ascend part and the hardware nearly all current RL-on-Ascend stacks (verl, MindSpeed-RL, vLLM-Ascend) validate against. Fit for RL-on-NPU: 64GB/NPU plus the missing sleep-mode make memory the binding constraint for GRPO — start with 0.5B–7B models and budget rollout/train memory carefully."
     },
     {
       "title": "Ascend 910C",
@@ -50,7 +69,11 @@
       "innovation": "Dual-die flagship positioned against the H100",
       "summary": "~780–800 TFLOPS FP16, 128 GB HBM (~3.2 TB/s aggregate), reaching ~80% of H100 dense FP16 throughput but trailing on efficiency (older 7nm, slower memory). The basis of CloudMatrix 384. Specs are from analyst reporting — treat as approximate.",
       "url": "https://www.trendforce.com/news/2025/03/13/news-huaweis-ascend-910c-takes-on-nvidia-as-chinas-ai-race-heats-up-more-alleged-details/",
-      "tags": ["910C", "flagship", "specs"]
+      "tags": [
+        "910C",
+        "flagship",
+        "specs"
+      ]
     },
     {
       "title": "CloudMatrix 384 (CM384)",
@@ -60,7 +83,11 @@
       "innovation": "384× 910C supernode — answer to NVIDIA GB200 NVL72",
       "summary": "384 910C NPUs across 16 racks deliver ~300 PFLOPS BF16 and ~49 TB HBM (≈2x compute, ~3.5x HBM of NVL72), fully meshed via 6,912 400G optical links — but at ~559 kW and ~2.3x power-per-FLOP. Brute-force scale compensating for weaker per-chip efficiency.",
       "url": "https://newsletter.semianalysis.com/p/huawei-ai-cloudmatrix-384-chinas-answer-to-nvidia-gb200-nvl72",
-      "tags": ["supernode", "scale-up", "CM384"]
+      "tags": [
+        "supernode",
+        "scale-up",
+        "CM384"
+      ]
     },
     {
       "title": "Atlas 800T A2 / A3 servers",
@@ -70,7 +97,11 @@
       "innovation": "The 8-NPU training server SKU frameworks target",
       "summary": "'Atlas A2 Training series' (910B) is the baseline hardware string throughout vllm-ascend, verl, and MindSpeed docs; the newer Atlas A3 (910C) is the latest training/inference tier. This is the box most RL/training stacks validate against.",
       "url": "https://www.hiascend.com/en/hardware/product",
-      "tags": ["Atlas", "server", "platform"]
+      "tags": [
+        "Atlas",
+        "server",
+        "platform"
+      ]
     },
     {
       "title": "Huawei vs NVIDIA: scale vs efficiency",
@@ -80,9 +111,12 @@
       "innovation": "Wins on aggregate scale; trails on efficiency & ecosystem",
       "summary": "Per-chip the 910C ≈ 80% of an H100 on FP16; at rack scale CM384 can exceed NVL72 on raw compute/memory. Huawei closes the silicon gap via supernode aggregation while still trailing on process node, HBM generation, power, and especially software maturity.",
       "url": "https://newsletter.semianalysis.com/p/huawei-ai-cloudmatrix-384-chinas-answer-to-nvidia-gb200-nvl72",
-      "tags": ["comparison", "H100", "strategy"]
+      "tags": [
+        "comparison",
+        "H100",
+        "strategy"
+      ]
     },
-
     {
       "title": "CANN (Compute Architecture for Neural Networks)",
       "org": "Huawei",
@@ -91,7 +125,11 @@
       "innovation": "Ascend's full compute SDK — analogue of CUDA+cuDNN+NCCL",
       "summary": "Layered driver/runtime/libraries including AOL acceleration libs, the HCCL collective-comms library (≈NCCL), the OPP operator package, and graph/offline engines. Huawei announced a full open-source release of the Ascend software stack in August 2025.",
       "url": "https://www.hiascend.com/en/software/cann",
-      "tags": ["CANN", "sdk", "HCCL"]
+      "tags": [
+        "CANN",
+        "sdk",
+        "HCCL"
+      ]
     },
     {
       "title": "AscendCL (ACL) / pyACL",
@@ -101,7 +139,11 @@
       "innovation": "User-facing runtime API (≈ CUDA Runtime/Driver API)",
       "summary": "The C/C++ (and Python via pyACL) application layer of CANN handling device/context/stream/memory plus model & operator execution. Apps load and run models or single operators through it.",
       "url": "https://www.hiascend.com/document/detail/en/canncommercial/800/apiref/",
-      "tags": ["AscendCL", "runtime", "api"]
+      "tags": [
+        "AscendCL",
+        "runtime",
+        "api"
+      ]
     },
     {
       "title": "Ascend C (kernel language)",
@@ -111,7 +153,11 @@
       "innovation": "C++ kernel/custom-operator language (≈ writing CUDA kernels)",
       "summary": "A two-tier API over the AI Core's cube (matrix) and vector units, used to author fused/custom operators absent from the prebuilt OPP. Operator authoring here is where most CUDA→Ascend porting effort concentrates.",
       "url": "https://www.mindspore.cn/tutorials/experts/en/r2.3.1/operation/op_custom_ascendc.html",
-      "tags": ["Ascend C", "kernels", "operators"]
+      "tags": [
+        "Ascend C",
+        "kernels",
+        "operators"
+      ]
     },
     {
       "title": "Relationship to CUDA",
@@ -121,9 +167,12 @@
       "innovation": "Parallel, non-CUDA-compatible stack — port, don't recompile",
       "summary": "There is no CUDA source/binary compatibility: HCCL substitutes for NCCL, Ascend C for CUDA kernels, AscendCL for the CUDA runtime. The lack of a CUDA shim is the single biggest source of porting friction.",
       "url": "https://en.people.cn/n3/2025/0807/c90000-20350226.html",
-      "tags": ["porting", "cuda", "compatibility"]
+      "tags": [
+        "porting",
+        "cuda",
+        "compatibility"
+      ]
     },
-
     {
       "title": "MindSpore",
       "org": "Huawei",
@@ -132,7 +181,11 @@
       "innovation": "In-house DL framework with first-class Ascend integration",
       "summary": "Offers the deepest Ascend optimization and hybrid-parallel support, but a smaller ecosystem than PyTorch. Underpins the MindSpore-Lab model suites (MindFormers, MindNLP).",
       "url": "https://www.mindspore.cn/en",
-      "tags": ["MindSpore", "native", "framework"]
+      "tags": [
+        "MindSpore",
+        "native",
+        "framework"
+      ]
     },
     {
       "title": "torch_npu (PyTorch on Ascend)",
@@ -142,7 +195,11 @@
       "innovation": "Official out-of-tree PyTorch backend exposing NPUs as a device",
       "summary": "Lets existing PyTorch code run on Ascend via the 'npu' device and ops like torch_npu.npu_fusion_attention (the FlashAttention substitute). The foundation nearly all third-party LLM/RL frameworks (verl, MindSpeed, torchtune, LLaMA-Factory) build on.",
       "url": "https://github.com/Ascend/pytorch",
-      "tags": ["torch_npu", "pytorch", "foundation"]
+      "tags": [
+        "torch_npu",
+        "pytorch",
+        "foundation"
+      ]
     },
     {
       "title": "MindSpeed-LLM (formerly ModelLink)",
@@ -152,7 +209,11 @@
       "innovation": "Megatron-style end-to-end LLM pretrain/finetune on Ascend",
       "summary": "Supports dataset prep, full-parameter and LoRA finetuning, and fused operators (attn, rmsnorm, swiglu, RoPE), with recent Qwen3-Next + Triton fusion adds. Megatron-LM ported via patches onto torch_npu.",
       "url": "https://gitee.com/ascend/MindSpeed-LLM",
-      "tags": ["MindSpeed", "megatron", "pretraining"]
+      "tags": [
+        "MindSpeed",
+        "megatron",
+        "pretraining"
+      ]
     },
     {
       "title": "MindSpeed (acceleration library)",
@@ -162,7 +223,11 @@
       "innovation": "Ascend-native fused kernels + parallelism (≈ Megatron-Core + apex)",
       "summary": "Provides Megatron-compatible distributed primitives (TP/PP/DP/EP, sequence parallel) optimized for Ascend, which MindSpeed-LLM and MindSpeed-RL sit on top of.",
       "url": "https://gitee.com/ascend/MindSpeed",
-      "tags": ["MindSpeed", "parallelism", "kernels"]
+      "tags": [
+        "MindSpeed",
+        "parallelism",
+        "kernels"
+      ]
     },
     {
       "title": "MindFormers (MindSpore Transformers)",
@@ -172,7 +237,11 @@
       "innovation": "Full-lifecycle transformer suite on MindSpore",
       "summary": "Ships ready configs for Llama2/Llama3-70B and DeepSeek-V3-671B with rich hybrid parallelism and one-click multi-node launch. The native-MindSpore alternative to the PyTorch/MindSpeed-LLM path.",
       "url": "https://github.com/mindspore-lab/mindformers",
-      "tags": ["MindFormers", "mindspore", "suite"]
+      "tags": [
+        "MindFormers",
+        "mindspore",
+        "suite"
+      ]
     },
     {
       "title": "Torchtune on Ascend",
@@ -182,7 +251,11 @@
       "innovation": "PyTorch-native finetuning with upstreamed Ascend backend",
       "summary": "Demonstrates LoRA/full finetuning on Ascend via torch_npu, validated in an official PyTorch blog post. Signals growing upstream (non-Huawei-repo) recognition of Ascend.",
       "url": "https://pytorch.org/blog/ascend-backend-w-torchtune/",
-      "tags": ["torchtune", "finetuning", "upstream"]
+      "tags": [
+        "torchtune",
+        "finetuning",
+        "upstream"
+      ]
     },
     {
       "title": "LLaMA-Factory on Ascend",
@@ -192,9 +265,12 @@
       "innovation": "Popular finetuning UI/CLI with Ascend NPU support via torch_npu",
       "summary": "Widely-used SFT/LoRA/DPO finetuning toolkit that gained Ascend NPU support, lowering the barrier to fine-tuning open models on 910B. A common on-ramp before moving to dedicated RL stacks.",
       "url": "https://github.com/hiyouga/LLaMA-Factory",
-      "tags": ["finetuning", "accessible", "torch_npu"]
+      "tags": [
+        "finetuning",
+        "accessible",
+        "torch_npu"
+      ]
     },
-
     {
       "title": "vLLM-Ascend",
       "org": "vLLM project (Huawei-backed)",
@@ -203,7 +279,11 @@
       "innovation": "Official community plugin — de-facto open inference path",
       "summary": "Supports dense, MoE, embedding, and multimodal LLMs with large-scale Expert Parallelism on Atlas A2/A3; requires CANN 9.x + torch-npu and tracks DeepSeek-V3/R1 closely. Also the rollout/generation engine most RL frameworks use on Ascend.",
       "url": "https://github.com/vllm-project/vllm-ascend",
-      "tags": ["vLLM", "inference", "rollout-engine"]
+      "tags": [
+        "vLLM",
+        "inference",
+        "rollout-engine"
+      ]
     },
     {
       "title": "MindIE",
@@ -213,7 +293,11 @@
       "innovation": "First-party high-performance inference engine",
       "summary": "Huawei's production inference engine for Ascend; its MindIE-Turbo kernels integrate into vLLM-Ascend (pip install vllm-ascend[mindie-turbo]) for extra speed. The path Huawei Cloud / ModelArts production deployments use.",
       "url": "https://www.hiascend.com/en/software/mindie",
-      "tags": ["MindIE", "inference", "production"]
+      "tags": [
+        "MindIE",
+        "inference",
+        "production"
+      ]
     },
     {
       "title": "SGLang on Ascend",
@@ -223,9 +307,12 @@
       "innovation": "RadixAttention-style serving with emerging Ascend support",
       "summary": "Adds structured-output/RadixAttention serving on Ascend; less mature than vLLM-Ascend but used as the rollout engine for some RL stacks (e.g., slime, AReaL). GLM-5 was demonstrated on Ascend via SGLang.",
       "url": "https://docs.sglang.ai/",
-      "tags": ["SGLang", "inference", "rollout-engine"]
+      "tags": [
+        "SGLang",
+        "inference",
+        "rollout-engine"
+      ]
     },
-
     {
       "title": "MindSpeed-RL",
       "org": "Huawei (Ascend)",
@@ -234,7 +321,13 @@
       "innovation": "Native distributed RL post-training for Ascend clusters",
       "summary": "Does GRPO-family RL on Qwen2.5-Dense-7B/32B, Qwen3-MoE-30B, and DeepSeek-R1-MoE-671B, with experiments on a 384-NPU superpod. The strongest evidence that large-scale R1-style RL is reproducible on Ascend, and the lowest-risk native path.",
       "url": "https://arxiv.org/abs/2507.19017",
-      "tags": ["MindSpeed-RL", "GRPO", "native", "large-scale"]
+      "tags": [
+        "MindSpeed-RL",
+        "GRPO",
+        "native",
+        "large-scale"
+      ],
+      "analysis": "Innovation: Huawei's native distributed RL post-training stack for Ascend clusters, implementing GRPO-family algorithms with Ascend-native parallelism and kernels. Performance: demonstrated RL up to DeepSeek-R1-MoE-671B on a 384-NPU superpod — the strongest large-scale RL-on-Ascend evidence to date. Fit for RL-on-NPU: it's the first-party reference for what works at scale on Ascend; pair it with verl-on-Ascend as the two stacks any NPU RL benchmark should compare."
     },
     {
       "title": "verl on Ascend NPU",
@@ -244,7 +337,11 @@
       "innovation": "Upstream open RLHF on Ascend via FSDP + vLLM-Ascend",
       "summary": "Validated SFT (Qwen2.5-0.5B) and GRPO (Qwen2-7B, Qwen2.5-VL-3B) on 8/16-NPU configs with a published DeepSeek-R1-Zero recipe. Key constraints: no FlashAttention (uses npu_fusion_attention) and no vLLM sleep mode yet, blocking the colocated hybrid engine.",
       "url": "https://github.com/volcengine/verl/issues/842",
-      "tags": ["verl", "GRPO", "open-framework"]
+      "tags": [
+        "verl",
+        "GRPO",
+        "open-framework"
+      ]
     },
     {
       "title": "AReaL (ascend branch)",
@@ -254,7 +351,11 @@
       "innovation": "Fully-async RL with a dedicated Ascend branch (stable ~Jan 2026)",
       "summary": "Decouples rollout from training (~2.77x speedup) and ships an 'ascend' branch marked stable. Async design is especially attractive on Ascend, where the missing sleep-mode/hybrid-engine limits colocated synchronous RL.",
       "url": "https://github.com/inclusionAI/AReaL",
-      "tags": ["AReaL", "async-rl", "open-framework"]
+      "tags": [
+        "AReaL",
+        "async-rl",
+        "open-framework"
+      ]
     },
     {
       "title": "ROLL on Ascend",
@@ -264,7 +365,11 @@
       "innovation": "Multi-role Ray RL with a dedicated Ascend usage guide",
       "summary": "Provides first-party Ascend NPU documentation (alongside NVIDIA and AMD), covering RLHF/RLVR and multi-turn agentic RL. One of the strongest open-framework Ascend stories next to verl.",
       "url": "https://github.com/alibaba/ROLL",
-      "tags": ["ROLL", "ray", "open-framework"]
+      "tags": [
+        "ROLL",
+        "ray",
+        "open-framework"
+      ]
     },
     {
       "title": "TRL on Ascend",
@@ -274,7 +379,11 @@
       "innovation": "HF GRPO/DPO trainers run on Ascend via torch_npu",
       "summary": "910B GRPO confirmed working via vLLM-Ascend; TRL inherits the Transformers/Accelerate device layer for NPU support. The easiest on-ramp for small-scale RL fine-tuning on Ascend.",
       "url": "https://github.com/huggingface/trl",
-      "tags": ["TRL", "GRPO", "accessible"]
+      "tags": [
+        "TRL",
+        "GRPO",
+        "accessible"
+      ]
     },
     {
       "title": "DeepSeek-R1-Zero reproduction on Ascend",
@@ -284,7 +393,11 @@
       "innovation": "GRPO R1-Zero recipes demonstrated at both small and large scale",
       "summary": "verl added a 'DeepSeek-R1-Zero on Ascend NPU' recipe (single/few nodes) and MindSpeed-RL reports RL of the full R1-MoE-671B on a 384-NPU superpod. Both small-scale and large-scale R1-style reproductions exist on Ascend.",
       "url": "https://github.com/volcengine/verl/discussions/900",
-      "tags": ["R1-Zero", "reproduction", "GRPO"]
+      "tags": [
+        "R1-Zero",
+        "reproduction",
+        "GRPO"
+      ]
     },
     {
       "title": "AsyncFlow",
@@ -294,9 +407,12 @@
       "innovation": "Asynchronous streaming RL post-training framework",
       "summary": "Addresses the throughput limits of synchronous/colocated RL — directly relevant given Ascend's missing sleep-mode/hybrid-engine. Represents the research frontier of making RL efficient under NPU constraints.",
       "url": "https://arxiv.org/abs/2507.01663",
-      "tags": ["async-rl", "research", "throughput"]
+      "tags": [
+        "async-rl",
+        "research",
+        "throughput"
+      ]
     },
-
     {
       "title": "Operator / kernel coverage gaps",
       "org": "—",
@@ -305,7 +421,11 @@
       "innovation": "Long-tail ops missing; manual Ascend C kernels required",
       "summary": "Auto-conversion covers only ~65% of PyTorch ops and the aclNN/Ascend C stack lacks long-tail operators, so porters hand-write kernels (host-side tiling + device kernel, no implicit caches). FlashAttention specifically must be replaced by npu_fusion_attention.",
       "url": "https://cs.nju.edu.cn/tianchen/lunwen/2025/asplos25-yuhang.pdf",
-      "tags": ["porting", "operators", "flash-attention"]
+      "tags": [
+        "porting",
+        "operators",
+        "flash-attention"
+      ]
     },
     {
       "title": "No upstream flash-attn / FA3 gated",
@@ -315,7 +435,11 @@
       "innovation": "Must swap in Huawei's npu_fusion_attention; FA3 not public",
       "summary": "The standard flash-attn package can't install on Ascend; community PRs wired npu_fusion_attention (FA2-equivalent) into Transformers, with recurring breakage. FlashAttention-3 for Ascend stayed gated as the required flash_attn_npu package wasn't publicly released.",
       "url": "https://docs.vllm.ai/projects/ascend/en/main/user_guide/feature_guide/flash_attention.html",
-      "tags": ["porting", "attention", "feature-gap"]
+      "tags": [
+        "porting",
+        "attention",
+        "feature-gap"
+      ]
     },
     {
       "title": "Performance / MFU shortfall",
@@ -325,7 +449,11 @@
       "innovation": "Achieved throughput trails GPU and nominal peak",
       "summary": "In verl RL workloads, Ascend-vs-GPU throughput was ~0.59 for Qwen2.5-7B and 0.38–0.47 for Qwen2.5-VL; whole 'all-in-one' boxes cited at ~60–70% of H100. The 910B has ~60% of H100 compute but only ~36% of its memory bandwidth, making it more compute-bound.",
       "url": "https://github.com/volcengine/verl/discussions/900",
-      "tags": ["performance", "MFU", "bandwidth"]
+      "tags": [
+        "performance",
+        "MFU",
+        "bandwidth"
+      ]
     },
     {
       "title": "Numerical precision / accuracy drift",
@@ -335,7 +463,12 @@
       "innovation": "Loss divergence from operator-semantic & accumulation differences",
       "summary": "Differences in op semantics, mixed-precision accumulation, optimizers, and RNG cause loss divergence and require manual precision alignment (CANN-specific loss scaling). verl's DAPO showed reward MAE ~3.7–4.3% on Ascend vs 0.3–3.3% for GRPO — algorithm-dependent drift.",
       "url": "https://github.com/volcengine/verl/discussions/900",
-      "tags": ["precision", "convergence", "alignment"]
+      "tags": [
+        "precision",
+        "convergence",
+        "alignment"
+      ],
+      "analysis": "What it is: loss/curve divergence on Ascend vs GPU from operator-semantic differences and mixed-precision accumulation order (fused attention, reductions, RNG). Why it matters: it can silently degrade RL convergence or final accuracy even when throughput looks fine — and it's hard to attribute. Implication: this is exactly what the align-probe tool targets — fix the rollout, compare training-forward logits/KL/advantages step-by-step, and attribute drift to a specific op; turning this into a reproducible diagnostic is a core contribution of the plan."
     },
     {
       "title": "Missing vLLM sleep mode / hybrid engine",
@@ -345,7 +478,12 @@
       "innovation": "The single biggest RL-specific blocker on Ascend",
       "summary": "Without vLLM sleep mode, you can't memory-efficiently colocate the actor and rollout engine on the same NPUs, capping per-node model size and forcing disaggregated or smaller-model setups. Fixing this (or maturing async frameworks) is the highest-leverage improvement.",
       "url": "https://github.com/volcengine/verl/issues/842",
-      "tags": ["rl-blocker", "memory", "hybrid-engine"]
+      "tags": [
+        "rl-blocker",
+        "memory",
+        "hybrid-engine"
+      ],
+      "analysis": "What it is: on CUDA vLLM, 'sleep mode' frees rollout-engine memory between phases so the trainer can reuse it (colocated hybrid engine); vLLM-Ascend lacks this. Why it matters: it's the single biggest RL-specific blocker on Ascend — without it you must offload or time-slice rollout vs train, costing throughput and memory headroom. Implication: it's why async/disaggregated RL (AReaL, AsyncFlow) and aggressive offloading are the pragmatic paths on 910B today; closing this gap is a concrete high-impact systems project."
     },
     {
       "title": "Ecosystem maturity & tooling",
@@ -355,7 +493,11 @@
       "innovation": "Chinese-first docs, smaller community, parallel toolchain",
       "summary": "Core docs/forums center on the Chinese-language Ascend Community; you learn a parallel toolset (msprof, msSanitizer, msDebug) instead of Nsight/cuda-gdb, and hit HCCL collective-comm errors less battle-tested than NCCL. DeepSeek reportedly could not complete a stable R2 Ascend training run, switching back to NVIDIA for training while keeping Ascend for inference.",
       "url": "https://www.theregister.com/2025/08/14/dodgy_huawei_deepseek/",
-      "tags": ["ecosystem", "tooling", "maturity"]
+      "tags": [
+        "ecosystem",
+        "tooling",
+        "maturity"
+      ]
     }
   ]
 }
