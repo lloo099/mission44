@@ -315,33 +315,55 @@ async function wireCompare() {
   };
 
   const takeaways = (d.takeaways || []).map((t) => `<li>${escapeHtml(t)}</li>`).join("");
+  const M = d.metrics;
+  const sel = M ? `<select id="cmp-metric" class="ghost-btn">${M.list.map((m) =>
+    `<option value="${escapeAttr(m.id)}"${m.id === M.default ? " selected" : ""}>${escapeHtml(m.label)}</option>`).join("")}</select>` : "";
   wrap.innerHTML = `
     <div class="cmp-head">
       <h3>2026 frontier models · quick compare</h3>
       <a class="link" href="${escapeAttr(d.doc || "#")}" target="_blank" rel="noopener">Full deep-dive ↗</a>
     </div>
     ${table(d.models, { badge: true })}
-    ${d.swebench ? sweBars(d.swebench) : ""}
+    ${M ? `<div class="cmp-metricbar"><h4 class="cmp-sub" style="margin:0">Benchmarks</h4>${sel}</div>
+    <div class="swe-legend"><span><i class="sw open"></i>open-weight</span><span><i class="sw closed"></i>closed (ref)</span></div>
+    <div id="metric-chart"></div>` : ""}
     <h4 class="cmp-sub">Sparse-attention designs (the 2026 dividing line)</h4>
     ${table(d.attention)}
     ${takeaways ? `<div class="cmp-take"><strong>For RL-on-NPU:</strong><ul>${takeaways}</ul></div>` : ""}
     <div class="cmp-note">${escapeHtml(d.note || "")} <span class="dim">* provisional</span></div>`;
+
+  if (M) {
+    const byId = Object.fromEntries(M.list.map((m) => [m.id, m]));
+    const draw = (id) => { document.getElementById("metric-chart").innerHTML = metricBars(byId[id]); };
+    document.getElementById("cmp-metric").addEventListener("change", (e) => draw(e.target.value));
+    draw(M.default);
+  }
 }
 
-function sweBars(s) {
-  const items = (s.items || []).slice().sort((a, b) => b.score - a.score);
-  const max = Math.max(100, ...items.map((i) => i.score));
+function fmtScore(m, v) {
+  if (m.unit === "tok") return v >= 1e6 ? (v / 1e6) + "M" : (v / 1e3) + "K";
+  if (m.unit === "$") return "$" + v;
+  if (m.unit === "%") return v + "%";
+  return "" + v;
+}
+
+function metricBars(m) {
+  if (!m) return "";
+  const items = m.items.slice().sort((a, b) => m.lowerBetter ? a.score - b.score : b.score - a.score);
+  const max = m.unit === "%" ? Math.max(100, ...items.map((i) => i.score)) : Math.max(...items.map((i) => i.score));
+  const fillClass = m.lowerBetter ? "price" : (m.neutral ? "neutral" : null);
   const rows = items.map((i) => {
-    const w = (i.score / max) * 100;
+    const w = max ? (i.score / max) * 100 : 0;
+    const cls = fillClass || (i.open ? "open" : "closed");
     return `<div class="bar-row">
-      <span class="bar-label" title="${escapeAttr(i.dev || "")}">${escapeHtml(i.model)}</span>
-      <span class="bar-track"><span class="bar-fill ${i.open ? "open" : "closed"}" style="width:${w.toFixed(1)}%"></span></span>
-      <span class="bar-val">${i.score}</span>
+      <span class="bar-label">${escapeHtml(i.model)}</span>
+      <span class="bar-track"><span class="bar-fill ${cls}" style="width:${w.toFixed(1)}%"></span></span>
+      <span class="bar-val">${escapeHtml(fmtScore(m, i.score))}</span>
     </div>`;
   }).join("");
-  return `<h4 class="cmp-sub">${escapeHtml(s.metric || "SWE-bench")}</h4>
-    <div class="swe-legend"><span><i class="sw open"></i>open-weight</span><span><i class="sw closed"></i>closed (ref)</span></div>
-    <div class="swe-bars">${rows}</div>`;
+  const tag = m.lowerBetter ? " · lower is better" : (m.neutral ? "" : " · higher is better");
+  return `<div class="swe-bars">${rows}</div>
+    <div class="cmp-note">${escapeHtml(m.label + " (" + m.unit + ")" + tag)} — ${escapeHtml(m.note || "")}</div>`;
 }
 
 /* ---------- training curves (SVG, no deps) ---------- */

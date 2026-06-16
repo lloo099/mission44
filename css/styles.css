@@ -197,6 +197,10 @@ table.cmp td.cmp-none { color: #f08a8a; }
 .bar-fill { display: block; height: 100%; border-radius: 6px; }
 .bar-fill.open { background: linear-gradient(90deg, #3a9e75, #5ad1a0); }
 .bar-fill.closed { background: linear-gradient(90deg, #4a5568, #6a7488); }
+.bar-fill.neutral { background: linear-gradient(90deg, #3f6fb0, #6aa6ff); }
+.bar-fill.price { background: linear-gradient(90deg, #b07f2e, #f5c451); }
+.cmp-metricbar { display: flex; align-items: center; gap: 12px; margin: 18px 0 8px; }
+.cmp-metricbar #cmp-metric { padding: 4px 8px; }
 .bar-val { color: var(--dim); text-align: right; font-variant-numeric: tabular-nums; }
 @media (max-width: 640px) { .bar-row { grid-template-columns: 110px 1fr 38px; } }
 

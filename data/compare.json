@@ -1,35 +1,91 @@
 {
   "updated": "2026-06-16",
   "doc": "docs/2026-frontier-models.md",
-  "note": "Benchmark numbers are vendor/media/third-party and provisional — verify against official reports.",
+  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports.",
   "models": {
     "columns": ["", "DeepSeek-V4", "MiniMax-M3", "GLM-5.2", "DeepSeek-V3.2 (ref)"],
     "rows": [
       ["Released", "2026-04", "2026-06", "2026-06", "2025-12"],
       ["Scale", "V4-Pro ~1.6T / 49B act", "109B (multimodal)", "open weights", "671B MoE"],
-      ["Context", "1M", "1M", "1M*", "long"],
+      ["Context", "1M", "1M", "1M*", "128K"],
       ["Attention", "CSA + HCA (hybrid)", "MSA (block-sparse on GQA)", "GLM-5 lineage", "DSA (token top-k on MLA)"],
       ["License", "open weights", "open weights", "MIT", "open weights"],
       ["~Output $/1M", "~$3.48 (Pro)", "~$1.20 (promo)", "—", "—"],
-      ["SWE-bench Verified*", "~80.6% (Pro-Max)", "~80.5%", "n/a in tables", "—"],
-      ["Agentic (agg.)*", "~59", "~71.9", "—", "—"],
       ["Ascend", "ready", "partial", "partial", "ready"]
     ]
   },
-  "swebench": {
-    "metric": "SWE-bench Verified — open vs closed (provisional)",
-    "items": [
-      {"model": "Claude Mythos 5", "dev": "Anthropic", "score": 95.5, "open": false},
-      {"model": "Claude Fable 5", "dev": "Anthropic", "score": 95.0, "open": false},
-      {"model": "Claude Opus 4.8", "dev": "Anthropic", "score": 88.6, "open": false},
-      {"model": "DeepSeek-V4-Pro", "dev": "DeepSeek", "score": 80.6, "open": true},
-      {"model": "MiniMax-M3", "dev": "MiniMax", "score": 80.5, "open": true},
-      {"model": "Qwen3.7 Max", "dev": "Alibaba", "score": 80.4, "open": true},
-      {"model": "Kimi K2.6", "dev": "Moonshot", "score": 80.2, "open": true},
-      {"model": "DeepSeek-V4-Flash", "dev": "DeepSeek", "score": 79.0, "open": true},
-      {"model": "GLM-5", "dev": "Z.ai", "score": 77.8, "open": true},
-      {"model": "Qwen3.5 397B", "dev": "Alibaba", "score": 76.2, "open": true},
-      {"model": "Llama3-SWE-RL-70B", "dev": "Meta", "score": 41.0, "open": true}
+  "metrics": {
+    "default": "swe",
+    "list": [
+      {
+        "id": "swe", "label": "SWE-bench Verified", "unit": "%",
+        "note": "open frontier (80% band) ~ties closed-prev-tier; Claude Fable/Mythos 5 still ahead.",
+        "items": [
+          {"model": "Claude Mythos 5", "score": 95.5, "open": false},
+          {"model": "Claude Fable 5", "score": 95.0, "open": false},
+          {"model": "Claude Opus 4.8", "score": 88.6, "open": false},
+          {"model": "DeepSeek-V4-Pro", "score": 80.6, "open": true},
+          {"model": "MiniMax-M3", "score": 80.5, "open": true},
+          {"model": "Qwen3.7 Max", "score": 80.4, "open": true},
+          {"model": "Kimi K2.6", "score": 80.2, "open": true},
+          {"model": "DeepSeek-V4-Flash", "score": 79.0, "open": true},
+          {"model": "GLM-5", "score": 77.8, "open": true},
+          {"model": "Qwen3.5 397B", "score": 76.2, "open": true},
+          {"model": "Llama3-SWE-RL-70B", "score": 41.0, "open": true}
+        ]
+      },
+      {
+        "id": "aa", "label": "Artificial Analysis Index", "unit": "pts",
+        "note": "AA Intelligence Index v4.1 (points). Open-weight models clustered ~50–55.",
+        "items": [
+          {"model": "MiniMax-M3", "score": 54.7, "open": true},
+          {"model": "Kimi K2.6", "score": 53.9, "open": true},
+          {"model": "Qwen3.7 Plus", "score": 53.3, "open": true},
+          {"model": "DeepSeek-V4-Pro", "score": 52.0, "open": true},
+          {"model": "GLM-5.1", "score": 51.4, "open": true},
+          {"model": "GLM-5", "score": 49.8, "open": true}
+        ]
+      },
+      {
+        "id": "lcb", "label": "LiveCodeBench", "unit": "%",
+        "note": "Competitive programming. DeepSeek-V4 / Kimi lead; partial coverage.",
+        "items": [
+          {"model": "DeepSeek-V4-Pro (Max)", "score": 93.5, "open": true},
+          {"model": "DeepSeek-V4-Flash (Max)", "score": 91.6, "open": true},
+          {"model": "Kimi K2.6", "score": 89.6, "open": true},
+          {"model": "GLM-4.7", "score": 84.9, "open": true}
+        ]
+      },
+      {
+        "id": "aime", "label": "AIME 2025", "unit": "%",
+        "note": "Math. GLM line tops it; coverage is partial (few models reported).",
+        "items": [
+          {"model": "GLM-5 (Reasoning)", "score": 98.0, "open": true},
+          {"model": "GLM-4.7", "score": 95.7, "open": true},
+          {"model": "AM-Thinking-v1 (32B)", "score": 74.4, "open": true}
+        ]
+      },
+      {
+        "id": "ctx", "label": "Context window", "unit": "tok", "neutral": true,
+        "note": "Max context (tokens). GLM-5.2 1M is vendor-stated; one source says 200K+.",
+        "items": [
+          {"model": "DeepSeek-V4", "score": 1000000, "open": true},
+          {"model": "MiniMax-M3", "score": 1000000, "open": true},
+          {"model": "GLM-5.2", "score": 1000000, "open": true},
+          {"model": "Kimi K2.6", "score": 256000, "open": true},
+          {"model": "Qwen3.5", "score": 256000, "open": true},
+          {"model": "DeepSeek-V3.2", "score": 128000, "open": true}
+        ]
+      },
+      {
+        "id": "price", "label": "Output price", "unit": "$", "lowerBetter": true,
+        "note": "$/1M output tokens — lower is better. M3 promo pricing; sparse coverage.",
+        "items": [
+          {"model": "DeepSeek-V4-Pro", "score": 3.48, "open": true},
+          {"model": "MiniMax-M3 (promo)", "score": 1.20, "open": true},
+          {"model": "DeepSeek-V4-Flash", "score": 0.87, "open": true}
+        ]
+      }
     ]
   },
   "attention": {
