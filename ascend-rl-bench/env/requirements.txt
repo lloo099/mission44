@@ -1,0 +1,10 @@
+# Shared Python deps (framework-version-sensitive — pin once your stack works).
+# Install torch / torch_npu / vllm / vllm-ascend / verl via the setup_*.sh scripts,
+# NOT from here, because those are hardware-specific.
+
+datasets>=2.18
+pandas>=2.0
+pyarrow>=15.0
+transformers>=4.45
+numpy>=1.24
+# verl is installed from source in setup_*.sh (it tracks fast-moving training APIs)
