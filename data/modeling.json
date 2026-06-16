@@ -8,6 +8,8 @@
       "category": "model-report",
       "innovation": "1.6T-param MoE with hybrid sparse attention and 1M context",
       "summary": "Released Apr 2026. V4-Pro (~1.6T total / ~49B active) and V4-Flash (284B / ~13B active), both 1M-token context. Keeps DeepSeekMoE + Multi-Token Prediction; adds a Hybrid Attention Architecture (Compressed Sparse Attention + Heavily Compressed Attention) and a 32T+-token, multi-teacher-distillation data pipeline. Official technical report (PDF) on Hugging Face.",
+      "ascend": "ready",
+      "ascendNote": "Supported on Ascend 910B via vLLM-Ascend — custom operators, KV-pool adaptation, and MTP-layer KV-cache sharding for speculative decoding.",
       "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/DeepSeek_V4.pdf",
       "tags": ["MoE", "long-context", "2026", "model"]
     },
@@ -18,6 +20,8 @@
       "category": "model-report",
       "innovation": "Open-weight (MIT) frontier model, 1M context, coding-first",
       "summary": "Launched Jun 13 2026 with a 1M-token context window and MIT-licensed open weights — coding-first frontier model, a response to tightened US export controls. Caps Zhipu's fast 2026 cadence (GLM-5 → 5-Turbo → 5.1 → 5.2). Weights + report on Hugging Face (zai-org/THUDM); architecture detailed in the official GLM-5 technical report (arXiv 2602.15763).",
+      "ascend": "partial",
+      "ascendNote": "GLM-5 is supported on vLLM-Ascend (perf optimizations + W8A8C8 quant); GLM-5.2 not yet listed by name.",
       "url": "https://arxiv.org/abs/2602.15763",
       "tags": ["open-weights", "long-context", "2026", "model"]
     },
@@ -27,8 +31,10 @@
       "year": "2026-06",
       "category": "attention",
       "innovation": "New sparse attention for 1M context + native multimodal/agentic",
-      "summary": "Released Jun 1 2026. MSA (MiniMax Sparse Attention) gives a 1M-token window with >9x prefill / >15x decode speedup vs M2 at ~1/20th per-token compute. Open-weight, native multimodal, strong agentic coding (reported ~59% SWE-Bench Pro).",
-      "url": "https://www.marktechpost.com/2026/06/01/minimax-releases-minimax-m3-with-msa-architecture-supporting-1m-token-context-native-multimodality-and-agentic-coding/",
+      "summary": "Released Jun 2026. MSA (MiniMax Sparse Attention) is a blockwise sparse attention on GQA: a lightweight index branch scores KV blocks and picks a per-group Top-k, then exact block-sparse attention runs over only those blocks. On a 109B multimodal model it matches GQA while cutting per-token attention compute ~28.4x at 1M context (~14.2x prefill / ~7.6x decode speedup on H800). Open-weight, native multimodal, strong agentic coding.",
+      "ascend": "partial",
+      "ascendNote": "MiniMax family has W8A8/QuaRot on vLLM-Ascend (M2.x); M3 not yet listed by name.",
+      "url": "https://arxiv.org/abs/2606.13392",
       "tags": ["sparse-attention", "long-context", "multimodal", "2026"]
     },
     {
@@ -58,6 +64,8 @@
       "category": "attention",
       "innovation": "Trainable sparse attention for cheaper long-context training/inference",
       "summary": "DeepSeek-V3.2 introduces DeepSeek Sparse Attention (DSA), a learned token-selection sparse-attention scheme that cuts long-context compute while preserving quality, pushing the open-weight frontier in late 2025 / early 2026.",
+      "ascend": "ready",
+      "ascendNote": "DeepSeek V3.x family supported on vLLM-Ascend (910B).",
       "url": "https://arxiv.org/abs/2512.02556",
       "tags": ["sparse-attention", "long-context", "2026"]
     },

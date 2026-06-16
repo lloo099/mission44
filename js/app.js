@@ -61,6 +61,7 @@ function uniqueTags(key) {
   const tags = new Set();
   (store[key] || []).forEach((e) => {
     if (e.category) tags.add(e.category);
+    if (e.ascend) tags.add("ascend:" + e.ascend);
     (e.tags || []).forEach((t) => tags.add(t));
   });
   return [...tags].sort();
@@ -96,6 +97,7 @@ function matchesFilter(key, entry) {
   const f = activeFilters[key];
   if (f && f.size > 0) {
     const entryTags = new Set([entry.category, ...(entry.tags || [])]);
+    if (entry.ascend) entryTags.add("ascend:" + entry.ascend);
     let ok = false;
     f.forEach((t) => { if (entryTags.has(t)) ok = true; });
     if (!ok) return false;
@@ -123,7 +125,7 @@ function cardHTML(e) {
   const meta = [e.org, e.year].filter(Boolean).join(" · ");
   const tags = (e.tags || []).map((t) => `<span class="t">${escapeHtml(t)}</span>`).join("");
   return `<article class="card">
-    ${e.category ? `<div class="cat">${escapeHtml(e.category)}</div>` : ""}
+    <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}${ascendBadge(e)}</div>
     <h3>${escapeHtml(e.title || "Untitled")}</h3>
     ${meta ? `<div class="meta">${escapeHtml(meta)}</div>` : ""}
     ${e.innovation ? `<div class="innov">▸ ${escapeHtml(e.innovation)}</div>` : ""}
@@ -131,6 +133,20 @@ function cardHTML(e) {
     <div class="tags">${tags}</div>
     ${e.url ? `<a class="link" href="${escapeAttr(e.url)}" target="_blank" rel="noopener">Open source ↗</a>` : ""}
   </article>`;
+}
+
+/* Ascend-readiness badge (✅ ready / ⚠️ partial / ❌ none) */
+function ascendBadge(e) {
+  if (!e.ascend) return "";
+  const map = {
+    ready: { icon: "✅", label: "Ascend-ready" },
+    partial: { icon: "⚠️", label: "Ascend partial" },
+    none: { icon: "❌", label: "Not on Ascend" },
+  };
+  const m = map[e.ascend];
+  if (!m) return "";
+  const note = escapeAttr(e.ascendNote || m.label);
+  return `<span class="ascend-badge ${escapeAttr(e.ascend)}" title="${note}">${m.icon} ${escapeHtml(m.label)}</span>`;
 }
 
 function renderIdeas() {

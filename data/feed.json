@@ -18,6 +18,8 @@
       "year": "2026-06",
       "category": "rl-llm",
       "summary": "Coding-first frontier model with a 1M-token context window and MIT open weights, launched Jun 13 2026. Official GLM-5 technical report on arXiv.",
+      "ascend": "partial",
+      "ascendNote": "GLM-5 is supported on vLLM-Ascend (W8A8C8 quant); GLM-5.2 not yet listed by name.",
       "url": "https://arxiv.org/abs/2602.15763",
       "tags": ["live", "rl-llm", "2026"]
     },
@@ -26,8 +28,10 @@
       "org": "MiniMax",
       "year": "2026-06",
       "category": "rl-llm",
-      "summary": "Open-weight 1M-context model, native multimodal + agentic coding; MSA gives >9x prefill / >15x decode speedup vs M2.",
-      "url": "https://www.marktechpost.com/2026/06/01/minimax-releases-minimax-m3-with-msa-architecture-supporting-1m-token-context-native-multimodality-and-agentic-coding/",
+      "summary": "Open-weight 1M-context model, native multimodal + agentic coding. MSA (blockwise sparse on GQA) cuts attention compute ~28.4x at 1M context. Official report on arXiv.",
+      "ascend": "partial",
+      "ascendNote": "MiniMax family has W8A8/QuaRot on vLLM-Ascend (M2.x); M3 not yet listed by name.",
+      "url": "https://arxiv.org/abs/2606.13392",
       "tags": ["live", "rl-llm", "2026"]
     },
     {
@@ -36,6 +40,8 @@
       "year": "2026-04",
       "category": "rl-llm",
       "summary": "V4-Pro/Flash with hybrid sparse attention (CSA+HCA), Multi-Token Prediction, and a multi-teacher distillation pipeline over 32T+ tokens. Official tech report PDF on Hugging Face.",
+      "ascend": "ready",
+      "ascendNote": "Supported on Ascend 910B via vLLM-Ascend (custom ops, MTP KV-cache sharding for speculative decoding).",
       "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/DeepSeek_V4.pdf",
       "tags": ["live", "rl-llm", "2026"]
     },
