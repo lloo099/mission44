@@ -2,6 +2,56 @@
   "updated": "2026-06-16",
   "items": [
     {
+      "title": "DeepSeek-V4 (V4-Pro / V4-Flash)",
+      "org": "DeepSeek-AI",
+      "year": "2026-04",
+      "category": "model-report",
+      "innovation": "1.6T-param MoE with hybrid sparse attention and 1M context",
+      "summary": "Released Apr 2026. V4-Pro (~1.6T total / ~49B active) and V4-Flash (284B / ~13B active), both 1M-token context. Keeps DeepSeekMoE + Multi-Token Prediction; adds a Hybrid Attention Architecture (Compressed Sparse Attention + Heavily Compressed Attention) and a 32T+-token, multi-teacher-distillation data pipeline.",
+      "url": "https://api-docs.deepseek.com/news/news260424",
+      "tags": ["MoE", "long-context", "2026", "model"]
+    },
+    {
+      "title": "GLM-5.2",
+      "org": "Zhipu AI / Z.ai",
+      "year": "2026-06",
+      "category": "model-report",
+      "innovation": "Open-weight (MIT) frontier model, 1M context, coding-first",
+      "summary": "Launched Jun 13 2026 with a 1M-token context window and MIT-licensed open weights — positioned as a coding-first frontier model and a response to tightened US export controls. Caps Zhipu's fast 2026 cadence (GLM-5 → 5-Turbo → 5.1 → 5.2).",
+      "url": "https://pandaily.com/zhipu-ai-glm-5-dot-2-open-source-mit-jun2026",
+      "tags": ["open-weights", "long-context", "2026", "model"]
+    },
+    {
+      "title": "MiniMax-M3 + MSA (MiniMax Sparse Attention)",
+      "org": "MiniMax",
+      "year": "2026-06",
+      "category": "attention",
+      "innovation": "New sparse attention for 1M context + native multimodal/agentic",
+      "summary": "Released Jun 1 2026. MSA (MiniMax Sparse Attention) gives a 1M-token window with >9x prefill / >15x decode speedup vs M2 at ~1/20th per-token compute. Open-weight, native multimodal, strong agentic coding (reported ~59% SWE-Bench Pro).",
+      "url": "https://www.marktechpost.com/2026/06/01/minimax-releases-minimax-m3-with-msa-architecture-supporting-1m-token-context-native-multimodality-and-agentic-coding/",
+      "tags": ["sparse-attention", "long-context", "multimodal", "2026"]
+    },
+    {
+      "title": "TTKV: Temporal-Tiered KV Cache",
+      "org": "research",
+      "year": "2026-04",
+      "category": "long-context",
+      "innovation": "Tiered KV cache across HBM/DRAM with mixed precision",
+      "summary": "Partitions the KV cache into temporal tiers with heterogeneous capacity and precision (recent KV in faster/higher-precision tiers), using block-wise streaming attention to serve long contexts under tight memory — a practical long-context inference recipe.",
+      "url": "https://arxiv.org/abs/2604.19769",
+      "tags": ["kv-cache", "long-context", "inference", "2026"]
+    },
+    {
+      "title": "RedKnot: Head-Aware KV Reuse",
+      "org": "research",
+      "year": "2026-06",
+      "category": "long-context",
+      "innovation": "Position-independent KV reuse via per-head decomposition",
+      "summary": "Decomposes the KV cache along KV heads to enable position-independent reuse, prefix compression, and hot/cold separation (SegPagedAttention) — improving long-context serving efficiency without retraining.",
+      "url": "https://arxiv.org/abs/2606.06256",
+      "tags": ["kv-cache", "long-context", "serving", "2026"]
+    },
+    {
       "title": "DeepSeek-V3.2 + DeepSeek Sparse Attention (DSA)",
       "org": "DeepSeek-AI",
       "year": "2025-12",

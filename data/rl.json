@@ -2,6 +2,46 @@
   "updated": "2026-06-16",
   "items": [
     {
+      "title": "Rethinking Agentic RL in LLMs (survey)",
+      "org": "research",
+      "year": "2026-04",
+      "category": "trend",
+      "innovation": "Frames agentic RL as a distinct paradigm vs single-turn RLVR",
+      "summary": "A 2026 survey arguing agentic RL turns LLMs from passive responders into proactive agents — covering multi-turn credit assignment, tool/environment interaction, long-horizon planning, and reward design. A useful map of the agentic-RL landscape.",
+      "url": "https://arxiv.org/abs/2604.27859",
+      "tags": ["agentic-rl", "survey", "2026"]
+    },
+    {
+      "title": "ProRL Agent (Rollout-as-a-Service)",
+      "org": "Microsoft Research",
+      "year": "2026-03",
+      "category": "framework",
+      "innovation": "Serves the full multi-turn agent rollout lifecycle as an API",
+      "summary": "Scalable infrastructure for RL training of multi-turn LLM agents: exposes agentic rollouts (tool calls, environment steps) as a service so the trainer is decoupled from rollout orchestration — addressing the rollout bottleneck in agentic RL.",
+      "url": "https://arxiv.org/abs/2603.18815",
+      "tags": ["agentic-rl", "rollout", "2026"]
+    },
+    {
+      "title": "Stable Asynchrony (Variance-Controlled Off-Policy RL)",
+      "org": "research",
+      "year": "2026-02",
+      "category": "algorithm",
+      "innovation": "Tames heavy-tailed importance weights from stale rollouts",
+      "summary": "Async RL decouples rollout from updates for throughput, but stale samples give GRPO/REINFORCE heavy-tailed importance weights and high variance. This work adds variance control to keep off-policy/async RL stable at high asynchrony.",
+      "url": "https://arxiv.org/abs/2602.17616",
+      "tags": ["async-rl", "off-policy", "2026"]
+    },
+    {
+      "title": "RollMux (Disaggregated RL Post-Training)",
+      "org": "research",
+      "year": "2025-12",
+      "category": "framework",
+      "innovation": "Phase-level multiplexing to remove pipeline bubbles",
+      "summary": "Builds on AReaL/StreamRL/AsyncFlow: multiplexes rollout and training phases across disaggregated resources to remove dependency bubbles while bounding sample staleness — directly relevant to NPU RL throughput.",
+      "url": "https://arxiv.org/abs/2512.11306",
+      "tags": ["async-rl", "disaggregated", "systems"]
+    },
+    {
       "title": "GDRO-RL (Group Distributionally Robust Optimization)",
       "org": "research",
       "year": "2026-01",
