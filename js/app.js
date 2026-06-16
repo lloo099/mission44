@@ -63,6 +63,7 @@ function uniqueTags(key) {
   (store[key] || []).forEach((e) => {
     if (e.category) tags.add(e.category);
     if (e.ascend) tags.add("ascend:" + e.ascend);
+    if (e.analysis || (window.hasSavedAnalysis && window.hasSavedAnalysis(e))) tags.add("analyzed");
     (e.tags || []).forEach((t) => tags.add(t));
   });
   return [...tags].sort();
@@ -99,6 +100,7 @@ function matchesFilter(key, entry) {
   if (f && f.size > 0) {
     const entryTags = new Set([entry.category, ...(entry.tags || [])]);
     if (entry.ascend) entryTags.add("ascend:" + entry.ascend);
+    if (entry.analysis || (window.hasSavedAnalysis && window.hasSavedAnalysis(entry))) entryTags.add("analyzed");
     let ok = false;
     f.forEach((t) => { if (entryTags.has(t)) ok = true; });
     if (!ok) return false;
@@ -119,28 +121,40 @@ function renderPanel(key) {
     container.innerHTML = `<div class="empty">No entries match. ${store[key] && store[key].length ? "Adjust filters/search." : "Data not loaded yet."}</div>`;
     return;
   }
-  container.innerHTML = items.map(cardHTML).join("");
+  const count = `<div class="result-count">${items.length} of ${store[key].length} shown${searchTerm ? ` · “${escapeHtml(searchTerm)}”` : ""}</div>`;
+  container.innerHTML = count + items.map(cardHTML).join("");
 }
 
 function cardHTML(e) {
   const meta = [e.org, e.year].filter(Boolean).join(" · ");
   const tags = (e.tags || []).map((t) => `<span class="t">${escapeHtml(t)}</span>`).join("");
-  const slim = JSON.stringify({ title: e.title, org: e.org, year: e.year, category: e.category, innovation: e.innovation, summary: e.summary, url: e.url, tags: e.tags });
+  const slim = JSON.stringify({ title: e.title, org: e.org, year: e.year, category: e.category, innovation: e.innovation, summary: e.summary, url: e.url, tags: e.tags, analysis: e.analysis });
+  const analyzed = !!e.analysis || (window.hasSavedAnalysis && window.hasSavedAnalysis(e));
   return `<article class="card">
     <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}${ascendBadge(e)}</div>
-    <h3>${escapeHtml(e.title || "Untitled")}</h3>
+    <h3>${hl(e.title || "Untitled")}</h3>
     ${meta ? `<div class="meta">${escapeHtml(meta)}</div>` : ""}
-    ${e.innovation ? `<div class="innov">▸ ${escapeHtml(e.innovation)}</div>` : ""}
-    ${e.summary ? `<p class="summary">${escapeHtml(e.summary)}</p>` : ""}
+    ${e.innovation ? `<div class="innov">▸ ${hl(e.innovation)}</div>` : ""}
+    ${e.summary ? `<p class="summary">${hl(e.summary)}</p>` : ""}
     <div class="tags">${tags}</div>
     <div class="card-actions">
       ${e.url ? `<a class="link" href="${escapeAttr(e.url)}" target="_blank" rel="noopener">Open source ↗</a>` : "<span></span>"}
       <span class="card-act-right">
-        ${(window.hasSavedAnalysis && window.hasSavedAnalysis(e)) ? `<span class="saved-badge" title="Saved analysis available">★ analyzed</span>` : ""}
-        <button class="analyze-btn" data-entry="${escapeAttr(slim)}">✨ Analyze</button>
+        ${analyzed ? `<span class="saved-badge" title="Analysis available">★ analyzed</span>` : ""}
+        <button class="analyze-btn" data-entry="${escapeAttr(slim)}">${analyzed ? "✨ Analysis" : "✨ Analyze"}</button>
       </span>
     </div>
   </article>`;
+}
+
+// highlight the active search term inside escaped text
+function hl(s) {
+  const safe = escapeHtml(s);
+  if (!searchTerm) return safe;
+  try {
+    const re = new RegExp("(" + searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "ig");
+    return safe.replace(re, "<mark>$1</mark>");
+  } catch (_) { return safe; }
 }
 
 /* Ascend-readiness badge (✅ ready / ⚠️ partial / ❌ none) */
@@ -195,6 +209,14 @@ function wireTabs() {
       tab.classList.add("active");
       document.getElementById(tab.dataset.tab).classList.add("active");
     });
+  });
+  // number keys 1..9 jump to tabs (when not typing in a field)
+  document.addEventListener("keydown", (e) => {
+    if (!/^[1-9]$/.test(e.key)) return;
+    const el = document.activeElement;
+    if (el && /INPUT|TEXTAREA|SELECT/.test(el.tagName)) return;
+    const tabs = [...document.querySelectorAll(".tab")];
+    if (tabs[+e.key - 1]) tabs[+e.key - 1].click();
   });
 }
 

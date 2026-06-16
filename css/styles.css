@@ -110,10 +110,13 @@ main { padding: 28px; max-width: 1280px; margin: 0 auto; }
 
 /* Cards */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 16px; }
+.result-count { grid-column: 1 / -1; font-size: 11.5px; color: var(--dim); margin: -4px 0 2px; }
 .card {
   background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 8px; transition: border-color .15s, transform .15s;
+  content-visibility: auto; contain-intrinsic-size: auto 220px;
 }
+mark { background: rgba(245,196,81,.32); color: inherit; border-radius: 2px; padding: 0 1px; }
 .card:hover { border-color: var(--accent-2); transform: translateY(-2px); box-shadow: var(--shadow); }
 .card .card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .card .cat { font-size: 11px; letter-spacing: .6px; text-transform: uppercase; color: var(--accent); font-weight: 600; }
@@ -150,6 +153,16 @@ main { padding: 28px; max-width: 1280px; margin: 0 auto; }
 .bubble .who { font-size: 10.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--dim); font-weight: 600; }
 .bubble .txt { font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; color: #d7dceb; }
 .bubble.user .txt { color: #aeb6c8; background: var(--bg-3); border-radius: 8px; padding: 8px 11px; align-self: flex-start; }
+.bubble.system .who { display: none; }
+
+@media (max-width: 640px) {
+  .topbar { flex-direction: column; align-items: stretch; gap: 10px; }
+  .topbar-actions { width: 100%; }
+  .topbar-actions #search { width: 100%; }
+  .cards, .ideas-grid { grid-template-columns: 1fr; }
+  .analyst-panel { width: 100vw; height: 100vh; border-radius: 0; }
+  .tabs { overflow-x: auto; }
+}
 .analyst-input { display: flex; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line); }
 .analyst-input textarea { flex: 1; resize: none; background: var(--bg-3); color: var(--fg, #e6e9f0); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; max-height: 120px; }
 .analyst-note { font-size: 10.5px; color: var(--dim); padding: 0 18px 12px; }

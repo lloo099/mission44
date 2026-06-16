@@ -7,6 +7,7 @@
       "year": "2026",
       "category": "hardware",
       "innovation": "Next-gen Ascend with self-built HBM and native low-precision (FP8/MXFP4)",
+      "analysis": "Innovation: first Ascend generation with Huawei's own HBM and native low-precision formats (FP8/MXFP8/HiF8/MXFP4) — 950PR (inference, ~Q1 2026) and 950DT (training/decode, ~Q4 2026; 144GB HBM @ ~4TB/s). Performance: ~1 PFLOPS FP8 / ~2 PFLOPS MXFP4 per analyst/vendor reporting — treat as approximate until silicon ships. Fit for RL-on-NPU: native FP8 directly unlocks FP8 RL training on Ascend (a near-empty research area), and the self-built HBM eases the memory bottleneck that currently forces rollout/train time-slicing on 910B.",
       "summary": "Announced at Huawei Connect 2025. 950PR (inference, ~Q1 2026) pairs HiBL 1.0 HBM (128 GB, ~1.6 TB/s); 950DT (training/decode, ~Q4 2026) uses HiZQ 2.0 (144 GB, ~4 TB/s, 2 TB/s interconnect). Adds FP8/MXFP8/HiF8/MXFP4 — ~1 PFLOPS FP8, ~2 PFLOPS MXFP4. Directly enables FP8 RL on Ascend. Specs from vendor/analyst reporting — treat as approximate.",
       "url": "https://www.techpowerup.com/341123/huawei-unveils-homegrown-hbm-and-ascend-950-bets-on-massive-superclusters",
       "tags": ["950", "FP8", "2026", "roadmap"]

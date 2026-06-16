@@ -11,11 +11,16 @@ own summary. With one, the model also sees the paper's title + abstract.
 ## What it does
 
 `GET /?url=https://arxiv.org/abs/2402.03300`
-→ `{ "id": "2402.03300", "title": "...", "text": "Title: …\n\nAbstract:\n…" }`
+→ `{ "id": "2402.03300", "title": "...", "text": "Title: …\n\nAbstract:\n…", "full": false }`
 
-- Only `arxiv.org` / `export.arxiv.org` URLs are accepted (not an open proxy).
-- Pulls title + abstract from the official arXiv Atom API (no scraping).
-- Output is length-capped (20k chars).
+`GET /?url=https://arxiv.org/abs/2402.03300&full=1`
+→ also includes the paper body (via ar5iv), `"full": true` — capped at ~45k chars.
+
+- Only `arxiv.org` / `export.arxiv.org` input URLs are accepted (not an open proxy).
+- Abstract comes from the official arXiv Atom API; full text from ar5iv HTML
+  (falls back to abstract-only if ar5iv has no render).
+- Output is length-capped (20k abstract / 45k full).
+- The dashboard requests `full=1` by default; full text costs more tokens.
 
 ## Deploy on Cloudflare Workers (free tier)
 

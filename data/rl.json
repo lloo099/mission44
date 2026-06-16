@@ -87,6 +87,7 @@
       "year": "2024-02",
       "category": "algorithm",
       "innovation": "Drops the critic; advantages from group-normalized rewards",
+      "analysis": "Innovation: removes PPO's value network — for each prompt it samples a group of responses and standardizes their rewards within the group to get advantages, eliminating the critic's memory and tuning burden. Performance: became the default backbone for reasoning RL (DeepSeek-V3/R1 and most 2025 RLVR work) precisely because it's stable and cheap at scale. Fit for RL-on-NPU: critic-free means less memory and fewer moving parts — ideal for memory-constrained 910B, and it's the algorithm MindSpeed-RL and verl-on-Ascend target first, so it's the natural baseline for any Ascend RL benchmark.",
       "summary": "For each prompt GRPO samples a group of responses and uses the within-group mean/std to compute relative advantages, eliminating PPO's value network and its memory cost. It is the backbone of DeepSeek-V3/R1 and the most widely adopted base for reasoning RL.",
       "url": "https://arxiv.org/abs/2402.03300",
       "tags": ["GRPO", "critic-free", "reasoning"]

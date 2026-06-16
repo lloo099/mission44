@@ -220,7 +220,7 @@
       const note = addBubble("assistant", "system");
       note.innerHTML = `<span class="analyst-status">Fetching paper text via proxy…</span>`;
       try {
-        const u = proxy + (proxy.includes("?") ? "&" : "?") + "url=" + encodeURIComponent(e.url);
+        const u = proxy + (proxy.includes("?") ? "&" : "?") + "full=1&url=" + encodeURIComponent(e.url);
         const r = await fetch(u);
         const j = await r.json();
         paperCache = (j && j.text) ? j.text : "";
@@ -311,8 +311,26 @@
     m.classList.remove("hidden");
     const saved = getSaved(entry);
     if (saved) replaySaved(saved);
+    else if (entry.analysis) renderCurated(entry);
     else if (getKey()) startAnalysis();
     else needKey();
+  }
+
+  function renderCurated(e) {
+    bodyEl().innerHTML = "";
+    const banner = addBubble("assistant", "system");
+    banner.innerHTML = `<span class="analyst-status">Curated offline analysis — no API key needed. ` +
+      `Ask a follow-up below (that part needs your key). ` +
+      `<button class="ghost-btn" id="analyst-rerun">Re-analyze with Claude</button></span>`;
+    addBubble("assistant", "Curated").textContent = e.analysis;
+    // seed context so follow-ups are grounded
+    state.messages = [
+      { role: "user", content: "Analyze: innovation & performance" },
+      { role: "assistant", content: e.analysis },
+    ];
+    document.getElementById("analyst-rerun").addEventListener("click", () => {
+      if (getKey()) startAnalysis(); else needKey();
+    });
   }
 
   // delegated click on any .analyze-btn (cards re-render, so bind on document)
