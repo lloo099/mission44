@@ -16,6 +16,22 @@
       ["Ascend", "ready", "partial", "partial", "ready"]
     ]
   },
+  "swebench": {
+    "metric": "SWE-bench Verified — open vs closed (provisional)",
+    "items": [
+      {"model": "Claude Mythos 5", "dev": "Anthropic", "score": 95.5, "open": false},
+      {"model": "Claude Fable 5", "dev": "Anthropic", "score": 95.0, "open": false},
+      {"model": "Claude Opus 4.8", "dev": "Anthropic", "score": 88.6, "open": false},
+      {"model": "DeepSeek-V4-Pro", "dev": "DeepSeek", "score": 80.6, "open": true},
+      {"model": "MiniMax-M3", "dev": "MiniMax", "score": 80.5, "open": true},
+      {"model": "Qwen3.7 Max", "dev": "Alibaba", "score": 80.4, "open": true},
+      {"model": "Kimi K2.6", "dev": "Moonshot", "score": 80.2, "open": true},
+      {"model": "DeepSeek-V4-Flash", "dev": "DeepSeek", "score": 79.0, "open": true},
+      {"model": "GLM-5", "dev": "Z.ai", "score": 77.8, "open": true},
+      {"model": "Qwen3.5 397B", "dev": "Alibaba", "score": 76.2, "open": true},
+      {"model": "Llama3-SWE-RL-70B", "dev": "Meta", "score": 41.0, "open": true}
+    ]
+  },
   "attention": {
     "columns": ["Scheme", "Base", "Mechanism", "Trade-off"],
     "rows": [

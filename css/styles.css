@@ -186,6 +186,19 @@ table.cmp td.cmp-none { color: #f08a8a; }
 .cmp-take ul { margin: 6px 0 0; padding-left: 18px; }
 .cmp-take li { margin: 4px 0; }
 .cmp-note { font-size: 11px; color: var(--dim); margin-top: 10px; }
+.swe-legend { display: flex; gap: 16px; font-size: 11px; color: var(--dim); margin: 2px 0 8px; }
+.swe-legend i.sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.swe-legend i.sw.open { background: var(--accent-2, #5ad1a0); }
+.swe-legend i.sw.closed { background: #6a7488; }
+.swe-bars { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: grid; grid-template-columns: 150px 1fr 42px; align-items: center; gap: 10px; font-size: 12px; }
+.bar-label { color: #c2c9d8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { background: var(--bg-3); border-radius: 6px; height: 16px; overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: 6px; }
+.bar-fill.open { background: linear-gradient(90deg, #3a9e75, #5ad1a0); }
+.bar-fill.closed { background: linear-gradient(90deg, #4a5568, #6a7488); }
+.bar-val { color: var(--dim); text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .bar-row { grid-template-columns: 110px 1fr 38px; } }
 
 /* Training curves */
 .curve-chart { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; overflow-x: auto; }

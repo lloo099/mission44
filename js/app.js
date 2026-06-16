@@ -321,10 +321,27 @@ async function wireCompare() {
       <a class="link" href="${escapeAttr(d.doc || "#")}" target="_blank" rel="noopener">Full deep-dive ↗</a>
     </div>
     ${table(d.models, { badge: true })}
+    ${d.swebench ? sweBars(d.swebench) : ""}
     <h4 class="cmp-sub">Sparse-attention designs (the 2026 dividing line)</h4>
     ${table(d.attention)}
     ${takeaways ? `<div class="cmp-take"><strong>For RL-on-NPU:</strong><ul>${takeaways}</ul></div>` : ""}
     <div class="cmp-note">${escapeHtml(d.note || "")} <span class="dim">* provisional</span></div>`;
+}
+
+function sweBars(s) {
+  const items = (s.items || []).slice().sort((a, b) => b.score - a.score);
+  const max = Math.max(100, ...items.map((i) => i.score));
+  const rows = items.map((i) => {
+    const w = (i.score / max) * 100;
+    return `<div class="bar-row">
+      <span class="bar-label" title="${escapeAttr(i.dev || "")}">${escapeHtml(i.model)}</span>
+      <span class="bar-track"><span class="bar-fill ${i.open ? "open" : "closed"}" style="width:${w.toFixed(1)}%"></span></span>
+      <span class="bar-val">${i.score}</span>
+    </div>`;
+  }).join("");
+  return `<h4 class="cmp-sub">${escapeHtml(s.metric || "SWE-bench")}</h4>
+    <div class="swe-legend"><span><i class="sw open"></i>open-weight</span><span><i class="sw closed"></i>closed (ref)</span></div>
+    <div class="swe-bars">${rows}</div>`;
 }
 
 /* ---------- training curves (SVG, no deps) ---------- */
