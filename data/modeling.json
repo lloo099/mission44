@@ -7,8 +7,8 @@
       "year": "2026-04",
       "category": "model-report",
       "innovation": "1.6T-param MoE with hybrid sparse attention and 1M context",
-      "summary": "Released Apr 2026. V4-Pro (~1.6T total / ~49B active) and V4-Flash (284B / ~13B active), both 1M-token context. Keeps DeepSeekMoE + Multi-Token Prediction; adds a Hybrid Attention Architecture (Compressed Sparse Attention + Heavily Compressed Attention) and a 32T+-token, multi-teacher-distillation data pipeline.",
-      "url": "https://api-docs.deepseek.com/news/news260424",
+      "summary": "Released Apr 2026. V4-Pro (~1.6T total / ~49B active) and V4-Flash (284B / ~13B active), both 1M-token context. Keeps DeepSeekMoE + Multi-Token Prediction; adds a Hybrid Attention Architecture (Compressed Sparse Attention + Heavily Compressed Attention) and a 32T+-token, multi-teacher-distillation data pipeline. Official technical report (PDF) on Hugging Face.",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/DeepSeek_V4.pdf",
       "tags": ["MoE", "long-context", "2026", "model"]
     },
     {
@@ -17,8 +17,8 @@
       "year": "2026-06",
       "category": "model-report",
       "innovation": "Open-weight (MIT) frontier model, 1M context, coding-first",
-      "summary": "Launched Jun 13 2026 with a 1M-token context window and MIT-licensed open weights — positioned as a coding-first frontier model and a response to tightened US export controls. Caps Zhipu's fast 2026 cadence (GLM-5 → 5-Turbo → 5.1 → 5.2).",
-      "url": "https://pandaily.com/zhipu-ai-glm-5-dot-2-open-source-mit-jun2026",
+      "summary": "Launched Jun 13 2026 with a 1M-token context window and MIT-licensed open weights — coding-first frontier model, a response to tightened US export controls. Caps Zhipu's fast 2026 cadence (GLM-5 → 5-Turbo → 5.1 → 5.2). Weights + report on Hugging Face (zai-org/THUDM); architecture detailed in the official GLM-5 technical report (arXiv 2602.15763).",
+      "url": "https://arxiv.org/abs/2602.15763",
       "tags": ["open-weights", "long-context", "2026", "model"]
     },
     {

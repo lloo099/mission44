@@ -22,6 +22,16 @@
       "tags": ["vllm-ascend", "rollout", "2026"]
     },
     {
+      "title": "vLLM-Ascend model support: V4 / GLM-5 / Qwen3.5 / MiniMax (2026)",
+      "org": "vLLM + Huawei (Ascend)",
+      "year": "2026",
+      "category": "software-stack",
+      "innovation": "Latest frontier models running on 910B via vLLM-Ascend",
+      "summary": "Per the 2026 support matrix: DeepSeek-V4 is supported on 910B with custom operators, KV-pool adaptation, and separated MTP-layer KV-cache sharding for speculative decoding; GLM-5 has perf optimizations + W8A8C8 quant + optimized KV cache; Qwen3.5 is supported (incl. LoRA on dense models); W8A8 quant spans the Qwen3 / DeepSeek / MiniMax families (MiniMax-M2.x via W8A8/QuaRot). MiniMax-M3 is not yet listed by name. Inference support generally lands first; training-side (verl / MindSpeed-RL) trails.",
+      "url": "https://docs.vllm.ai/projects/ascend/en/main/user_guide/support_matrix/supported_models.html",
+      "tags": ["vllm-ascend", "model-support", "910B", "2026"]
+    },
+    {
       "title": "Ascend 910B",
       "org": "Huawei",
       "year": "2023–2024",
