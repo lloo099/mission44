@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-15",
+  "updated": "2026-06-16",
   "items": [
+    {
+      "title": "DeepSeek-V3.2 + DeepSeek Sparse Attention (DSA)",
+      "org": "DeepSeek-AI",
+      "year": "2025-12",
+      "category": "attention",
+      "innovation": "Trainable sparse attention for cheaper long-context training/inference",
+      "summary": "DeepSeek-V3.2 introduces DeepSeek Sparse Attention (DSA), a learned token-selection sparse-attention scheme that cuts long-context compute while preserving quality, pushing the open-weight frontier in late 2025 / early 2026.",
+      "url": "https://arxiv.org/abs/2512.02556",
+      "tags": ["sparse-attention", "long-context", "2026"]
+    },
     {
       "title": "DeepSeekMoE",
       "org": "DeepSeek-AI",

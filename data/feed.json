@@ -1,8 +1,44 @@
 {
-  "updated": "2026-06-15",
+  "updated": "2026-06-16",
   "source": "seeded (run scripts/fetch_arxiv.py to refresh from the arXiv API)",
-  "count": 12,
+  "count": 16,
   "items": [
+    {
+      "title": "Ascend 950PR / 950DT announced (FP8, self-built HBM)",
+      "org": "Huawei",
+      "year": "2026",
+      "category": "ascend-npu",
+      "summary": "Next-gen Ascend with native FP8/MXFP4 and Huawei's own HBM — 950PR (inference) ~Q1 2026, 950DT (training) ~Q4 2026. Opens the door to FP8 RL on Ascend.",
+      "url": "https://www.techpowerup.com/341123/huawei-unveils-homegrown-hbm-and-ascend-950-bets-on-massive-superclusters",
+      "tags": ["live", "ascend-npu", "2026"]
+    },
+    {
+      "title": "vLLM-Ascend v0.13.0 released",
+      "org": "vLLM + Huawei",
+      "year": "2026-02",
+      "category": "ascend-npu",
+      "summary": "Latest Ascend rollout backend — broader model coverage and performance; the rollout engine RL stacks target on NPU.",
+      "url": "https://github.com/vllm-project/vllm-ascend",
+      "tags": ["live", "ascend-npu", "2026"]
+    },
+    {
+      "title": "DeepSeek-V3.2 + Sparse Attention (DSA)",
+      "org": "DeepSeek-AI",
+      "year": "2025-12",
+      "category": "rl-llm",
+      "summary": "Open-weight frontier model with trainable sparse attention for cheaper long-context; RL post-training continues the R1 lineage.",
+      "url": "https://arxiv.org/abs/2512.02556",
+      "tags": ["live", "rl-llm", "2026"]
+    },
+    {
+      "title": "GDRO-RL: distributionally robust GRPO",
+      "org": "research",
+      "year": "2026-01",
+      "category": "reasoning-rl",
+      "summary": "Rollout-/Prompt-GDRO reweight toward worst-case prompt distributions on top of GRPO for more robust reasoning RL.",
+      "url": "https://arxiv.org/abs/2601.19280",
+      "tags": ["live", "reasoning-rl", "2026"]
+    },
     {
       "title": "MindSpeed-RL: Distributed RL Post-Training on Ascend NPU",
       "org": "Huawei (Ascend)",

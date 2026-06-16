@@ -1,6 +1,36 @@
 {
-  "updated": "2026-06-15",
+  "updated": "2026-06-16",
   "items": [
+    {
+      "title": "GDRO-RL (Group Distributionally Robust Optimization)",
+      "org": "research",
+      "year": "2026-01",
+      "category": "algorithm",
+      "innovation": "Makes GRPO robust to prompt/rollout distribution shift",
+      "summary": "Introduces Rollout-GDRO and Prompt-GDRO, which reweight groups toward the worst-case prompt/rollout distribution on top of GRPO, improving reasoning robustness when training data is heterogeneous or imbalanced.",
+      "url": "https://arxiv.org/abs/2601.19280",
+      "tags": ["GRPO", "robustness", "2026"]
+    },
+    {
+      "title": "G2RL (Gradient-Guided RL)",
+      "org": "research",
+      "year": "2025-12",
+      "category": "algorithm",
+      "innovation": "Lets the model guide its own exploration via gradient signals",
+      "summary": "Uses gradient-guided exploration to steer GRPO-style sampling toward informative trajectories, improving sample efficiency on reasoning RL without a separate critic.",
+      "url": "https://arxiv.org/abs/2512.15687",
+      "tags": ["GRPO", "exploration", "2026"]
+    },
+    {
+      "title": "Critique-GRPO",
+      "org": "research",
+      "year": "2025-06",
+      "category": "algorithm",
+      "innovation": "Adds natural-language critiques on top of numerical reward",
+      "summary": "An online RL framework that combines natural-language feedback with numerical rewards for policy optimization, reporting ~+15–22% Pass@1 gains over GRPO on Qwen models (revised Feb 2026).",
+      "url": "https://arxiv.org/abs/2506.03106",
+      "tags": ["GRPO", "feedback", "reasoning"]
+    },
     {
       "title": "InstructGPT / PPO-RLHF",
       "org": "OpenAI",
