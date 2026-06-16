@@ -125,6 +125,7 @@ function renderPanel(key) {
 function cardHTML(e) {
   const meta = [e.org, e.year].filter(Boolean).join(" · ");
   const tags = (e.tags || []).map((t) => `<span class="t">${escapeHtml(t)}</span>`).join("");
+  const slim = JSON.stringify({ title: e.title, org: e.org, year: e.year, category: e.category, innovation: e.innovation, summary: e.summary, url: e.url, tags: e.tags });
   return `<article class="card">
     <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}${ascendBadge(e)}</div>
     <h3>${escapeHtml(e.title || "Untitled")}</h3>
@@ -132,7 +133,10 @@ function cardHTML(e) {
     ${e.innovation ? `<div class="innov">▸ ${escapeHtml(e.innovation)}</div>` : ""}
     ${e.summary ? `<p class="summary">${escapeHtml(e.summary)}</p>` : ""}
     <div class="tags">${tags}</div>
-    ${e.url ? `<a class="link" href="${escapeAttr(e.url)}" target="_blank" rel="noopener">Open source ↗</a>` : ""}
+    <div class="card-actions">
+      ${e.url ? `<a class="link" href="${escapeAttr(e.url)}" target="_blank" rel="noopener">Open source ↗</a>` : "<span></span>"}
+      <button class="analyze-btn" data-entry="${escapeAttr(slim)}">✨ Analyze</button>
+    </div>
   </article>`;
 }
 
