@@ -32,7 +32,19 @@ QUERIES = {
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "data", "feed.json")
+PINNED = os.path.join(HERE, "..", "data", "feed_pinned.json")
 NS = {"a": "http://www.w3.org/2005/Atom"}
+
+
+def load_pinned():
+    """Curated highlights that must always stay in the feed (with their
+    hand-written summaries, official links, and Ascend-readiness badges)."""
+    try:
+        with open(PINNED, encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return []
+    return data.get("items", []) if isinstance(data, dict) else (data or [])
 
 
 def fetch(query: str, max_results: int):
@@ -77,30 +89,36 @@ def main():
     ap.add_argument("--max", type=int, default=12, help="max results per query bucket")
     args = ap.parse_args()
 
-    all_items, seen = [], set()
+    pinned = load_pinned()
+    pinned_urls = {it.get("url") for it in pinned if it.get("url")}
+
+    live, seen = [], set()
     for bucket, q in QUERIES.items():
         try:
             print(f"[fetch] {bucket} …", file=sys.stderr)
             data = fetch(q, args.max)
             for it in parse(data, bucket):
                 key = it["url"]
-                if key and key not in seen:
+                if key and key not in seen and key not in pinned_urls:
                     seen.add(key)
-                    all_items.append(it)
+                    it.setdefault("tags", []).append("auto")
+                    live.append(it)
         except Exception as exc:  # noqa: BLE001
             print(f"[warn] {bucket} failed: {exc}", file=sys.stderr)
 
-    all_items.sort(key=lambda x: x["year"], reverse=True)
+    live.sort(key=lambda x: x["year"], reverse=True)
+    items = pinned + live  # curated highlights first, then freshest arXiv
     payload = {
         "updated": dt.datetime.utcnow().isoformat() + "Z",
-        "source": "arXiv API",
-        "count": len(all_items),
-        "items": all_items,
+        "source": "curated (data/feed_pinned.json) + arXiv API",
+        "count": len(items),
+        "pinned": len(pinned),
+        "items": items,
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
-    print(f"[done] wrote {len(all_items)} items -> {os.path.relpath(OUT)}", file=sys.stderr)
+    print(f"[done] wrote {len(items)} items ({len(pinned)} pinned + {len(live)} live) -> {os.path.relpath(OUT)}", file=sys.stderr)
 
 
 if __name__ == "__main__":

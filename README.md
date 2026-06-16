@@ -30,8 +30,20 @@ The browser can't fetch arXiv directly (no CORS headers), so use the included sc
 python3 scripts/fetch_arxiv.py --max 15
 ```
 
-This writes `data/feed.json`, which the dashboard reads. No third-party packages required
-(standard library only). Re-run it whenever you want fresh papers, then commit the updated JSON.
+This writes `data/feed.json` = **curated highlights** (`data/feed_pinned.json`, always kept,
+with hand-written summaries / official links / Ascend-readiness badges) **+ fresh arXiv papers**
+(deduped, tagged `auto`). No third-party packages required (standard library only).
+
+- To curate the feed, edit **`data/feed_pinned.json`** — never edit `data/feed.json` by hand
+  (it is regenerated).
+- A GitHub Actions workflow (`.github/workflows/refresh-feed.yml`) runs this **daily** and commits
+  `data/feed.json` if it changed; you can also trigger it manually from the Actions tab.
+
+### Ascend-readiness badges
+
+Any card (in `modeling.json`, `feed_pinned.json`, etc.) may carry an `"ascend"` field rendered as
+a badge and a filter chip: `"ready"` ✅, `"partial"` ⚠️, or `"none"` ❌. Add an optional
+`"ascendNote"` for the hover tooltip.
 
 ## Project layout
 
@@ -44,8 +56,10 @@ data/
   ascend.json         # Ascend/NPU entries (curated)
   modeling.json       # LLM modeling entries (curated)
   ideas.json          # project ideas (synthesized)
-  feed.json           # Live Papers (script-refreshable)
+  feed_pinned.json    # Live Papers — curated highlights (edit this)
+  feed.json           # Live Papers — generated: pinned + fresh arXiv (do not hand-edit)
 scripts/fetch_arxiv.py
+.github/workflows/refresh-feed.yml   # daily auto-refresh of feed.json
 ```
 
 ## Editing content
