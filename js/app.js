@@ -204,11 +204,28 @@ function wireSearch() {
 /* ---------- live papers (best-effort client-side) ---------- */
 function wireLive() {
   const btn = document.getElementById("live-refresh");
+  const reloadBtn = document.getElementById("live-reload");
   const status = document.getElementById("live-status");
   if (store.live && store.live.length) {
-    status.textContent = `Showing ${store.live.length} cached entries from data/feed.json`;
+    status.textContent = `Showing ${store.live.length} entries from data/feed.json`;
   } else {
-    status.textContent = "No cached feed. Run scripts/fetch_arxiv.py to populate data/feed.json.";
+    status.textContent = "No cached feed. Run scripts/fetch_arxiv.py or the GitHub Action.";
+  }
+  if (reloadBtn) {
+    reloadBtn.addEventListener("click", async () => {
+      status.textContent = "Reloading data/feed.json…";
+      const payload = await loadJSON(DATA_SOURCES.live + "?t=" + Date.now());
+      const items = payload && (payload.items || (Array.isArray(payload) ? payload : null));
+      if (items) {
+        store.live = items;
+        renderPanel("live");
+        buildFilterbars();
+        const upd = payload.updated ? ` · updated ${String(payload.updated).slice(0, 10)}` : "";
+        status.textContent = `Loaded ${items.length} entries${upd}.`;
+      } else {
+        status.textContent = "Couldn't load data/feed.json.";
+      }
+    });
   }
   btn.addEventListener("click", async () => {
     status.textContent = "Trying arXiv (may be blocked by CORS in-browser)…";

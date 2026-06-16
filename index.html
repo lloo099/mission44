@@ -99,11 +99,14 @@
       <div class="panel-head">
         <h2>Live Papers</h2>
         <p class="panel-sub">
-          Latest arXiv hits for RL + LLM + NPU queries. Loaded from <code>data/feed.json</code>,
-          refreshable via <code>scripts/fetch_arxiv.py</code>. A best-effort client-side fetch is attempted too.
+          Curated highlights + latest arXiv hits for RL + LLM + NPU queries. Loaded from <code>data/feed.json</code>,
+          which a daily GitHub Action keeps fresh. <strong>Reload latest data</strong> pulls the newest committed feed;
+          <strong>Run refresh on GitHub</strong> triggers a fresh fetch now.
         </p>
         <div class="live-controls">
-          <button id="live-refresh" class="ghost-btn">↻ Try live fetch</button>
+          <button id="live-reload" class="ghost-btn">↻ Reload latest data</button>
+          <a id="live-dispatch" class="ghost-btn" href="https://github.com/lloo099/mission44/actions/workflows/refresh-feed.yml" target="_blank" rel="noopener">⟳ Run refresh on GitHub ↗</a>
+          <button id="live-refresh" class="ghost-btn">Try direct arXiv</button>
           <span id="live-status" class="dim"></span>
         </div>
       </div>
