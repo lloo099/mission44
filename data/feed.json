@@ -22,10 +22,10 @@
       "org": "Zhipu AI",
       "year": "2026-06",
       "category": "rl-llm",
-      "summary": "Coding-first frontier model with a 1M-token context window and MIT open weights, launched Jun 13 2026. Official GLM-5 technical report on arXiv.",
+      "summary": "Launched Jun 13 2026; MIT open weights now live on Hugging Face (zai-org/GLM-5.2). 753B params (GLM-5.1-class 744B MoE / 40B active), context 200K→1M, max output 131K, coding-first. No official benchmarks at launch; media cites it edging GPT-5.5 on long-horizon coding (FrontierSWE/SWE-Marathon) at ~1/6 cost — treat as provisional.",
       "ascend": "partial",
       "ascendNote": "GLM-5 is supported on vLLM-Ascend (W8A8C8 quant); GLM-5.2 not yet listed by name.",
-      "url": "https://arxiv.org/abs/2602.15763",
+      "url": "https://huggingface.co/zai-org/GLM-5.2",
       "tags": [
         "live",
         "rl-llm",

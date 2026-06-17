@@ -10,18 +10,26 @@
       "category": "ascend-npu",
       "summary": "vLLM-Ascend's 2026 support matrix adds DeepSeek-V4 (custom 910B ops, MTP KV-cache sharding for spec decoding) and GLM-5 (W8A8C8 quant); Qwen3.5 + W8A8 across Qwen3/DeepSeek/MiniMax. MiniMax-M3 not yet listed.",
       "url": "https://docs.vllm.ai/projects/ascend/en/main/user_guide/support_matrix/supported_models.html",
-      "tags": ["live", "ascend-npu", "2026"]
+      "tags": [
+        "live",
+        "ascend-npu",
+        "2026"
+      ]
     },
     {
       "title": "GLM-5.2 open-sourced (MIT, 1M context)",
       "org": "Zhipu AI",
       "year": "2026-06",
       "category": "rl-llm",
-      "summary": "Coding-first frontier model with a 1M-token context window and MIT open weights, launched Jun 13 2026. Official GLM-5 technical report on arXiv.",
+      "summary": "Launched Jun 13 2026; MIT open weights now live on Hugging Face (zai-org/GLM-5.2). 753B params (GLM-5.1-class 744B MoE / 40B active), context 200K→1M, max output 131K, coding-first. No official benchmarks at launch; media cites it edging GPT-5.5 on long-horizon coding (FrontierSWE/SWE-Marathon) at ~1/6 cost — treat as provisional.",
       "ascend": "partial",
       "ascendNote": "GLM-5 is supported on vLLM-Ascend (W8A8C8 quant); GLM-5.2 not yet listed by name.",
-      "url": "https://arxiv.org/abs/2602.15763",
-      "tags": ["live", "rl-llm", "2026"]
+      "url": "https://huggingface.co/zai-org/GLM-5.2",
+      "tags": [
+        "live",
+        "rl-llm",
+        "2026"
+      ]
     },
     {
       "title": "MiniMax-M3 with MSA sparse attention",
@@ -32,7 +40,11 @@
       "ascend": "partial",
       "ascendNote": "MiniMax family has W8A8/QuaRot on vLLM-Ascend (M2.x); M3 not yet listed by name.",
       "url": "https://arxiv.org/abs/2606.13392",
-      "tags": ["live", "rl-llm", "2026"]
+      "tags": [
+        "live",
+        "rl-llm",
+        "2026"
+      ]
     },
     {
       "title": "DeepSeek-V4 (1.6T MoE, 1M context)",
@@ -43,7 +55,11 @@
       "ascend": "ready",
       "ascendNote": "Supported on Ascend 910B via vLLM-Ascend (custom ops, MTP KV-cache sharding for speculative decoding).",
       "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/DeepSeek_V4.pdf",
-      "tags": ["live", "rl-llm", "2026"]
+      "tags": [
+        "live",
+        "rl-llm",
+        "2026"
+      ]
     },
     {
       "title": "Agentic RL: a distinct paradigm (survey)",
@@ -52,7 +68,12 @@
       "category": "reasoning-rl",
       "summary": "Survey reframing agentic RL vs single-turn RLVR — multi-turn credit assignment, tool/environment interaction, long-horizon planning.",
       "url": "https://arxiv.org/abs/2604.27859",
-      "tags": ["live", "reasoning-rl", "agentic-rl", "2026"]
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "agentic-rl",
+        "2026"
+      ]
     },
     {
       "title": "Stable Asynchrony: variance-controlled off-policy RL",
@@ -61,7 +82,12 @@
       "category": "reasoning-rl",
       "summary": "Controls heavy-tailed importance weights from stale rollouts to keep async/off-policy GRPO stable at high asynchrony.",
       "url": "https://arxiv.org/abs/2602.17616",
-      "tags": ["live", "reasoning-rl", "async-rl", "2026"]
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "async-rl",
+        "2026"
+      ]
     },
     {
       "title": "Ascend 950PR / 950DT announced (FP8, self-built HBM)",
@@ -70,7 +96,11 @@
       "category": "ascend-npu",
       "summary": "Next-gen Ascend with native FP8/MXFP4 and Huawei's own HBM — 950PR (inference) ~Q1 2026, 950DT (training) ~Q4 2026. Opens the door to FP8 RL on Ascend.",
       "url": "https://www.techpowerup.com/341123/huawei-unveils-homegrown-hbm-and-ascend-950-bets-on-massive-superclusters",
-      "tags": ["live", "ascend-npu", "2026"]
+      "tags": [
+        "live",
+        "ascend-npu",
+        "2026"
+      ]
     },
     {
       "title": "vLLM-Ascend v0.13.0 released",
@@ -79,7 +109,11 @@
       "category": "ascend-npu",
       "summary": "Latest Ascend rollout backend — broader model coverage and performance; the rollout engine RL stacks target on NPU.",
       "url": "https://github.com/vllm-project/vllm-ascend",
-      "tags": ["live", "ascend-npu", "2026"]
+      "tags": [
+        "live",
+        "ascend-npu",
+        "2026"
+      ]
     },
     {
       "title": "DeepSeek-V3.2 + Sparse Attention (DSA)",
@@ -88,7 +122,11 @@
       "category": "rl-llm",
       "summary": "Open-weight frontier model with trainable sparse attention for cheaper long-context; RL post-training continues the R1 lineage.",
       "url": "https://arxiv.org/abs/2512.02556",
-      "tags": ["live", "rl-llm", "2026"]
+      "tags": [
+        "live",
+        "rl-llm",
+        "2026"
+      ]
     },
     {
       "title": "GDRO-RL: distributionally robust GRPO",
@@ -97,7 +135,11 @@
       "category": "reasoning-rl",
       "summary": "Rollout-/Prompt-GDRO reweight toward worst-case prompt distributions on top of GRPO for more robust reasoning RL.",
       "url": "https://arxiv.org/abs/2601.19280",
-      "tags": ["live", "reasoning-rl", "2026"]
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "2026"
+      ]
     },
     {
       "title": "MindSpeed-RL: Distributed RL Post-Training on Ascend NPU",
@@ -106,7 +148,10 @@
       "category": "ascend-npu",
       "summary": "Native distributed GRPO-family RL on Ascend, with experiments up to DeepSeek-R1-MoE-671B on a 384-NPU superpod — the strongest large-scale RL-on-Ascend evidence to date.",
       "url": "https://arxiv.org/abs/2507.19017",
-      "tags": ["live", "ascend-npu"]
+      "tags": [
+        "live",
+        "ascend-npu"
+      ]
     },
     {
       "title": "AsyncFlow: Asynchronous Streaming RL Post-Training",
@@ -115,7 +160,11 @@
       "category": "ascend-npu",
       "summary": "An async streaming RL framework targeting the throughput limits of synchronous/colocated RL — directly relevant to NPU constraints like the missing vLLM sleep mode.",
       "url": "https://arxiv.org/abs/2507.01663",
-      "tags": ["live", "ascend-npu", "async-rl"]
+      "tags": [
+        "live",
+        "ascend-npu",
+        "async-rl"
+      ]
     },
     {
       "title": "DeepSeek-R1: Incentivizing Reasoning via Reinforcement Learning",
@@ -124,7 +173,10 @@
       "category": "reasoning-rl",
       "summary": "Pure large-scale RL (GRPO + verifiable rewards) elicits emergent reasoning with no SFT (R1-Zero); catalyzed the 2025 RLVR wave.",
       "url": "https://arxiv.org/abs/2501.12948",
-      "tags": ["live", "reasoning-rl"]
+      "tags": [
+        "live",
+        "reasoning-rl"
+      ]
     },
     {
       "title": "GSPO: Group Sequence Policy Optimization",
@@ -133,7 +185,10 @@
       "category": "rl-llm",
       "summary": "Sequence-level importance ratios and clipping fix GRPO instability and notably stabilize MoE RL; contributed to Qwen3.",
       "url": "https://arxiv.org/abs/2507.18071",
-      "tags": ["live", "rl-llm"]
+      "tags": [
+        "live",
+        "rl-llm"
+      ]
     },
     {
       "title": "DAPO: An Open-Source LLM RL System at Scale",
@@ -142,7 +197,10 @@
       "category": "rl-llm",
       "summary": "GRPO + Clip-Higher, dynamic sampling, token-level loss, and overlong reward shaping; 50 on AIME 2024 with Qwen2.5-32B at half the steps.",
       "url": "https://arxiv.org/abs/2503.14476",
-      "tags": ["live", "rl-llm"]
+      "tags": [
+        "live",
+        "rl-llm"
+      ]
     },
     {
       "title": "ProRL: Prolonged RL Expands Reasoning Boundaries",
@@ -151,7 +209,10 @@
       "category": "reasoning-rl",
       "summary": "Stabilizes very long RL runs (KL control, reference resetting) and shows prolonged RL uncovers genuinely new reasoning strategies.",
       "url": "https://arxiv.org/abs/2505.24864",
-      "tags": ["live", "reasoning-rl"]
+      "tags": [
+        "live",
+        "reasoning-rl"
+      ]
     },
     {
       "title": "MiniMax-M1: Test-Time Compute with Lightning Attention (CISPO)",
@@ -160,7 +221,11 @@
       "category": "reasoning-rl",
       "summary": "Open hybrid-attention reasoner trained with CISPO (clips IS-weights, not tokens); full RL on 512 H800s in ~3 weeks.",
       "url": "https://arxiv.org/abs/2506.13585",
-      "tags": ["live", "reasoning-rl", "efficient-llm"]
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "efficient-llm"
+      ]
     },
     {
       "title": "AReaL: Large-Scale Asynchronous RL for Language Reasoning",
@@ -169,7 +234,11 @@
       "category": "rl-llm",
       "summary": "Fully decouples rollout from training with staleness-enhanced PPO for ~2.77x speedup; now ships a stable Ascend branch.",
       "url": "https://arxiv.org/abs/2505.24298",
-      "tags": ["live", "rl-llm", "async-rl"]
+      "tags": [
+        "live",
+        "rl-llm",
+        "async-rl"
+      ]
     },
     {
       "title": "Native Sparse Attention (NSA)",
@@ -178,7 +247,10 @@
       "category": "efficient-llm",
       "summary": "Trainable, hardware-aligned hierarchical sparse attention matching full attention with large speedups at 64K length.",
       "url": "https://arxiv.org/abs/2502.11089",
-      "tags": ["live", "efficient-llm"]
+      "tags": [
+        "live",
+        "efficient-llm"
+      ]
     },
     {
       "title": "The Entropy Mechanism of RL for Reasoning LLMs",
@@ -187,7 +259,10 @@
       "category": "rl-llm",
       "summary": "Explains policy-entropy collapse via log-prob/advantage covariance and proposes Clip-Cov / KL-Cov to sustain exploration.",
       "url": "https://arxiv.org/abs/2505.22617",
-      "tags": ["live", "rl-llm"]
+      "tags": [
+        "live",
+        "rl-llm"
+      ]
     },
     {
       "title": "Pretraining LLMs with NVFP4",
@@ -196,7 +271,10 @@
       "category": "efficient-llm",
       "summary": "Large-scale 4-bit (NVFP4) pretraining of a 12B model on 10T tokens matching FP8 — the most ambitious FP4 training run reported.",
       "url": "https://arxiv.org/abs/2509.25149",
-      "tags": ["live", "efficient-llm"]
+      "tags": [
+        "live",
+        "efficient-llm"
+      ]
     },
     {
       "title": "GLM-4.5: Agentic, Reasoning, and Coding Foundation Models",
@@ -205,7 +283,10 @@
       "category": "reasoning-rl",
       "summary": "Hybrid thinking/direct MoE (355B/32B) trained with a difficulty-based RL curriculum on the open-source 'slime' framework.",
       "url": "https://arxiv.org/abs/2508.06471",
-      "tags": ["live", "reasoning-rl"]
+      "tags": [
+        "live",
+        "reasoning-rl"
+      ]
     }
   ]
 }

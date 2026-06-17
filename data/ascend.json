@@ -2,6 +2,51 @@
   "updated": "2026-06-16",
   "items": [
     {
+      "title": "AscendCraft (auto Ascend kernel gen)",
+      "org": "research",
+      "year": "2026-01",
+      "category": "software-stack",
+      "innovation": "DSL-guided transcompilation auto-generates Ascend NPU kernels",
+      "analysis": "Innovation: auto-generates Ascend NPU kernels via DSL-guided transcompilation, so missing operators don't each need a hand-written Ascend C kernel. Performance: targets the long-tail op-coverage gap that bottlenecks porting GPU stacks to Ascend (speedups paper-reported). Fit for RL-on-NPU: directly attacks the 'operator/kernel coverage gaps' challenge on this dashboard — fewer manual kernels means faster bring-up of RL/attention ops on 910B.",
+      "summary": "Automatic Ascend NPU kernel generation through DSL-guided transcompilation — aimed at the long-tail operator gap that forces manual Ascend C kernels when porting CUDA stacks.",
+      "url": "https://arxiv.org/abs/2601.22760",
+      "tags": [
+        "kernel",
+        "codegen",
+        "2026"
+      ]
+    },
+    {
+      "title": "KVComp: sparse attention for vLLM-Ascend",
+      "org": "vLLM-Ascend community",
+      "year": "2026",
+      "category": "inference",
+      "innovation": "KV-compression sparse attention with custom NPU kernels",
+      "analysis": "Innovation: brings KV-compression sparse attention to vLLM-Ascend with custom NPU kernels (hamming_dist_top_k for top-k indices, reshape_and_cache_BNSD for cache layout). Status: community RFC/Issue #5507, on the 2026 roadmap. Fit for RL-on-NPU: sparse-attention rollout cuts decode memory/latency on memory-bound 910B — the practical NPU counterpart to DSA/MSA and a lever against the missing vLLM sleep-mode.",
+      "summary": "RFC (Issue #5507) bringing KV-compression sparse attention to vLLM-Ascend via custom kernels (hamming_dist_top_k, reshape_and_cache_BNSD) — fills the long-context inference gap on the 2026 Ascend roadmap.",
+      "url": "https://github.com/vllm-project/vllm-ascend/issues/5507",
+      "tags": [
+        "vllm-ascend",
+        "sparse-attention",
+        "kv-cache",
+        "2026"
+      ]
+    },
+    {
+      "title": "xMSDA (deformable attention on Ascend)",
+      "org": "research",
+      "year": "2025-05",
+      "category": "software-stack",
+      "innovation": "High-performance multi-scale deformable attention on Ascend (co-design)",
+      "summary": "A co-design implementation of multi-scale deformable attention tuned for Ascend NPUs — an example of squeezing non-standard attention ops onto NPU hardware.",
+      "url": "https://arxiv.org/abs/2505.14022",
+      "tags": [
+        "kernel",
+        "attention",
+        "ascend"
+      ]
+    },
+    {
       "title": "Ascend 950PR / 950DT",
       "org": "Huawei",
       "year": "2026",

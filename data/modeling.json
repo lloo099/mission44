@@ -2,6 +2,22 @@
   "updated": "2026-06-16",
   "items": [
     {
+      "title": "HISA: Hierarchical Indexing for Sparse Attention",
+      "org": "research",
+      "year": "2026-03",
+      "category": "long-context",
+      "innovation": "Efficient hierarchical indexing for fine-grained sparse attention",
+      "analysis": "Innovation: hierarchical indexing that makes fine-grained sparse attention's token/block selection cheap to compute. Fit for RL-on-NPU: the index step is the hidden cost in DSA/MSA-style sparsity; cheaper indexing helps these run efficiently — including on NPUs where custom index kernels are scarce.",
+      "summary": "Hierarchical indexing to accelerate the token/block-selection step of fine-grained sparse attention — addressing the indexing overhead shared by DSA/MSA-style schemes.",
+      "url": "https://arxiv.org/abs/2603.28458",
+      "tags": [
+        "sparse-attention",
+        "kv-cache",
+        "long-context",
+        "2026"
+      ]
+    },
+    {
       "title": "DeepSeek-V4 (V4-Pro / V4-Flash)",
       "org": "DeepSeek-AI",
       "year": "2026-04",
@@ -26,10 +42,10 @@
       "category": "model-report",
       "innovation": "Open-weight (MIT) frontier model, 1M context, coding-first",
       "analysis": "Innovation: an MIT-licensed, fully open-weight frontier model with a 1M-token window, tuned coding-first and shipped on a fast cadence (GLM-5 → 5.2 in months) as a deliberate open answer to export controls. Performance: reported competitive with closed models on multi-step reasoning and code generation — numbers are largely vendor/media-sourced pending independent evals. Fit for RL-on-NPU: GLM-5 is already supported on vLLM-Ascend (W8A8C8 quant), so 5.2 is likely a near-term target; its permissive license makes it an attractive base model for open RL post-training experiments on Ascend.",
-      "summary": "Launched Jun 13 2026 with a 1M-token context window and MIT-licensed open weights — coding-first frontier model, a response to tightened US export controls. Caps Zhipu's fast 2026 cadence (GLM-5 → 5-Turbo → 5.1 → 5.2). Weights + report on Hugging Face (zai-org/THUDM); architecture detailed in the official GLM-5 technical report (arXiv 2602.15763).",
+      "summary": "Launched Jun 13 2026; MIT open weights now live on Hugging Face (zai-org/GLM-5.2). 753B params (GLM-5.1-class 744B MoE / 40B active), context 200K→1M, max output 131K, coding-first. No official benchmarks at launch; media cites it edging GPT-5.5 on long-horizon coding (FrontierSWE/SWE-Marathon) at ~1/6 cost — treat as provisional.",
       "ascend": "partial",
       "ascendNote": "GLM-5 is supported on vLLM-Ascend (perf optimizations + W8A8C8 quant); GLM-5.2 not yet listed by name.",
-      "url": "https://arxiv.org/abs/2602.15763",
+      "url": "https://huggingface.co/zai-org/GLM-5.2",
       "tags": [
         "open-weights",
         "long-context",

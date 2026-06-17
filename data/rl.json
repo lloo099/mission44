@@ -2,6 +2,21 @@
   "updated": "2026-06-16",
   "items": [
     {
+      "title": "From Player to Master (test-time RL over memory)",
+      "org": "research",
+      "year": "2026-06",
+      "category": "trend",
+      "innovation": "RL over memory boosts agents' test-time learning",
+      "summary": "Enhances LLM agents' test-time learning by doing RL over an external memory — letting an agent improve within a task/episode rather than only at train time.",
+      "url": "https://arxiv.org/abs/2606.08656",
+      "tags": [
+        "agentic-rl",
+        "test-time",
+        "memory",
+        "2026"
+      ]
+    },
+    {
       "title": "Rethinking Agentic RL in LLMs (survey)",
       "org": "research",
       "year": "2026-04",
