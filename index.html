@@ -6,7 +6,7 @@
   <title>RL-on-NPU Research Dashboard · Ascend &amp; LLMs</title>
   <meta name="description" content="A live research dashboard tracking RL training for LLMs, the Ascend/NPU ecosystem, LLM modeling advances, and concrete project ideas." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="stylesheet" href="css/styles.css?v=20260616d" />
+  <link rel="stylesheet" href="css/styles.css?v=20260616e" />
 </head>
 <body>
   <header class="topbar">
@@ -30,6 +30,7 @@
     <button class="tab" data-tab="modeling">LLM Modeling</button>
     <button class="tab" data-tab="live">Live Papers</button>
     <button class="tab" data-tab="training">Training Curves</button>
+    <button class="tab" data-tab="survey">技术综述</button>
     <button class="tab" data-tab="ideas">Project Ideas</button>
   </nav>
 
@@ -134,6 +135,19 @@
       <div id="curve-legend" class="curve-legend"></div>
     </section>
 
+    <!-- Survey (rendered markdown) -->
+    <section class="panel" id="survey">
+      <div class="panel-head">
+        <h2>2026 H1 前沿开源大模型架构综述</h2>
+        <p class="panel-sub">
+          架构技术综述(注意力 / MoE / 优化器 / 后训练 / 训推一致性)。源文件:
+          <code>docs/2026-h1-architecture-survey.md</code> ·
+          <a class="link" href="docs/2026-h1-architecture-survey.md" target="_blank" rel="noopener">查看原文 ↗</a>
+        </p>
+      </div>
+      <article id="survey-body" class="prose"><div class="empty">Loading…</div></article>
+    </section>
+
     <!-- Ideas -->
     <section class="panel" id="ideas">
       <div class="panel-head">
@@ -150,7 +164,7 @@
     <span class="dim">Built as a research aid · data is hand-curated + script-refreshable · verify primary sources before citing.</span>
   </footer>
 
-  <script src="js/app.js?v=20260616d"></script>
-  <script src="js/analyst.js?v=20260616d"></script>
+  <script src="js/app.js?v=20260616e"></script>
+  <script src="js/analyst.js?v=20260616e"></script>
 </body>
 </html>

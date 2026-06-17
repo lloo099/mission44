@@ -216,6 +216,27 @@ table.cmp td.cmp-none { color: #f08a8a; }
 .curve-legend .sw { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
 #curve-metric { padding: 4px 8px; }
 
+/* Survey (rendered markdown) */
+.prose { max-width: 860px; color: #c8cedb; font-size: 14px; line-height: 1.72; }
+.prose h1 { font-size: 24px; margin: 0 0 14px; line-height: 1.25; }
+.prose h2 { font-size: 19px; margin: 30px 0 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.prose h3 { font-size: 15.5px; margin: 20px 0 8px; color: #e6e9f0; }
+.prose p { margin: 10px 0; }
+.prose ul, .prose ol { margin: 10px 0; padding-left: 22px; }
+.prose li { margin: 5px 0; }
+.prose strong { color: #eef1f7; }
+.prose code { background: var(--bg-3); border-radius: 5px; padding: 1px 6px; font-size: 12.5px; }
+.prose hr { border: none; border-top: 1px solid var(--line); margin: 22px 0; }
+.prose blockquote { margin: 14px 0; padding: 10px 16px; border-left: 3px solid var(--accent); background: var(--bg-2); border-radius: 0 8px 8px 0; color: #aeb6c8; }
+.prose blockquote p { margin: 6px 0; }
+.prose a { color: var(--accent-2, #6aa6ff); }
+.prose .prose-tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; margin: 14px 0; }
+.prose table { border-collapse: collapse; width: 100%; font-size: 12.5px; min-width: 520px; }
+.prose th, .prose td { text-align: left; padding: 8px 11px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose tr:first-child th { background: var(--bg-3); color: var(--dim); position: sticky; top: 0; }
+.prose tr:last-child td { border-bottom: none; }
+.prose td { color: #aeb6c8; }
+
 /* Ideas */
 .ideas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
 .idea {

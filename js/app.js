@@ -41,8 +41,97 @@ async function init() {
   wireLive();
   wireCurves();
   wireCompare();
+  wireSurvey();
   setLastUpdated();
 }
+
+/* ---------- survey (tiny markdown renderer, no deps) ---------- */
+async function wireSurvey() {
+  const el = document.getElementById("survey-body");
+  if (!el) return;
+  try {
+    const res = await fetch("docs/2026-h1-architecture-survey.md", { cache: "no-cache" });
+    if (!res.ok) throw new Error(res.status);
+    el.innerHTML = renderMarkdown(await res.text());
+  } catch (e) {
+    el.innerHTML = `<div class="empty">Couldn't load the survey markdown (${escapeHtml(String(e.message || e))}).</div>`;
+  }
+}
+
+function mdInline(s) {
+  const SENT = "\u0000";
+  s = escapeHtml(s).replace(/\\\*/g, SENT);
+  s = s.replace(/`([^`]+)`/g, (m, a) => `<code>${a}</code>`);
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>");
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return s.split(SENT).join("*");
+}
+
+function renderMarkdown(md) {
+  const lines = md.replace(/\r/g, "").split("\n");
+  const out = [];
+  const splitRow = (l) => l.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+  let i = 0;
+  while (i < lines.length) {
+    let l = lines[i];
+    if (!l.trim()) { i++; continue; }
+
+    // heading
+    let m = l.match(/^(#{1,6})\s+(.*)$/);
+    if (m) { const n = m[1].length; out.push(`<h${n}>${mdInline(m[2])}</h${n}>`); i++; continue; }
+
+    // horizontal rule (dashes only, no pipe → not a table separator)
+    if (/^-{3,}\s*$/.test(l)) { out.push("<hr>"); i++; continue; }
+
+    // table: a row with | followed by a |---| separator
+    if (l.includes("|") && i + 1 < lines.length && /^\s*\|?[\s:|-]*-[\s:|-]*\|/.test(lines[i + 1]) && lines[i + 1].includes("-")) {
+      const head = splitRow(l);
+      i += 2; // skip header + separator
+      const body = [];
+      while (i < lines.length && lines[i].includes("|") && lines[i].trim()) { body.push(splitRow(lines[i])); i++; }
+      const th = head.map((c) => `<th>${mdInline(c)}</th>`).join("");
+      const rows = body.map((r) => `<tr>${r.map((c) => `<td>${mdInline(c)}</td>`).join("")}</tr>`).join("");
+      out.push(`<div class="prose-tablewrap"><table>${`<tr>${th}</tr>`}${rows}</table></div>`);
+      continue;
+    }
+
+    // blockquote
+    if (/^>\s?/.test(l)) {
+      const buf = [];
+      while (i < lines.length && /^>\s?/.test(lines[i])) { buf.push(lines[i].replace(/^>\s?/, "")); i++; }
+      const paras = buf.join("\n").split(/\n{2,}/).map((p) => `<p>${mdInline(p.replace(/\n/g, " "))}</p>`).join("");
+      out.push(`<blockquote>${paras}</blockquote>`);
+      continue;
+    }
+
+    // unordered list
+    if (/^[-*]\s+/.test(l)) {
+      const items = [];
+      while (i < lines.length && /^[-*]\s+/.test(lines[i])) { items.push(`<li>${mdInline(lines[i].replace(/^[-*]\s+/, ""))}</li>`); i++; }
+      out.push(`<ul>${items.join("")}</ul>`);
+      continue;
+    }
+
+    // ordered list
+    if (/^\d+\.\s+/.test(l)) {
+      const items = [];
+      while (i < lines.length && /^\d+\.\s+/.test(lines[i])) { items.push(`<li>${mdInline(lines[i].replace(/^\d+\.\s+/, ""))}</li>`); i++; }
+      out.push(`<ol>${items.join("")}</ol>`);
+      continue;
+    }
+
+    // paragraph (gather until blank / block start)
+    const para = [];
+    while (i < lines.length && lines[i].trim() && !/^(#{1,6}\s|>|[-*]\s|\d+\.\s|-{3,}\s*$)/.test(lines[i]) && !(lines[i].includes("|") && i + 1 < lines.length && lines[i + 1].includes("-") && lines[i + 1].includes("|"))) {
+      para.push(lines[i]); i++;
+    }
+    if (para.length) out.push(`<p>${mdInline(para.join(" "))}</p>`);
+    else { i++; }
+  }
+  return out.join("\n");
+}
+
 
 /* ---------- stats ---------- */
 function buildStats() {
