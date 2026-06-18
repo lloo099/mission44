@@ -111,7 +111,7 @@
 
   let svg, view = "core", idx = 0, playing = false, speed = 1;
   let raf = null, lastTs = 0, stageElapsed = 0, packets = [];
-  let rlTimer = null, rlPhase = 0;
+  let rlTimer = null, rlPhase = 0, rlOffload = true;
 
   /* ---------- RL memory-contention view ---------- */
   const RL_PHASES = [
@@ -145,10 +145,35 @@
     </div>`;
   }
 
+  // Ascend column behaviour depends on the offload toggle
+  function ascendState(phaseKey) {
+    if (phaseKey === "rollout")
+      return { h: { w: 22, r: 60, t: 12 }, ok: true,
+        st: "rollout 与 train 都常驻同一份 64GB HBM。" };
+    if (rlOffload)
+      return { h: { w: 22, r: 8, t: 56 }, ok: false,
+        st: "↔ Offload 开:把 KV cache/权重 搬到 host(DRAM),HBM 放得下了 — 但 PCIe 搬运慢,时间线空泡变长。用时间换显存。" };
+    return { h: { w: 22, r: 46, t: 36 }, ok: false,
+      st: "⚠ Offload 关:rollout + train 超过 64GB → OOM,训练放不下,必须缩小 batch 才能跑。" };
+  }
+
+  function rlTimelineAscend() {
+    if (rlOffload)
+      return `<span class="rl-tllab">Ascend</span><span class="blk roll">Rollout</span>` +
+        `<span class="blk bubble" style="flex:5">offload 空泡(慢)</span><span class="blk tr sm">Train</span>` +
+        `<span class="rl-tlnote warn">能跑,但更慢</span>`;
+    return `<span class="rl-tllab">Ascend</span><span class="blk roll">Rollout</span>` +
+      `<span class="blk oomblk" style="flex:6">✗ OOM · 放不下</span>` +
+      `<span class="rl-tlnote warn">训练受阻</span>`;
+  }
+
   function renderRL(container) {
     stopLoop(); packets = []; clearRL();
     container.querySelector("#arch-stage").innerHTML = `
       <div class="rl-wrap">
+        <div class="rl-toolbar">
+          <label class="rl-toggle"><input type="checkbox" id="rl-offload" ${rlOffload ? "checked" : ""}> Offload 到 host(用时间换显存)</label>
+        </div>
         <div class="rl-phase" id="rl-phase"></div>
         <div class="rl-cols">
           ${rlColHTML("cuda", "CUDA + vLLM sleep-mode")}
@@ -157,9 +182,15 @@
         <div class="rl-legend">W = 权重 · R = rollout(KV cache + 权重) · T = train(优化器 + 梯度 + 激活)</div>
         <div class="rl-tl">
           <div class="rl-tlrow"><span class="rl-tllab">CUDA</span><span class="blk roll">Rollout</span><span class="blk tr">Train</span><span class="rl-tlnote">背靠背 · 高吞吐</span></div>
-          <div class="rl-tlrow"><span class="rl-tllab">Ascend</span><span class="blk roll">Rollout</span><span class="blk bubble">空泡/offload</span><span class="blk tr sm">Train</span><span class="rl-tlnote warn">同样工作,更慢</span></div>
+          <div class="rl-tlrow" id="rl-tl-ascend">${rlTimelineAscend()}</div>
         </div>
       </div>`;
+    container.querySelector("#rl-offload").addEventListener("change", (e) => {
+      rlOffload = e.target.checked;
+      const row = container.querySelector("#rl-tl-ascend");
+      if (row) row.innerHTML = rlTimelineAscend();
+      applyRL(container);
+    });
     rlPhase = 0;
     applyRL(container);
     rlTimer = setInterval(() => { rlPhase = (rlPhase + 1) % RL_PHASES.length; applyRL(container); }, 2800);
@@ -167,8 +198,7 @@
 
   function applyRL(container) {
     const p = RL_PHASES[rlPhase];
-    const set = (scn) => {
-      const h = p[scn];
+    const set = (scn, h) => {
       ["w", "t", "r"].forEach((k) => { const el = container.querySelector(`#rl-${scn}-${k}`); if (el) el.style.height = h[k] + "%"; });
       const total = h.w + h.t + h.r;
       const track = container.querySelector(`#rl-${scn}-track`);
@@ -176,13 +206,14 @@
       if (track) track.classList.toggle("over", total > 96);
       if (oom) oom.style.opacity = total > 96 ? "1" : "0";
     };
-    set("cuda"); set("ascend");
+    const asc = ascendState(p.key);
+    set("cuda", p.cuda); set("ascend", asc.h);
     const ph = container.querySelector("#rl-phase");
     if (ph) ph.innerHTML = `<span class="arch-step">${p.title}</span> ${p.narr}`;
     const cst = container.querySelector("#rl-cuda-st");
     const ast = container.querySelector("#rl-ascend-st");
     if (cst) { cst.textContent = p.cudaSt; cst.className = "rl-status " + (p.cudaOk ? "ok" : "warn"); }
-    if (ast) { ast.textContent = p.ascSt; ast.className = "rl-status " + (p.ascOk ? "ok" : "warn"); }
+    if (ast) { ast.textContent = asc.st; ast.className = "rl-status " + (asc.ok ? "ok" : "warn"); }
   }
 
   function clearRL() { if (rlTimer) { clearInterval(rlTimer); rlTimer = null; } }
