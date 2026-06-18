@@ -111,6 +111,81 @@
 
   let svg, view = "core", idx = 0, playing = false, speed = 1;
   let raf = null, lastTs = 0, stageElapsed = 0, packets = [];
+  let rlTimer = null, rlPhase = 0;
+
+  /* ---------- RL memory-contention view ---------- */
+  const RL_PHASES = [
+    {
+      key: "rollout", title: "阶段 1 · Rollout(生成样本)",
+      narr: "推理引擎(vLLM-Ascend)用当前策略生成大量样本,KV cache + 权重占住显存。",
+      cuda: { w: 22, r: 60, t: 0 }, ascend: { w: 22, r: 60, t: 12 },
+      cudaSt: "rollout 独占显存(train 占用已释放)。", cudaOk: true,
+      ascSt: "rollout 与 train 都常驻同一份 64GB HBM。", ascOk: true,
+    },
+    {
+      key: "train", title: "阶段 2 · Train(更新策略)",
+      narr: "用刚生成的样本做 GRPO 更新:需要优化器状态 + 梯度 + 激活,显存需求更大。",
+      cuda: { w: 22, r: 0, t: 70 }, ascend: { w: 22, r: 46, t: 36 },
+      cudaSt: "✅ sleep-mode 让 rollout 引擎休眠、释放显存给 train 复用 → 高利用率、几乎无气泡。", cudaOk: true,
+      ascSt: "⚠ 无 sleep-mode:KV cache 无法释放 → 只能缩小 batch + offload 到 host(慢),产生空泡、吞吐下降。", ascOk: false,
+    },
+  ];
+
+  function rlColHTML(id, title, okBadge) {
+    return `<div class="rl-col" id="rl-${id}">
+      <div class="rl-coltitle">${title}</div>
+      <div class="mem-track" id="rl-${id}-track">
+        <div class="cap-line"><span>64GB 上限</span></div>
+        <div class="oom" id="rl-${id}-oom">⚠ 争用 / OOM 风险</div>
+        <div class="seg r" id="rl-${id}-r"><span>R</span></div>
+        <div class="seg t" id="rl-${id}-t"><span>T</span></div>
+        <div class="seg w" id="rl-${id}-w"><span>W</span></div>
+      </div>
+      <div class="rl-status" id="rl-${id}-st"></div>
+    </div>`;
+  }
+
+  function renderRL(container) {
+    stopLoop(); packets = []; clearRL();
+    container.querySelector("#arch-stage").innerHTML = `
+      <div class="rl-wrap">
+        <div class="rl-phase" id="rl-phase"></div>
+        <div class="rl-cols">
+          ${rlColHTML("cuda", "CUDA + vLLM sleep-mode")}
+          ${rlColHTML("ascend", "Ascend(无 sleep-mode)")}
+        </div>
+        <div class="rl-legend">W = 权重 · R = rollout(KV cache + 权重) · T = train(优化器 + 梯度 + 激活)</div>
+        <div class="rl-tl">
+          <div class="rl-tlrow"><span class="rl-tllab">CUDA</span><span class="blk roll">Rollout</span><span class="blk tr">Train</span><span class="rl-tlnote">背靠背 · 高吞吐</span></div>
+          <div class="rl-tlrow"><span class="rl-tllab">Ascend</span><span class="blk roll">Rollout</span><span class="blk bubble">空泡/offload</span><span class="blk tr sm">Train</span><span class="rl-tlnote warn">同样工作,更慢</span></div>
+        </div>
+      </div>`;
+    rlPhase = 0;
+    applyRL(container);
+    rlTimer = setInterval(() => { rlPhase = (rlPhase + 1) % RL_PHASES.length; applyRL(container); }, 2800);
+  }
+
+  function applyRL(container) {
+    const p = RL_PHASES[rlPhase];
+    const set = (scn) => {
+      const h = p[scn];
+      ["w", "t", "r"].forEach((k) => { const el = container.querySelector(`#rl-${scn}-${k}`); if (el) el.style.height = h[k] + "%"; });
+      const total = h.w + h.t + h.r;
+      const track = container.querySelector(`#rl-${scn}-track`);
+      const oom = container.querySelector(`#rl-${scn}-oom`);
+      if (track) track.classList.toggle("over", total > 96);
+      if (oom) oom.style.opacity = total > 96 ? "1" : "0";
+    };
+    set("cuda"); set("ascend");
+    const ph = container.querySelector("#rl-phase");
+    if (ph) ph.innerHTML = `<span class="arch-step">${p.title}</span> ${p.narr}`;
+    const cst = container.querySelector("#rl-cuda-st");
+    const ast = container.querySelector("#rl-ascend-st");
+    if (cst) { cst.textContent = p.cudaSt; cst.className = "rl-status " + (p.cudaOk ? "ok" : "warn"); }
+    if (ast) { ast.textContent = p.ascSt; ast.className = "rl-status " + (p.ascOk ? "ok" : "warn"); }
+  }
+
+  function clearRL() { if (rlTimer) { clearInterval(rlTimer); rlTimer = null; } }
 
   function el(id) { return svg && svg.querySelector(id); }
 
@@ -172,6 +247,7 @@
   }
 
   function renderCore(container) {
+    clearRL();
     container.querySelector("#arch-stage").innerHTML = CORE_SVG;
     svg = container.querySelector("#arch-svg");
     setStage(0);
@@ -179,7 +255,7 @@
   }
 
   function renderChip(container) {
-    stopLoop(); packets = [];
+    stopLoop(); packets = []; clearRL();
     container.querySelector("#arch-stage").innerHTML = chipSVG();
     svg = container.querySelector("#arch-svg");
     const nb = document.getElementById("arch-narr");
@@ -190,7 +266,9 @@
     view = v;
     container.querySelectorAll(".arch-viewbtn").forEach((b) => b.classList.toggle("active", b.dataset.view === v));
     container.querySelector("#arch-controls").style.visibility = (v === "core") ? "visible" : "hidden";
-    if (v === "core") renderCore(container); else renderChip(container);
+    if (v === "core") renderCore(container);
+    else if (v === "rl") renderRL(container);
+    else renderChip(container);
   }
 
   function wireArch() {
@@ -201,6 +279,7 @@
       <div class="arch-bar">
         <div class="arch-views">
           <button class="arch-viewbtn active" data-view="core">AI Core 内部</button>
+          <button class="arch-viewbtn" data-view="rl">RL 显存争用</button>
           <button class="arch-viewbtn" data-view="chip">芯片 / 超节点</button>
         </div>
         <div class="arch-controls" id="arch-controls">
