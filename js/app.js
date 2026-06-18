@@ -42,6 +42,7 @@ async function init() {
   wireCurves();
   wireCompare();
   wireSurvey();
+  if (window.wireArch) wireArch();
   setLastUpdated();
 }
 

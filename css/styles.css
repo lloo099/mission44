@@ -216,6 +216,61 @@ table.cmp td.cmp-none { color: #f08a8a; }
 .curve-legend .sw { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
 #curve-metric { padding: 4px 8px; }
 
+/* NPU architecture animation */
+.arch-wrap { display: flex; flex-direction: column; gap: 12px; }
+.arch-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.arch-views { display: flex; gap: 8px; }
+.arch-viewbtn { font-size: 12.5px; font-weight: 600; color: var(--dim); background: var(--bg-3); border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+.arch-viewbtn.active { color: var(--accent); border-color: var(--accent); }
+.arch-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.arch-controls input[type=range] { vertical-align: middle; width: 90px; }
+.arch-dots { display: inline-flex; gap: 5px; }
+.arch-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--bg-3); border: 1px solid var(--line); display: inline-block; }
+.arch-dots i.on { background: var(--accent); border-color: var(--accent); }
+.arch-stage { background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; padding: 6px; }
+.arch-stage svg { display: block; width: 100%; height: auto; color: var(--accent-2, #6aa6ff); }
+
+.arch-core { fill: rgba(106,166,255,.04); stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 7 6; }
+.arch-core-label { fill: var(--dim); font-size: 13px; font-weight: 600; }
+.arch-offchip { fill: var(--dim); font-size: 11px; }
+
+.arch-node rect { fill: var(--bg-3); stroke: var(--line); stroke-width: 1.5; transition: stroke .2s, filter .2s; }
+.arch-node text { fill: #c8cedb; font-size: 12px; font-weight: 600; }
+.arch-node.mem rect { fill: #1c2433; stroke: #34507e; }
+.arch-node.compute rect { fill: #20302a; stroke: #2f7d5c; }
+.arch-node.ctrl rect { fill: #2c2740; stroke: #6a5ba8; }
+.arch-node.off rect { fill: #241c2e; stroke: #7a5a86; }
+.arch-node.active rect { stroke: var(--accent); stroke-width: 2.6; filter: drop-shadow(0 0 7px rgba(120,170,255,.55)); }
+.arch-node.active text { fill: #fff; }
+
+.arch-edge { stroke: #46506a; stroke-width: 2; fill: none; }
+.arch-edge.active { stroke: var(--accent-2, #6aa6ff); }
+.arch-edge.arch-ctrl { stroke: #5b6480; stroke-width: 1.4; stroke-dasharray: 5 5; }
+.arch-elabel { fill: var(--dim); font-size: 10.5px; }
+.arch-packet { fill: #7fd1ff; filter: drop-shadow(0 0 4px rgba(127,209,255,.8)); }
+.arch-packet.ctrl { fill: #b9a7ff; }
+
+.arch-narr { background: var(--bg-2); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0; padding: 12px 14px; font-size: 13.5px; line-height: 1.65; color: #c8cedb; min-height: 64px; }
+.arch-narr .arch-step { color: var(--accent); font-weight: 700; margin-right: 6px; }
+.arch-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11.5px; color: var(--dim); }
+.arch-legend i.lg { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; border: 1px solid var(--line); }
+.arch-legend i.lg.mem { background: #1c2433; border-color: #34507e; }
+.arch-legend i.lg.compute { background: #20302a; border-color: #2f7d5c; }
+.arch-legend i.lg.ctrl { background: #2c2740; border-color: #6a5ba8; }
+.arch-legend i.lg.dash { background: transparent; border-style: dashed; border-color: #5b6480; }
+.arch-legend i.lg.pkt { background: #7fd1ff; border-color: #7fd1ff; border-radius: 50%; }
+
+/* chip view */
+.chip-core { fill: #20302a; stroke: #2f7d5c; animation: corepulse 2.4s ease-in-out infinite; }
+@keyframes corepulse { 0%,100% { fill: #1a2620; } 50% { fill: #2f7d5c; } }
+.chip-hbm { fill: #241c2e; stroke: #7a5a86; }
+.chip-node { fill: #1c2433; stroke: #34507e; }
+.chip-lbl { fill: #c8cedb; font-size: 13px; font-weight: 600; }
+.chip-lbl.small { fill: var(--dim); font-size: 11px; font-weight: 500; }
+.hccs-ring { fill: none; stroke: var(--accent-2, #6aa6ff); stroke-width: 2; opacity: 0; animation: hccs 2.6s ease-out infinite; }
+@keyframes hccs { 0% { r: 6; opacity: .7; } 100% { r: 150; opacity: 0; } }
+.arch-chip-note { font-size: 13px; line-height: 1.65; color: #c8cedb; margin: 4px 2px 0; }
+
 /* Survey (rendered markdown) */
 .prose { max-width: 860px; color: #c8cedb; font-size: 14px; line-height: 1.72; }
 .prose h1 { font-size: 24px; margin: 0 0 14px; line-height: 1.25; }
