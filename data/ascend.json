@@ -63,12 +63,12 @@
       ]
     },
     {
-      "title": "vLLM-Ascend v0.13.0",
+      "title": "vLLM-Ascend v0.18.0 (latest stable)",
       "org": "vLLM + Huawei (Ascend)",
-      "year": "2026-02",
+      "year": "2026-05",
       "category": "software-stack",
       "innovation": "Latest Ascend rollout backend — broader model coverage + perf",
-      "summary": "The vLLM Ascend plugin reached v0.13.0 in Feb 2026, extending model coverage and performance after large-scale Expert Parallelism (EP) landed in v0.9.1 (Sep 2025). It is the rollout engine RL stacks (verl / MindSpeed-RL) target on NPU; the sleep/offload gap vs CUDA vLLM remains the key constraint.",
+      "summary": "vLLM-Ascend reached v0.18.0 (May 2026), the production-recommended stable release — broader model coverage and performance after large-scale Expert Parallelism (v0.9.1, Sep 2025). It migrates attention/sampling ops to CANN, adapts Ascend's memory pool, and optimizes HCCS comms. The rollout engine RL stacks (verl / MindSpeed-RL) target on NPU; the sleep/offload gap vs CUDA vLLM remains the key constraint.",
       "url": "https://github.com/vllm-project/vllm-ascend",
       "tags": [
         "vllm-ascend",

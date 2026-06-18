@@ -2,6 +2,50 @@
   "updated": "2026-06-16",
   "items": [
     {
+      "title": "FP8-RL: stable low-precision RL stack",
+      "org": "research",
+      "year": "2026-01",
+      "category": "algorithm",
+      "innovation": "Practical, stable FP8 stack for LLM reinforcement learning",
+      "analysis": "Innovation: a practical FP8 rollout (and partial training) stack for RL, tackling FP8's instability in the RL loop with engineering + algorithmic fixes. Performance: reports stable low-precision RL with memory/throughput wins (paper-reported). Fit for RL-on-NPU: this is the missing recipe for the 'FP8 RL on Ascend' opportunity the 950 series opens — and the precision pitfalls it documents are exactly what align-probe should watch for on NPU.",
+      "summary": "A practical, stable FP8 stack for LLM RL — addresses the instability of applying FP8 in the rollout/training loop via engineering and algorithmic techniques. Directly relevant to FP8 RL on next-gen NPUs.",
+      "url": "https://arxiv.org/abs/2601.18150",
+      "tags": [
+        "FP8",
+        "low-precision",
+        "efficiency",
+        "2026"
+      ]
+    },
+    {
+      "title": "ROLL Flash (async RLVR + agentic)",
+      "org": "research",
+      "year": "2025-10",
+      "category": "framework",
+      "innovation": "Asynchronous RLVR/agentic training with fine-grained parallelism",
+      "summary": "Extends ROLL with a fully asynchronous training workflow and fine-grained parallelism to accelerate RLVR and agentic post-training — another point in the async/disaggregated RL design space.",
+      "url": "https://arxiv.org/abs/2510.11345",
+      "tags": [
+        "async-rl",
+        "agentic-rl",
+        "systems"
+      ]
+    },
+    {
+      "title": "TR-GRPO (Token-Regulated GRPO)",
+      "org": "research",
+      "year": "2025-11",
+      "category": "algorithm",
+      "innovation": "Token-level regulation stabilizes GRPO training",
+      "summary": "Regulates per-token contributions in the GRPO objective to stabilize RL for LLMs, reducing variance/instability in long-sequence updates.",
+      "url": "https://arxiv.org/abs/2511.00066",
+      "tags": [
+        "GRPO",
+        "stability",
+        "reasoning"
+      ]
+    },
+    {
       "title": "From Player to Master (test-time RL over memory)",
       "org": "research",
       "year": "2026-06",
