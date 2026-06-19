@@ -1,7 +1,7 @@
 {
-  "updated": "2026-06-18T10:49:40.072221Z",
+  "updated": "2026-06-19T10:58:47.671663Z",
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 53,
+  "count": 55,
   "pinned": 22,
   "items": [
     {
@@ -290,11 +290,11 @@
       ]
     },
     {
-      "title": "Learning User Simulators with Turing Rewards",
-      "org": "Yingshan Susan Wang +7",
-      "year": "2026-06-17",
-      "summary": "Learning to simulate human users in interactive settings could advance the training of agent assistants, evaluation of personalization systems, research in the social sciences, and more. Existing approaches generally do so by training a large language model (LLM) to match a single ground truth respo…",
-      "url": "http://arxiv.org/abs/2606.19336v1",
+      "title": "ELVA: Exploring Ranking-Driven Universal Multimodal Retrieval",
+      "org": "Yuhan Liu +10",
+      "year": "2026-06-18",
+      "summary": "Leveraging Multimodal Large Language Models (MLLMs) via contrastive learning has become a mainstream paradigm for improving the performance of Universal Multimodal Retrieval (UMR). However, previous works have ignored the grain blindness when adapting the contrastive paradigm into retrieval tasks. G…",
+      "url": "http://arxiv.org/abs/2606.20280v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -303,11 +303,11 @@
       ]
     },
     {
-      "title": "Rethinking Reward Supervision: Rubric-Conditioned Self-Distillation",
-      "org": "Siyi Gu +4",
-      "year": "2026-06-17",
-      "summary": "Post-training of reasoning language models is commonly driven by supervised distillation and reinforcement learning with verifiable rewards. Distillation often relies on chain-of-thought annotations that are expensive to obtain and may themselves be noisy, incomplete, or partially incorrect; even wh…",
-      "url": "http://arxiv.org/abs/2606.19327v1",
+      "title": "Process-Verified Reinforcement Learning for Theorem Proving via Lean",
+      "org": "Minsu Kim +1",
+      "year": "2026-06-18",
+      "summary": "While reinforcement learning from verifiable rewards (RLVR) typically has relied on a single binary verification signal, symbolic proof assistants in formal reasoning offer rich, fine-grained structured feedback. This gap between structured processes and unstructured rewards highlights the importanc…",
+      "url": "http://arxiv.org/abs/2606.20068v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -316,11 +316,11 @@
       ]
     },
     {
-      "title": "STARE: Surprisal-Guided Token-Level Advantage Reweighting for Policy Entropy Stability",
-      "org": "Haipeng Luo +6",
-      "year": "2026-06-17",
-      "summary": "Reinforcement Learning with Verifiable Rewards algorithms like GRPO have emerged as the dominant post-training paradigm for complex reasoning in LLMs, yet commonly suffer from policy entropy collapse during training. We conduct a first-order gradient analysis of token-level entropy dynamics under GR…",
-      "url": "http://arxiv.org/abs/2606.19236v1",
+      "title": "Hierarchical Control in Multi-Agent Games: LLM-based Planning and RL Execution",
+      "org": "Jannik Hösch +7",
+      "year": "2026-06-18",
+      "summary": "Reinforcement learning (RL) has achieved strong performance in sequential decision-making, yet scaling to complex multi-agent environments remains challenging due to sparse rewards, large state-action spaces, and the difficulty of learning coordinated strategies. We propose a hierarchical architectu…",
+      "url": "http://arxiv.org/abs/2606.20014v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -329,11 +329,11 @@
       ]
     },
     {
-      "title": "Spotlight: Synergizing Seed Exploration and Spot GPUs for DiT RL Post-Training",
-      "org": "Ruiqi Lai +8",
-      "year": "2026-06-17",
-      "summary": "Reinforcement learning (RL) post-training of Diffusion Transformers (DiTs) is prohibitively expensive, requiring thousands of high-end GPUs. Existing works explore two directions to reduce cost: seed exploration improves training convergence by selecting high-contrast samples, yet adds compute to th…",
-      "url": "http://arxiv.org/abs/2606.19004v1",
+      "title": "VIMPO: Value-Implicit Policy Optimization for LLMs",
+      "org": "Zhewei Kang +4",
+      "year": "2026-06-18",
+      "summary": "Reinforcement learning with verifiable rewards has become a central tool for improving the reasoning ability of large language models, but current methods face a trade-off between simplicity and credit assignment. Group-relative methods such as GRPO avoid training a critic, but typically assign a tr…",
+      "url": "http://arxiv.org/abs/2606.20008v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -342,11 +342,11 @@
       ]
     },
     {
-      "title": "EfficientRollout: System-Aware Self-Speculative Decoding for RL Rollouts",
-      "org": "Minseo Kim +9",
-      "year": "2026-06-17",
-      "summary": "Reinforcement learning (RL) has become a representative post-training paradigm for LLMs, enabling strong reasoning and agentic capabilities. However, rollout generation remains a dominant latency bottleneck because autoregressive sampling decodes responses sequentially and a small number of long-tai…",
-      "url": "http://arxiv.org/abs/2606.18967v1",
+      "title": "Connect the Dots: Training LLMs for Long-Lifecycle Agents with Cross-Domain Generalization Via Reinforcement Learning",
+      "org": "Yanxi Chen +6",
+      "year": "2026-06-18",
+      "summary": "This work presents a general framework for training large language models (LLMs) to \"Connect the Dots\" (CoD), a meta-capability required by long-lifecycle agents: as an LLM-based AI agent gets deployed in an environment, it solves a long sequence of tasks while continuously exploring the environment…",
+      "url": "http://arxiv.org/abs/2606.20002v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -355,11 +355,11 @@
       ]
     },
     {
-      "title": "GraphPO: Graph-based Policy Optimization for Reasoning Models",
-      "org": "Yuliang Zhan +9",
-      "year": "2026-06-17",
-      "summary": "Reinforcement Learning with Verifiable Rewards (RLVR) has become a standard paradigm for enhancing the capability of large reasoning models. RLVR typically samples responses independently and optimizes the policy using from final answers. This paradigm has two limitations. First, independently respo…",
-      "url": "http://arxiv.org/abs/2606.18954v1",
+      "title": "CARE: Competence-Aware Reward Shaping for Adaptive Reasoning Length in Video-MLLMs",
+      "org": "Chengwen Liu +5",
+      "year": "2026-06-18",
+      "summary": "In multimodal video reasoning, reinforcement learning-based methods typically rely on simplistic and inflexible reasoning-length control strategies that fail to adapt to the model's evolving competence. This mismatch may suppress necessary exploration at early stages, while encouraging redundant rea…",
+      "url": "http://arxiv.org/abs/2606.19927v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -368,11 +368,11 @@
       ]
     },
     {
-      "title": "REVES: REvision and VErification--Augmented Training for Test-Time Scaling",
-      "org": "Yuanxin Liu +8",
-      "year": "2026-06-17",
-      "summary": "Test-time scaling via sequential revision has emerged as a powerful paradigm for enhancing Large Language Model (LLM) reasoning. However, standard post-training methods primarily optimize single-shot objectives, creating a fundamental misalignment with multi-step inference dynamics. While recent wor…",
-      "url": "http://arxiv.org/abs/2606.18910v1",
+      "title": "MetaResearcher: Scaling Deep Research via Self-Reflective Reinforcement Learning in Adversarial Virtual Environments",
+      "org": "Wei Yu +6",
+      "year": "2026-06-18",
+      "summary": "Deep research agents have demonstrated remarkable capabilities in autonomous information gathering and synthesis, yet their training remains constrained by the static nature of simulated environments, the limits of fact-retrieval-only task designs, and the inefficiency of outcome-based reinforcement…",
+      "url": "http://arxiv.org/abs/2606.19893v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -381,11 +381,11 @@
       ]
     },
     {
-      "title": "Beyond Reward Engineering: A Data Recipe for Long-Context Reinforcement Learning",
-      "org": "Xiaoyue Xu +4",
-      "year": "2026-06-17",
-      "summary": "Long-context reasoning is an essential capability for large language models, particularly when they are deployed as autonomous agents that must reason over lengthy trajectories. Reinforcement learning (RL) has recently emerged as a dominant paradigm for improving this ability, yet existing work larg…",
-      "url": "http://arxiv.org/abs/2606.18831v1",
+      "title": "Uncertainty-Aware Reward Modeling for Stable RLHF",
+      "org": "Licheng Pan +9",
+      "year": "2026-06-18",
+      "summary": "Reinforcement learning from human feedback (RLHF) aligns large language models by training reward models on preference data and optimizing policies to maximize predicted rewards. However, this pipeline faces two fundamental challenges: (1) reward models cannot signal when their predictions are unrel…",
+      "url": "http://arxiv.org/abs/2606.19818v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -394,11 +394,11 @@
       ]
     },
     {
-      "title": "Learning from Own Solutions: Self-Conditioned Credit Assignment for Reinforcement Learning with Verifiable Rewards",
-      "org": "Yingyu Shan +9",
-      "year": "2026-06-17",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) has driven substantial progress in training LLMs for reasoning tasks, but representative methods such as GRPO assign uniform credit across all tokens, wasting gradient on routine tokens while under-crediting pivotal reasoning steps. Existing toke…",
-      "url": "http://arxiv.org/abs/2606.18810v1",
+      "title": "Beyond Entropy: Learning from Token-Level Distributional Deviations for LLM Reasoning",
+      "org": "Xuanzhi Feng +8",
+      "year": "2026-06-18",
+      "summary": "Reinforcement Learning with Verifiable Rewards (RLVR) has significantly advanced Large Language Model (LLM) reasoning; however, it faces a fundamental optimization instability: uniform token updates precipitate entropy collapse, leading to premature convergence to suboptimal strategies, whereas exce…",
+      "url": "http://arxiv.org/abs/2606.19771v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -407,15 +407,171 @@
       ]
     },
     {
-      "title": "Generating Natural and Expressive Robot Gestures through Iterative Reinforcement Learning with Human Feedback using LLMs",
-      "org": "Chris Lee +3",
-      "year": "2026-06-17",
-      "summary": "Expressive gestures are essential for natural and effective communication, complementing speech when verbal cues alone are insufficient (e.g., pointing). For social robots such as the humanoid Pepper, producing natural and expressive movements is critical for improving human-robot interaction (HRI) …",
-      "url": "http://arxiv.org/abs/2606.18747v1",
+      "title": "Manifold Bandits: Bayesian Curriculum Learning over the Latent Geometry of Large Language Models",
+      "org": "Darrien McKenzie +2",
+      "year": "2026-06-18",
+      "summary": "Reinforcement learning (RL) is a central approach for improving reasoning capabilities in large language models (LLMs), where training efficiency depends critically on how problems are sampled during optimization. Existing adaptive curriculum learning methods typically prioritize prompts of intermed…",
+      "url": "http://arxiv.org/abs/2606.19750v1",
       "category": "rl-llm",
       "tags": [
         "live",
         "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Directors Duties in the Age of Agentic Artificial Intelligence",
+      "org": "Deirdre Ahern",
+      "year": "2026-06-18",
+      "summary": "As boards engage with the adoption of Artificial Intelligence including agentic AI to drive operational efficiencies, this presents new opportunities for profit maximisation. AI adoption is increasingly identified with employee role displacement and in companies, and the interests of employees as st…",
+      "url": "http://arxiv.org/abs/2606.20453v1",
+      "category": "ascend-npu",
+      "tags": [
+        "live",
+        "ascend-npu",
+        "auto"
+      ]
+    },
+    {
+      "title": "Four-digit Kaprekar dynamics in odd bases",
+      "org": "Evan Chen +3",
+      "year": "2026-06-18",
+      "summary": "Start with four digits, arrange them in both descending and ascending order, subtract, and repeat. This simple process is known as the Kaprekar routine, famous in base ten for sending every nonconstant four-digit string to $6174$. We show that in every odd base $B>3$, the four-digit Kaprekar map has…",
+      "url": "http://arxiv.org/abs/2606.20439v1",
+      "category": "ascend-npu",
+      "tags": [
+        "live",
+        "ascend-npu",
+        "auto"
+      ]
+    },
+    {
+      "title": "Toward Calibrated Mixture-of-Experts Under Distribution Shift",
+      "org": "Gina Wong +4",
+      "year": "2026-06-18",
+      "summary": "Calibration aligns a model's predictive uncertainty with the frequencies of its empirical outcomes and is important for understanding and trusting reported probabilities. Recent work shows that enforcing calibration at the level of individual predictors can improve ensemble accuracy and calibration,…",
+      "url": "http://arxiv.org/abs/2606.20544v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "UltraQuant: 4-bit KV Caching for Context-Heavy Agents",
+      "org": "Inesh Chakrabarti +6",
+      "year": "2026-06-18",
+      "summary": "Context-heavy agents place unusual pressure on the key-value (KV) cache: long prefixes are reused across many short turns, while concurrency determines whether the serving system can keep GPUs utilized. We study 4-bit KV-cache compression for this setting, using TurboQuant-style rotation and codeboo…",
+      "url": "http://arxiv.org/abs/2606.20474v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Rethinking Shrinkage Bias in LLM FP4 Pretraining: Geometric Origin, Systemic Impact, and UFP4 Recipe",
+      "org": "Qian Zhao +11",
+      "year": "2026-06-18",
+      "summary": "FP4 training promises substantial reductions in memory and computation cost for LLM pretraining, yet current FP4 hardware paths and recipes, including NVIDIA Blackwell/Rubin-class systems and AMD MI350-series GPUs, remain centered on E2M1 data elements. In this study, we identify a fundamental limit…",
+      "url": "http://arxiv.org/abs/2606.20381v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Quantization as a Malicious Task: Removing Quantization-Conditioned Backdoors via Task Arithmetic",
+      "org": "Kaihsun Yang +2",
+      "year": "2026-06-18",
+      "summary": "Model quantization is widely adopted to reduce memory usage and inference cost when deploying deep neural networks on resource-constrained devices. However, recent studies have revealed a new security threat known as Quantization-Conditioned Backdoors (QCBs), where a model behaves normally in full p…",
+      "url": "http://arxiv.org/abs/2606.20254v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "MedRLM: Recursive Multimodal Health Intelligence for Long-Context Clinical Reasoning, Sensor-Guided Screening, Evidence-Grounded Decision Support, and Community-to-Tertiary Referral Optimization",
+      "org": "Aueaphum Aueawatthanaphisut",
+      "year": "2026-06-18",
+      "summary": "Real-world clinical decision support requires reasoning over heterogeneous and longitudinal patient information rather than answering isolated medical questions. However, current medical large language models and retrieval-augmented generation systems often rely on single-step prompting or retrieval…",
+      "url": "http://arxiv.org/abs/2606.20164v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "HydraHead: From Head-Level Functional Heterogeneity to Specialized Attention Hybridization",
+      "org": "Zhentao Tan +6",
+      "year": "2026-06-18",
+      "summary": "The quadratic complexity of attention poses a critical bottleneck for long-context processing, spurring interest in hybrid attention designs. Most open-source hybrid models adopt a layer-wise strategy. Yet, prior work has noted the inherent difficulty of integrating Linear Attention (LA) with Full A…",
+      "url": "http://arxiv.org/abs/2606.20097v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Alzheimer's Disease Diagnosis using a Multimodal Approach with 3D MRI and PET",
+      "org": "Loukas Ilias +3",
+      "year": "2026-06-18",
+      "summary": "Alzheimer's disease (AD) is an irreversible neurodegenerative disorder and a leading cause of death worldwide. Early diagnosis plays an important part especially at the Mild Cognitive Impairment stage, where timely intervention can help slow its progression before it advances to AD. Neuroimaging dat…",
+      "url": "http://arxiv.org/abs/2606.20037v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "StreamKL: Fast and Memory-Efficient KL Divergence for Boosting Attention Distillation",
+      "org": "Guangda Liu +8",
+      "year": "2026-06-18",
+      "summary": "Attention distillation, which trains one attention distribution to match another by minimizing their Kullback-Leibler (KL) divergence, is widely used in knowledge distillation, model compression, continual learning, and sparse-attention LLM training. However, existing approaches materialize both att…",
+      "url": "http://arxiv.org/abs/2606.20005v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "SAC: Disaggregated KV Cache System for Sparse Attention LLMs with CXL",
+      "org": "Ruiyang Ma +9",
+      "year": "2026-06-18",
+      "summary": "The scaling of LLMs toward long-context inference has shifted the primary serving system bottleneck from computation to memory capacity. Traditional solutions for dense attention models rely on RDMA-based disaggregated memory pools, which perform coarse-grained fetching of the entire prefix KV cache…",
+      "url": "http://arxiv.org/abs/2606.19746v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Hard or Just Unreached? Diagnosing the Sampling Blind Spot in Math-Reasoning Difficulty Estimation",
+      "org": "Luca Zhou +3",
+      "year": "2026-06-17",
+      "summary": "Math and science reasoning benchmarks rely on pass@k, the fraction of sampled chains that reach gold, as the canonical per-example difficulty signal. The same signal drives RL with verifiable rewards, math data curation, synthetic curricula, and verifier training. We show this proxy has a persistent…",
+      "url": "http://arxiv.org/abs/2606.19636v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
         "auto"
       ]
     },
@@ -433,11 +589,11 @@
       ]
     },
     {
-      "title": "Mechanism-Guided Selective Unlearning for RLVR-Induced Reasoning",
-      "org": "Chenyu Zhou +3",
+      "title": "Rethinking Reward Supervision: Rubric-Conditioned Self-Distillation",
+      "org": "Siyi Gu +4",
       "year": "2026-06-17",
-      "summary": "We propose MAST (Mechanism-Aligned Selective Targeting), a mechanism-guided method for unlearning RLVR-induced reasoning with substantially lower collateral damage than standard full-parameter updates. In matched SFT/RLVR checkpoints on Qwen2.5-Math-1.5B and Qwen3-1.7B-Base, the SFT-to-RLVR incremen…",
-      "url": "http://arxiv.org/abs/2606.19222v1",
+      "summary": "Post-training of reasoning language models is commonly driven by supervised distillation and reinforcement learning with verifiable rewards. Distillation often relies on chain-of-thought annotations that are expensive to obtain and may themselves be noisy, incomplete, or partially incorrect; even wh…",
+      "url": "http://arxiv.org/abs/2606.19327v1",
       "category": "reasoning-rl",
       "tags": [
         "live",
@@ -446,76 +602,11 @@
       ]
     },
     {
-      "title": "PragReST: Self-Reinforcing Counterfactual Reasoning for Pragmatic Language Understanding",
-      "org": "Jihyung Park +3",
+      "title": "CTS-MoE: Implicit Terrain Adaptation via Mixture-of-Experts for Perceptive Locomotion",
+      "org": "Francisco Affonso +5",
       "year": "2026-06-17",
-      "summary": "Natural language understanding often depends on meanings that are implied rather than explicitly stated, requiring pragmatic reasoning. Despite strong performance on math and logical reasoning, large language models (LLMs) still struggle with making pragmatic inferences, often choosing literal inter…",
-      "url": "http://arxiv.org/abs/2606.18624v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "Human-AI Coevolution Dynamics: A Formal Theory of Social Intelligence Emergence Through Long-Term Interaction",
-      "org": "Jingyi Zhou +2",
-      "year": "2026-06-17",
-      "summary": "Current conversational AI systems have made significant progress in language generation, personalization, and long-context interaction. However, most existing methods model social behavior through isolated components such as emotion modeling, memory retrieval, or persona conditioning, lacking a unif…",
-      "url": "http://arxiv.org/abs/2606.19144v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Geometric and Stochastic Analysis of Discontinuities in Sparse Mixture-of-Experts",
-      "org": "Tho Tran Huu +6",
-      "year": "2026-06-17",
-      "summary": "Sparse Mixture-of-Experts (SMoE) architectures are now widely deployed in state-of-the-art language and vision models, where conditional routing allows scaling to very large networks. However, this very Top-$k$ expert selection that enables conditional routing also renders the SMoE map inherently di…",
-      "url": "http://arxiv.org/abs/2606.19036v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "FoMoE: Breaking the Full-Replica Barrier with a Federation of MoEs",
-      "org": "Lorenzo Sani +7",
-      "year": "2026-06-17",
-      "summary": "Pre-training Large Language Models (LLMs) typically demands large-scale infrastructure with tightly coupled hardware accelerators. While increasing model and dataset scale remains the dominant driver of performance, Mixture-of-Experts (MoEs) architectures have recently achieved state-of-the-art resu…",
-      "url": "http://arxiv.org/abs/2606.19025v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "From Tokens to Energy Flexibility: Quantization-Enabled Demand Response for Data Centers with LLM Inference Workloads",
-      "org": "Bojun Du +7",
-      "year": "2026-06-17",
-      "summary": "The rapid growth of large language model (LLM) inference is creating significant data-center loads that face increasing energy-management challenges under tightening grid conditions and demand response (DR) requirements. Conventional data-center energy management mainly relies on temporal and spatia…",
-      "url": "http://arxiv.org/abs/2606.18851v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "GateMem: Benchmarking Memory Governance in Multi-Principal Shared-Memory Agents",
-      "org": "Zhe Ren +9",
-      "year": "2026-06-17",
-      "summary": "Memory benchmarks for LLM agents largely assume single-user settings, leaving shared assistants for hospitals, workplaces, campuses, and households understudied. In these deployments, multiple principals write to a common memory pool and query it under different roles, scopes, and relationships, so …",
-      "url": "http://arxiv.org/abs/2606.18829v1",
+      "summary": "Perceptive legged locomotion over discontinuous terrain (e.g., stairs, gaps, and obstacles) requires adaptive behavior, as a single conservative gait cannot produce the anticipatory maneuvers needed for abrupt topology changes. Cast as multi-task reinforcement learning, this problem introduces a ten…",
+      "url": "http://arxiv.org/abs/2606.19633v1",
       "category": "efficient-llm",
       "tags": [
         "live",
@@ -546,45 +637,6 @@
       "tags": [
         "live",
         "ascend-npu",
-        "auto"
-      ]
-    },
-    {
-      "title": "Towards Scalable Customization and Deployment of Multi-Agent Systems for Enterprise Applications",
-      "org": "Paresh Dashore +7",
-      "year": "2026-06-16",
-      "summary": "Large language model (LLM)-based multi-agent systems demonstrate strong performance on complex reasoning and task execution, enabling broad enterprise applications. However, production deployment remains challenging due to domain-specific customization requirements and high latency and inference cos…",
-      "url": "http://arxiv.org/abs/2606.18502v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "EventDrive: Event Cameras for Vision-Language Driving Intelligence",
-      "org": "Dongyue Lu +8",
-      "year": "2026-06-16",
-      "summary": "Event cameras sense the world through asynchronous brightness changes with microsecond latency and high dynamic range, offering motion fidelity far beyond frame-based sensors and capturing temporal structure that conventional exposures often miss. These properties make events a powerful complement t…",
-      "url": "http://arxiv.org/abs/2606.18242v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "The Stanford EDGAR Filings Dataset: Reconstructing U.S. Corporate and Financial Disclosures into Layout-Faithful and Token-Efficient Pretraining Data",
-      "org": "Nick Bettencourt +2",
-      "year": "2026-06-16",
-      "summary": "As high-quality public web corpora become increasingly exhausted, clean long-context documents have become a scarce and expensive source of training data for large language models (LLMs). Existing long-context corpora are often proprietary and costly to acquire, synthetically generated, or concentra…",
-      "url": "http://arxiv.org/abs/2606.18192v2",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
         "auto"
       ]
     },
@@ -658,33 +710,7 @@
       "org": "Shubham Jaiswal",
       "year": "2026-06-10",
       "summary": "We extend the theory of root clusters from perfect fields to general fields which are not necessarily perfect. We introduce the following notions for field extensions over any given base field and study their interesting properties: root cluster size, multicluster size and their generalizations root…",
-      "url": "http://arxiv.org/abs/2606.12660v1",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
-        "auto"
-      ]
-    },
-    {
-      "title": "TileFuse: A Fused Mixed-Precision Kernel Library for Efficient Quantized LLM Inference on AMD NPUs",
-      "org": "Wesley Pang +3",
-      "year": "2026-06-09",
-      "summary": "With the growing demand for on-device LLM inference, edge SoCs increasingly integrate NPUs to improve performance and energy efficiency under tight power and thermal budgets. However, practical LLM deployment on current client NPUs remains difficult: widely used quantization formats such as AWQ do n…",
-      "url": "http://arxiv.org/abs/2606.11357v1",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
-        "auto"
-      ]
-    },
-    {
-      "title": "Energy-Efficient On-Device RAG on a Mobile NPU: System Design and Benchmark on Snapdragon X Elite",
-      "org": "Zhiyuan Cheng +1",
-      "year": "2026-06-09",
-      "summary": "Retrieval-Augmented Generation (RAG) pipelines are compute-intensive, combining embedding, retrieval, reranking, and large language model (LLM) generation. Running them entirely on-device benefits privacy, latency, and offline use, but the energy cost of CPU inference is a major barrier. We present …",
-      "url": "http://arxiv.org/abs/2606.11257v1",
+      "url": "http://arxiv.org/abs/2606.12660v2",
       "category": "ascend-npu",
       "tags": [
         "live",
