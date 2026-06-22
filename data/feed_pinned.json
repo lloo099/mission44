@@ -1,8 +1,21 @@
 {
   "updated": "2026-06-16",
   "source": "seeded (run scripts/fetch_arxiv.py to refresh from the arXiv API)",
-  "count": 22,
+  "count": 23,
   "items": [
+    {
+      "title": "新一批开源模型 (6月中): Qwen3 Coder Next · MiniMax M2.7 · Nemotron 3 Ultra",
+      "org": "various",
+      "year": "2026-06",
+      "category": "rl-llm",
+      "summary": "6 月中又一波开放权重发布:Qwen3 Coder Next、MiniMax M2.5/M2.7 Highspeed、NVIDIA Nemotron 3 Ultra 等(新闻聚合,基准/细节待官方)。",
+      "url": "https://llm-stats.com/ai-news",
+      "tags": [
+        "live",
+        "rl-llm",
+        "2026"
+      ]
+    },
     {
       "title": "DeepSeek-V4 & GLM-5 run on Ascend 910B (vLLM-Ascend)",
       "org": "vLLM + Huawei",

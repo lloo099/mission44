@@ -2,6 +2,22 @@
   "updated": "2026-06-16",
   "items": [
     {
+      "title": "ReSum (RLVR + self-summarization)",
+      "org": "research",
+      "year": "2026-06",
+      "category": "algorithm",
+      "innovation": "Compresses reasoning via self-summarization to avoid overlong rollouts",
+      "analysis": "Innovation: an RLVR framework where the model learns to self-summarize its reasoning trajectory mid-rollout, compressing long chains so they don't blow the context budget while keeping coherence. Performance: targets the 'overlong rollout degrades reasoning + wastes context' failure mode of vanilla RLVR. Fit for RL-on-NPU: shorter/compressed rollouts directly cut KV-cache memory during generation — exactly the pressure that bites on 64GB 910B (see the RL 显存争用 view).",
+      "summary": "An RLVR framework that lets an LLM compress its reasoning via mid-trajectory self-summarization, avoiding overlong rollouts that waste context and hurt coherence (submitted Jun 11 2026).",
+      "url": "https://arxiv.org/abs/2606.13316",
+      "tags": [
+        "RLVR",
+        "reasoning",
+        "long-context",
+        "2026"
+      ]
+    },
+    {
       "title": "FP8-RL: stable low-precision RL stack",
       "org": "research",
       "year": "2026-01",
