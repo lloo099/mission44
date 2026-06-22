@@ -314,6 +314,16 @@ table.cmp td.cmp-none { color: #f08a8a; }
 .rl-toggle { font-size: 12.5px; color: #c8cedb; cursor: pointer; user-select: none; background: var(--bg-3); border: 1px solid var(--line); border-radius: 8px; padding: 6px 11px; }
 .rl-toggle input { vertical-align: -1px; margin-right: 6px; }
 
+/* tab match counts (shown while searching) */
+.tab-count { font-size: 9.5px; font-weight: 700; color: var(--accent); margin-left: 3px; vertical-align: super; }
+.tab-count.zero { color: var(--dim); }
+
+/* respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+  .chip-core, .hccs-ring { animation: none !important; }
+}
+
 /* Survey (rendered markdown) */
 .prose { max-width: 860px; color: #c8cedb; font-size: 14px; line-height: 1.72; }
 .prose h1 { font-size: 24px; margin: 0 0 14px; line-height: 1.25; }

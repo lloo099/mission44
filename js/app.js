@@ -304,15 +304,25 @@ function ideaHTML(e) {
 }
 
 /* ---------- tabs / search ---------- */
+function activateTab(name, push) {
+  const tab = document.querySelector(`.tab[data-tab="${name}"]`);
+  const panel = document.getElementById(name);
+  if (!tab || !panel) return;
+  document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+  tab.classList.add("active");
+  panel.classList.add("active");
+  if (push && location.hash.slice(1) !== name) history.replaceState(null, "", "#" + name);
+}
+
 function wireTabs() {
   document.querySelectorAll(".tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
-      document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
-      tab.classList.add("active");
-      document.getElementById(tab.dataset.tab).classList.add("active");
-    });
+    tab.addEventListener("click", () => activateTab(tab.dataset.tab, true));
   });
+  // deep-link: open the tab named in the URL hash, and react to back/forward
+  const fromHash = () => { const h = location.hash.slice(1); if (h && document.getElementById(h)) activateTab(h, false); };
+  window.addEventListener("hashchange", fromHash);
+  fromHash();
   // number keys 1..9 jump to tabs (when not typing in a field)
   document.addEventListener("keydown", (e) => {
     if (!/^[1-9]$/.test(e.key)) return;
@@ -323,14 +333,31 @@ function wireTabs() {
   });
 }
 
+function updateTabCounts() {
+  ["rl", "ascend", "modeling", "ideas", "live"].forEach((key) => {
+    const tab = document.querySelector(`.tab[data-tab="${key === "live" ? "live" : key}"]`);
+    if (!tab) return;
+    let sup = tab.querySelector(".tab-count");
+    if (!searchTerm) { if (sup) sup.remove(); return; }
+    const n = (store[key] || []).filter((e) => matchesFilter(key, e)).length;
+    if (!sup) { sup = document.createElement("sup"); sup.className = "tab-count"; tab.appendChild(sup); }
+    sup.textContent = n;
+    sup.classList.toggle("zero", n === 0);
+  });
+}
+
 function wireSearch() {
   const box = document.getElementById("search");
   box.addEventListener("input", () => {
     searchTerm = box.value.trim().toLowerCase();
     ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel);
+    updateTabCounts();
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "/" && document.activeElement !== box) { e.preventDefault(); box.focus(); }
+    if (e.key === "Escape" && document.activeElement === box && box.value) {
+      box.value = ""; searchTerm = ""; ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel); updateTabCounts();
+    }
   });
 }
 

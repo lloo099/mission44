@@ -3,6 +3,7 @@
    Exposes window.wireArch(); called from app.js init(). */
 (function () {
   const NS = "http://www.w3.org/2000/svg";
+  const REDUCE = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   /* ---------- AI Core diagram (the animated one) ---------- */
   const node = (id, x, y, w, h, lines, cls) =>
@@ -191,9 +192,9 @@
       if (row) row.innerHTML = rlTimelineAscend();
       applyRL(container);
     });
-    rlPhase = 0;
+    rlPhase = REDUCE ? 1 : 0;   // reduced-motion: show the contention (train) phase, no cycling
     applyRL(container);
-    rlTimer = setInterval(() => { rlPhase = (rlPhase + 1) % RL_PHASES.length; applyRL(container); }, 2800);
+    if (!REDUCE) rlTimer = setInterval(() => { rlPhase = (rlPhase + 1) % RL_PHASES.length; applyRL(container); }, 2800);
   }
 
   function applyRL(container) {
@@ -257,7 +258,7 @@
     packets.forEach((p) => {
       if (!p.len) { p.len = p.path.getTotalLength(); } // recompute once visible
       if (!p.len) return;
-      p.off = (p.off + (dt / 1000) * v) % p.len;
+      if (!REDUCE) p.off = (p.off + (dt / 1000) * v) % p.len; // freeze motion if reduced-motion
       const pt = p.path.getPointAtLength(p.off);
       p.c.setAttribute("cx", pt.x); p.c.setAttribute("cy", pt.y);
     });
@@ -339,13 +340,13 @@
     container.querySelector("#arch-speed").addEventListener("input", (e) => { speed = +e.target.value; });
 
     setView("core", container);
-    setPlaying(true);
+    setPlaying(!REDUCE);
 
     // re-render when the tab is opened (recomputes path lengths now that it's visible)
     const tabBtn = document.querySelector('.tab[data-tab="arch"]');
     if (tabBtn) tabBtn.addEventListener("click", () => {
       requestAnimationFrame(() => {
-        if (view === "core") { setStage(idx); setPlaying(true); }
+        if (view === "core") { setStage(idx); setPlaying(!REDUCE); }
       });
     });
   }
