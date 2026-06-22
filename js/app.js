@@ -42,8 +42,44 @@ async function init() {
   wireCurves();
   wireCompare();
   wireSurvey();
+  wireTimeline();
   if (window.wireArch) wireArch();
   setLastUpdated();
+}
+
+/* ---------- timeline (aggregated from curated data) ---------- */
+function wireTimeline() {
+  const el = document.getElementById("timeline-body");
+  if (!el) return;
+  const DOMAINS = { rl: "RL", ascend: "Ascend", modeling: "Modeling" };
+  const rows = [];
+  Object.keys(DOMAINS).forEach((key) => {
+    (store[key] || []).forEach((e) => {
+      const m = String(e.year || "").match(/(\d{4})(?:[-/](\d{2}))?/);
+      if (!m) return;
+      const y = +m[1], mo = m[2] ? +m[2] : 0;
+      rows.push({ y, mo, key, label: DOMAINS[key], e });
+    });
+  });
+  rows.sort((a, b) => (b.y - a.y) || (b.mo - a.mo) || a.label.localeCompare(b.label));
+  if (!rows.length) { el.innerHTML = `<div class="empty">No dated entries.</div>`; return; }
+
+  let html = "", lastKeyLabel = "";
+  rows.forEach((r) => {
+    const gl = r.mo ? `${r.y}-${String(r.mo).padStart(2, "0")}` : `${r.y}`;
+    if (gl !== lastKeyLabel) { html += `<div class="tl-month">${gl}</div>`; lastKeyLabel = gl; }
+    const e = r.e;
+    const title = e.url
+      ? `<a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${hl(e.title || "")}</a>`
+      : hl(e.title || "");
+    html += `<div class="tl-item">
+      <span class="tl-dom dom-${r.key}">${escapeHtml(r.label)}</span>
+      <span class="tl-title">${title}</span>
+      ${e.category ? `<span class="tl-cat">${escapeHtml(e.category)}</span>` : ""}
+      ${confBadge(e)}${ascendBadge(e)}
+    </div>`;
+  });
+  el.innerHTML = `<div class="tl-count">${rows.length} dated entries</div>${html}`;
 }
 
 /* ---------- survey (tiny markdown renderer, no deps) ---------- */
