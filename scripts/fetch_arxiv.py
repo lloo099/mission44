@@ -26,8 +26,11 @@ ARXIV_API = "http://export.arxiv.org/api/query"
 QUERIES = {
     "rl-llm": 'abs:"reinforcement learning" AND (abs:"large language model" OR abs:LLM OR abs:RLHF OR abs:GRPO)',
     "reasoning-rl": 'abs:"verifiable reward" OR abs:RLVR OR (abs:reasoning AND abs:"reinforcement learning")',
-    "ascend-npu": 'abs:Ascend OR abs:"NPU" OR abs:CANN OR abs:MindSpore',
-    "efficient-llm": 'abs:"mixture of experts" OR abs:"FP8 training" OR abs:"long context" OR abs:quantization AND abs:LLM',
+    "agentic-rl": '(abs:agentic OR abs:"LLM agent" OR abs:"multi-turn") AND abs:"reinforcement learning"',
+    "ascend-npu": 'abs:Ascend OR abs:"NPU" OR abs:CANN OR abs:MindSpore OR abs:"Da Vinci"',
+    "sparse-attention": '(abs:"sparse attention" OR abs:"KV cache" OR abs:"long context") AND (abs:LLM OR abs:transformer)',
+    "fp8-lowprec": '(abs:"FP8" OR abs:"low-precision" OR abs:"low precision" OR abs:"MXFP4") AND (abs:training OR abs:LLM)',
+    "efficient-llm": 'abs:"mixture of experts" OR (abs:quantization AND abs:LLM)',
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
