@@ -1,0 +1,17 @@
+name: CI
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: JS syntax check
+        run: for f in js/*.js; do echo "checking $f"; node --check "$f"; done
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.x" }
+      - name: Python compile
+        run: python -m py_compile scripts/*.py
+      - name: Validate data JSON
+        run: python scripts/validate_data.py
