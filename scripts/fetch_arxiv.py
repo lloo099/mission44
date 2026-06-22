@@ -50,6 +50,21 @@ def load_pinned():
     return data.get("items", []) if isinstance(data, dict) else (data or [])
 
 
+def curated_urls():
+    """URLs already shown as curated cards in the domain tabs — skip them in the
+    auto feed so the same paper doesn't appear twice."""
+    s = set()
+    for fn in ("rl.json", "ascend.json", "modeling.json"):
+        try:
+            with open(os.path.join(HERE, "..", "data", fn), encoding="utf-8") as f:
+                for it in (json.load(f).get("items") or []):
+                    if it.get("url"):
+                        s.add(it["url"])
+        except (OSError, json.JSONDecodeError):
+            pass
+    return s
+
+
 def fetch(query: str, max_results: int):
     params = {
         "search_query": query,
@@ -94,6 +109,7 @@ def main():
 
     pinned = load_pinned()
     pinned_urls = {it.get("url") for it in pinned if it.get("url")}
+    skip_urls = pinned_urls | curated_urls()  # avoid duplicating curated cards
 
     live, seen = [], set()
     for bucket, q in QUERIES.items():
@@ -102,7 +118,7 @@ def main():
             data = fetch(q, args.max)
             for it in parse(data, bucket):
                 key = it["url"]
-                if key and key not in seen and key not in pinned_urls:
+                if key and key not in seen and key not in skip_urls:
                     seen.add(key)
                     it.setdefault("tags", []).append("auto")
                     live.append(it)

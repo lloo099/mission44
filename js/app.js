@@ -222,7 +222,7 @@ function cardHTML(e) {
   const slim = JSON.stringify({ title: e.title, org: e.org, year: e.year, category: e.category, innovation: e.innovation, summary: e.summary, url: e.url, tags: e.tags, analysis: e.analysis });
   const analyzed = !!e.analysis || (window.hasSavedAnalysis && window.hasSavedAnalysis(e));
   return `<article class="card">
-    <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}${ascendBadge(e)}</div>
+    <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}<span class="card-badges">${confBadge(e)}${ascendBadge(e)}</span></div>
     <h3>${hl(e.title || "Untitled")}</h3>
     ${meta ? `<div class="meta">${escapeHtml(meta)}</div>` : ""}
     ${e.innovation ? `<div class="innov">▸ ${hl(e.innovation)}</div>` : ""}
@@ -246,6 +246,18 @@ function hl(s) {
     const re = new RegExp("(" + searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "ig");
     return safe.replace(re, "<mark>$1</mark>");
   } catch (_) { return safe; }
+}
+
+/* source-confidence badge: confirmed / secondary / self-reported */
+function confBadge(e) {
+  if (!e.confidence) return "";
+  const map = {
+    confirmed: ["确证", "conf"], secondary: ["二手", "sec"], "self-reported": ["自报", "self"],
+    "确证": ["确证", "conf"], "二手": ["二手", "sec"], "自报": ["自报", "self"],
+  };
+  const m = map[e.confidence];
+  if (!m) return "";
+  return `<span class="conf ${m[1]}" title="信源可信度: ${escapeAttr(e.confidence)}">${m[0]}</span>`;
 }
 
 /* Ascend-readiness badge (✅ ready / ⚠️ partial / ❌ none) */

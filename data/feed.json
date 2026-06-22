@@ -15,7 +15,8 @@
         "live",
         "rl-llm",
         "2026"
-      ]
+      ],
+      "confidence": "secondary"
     },
     {
       "title": "DeepSeek-V4 & GLM-5 run on Ascend 910B (vLLM-Ascend)",

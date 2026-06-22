@@ -15,7 +15,8 @@
         "reasoning",
         "long-context",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "FP8-RL: stable low-precision RL stack",
@@ -31,7 +32,8 @@
         "low-precision",
         "efficiency",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ROLL Flash (async RLVR + agentic)",

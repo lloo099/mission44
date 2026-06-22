@@ -51,7 +51,8 @@
         "long-context",
         "2026",
         "model"
-      ]
+      ],
+      "confidence": "self-reported"
     },
     {
       "title": "MiniMax-M3 + MSA (MiniMax Sparse Attention)",
@@ -69,7 +70,8 @@
         "long-context",
         "multimodal",
         "2026"
-      ]
+      ],
+      "confidence": "self-reported"
     },
     {
       "title": "TTKV: Temporal-Tiered KV Cache",
