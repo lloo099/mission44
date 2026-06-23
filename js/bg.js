@@ -1,23 +1,15 @@
-/* Sci-fi animated background: floating "token stream".
-   RL / NPU / LLM terms drift slowly upward with a gentle sway and fade in/out.
-   Light-gray via --rain (theme-aware), pauses for reduced-motion / hidden tabs,
-   and sits behind all content (#bg-canvas). clearRect each frame → never builds
-   up over text. */
+/* Sci-fi animated background: circuit-board traces.
+   Right-angle PCB routes on a grid with solder pads, and signal pulses that
+   travel along the traces. Light-gray via --rain (theme-aware), pauses for
+   reduced-motion / hidden tabs, sits behind all content (#bg-canvas). */
 (function () {
   const canvas = document.getElementById("bg-canvas");
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
   const reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const CELL = 46; // matches the page's background grid spacing
 
-  const WORDS = [
-    "rollout", "GRPO", "RLVR", "FP8", "MXFP4", "KV-cache", "sleep-mode", "async-RL",
-    "Ascend", "910B", "950DT", "vLLM-Ascend", "MindSpeed", "CANN", "Da Vinci", "Cube",
-    "HBM", "HCCS", "CloudMatrix", "MoE", "DSA", "MSA", "sparse-attn", "1M ctx",
-    "policy", "reward", "advantage", "log-prob", "KL", "logits", "PPO", "veRL",
-    "token", "NPU", "FP4", "Jet-RL", "Seed 2.1", "rollout-bubble", "staleness",
-  ];
-
-  let w = 0, h = 0, dpr = 1, tokens = [], raf = null, glyph = "139,147,163";
+  let w = 0, h = 0, dpr = 1, traces = [], pulses = [], raf = null, glyph = "139,147,163";
 
   function hexToRgb(hex) {
     const m = hex.trim().replace("#", "");
@@ -25,62 +17,83 @@
     if (m.length === 3) return `${parseInt(m[0] + m[0], 16)},${parseInt(m[1] + m[1], 16)},${parseInt(m[2] + m[2], 16)}`;
     return null;
   }
-  function readColor() {
-    glyph = hexToRgb(getComputedStyle(document.documentElement).getPropertyValue("--rain")) || glyph;
-  }
+  function readColor() { glyph = hexToRgb(getComputedStyle(document.documentElement).getPropertyValue("--rain")) || glyph; }
+  const ri = (n) => (Math.random() * n) | 0;
+  const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
-  function mk(spread) {
-    return {
-      txt: WORDS[(Math.random() * WORDS.length) | 0],
-      x: Math.random() * w,
-      y: spread ? Math.random() * h : h + 16 + Math.random() * 80,
-      vy: 0.14 + Math.random() * 0.42,
-      sway: Math.random() * Math.PI * 2,
-      swaySpd: 0.004 + Math.random() * 0.009,
-      amp: 5 + Math.random() * 14,
-      size: 11 + Math.random() * 9,
-      max: 0.16 + Math.random() * 0.30,
-    };
+  function makeTrace() {
+    const cols = Math.max(2, Math.floor(w / CELL)), rows = Math.max(2, Math.floor(h / CELL));
+    let cx = ri(cols + 1), cy = ri(rows + 1);
+    const pts = [[cx * CELL, cy * CELL]];
+    let dir = null;
+    const segs = 4 + ri(7);
+    for (let i = 0; i < segs; i++) {
+      const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter((d) => !dir || !(d[0] === -dir[0] && d[1] === -dir[1]));
+      const d = opts[ri(opts.length)];
+      const nx = clamp(cx + d[0] * (1 + ri(4)), 0, cols), ny = clamp(cy + d[1] * (1 + ri(4)), 0, rows);
+      if (nx === cx && ny === cy) continue;
+      cx = nx; cy = ny; dir = d; pts.push([cx * CELL, cy * CELL]);
+    }
+    const segLen = []; let total = 0;
+    for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segLen.push(l); total += l; }
+    return { pts, segLen, total };
+  }
+  function pointAt(tr, d) {
+    let i = 0;
+    while (i < tr.segLen.length && d > tr.segLen[i]) { d -= tr.segLen[i]; i++; }
+    if (i >= tr.segLen.length) return tr.pts[tr.pts.length - 1];
+    const a = tr.pts[i], b = tr.pts[i + 1], t = tr.segLen[i] ? d / tr.segLen[i] : 0;
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  }
+  function mkPulse() {
+    const ti = ri(traces.length), tr = traces[ti] || { total: 1 };
+    return { ti, d: Math.random() * tr.total, spd: 0.6 + Math.random() * 1.5 };
   }
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     w = window.innerWidth; h = window.innerHeight;
     canvas.width = Math.floor(w * dpr); canvas.height = Math.floor(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.textBaseline = "middle";
-    const target = Math.round(Math.min(48, Math.max(12, (w * h) / 45000)));
-    if (tokens.length < target) { for (let i = tokens.length; i < target; i++) tokens.push(mk(true)); }
-    else tokens.length = target;
+    const tcount = Math.round(Math.min(72, Math.max(14, (w * h) / 20000)));
+    traces = []; for (let i = 0; i < tcount; i++) traces.push(makeTrace());
+    pulses = []; for (let i = 0, n = Math.round(tcount * 0.7); i < n; i++) pulses.push(mkPulse());
   }
 
-  function draw(animate) {
+  function frame(animate) {
     ctx.clearRect(0, 0, w, h);
-    for (const t of tokens) {
-      if (animate) { t.y -= t.vy; t.sway += t.swaySpd; }
-      const x = t.x + Math.sin(t.sway) * t.amp;
-      // fade in from the bottom, fade out toward the top
-      const fadeBot = Math.min(1, (h - t.y) / (h * 0.12));
-      const fadeTop = Math.min(1, t.y / (h * 0.20));
-      const a = t.max * Math.max(0, Math.min(fadeBot, fadeTop, 1));
-      if (a > 0.002) {
-        ctx.font = `${t.size.toFixed(1)}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
-        ctx.fillStyle = `rgba(${glyph},${a.toFixed(3)})`;
-        ctx.fillText(t.txt, x, t.y);
-      }
-      if (animate && t.y < -20) Object.assign(t, mk(false));
+    // traces
+    ctx.lineWidth = 1.2; ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.strokeStyle = `rgba(${glyph},0.14)`;
+    for (const tr of traces) {
+      ctx.beginPath();
+      ctx.moveTo(tr.pts[0][0], tr.pts[0][1]);
+      for (let i = 1; i < tr.pts.length; i++) ctx.lineTo(tr.pts[i][0], tr.pts[i][1]);
+      ctx.stroke();
     }
+    // solder pads at vertices
+    ctx.fillStyle = `rgba(${glyph},0.22)`;
+    for (const tr of traces) for (const p of tr.pts) ctx.fillRect(p[0] - 1.7, p[1] - 1.7, 3.4, 3.4);
+    // travelling signal pulses
+    ctx.shadowColor = `rgba(${glyph},0.9)`; ctx.shadowBlur = 8;
+    ctx.fillStyle = `rgba(${glyph},0.95)`;
+    for (const pu of pulses) {
+      const tr = traces[pu.ti]; if (!tr) continue;
+      const p = pointAt(tr, pu.d);
+      ctx.beginPath(); ctx.arc(p[0], p[1], 2.2, 0, 6.2832); ctx.fill();
+      if (animate) { pu.d += pu.spd; if (pu.d > tr.total) Object.assign(pu, mkPulse()); }
+    }
+    ctx.shadowBlur = 0;
   }
-
-  function frame() { draw(true); raf = requestAnimationFrame(frame); }
-  function start() { if (!raf && !reduce) raf = requestAnimationFrame(frame); }
+  function loop() { frame(true); raf = requestAnimationFrame(loop); }
+  function start() { if (!raf && !reduce) raf = requestAnimationFrame(loop); }
   function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
 
   readColor();
   resize();
-  if (reduce) draw(false); else start();
+  if (reduce) frame(false); else start();
 
-  window.addEventListener("resize", () => { resize(); if (reduce) draw(false); }, { passive: true });
+  window.addEventListener("resize", () => { resize(); if (reduce) frame(false); }, { passive: true });
   document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); else start(); });
-  new MutationObserver(() => { readColor(); if (reduce) draw(false); })
+  new MutationObserver(() => { readColor(); if (reduce) frame(false); })
     .observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 })();
