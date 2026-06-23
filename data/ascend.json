@@ -63,6 +63,22 @@
       ]
     },
     {
+      "title": "Atlas 950 SuperPoD (8,192× 950DT)",
+      "org": "Huawei",
+      "year": "2026",
+      "category": "hardware",
+      "innovation": "8,192-NPU supernode — successor to CloudMatrix 384",
+      "analysis": "Innovation: scales the supernode from 384 (CM384/910C) to up to 8,192 Ascend 950DT chips over the UnifiedBus interconnect (~16 PB/s aggregate). Performance: ~8 EFLOPS FP8 / ~16 EFLOPS FP4 system-level (vendor). Fit for RL-on-NPU: the same 'scale to compensate for per-chip efficiency' play as CM384, but with native FP8 and self-built HBM — the target fabric for large disaggregated RL (separate rollout/train pools) at frontier scale. Numbers are vendor roadmap; treat as approximate until it ships (~Q4 2026).",
+      "summary": "Announced at Huawei Connect 2025. Up to 8,192 Ascend 950DT NPUs (≈20x the Atlas 900 A3 / CM384 node count) on the UnifiedBus interconnect (~16 PB/s), delivering ~8 EFLOPS FP8 / ~16 EFLOPS FP4. Part of the 950(2026)→960(2027)→970(2028) roadmap that roughly doubles compute each generation.",
+      "url": "https://www.trendforce.com/news/2025/09/18/news-huawei-unveils-ascend-950-with-in-house-hbm-in-2026-touts-superpod-to-rival-nvidia/",
+      "tags": [
+        "950",
+        "supernode",
+        "2026",
+        "roadmap"
+      ]
+    },
+    {
       "title": "vLLM-Ascend v0.18.0 (latest stable)",
       "org": "vLLM + Huawei (Ascend)",
       "year": "2026-05",
