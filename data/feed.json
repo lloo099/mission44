@@ -1,8 +1,8 @@
 {
-  "updated": "2026-06-22T12:27:45.894747Z",
+  "updated": "2026-06-23T10:04:34.708943Z",
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 82,
-  "pinned": 23,
+  "count": 81,
+  "pinned": 24,
   "items": [
     {
       "title": "Seed 2.1 Pro 抢先版上线 LMArena (闭源, 编码/Agent)",
@@ -318,11 +318,11 @@
       ]
     },
     {
-      "title": "ELVA: Exploring Ranking-Driven Universal Multimodal Retrieval",
-      "org": "Yuhan Liu +10",
-      "year": "2026-06-18",
-      "summary": "Leveraging Multimodal Large Language Models (MLLMs) via contrastive learning has become a mainstream paradigm for improving the performance of Universal Multimodal Retrieval (UMR). However, previous works have ignored the grain blindness when adapting the contrastive paradigm into retrieval tasks. G…",
-      "url": "http://arxiv.org/abs/2606.20280v1",
+      "title": "AIR: Adaptive Interleaved Reasoning with Code in MLLMs",
+      "org": "Cong Han +3",
+      "year": "2026-06-22",
+      "summary": "Following the paradigm shift initiated by OpenAI o3, interleaved reasoning with code to enhance multimodal large language models (MLLMs) has become a pivotal research frontier. The existing literature focuses primarily on tool-use within vision-perception tasks. However, such approaches typically re…",
+      "url": "http://arxiv.org/abs/2606.23678v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -331,11 +331,11 @@
       ]
     },
     {
-      "title": "Process-Verified Reinforcement Learning for Theorem Proving via Lean",
-      "org": "Minsu Kim +1",
-      "year": "2026-06-18",
-      "summary": "While reinforcement learning from verifiable rewards (RLVR) typically has relied on a single binary verification signal, symbolic proof assistants in formal reasoning offer rich, fine-grained structured feedback. This gap between structured processes and unstructured rewards highlights the importanc…",
-      "url": "http://arxiv.org/abs/2606.20068v1",
+      "title": "SPIRAL: Learning to Search and Aggregate",
+      "org": "Jubayer Ibn Hamid +7",
+      "year": "2026-06-22",
+      "summary": "Language model reasoning can be substantially improved at test time via scaffolds that scale inference compute across different primitives -- sequential reasoning within a trace, independently sampled parallel traces, and aggregation of multiple reasoning traces into a final response. During post-tr…",
+      "url": "http://arxiv.org/abs/2606.23595v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -344,11 +344,11 @@
       ]
     },
     {
-      "title": "Hierarchical Control in Multi-Agent Games: LLM-based Planning and RL Execution",
-      "org": "Jannik Hösch +7",
-      "year": "2026-06-18",
-      "summary": "Reinforcement learning (RL) has achieved strong performance in sequential decision-making, yet scaling to complex multi-agent environments remains challenging due to sparse rewards, large state-action spaces, and the difficulty of learning coordinated strategies. We propose a hierarchical architectu…",
-      "url": "http://arxiv.org/abs/2606.20014v1",
+      "title": "VeriEvol: Scaling Multimodal Mathematical Reasoning via Verifiable Evol-Instruct",
+      "org": "Haoling Li +6",
+      "year": "2026-06-22",
+      "summary": "Scaling reinforcement learning for visual mathematical reasoning requires more than generating harder questions: as data volume grows, the reward labels themselves must remain reliable. Yet existing data pipelines scale supervision while trusting the labeller, and policy-side methods assume the unde…",
+      "url": "http://arxiv.org/abs/2606.23543v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -357,11 +357,11 @@
       ]
     },
     {
-      "title": "VIMPO: Value-Implicit Policy Optimization for LLMs",
-      "org": "Zhewei Kang +4",
-      "year": "2026-06-18",
-      "summary": "Reinforcement learning with verifiable rewards has become a central tool for improving the reasoning ability of large language models, but current methods face a trade-off between simplicity and credit assignment. Group-relative methods such as GRPO avoid training a critic, but typically assign a tr…",
-      "url": "http://arxiv.org/abs/2606.20008v1",
+      "title": "Causal Reward World Models: Zero-shot Reward Design for Automated Skill Generation",
+      "org": "Yang Yang +8",
+      "year": "2026-06-22",
+      "summary": "Automated Reward Design (ARD) aims to replace manual reward engineering in reinforcement learning with language-driven reward function synthesis. However, existing approaches based on large language models (LLMs) remain inherently correlation-driven, relying on iterative environmental feedback to re…",
+      "url": "http://arxiv.org/abs/2606.23280v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -370,11 +370,11 @@
       ]
     },
     {
-      "title": "Connect the Dots: Training LLMs for Long-Lifecycle Agents with Cross-Domain Generalization Via Reinforcement Learning",
-      "org": "Yanxi Chen +6",
-      "year": "2026-06-18",
-      "summary": "This work presents a general framework for training large language models (LLMs) to \"Connect the Dots\" (CoD), a meta-capability required by long-lifecycle agents: as an LLM-based AI agent gets deployed in an environment, it solves a long sequence of tasks while continuously exploring the environment…",
-      "url": "http://arxiv.org/abs/2606.20002v1",
+      "title": "BoxCtrl: 3D-Aware Visual Prompting for Geometric Image Editing",
+      "org": "Feifei Wang +3",
+      "year": "2026-06-22",
+      "summary": "As instruction-based editing models and multimodal large language models advance, diverse image editing tasks have become feasible. However, achieving precise and consistent geometric image editing, such as translating, scaling, and rotating in 3D space, remains a major challenge. In this work, we i…",
+      "url": "http://arxiv.org/abs/2606.23270v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -383,11 +383,11 @@
       ]
     },
     {
-      "title": "CARE: Competence-Aware Reward Shaping for Adaptive Reasoning Length in Video-MLLMs",
-      "org": "Chengwen Liu +5",
-      "year": "2026-06-18",
-      "summary": "In multimodal video reasoning, reinforcement learning-based methods typically rely on simplistic and inflexible reasoning-length control strategies that fail to adapt to the model's evolving competence. This mismatch may suppress necessary exploration at early stages, while encouraging redundant rea…",
-      "url": "http://arxiv.org/abs/2606.19927v1",
+      "title": "CFPO: Counterfactual Policy Optimization for Multimodal Reasoning",
+      "org": "Zhangyuan Yu +4",
+      "year": "2026-06-22",
+      "summary": "Large Vision-Language Models (LVLMs) have demonstrated remarkable capabilities in multimodal reasoning. However, prevailing reinforcement learning (RL) paradigms lack explicit counterfactual enhancement and causal learning mechanisms. This fundamental deficiency results in severe grounding failures,…",
+      "url": "http://arxiv.org/abs/2606.23206v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -396,11 +396,11 @@
       ]
     },
     {
-      "title": "MetaResearcher: Scaling Deep Research via Self-Reflective Reinforcement Learning in Adversarial Virtual Environments",
-      "org": "Wei Yu +6",
-      "year": "2026-06-18",
-      "summary": "Deep research agents have demonstrated remarkable capabilities in autonomous information gathering and synthesis, yet their training remains constrained by the static nature of simulated environments, the limits of fact-retrieval-only task designs, and the inefficiency of outcome-based reinforcement…",
-      "url": "http://arxiv.org/abs/2606.19893v1",
+      "title": "FlowTTS-GRPO: Online Reinforcement Learning with Multi-Objective Reward Optimization for Flow-Matching Based Text-to-Speech",
+      "org": "Haoxu Wang +5",
+      "year": "2026-06-22",
+      "summary": "Existing Reinforcement Learning (RL) research for Text-to-Speech (TTS) focuses on large language models (LLMs), leaving Flow-Matching (FM) under-explored. We present FlowTTS-GRPO, an online RL framework for FM-based TTS. By converting ordinary differential equation (ODE) trajectories into stochastic…",
+      "url": "http://arxiv.org/abs/2606.23190v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -409,11 +409,11 @@
       ]
     },
     {
-      "title": "Uncertainty-Aware Reward Modeling for Stable RLHF",
-      "org": "Licheng Pan +9",
-      "year": "2026-06-18",
-      "summary": "Reinforcement learning from human feedback (RLHF) aligns large language models by training reward models on preference data and optimizing policies to maximize predicted rewards. However, this pipeline faces two fundamental challenges: (1) reward models cannot signal when their predictions are unrel…",
-      "url": "http://arxiv.org/abs/2606.19818v1",
+      "title": "ReNIO: Reweighting Negative Trajectory Importance for LLM On-Policy Distillation",
+      "org": "Chen Lin +2",
+      "year": "2026-06-22",
+      "summary": "On-policy distillation (OPD) improves LLM reasoning by training a student model on its own generated outputs, but standard OPD treats all student-generated outputs (SGOs) equally regardless of their informativeness. We observe a consistent asymmetry in controlled filtering experiments: in both OPD a…",
+      "url": "http://arxiv.org/abs/2606.23104v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -422,11 +422,11 @@
       ]
     },
     {
-      "title": "Beyond Entropy: Learning from Token-Level Distributional Deviations for LLM Reasoning",
-      "org": "Xuanzhi Feng +8",
-      "year": "2026-06-18",
-      "summary": "Reinforcement Learning with Verifiable Rewards (RLVR) has significantly advanced Large Language Model (LLM) reasoning; however, it faces a fundamental optimization instability: uniform token updates precipitate entropy collapse, leading to premature convergence to suboptimal strategies, whereas exce…",
-      "url": "http://arxiv.org/abs/2606.19771v1",
+      "title": "EvoRubrics: Dynamic Rubrics as Rewards via Adversarial Co-Evolution for LLM Reinforcement Learning",
+      "org": "Hongxin Ding +8",
+      "year": "2026-06-22",
+      "summary": "Rubric-based rewards offer interpretable and fine-grained optimization signals for reinforcement learning in open-ended tasks where verifiable answers are unavailable. However, pre-constructed rubrics remain static throughout training, creating a fundamental mismatch with the evolving policy: fixed …",
+      "url": "http://arxiv.org/abs/2606.23038v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -435,11 +435,11 @@
       ]
     },
     {
-      "title": "Manifold Bandits: Bayesian Curriculum Learning over the Latent Geometry of Large Language Models",
-      "org": "Darrien McKenzie +2",
-      "year": "2026-06-18",
-      "summary": "Reinforcement learning (RL) is a central approach for improving reasoning capabilities in large language models (LLMs), where training efficiency depends critically on how problems are sampled during optimization. Existing adaptive curriculum learning methods typically prioritize prompts of intermed…",
-      "url": "http://arxiv.org/abs/2606.19750v1",
+      "title": "Group-Graph Policy Optimization for Long-Horizon Agentic Reinforcement Learning",
+      "org": "Yunan Wang +8",
+      "year": "2026-06-22",
+      "summary": "Group-based Reinforcement Learning (RL) has significantly enhanced Large Language Models (LLMs) in agentic scenarios. To achieve finer-grained policy updates, recent agentic RL frameworks have shifted from trajectory-level to step-level training. However, long-horizon agentic RL suffers from severe …",
+      "url": "http://arxiv.org/abs/2606.22995v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -448,11 +448,63 @@
       ]
     },
     {
-      "title": "CRAX: Fast Safe Reinforcement Learning Benchmarking",
-      "org": "Tristan Tomilin +3",
-      "year": "2026-06-18",
-      "summary": "Safety is a core concern for deploying reinforcement learning (RL) agents in real-world domains such as robotics and autonomous driving. While benchmarks have been central to progress in RL, existing safety benchmarks with high-fidelity 3D physics remain computationally slow, limiting large-scale ex…",
-      "url": "http://arxiv.org/abs/2606.20376v1",
+      "title": "dVLA-RL: Reinforcement Learning over Denoising Trajectories for Discrete Diffusion Vision-Language-Action Models",
+      "org": "Yuhao Wu +15",
+      "year": "2026-06-22",
+      "summary": "Vision-Language-Action (VLA) models have established a powerful paradigm for generalist robotic manipulation by grounding control into the semantic reasoning of VLMs. Prevailing architectures typically model actions continuously via diffusion or flow processes, or discretely through either autoregre…",
+      "url": "http://arxiv.org/abs/2606.23623v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Dense Reward for Multi-View 3D Reasoning with Global Maps and Local Views",
+      "org": "Jiho Choi +3",
+      "year": "2026-06-22",
+      "summary": "Multi-view 3D Visual Question Answering (MV3D-VQA) requires integrating partial observations into a coherent 3D scene representation and selecting informative viewpoints for multi-step spatial reasoning. However, current multimodal LLMs are typically trained with sparse, answer-level supervision, wh…",
+      "url": "http://arxiv.org/abs/2606.23557v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "SQLConductor: Search-to-Policy Learning for Step-wise Text-to-SQL Orchestration",
+      "org": "Yizhang Zhu +3",
+      "year": "2026-06-22",
+      "summary": "Text-to-SQL enables users to access relational databases via natural language, but real-world settings remain challenging due to coordinated reasoning over complex database environments. Existing systems often use multi-stage pipelines or reasoning models specialized for individual stages. However, …",
+      "url": "http://arxiv.org/abs/2606.23537v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Provable Benefits of RLVR over SFT for Reasoning Models: Learning to Backtrack Efficiently",
+      "org": "Stanley Wei +1",
+      "year": "2026-06-22",
+      "summary": "Recent advances in large language models (LLMs) have demonstrated that reinforcement fine-tuning of pretrained base models can lead to significant gains in reasoning performance at inference time. In this work, we theoretically analyze why reinforcement fine-tuning induces better reasoning ability t…",
+      "url": "http://arxiv.org/abs/2606.22938v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Decentralized Autonomous Traffic Management through Corridor Networks",
+      "org": "Jasmine Jerry Aloor +2",
+      "year": "2026-06-22",
+      "summary": "As autonomous aircraft are introduced at scale and traffic density increases, centralized management becomes insufficient to coordinate the large numbers of crewed and uncrewed aircraft. Dedicated Advanced Air Mobility (AAM) corridors have therefore been proposed for organizing high-density autonomo…",
+      "url": "http://arxiv.org/abs/2606.23585v1",
       "category": "agentic-rl",
       "tags": [
         "live",
@@ -461,11 +513,11 @@
       ]
     },
     {
-      "title": "A Model-Driven Approach for Developing Families of Reinforcement Learning Environments",
-      "org": "Xiaoran Liu +1",
-      "year": "2026-06-18",
-      "summary": "Virtual training environments are software-intensive systems in which reinforcement learning (RL) agents learn, adapt, and demonstrate meaningful behavior. Virtual training environments offer a safe and cost-efficient alternative to training agents in real-world settings. However, to converge, most …",
-      "url": "http://arxiv.org/abs/2606.20324v1",
+      "title": "Dynamic multi-agent deep reinforcement learning-based pricing and incentivization approach in multimodal transportation networks",
+      "org": "Khadidja Kadem +4",
+      "year": "2026-06-22",
+      "summary": "In multimodal transportation systems, shared mobility services (SMSs) are promoted for their potential to enhance flexibility and reduce congestion. However, SMS demand is often concentrated in high-density areas, which can limit the effectiveness and accessibility for various commuter groups. This …",
+      "url": "http://arxiv.org/abs/2606.23257v1",
       "category": "agentic-rl",
       "tags": [
         "live",
@@ -474,11 +526,11 @@
       ]
     },
     {
-      "title": "A Multi-Agent system for Multi-Objective constrained optimization",
-      "org": "Federica Filippini",
-      "year": "2026-06-18",
-      "summary": "Many decision-making problems in computing and networking systems can be naturally formulated as cost-minimization problems under performance constraints. In dynamic environments, reinforcement learning (RL) is often used to solve such problems at runtime by embedding both costs and constraint viola…",
-      "url": "http://arxiv.org/abs/2606.20236v1",
+      "title": "Adversarial Reinforcement Learning for Adaptive Eavesdropping in BB84 Quantum Key Distribution",
+      "org": "Ramon Jose C. Bagunu",
+      "year": "2026-06-22",
+      "summary": "BB84 quantum key distribution derives its security from a physical guarantee that any eavesdropper disturbs the channel in a statistically detectable way. Prior work evaluates this by assuming Eve attacks at a fixed, analytically optimized rate. We examine what happens when Eve is modeled instead as…",
+      "url": "http://arxiv.org/abs/2606.22962v1",
       "category": "agentic-rl",
       "tags": [
         "live",
@@ -487,11 +539,11 @@
       ]
     },
     {
-      "title": "Augmenting Game AI with Deep Reinforcement Learning",
-      "org": "Alessandro Sestini +5",
-      "year": "2026-06-18",
-      "summary": "Immersion in video games depends not only on graphics, audio, and game mechanics, but also on the quality of in-game characters. Producing believable characters, or game AI, remains a significant challenge as behavioral complexity is hard to capture with hand-coded systems. Game AI is a source of im…",
-      "url": "http://arxiv.org/abs/2606.20210v1",
+      "title": "Active Inference as the Test-Time Scaling Law for Physical AI Agents",
+      "org": "Omar Hashash +5",
+      "year": "2026-06-22",
+      "summary": "In this paper, a novel test-time scaling law for physical artificial intelligence (AI) agents is introduced. This scaling law enables physical AI agents to reason with their world models to generalize in unforeseen scenarios at test time. The derived scaling law is grounded in the first principle of…",
+      "url": "http://arxiv.org/abs/2606.22813v1",
       "category": "agentic-rl",
       "tags": [
         "live",
@@ -500,11 +552,245 @@
       ]
     },
     {
-      "title": "Multi-Head Attention-Based Feature Extractor Integration with Soft Actor-Critic for Porosity Prediction and Process Parameter Optimization in Additive Manufacturing",
-      "org": "Kianoush Aqabakee +1",
-      "year": "2026-06-18",
-      "summary": "Additive manufacturing process optimization requires precise parameter control to minimize defects such as porosity. Traditional reinforcement learning (RL) approaches using discrete action spaces suffer from slow convergence and susceptibility to local optima, limiting their effectiveness for high-…",
-      "url": "http://arxiv.org/abs/2606.20087v1",
+      "title": "FlexServe: A Fast and Secure LLM Serving System for Mobile Devices with Flexible Resource Isolation",
+      "org": "Yinpeng Wu +5",
+      "year": "2026-06-22",
+      "summary": "Device-side Large Language Models (LLMs) have grown explosively, offering stronger privacy and higher availability than their cloud-side counterparts. During LLM inference, both the model weights and the user data are valuable, and attackers may compromise the OS kernel to steal them. ARM TrustZone …",
+      "url": "http://arxiv.org/abs/2606.23370v1",
+      "category": "ascend-npu",
+      "tags": [
+        "live",
+        "ascend-npu",
+        "auto"
+      ]
+    },
+    {
+      "title": "EnerInfer: Energy-Aware On-Device LLM Inference",
+      "org": "Bohua Zou +8",
+      "year": "2026-06-22",
+      "summary": "On-device LLM inference is increasingly attractive for privacy-preserving, reliable, and cost-effective deployment, yet its energy and thermal costs remain a critical bottleneck. Existing systems primarily optimize for decoding speed, implicitly assuming that faster execution is always preferable. W…",
+      "url": "http://arxiv.org/abs/2606.23001v1",
+      "category": "ascend-npu",
+      "tags": [
+        "live",
+        "ascend-npu",
+        "auto"
+      ]
+    },
+    {
+      "title": "MINCE: Shrinking LLM Evaluation Datasets via Few-Model Monte Carlo Calibration",
+      "org": "Devleena Das +5",
+      "year": "2026-06-22",
+      "summary": "Evaluating LLMs across many model variants -- quantized, fine-tuned, or deployment-specific -- requires running large benchmarks repeatedly, a process that can take tens of hours per model on edge hardware such as NPUs. Existing subset selection methods reduce this cost but depend on large calibrati…",
+      "url": "http://arxiv.org/abs/2606.22826v1",
+      "category": "ascend-npu",
+      "tags": [
+        "live",
+        "ascend-npu",
+        "auto"
+      ]
+    },
+    {
+      "title": "Randomized YaRN Improves Length Generalization for Long-Context Reasoning",
+      "org": "Manas Mehta +2",
+      "year": "2026-06-22",
+      "summary": "Large language models (LLMs) are typically pretrained on short sequences and then extended to work on longer sequences with additional training. However, such LLMs still struggle to further generalize to very long sequences. We propose Randomized YaRN, a training method that improves length generali…",
+      "url": "http://arxiv.org/abs/2606.23687v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Concordia: JIT-Compiled Persistent-Kernel Checkpointing for Fault-Tolerant LLM Inference",
+      "org": "Yuhang Gan +8",
+      "year": "2026-06-22",
+      "summary": "Long-running LLM agents keep valuable state resident on GPUs: KV caches, request schedulers, communication state, and sometimes online adapters. Losing this state after a GPU or communicator failure can discard minutes to hours of work, yet existing recovery mechanisms either restart the whole servi…",
+      "url": "http://arxiv.org/abs/2606.23521v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "HyperQuant: A Rate-Distortion-Optimal Quantization Pipeline for Large Language and Diffusion Models",
+      "org": "Yuval Domb +2",
+      "year": "2026-06-22",
+      "summary": "We present HyperQuant (Hadamard, optimallY Packing, Entropy Rice-coding), a unified post-training quantization pipeline for the weights and the KV cache of large language and diffusion transformers. Across a suite of self-contained experiments (Table 1), HyperQuant outperforms the recent HIGGS schem…",
+      "url": "http://arxiv.org/abs/2606.23406v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Distribution-Aware Diffusion-LLM for Robust Ultra-Long-Term Time Series Forecasting",
+      "org": "Falguni Ghosh +2",
+      "year": "2026-06-22",
+      "summary": "Time series forecasting is a fundamental machine learning task. Recent work has explored Large Language Models (LLMs) for this purpose due to their strong generalization, pattern recognition, and zero-shot or few-shot capabilities. Despite their suitability for long-context learning, LLMs face chall…",
+      "url": "http://arxiv.org/abs/2606.23391v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Unlimited OCR Works",
+      "org": "Youyang Yin +16",
+      "year": "2026-06-22",
+      "summary": "Recently, end-to-end OCR models, exemplified by DeepSeek OCR, have once again thrust OCR into the spotlight. A widely held view is that employing a large language model (LLM) as the decoder allows the model to leverage the prior distribution of language, leading to improved OCR performance. However,…",
+      "url": "http://arxiv.org/abs/2606.23050v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Scalable Physics-Inspired Transformers for Spin Glasses",
+      "org": "Lu Zhong +4",
+      "year": "2026-06-22",
+      "summary": "Efficient sampling of the Boltzmann distribution in frustrated spin glasses is central to statistical mechanics and combinatorial optimization. Despite advances in machine-learning-based approaches, two issues persist: limited understanding of why variational models fail to benefit from increased sc…",
+      "url": "http://arxiv.org/abs/2606.22984v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "MOCAP: Wafer-Scale-Chip-Oriented Memory-Orchestrated Chunked Pipelining Framework for Prefill-Only LLM Inference",
+      "org": "Zichuan Wang +8",
+      "year": "2026-06-22",
+      "summary": "Large language models (LLMs) are increasingly used in prefill-only workloads, where end-to-end latency is dominated by the prefill phase. For long-context prefill, communication overhead grows with sequence length and quickly becomes a bottleneck on conventional GPU systems, making wafer-scale chips…",
+      "url": "http://arxiv.org/abs/2606.22968v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "SpotAttention: Plug-In Block-Sparse Routing for Pretrained Long-Context Transformers",
+      "org": "Huzama Ahmad +1",
+      "year": "2026-06-22",
+      "summary": "Long contexts have become standard in pretrained LLMs, yet they remain expensive to run: prefill compute grows quadratically with sequence length, and every decode step re-reads a key-value cache that grows linearly with it. Sparse attention cuts these costs by attending only to a relevant subset of…",
+      "url": "http://arxiv.org/abs/2606.22874v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Muown Implicitly Performs Angular Step-size Decay",
+      "org": "Florian Hübler +3",
+      "year": "2026-06-22",
+      "summary": "Matrix-aware optimizers such as Muon and Muown have recently shown strong empirical performance for pre-training Transformers. In particular, Muown separates each weight matrix into row magnitudes and an un-normalized direction variable, updating the former with Adam and the latter with Muon. We sho…",
+      "url": "http://arxiv.org/abs/2606.23637v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Cross-Architectural Mixture-of-Experts with Adaptive Soft Routing for Plant Leaf Disease Classification",
+      "org": "Phi-Hung Hoang +1",
+      "year": "2026-06-22",
+      "summary": "Plant leaf disease classification is crucial for crop protection and precision agriculture but remains challenging under complex backgrounds, illumination variations, and severe class imbalance. Moreover, single-architecture models often fail to effectively capture both local and global representati…",
+      "url": "http://arxiv.org/abs/2606.23441v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "GRINQH: Graded Input-based Quantization Hierarchy for Efficient LLM Generation",
+      "org": "Jette Oberländer +3",
+      "year": "2026-06-22",
+      "summary": "Autoregressive decoding with LLMs is primarily bottlenecked by GPU memory bandwidth, especially in edge-computing settings. While quantization is essential for mitigating this bottleneck, most existing methods treat inference as a uniform process and fail to account for the asymmetry between the com…",
+      "url": "http://arxiv.org/abs/2606.23419v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "LUMINA-26: Low-Light Understanding for Modeling and Interpreting Night-time Actions",
+      "org": "Aman Kumar Pandey +1",
+      "year": "2026-06-22",
+      "summary": "Low-light human action recognition remains a challenging problem due to poor illumination, amplified noise, motion ambiguity, and diverse real-world scenes. Existing low-light datasets often lack sufficient action diversity, capture realism, or balanced class distribution, limiting the development o…",
+      "url": "http://arxiv.org/abs/2606.23118v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "STAR-VAE: Structured Topology-Aware Regularization for Audio Reconstruction and Generation",
+      "org": "Huadai Liu +5",
+      "year": "2026-06-22",
+      "summary": "Continuous Variational Autoencoders (VAEs) serve as the fundamental continuous tokenizer for modern neural audio generation systems, enabling high-fidelity reconstruction while providing a compact, smooth latent space for downstream generative priors. However, continuous VAEs face a fundamental conf…",
+      "url": "http://arxiv.org/abs/2606.23064v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Hybrid Compression: Integrating Pruning and Quantization for Optimized Neural Networks",
+      "org": "Minh-Loi Nguyen +4",
+      "year": "2026-06-22",
+      "summary": "Deep neural networks have witnessed remarkable advancements in recent years and have become integral to various applications. However, alongside these developments, training and deployment of neural network models on embedding and edge devices face significant challenges due to limited memory and co…",
+      "url": "http://arxiv.org/abs/2606.22935v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Does the Same Token Mean the Same State? MoE Routing as Signal for Reasoning Control",
+      "org": "Kang Chen +5",
+      "year": "2026-06-22",
+      "summary": "In sparse Mixture-of-Experts language models, does the same token id imply the same router state and the same experts producing it? Holding the emitted token id fixed at repeated anchors, we find it does not: the experts that produce it still separate task context, trajectory history, and reasoning-…",
+      "url": "http://arxiv.org/abs/2606.22798v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Stationary Robust Mean-Field Games under Model Mismatches",
+      "org": "Yue Wang",
+      "year": "2026-06-21",
+      "summary": "Deploying multi-agent reinforcement learning (MARL) in the real world is often limited by model mismatches between the training simulators and the true environment, which could be further amplified through strategic interactions and result in severe performance degradation upon deployment. Distribut…",
+      "url": "http://arxiv.org/abs/2606.22579v1",
       "category": "agentic-rl",
       "tags": [
         "live",
@@ -513,11 +799,11 @@
       ]
     },
     {
-      "title": "OnDeFog: Online Decision Transformer under Frame Dropping",
-      "org": "Daiki Yotsufuji +4",
-      "year": "2026-06-18",
-      "summary": "In challenging real-world reinforcement learning applications, communication delays or sensor failures often cause frame dropping, in which the agent cannot receive the dropped states and associated rewards. To address the performance degradation caused by frame dropping, the Decision Transformer un…",
-      "url": "http://arxiv.org/abs/2606.19721v1",
+      "title": "Imagine to Ensure Safety in Hierarchical Reinforcement Learning",
+      "org": "Gregory Gorbov +2",
+      "year": "2026-06-21",
+      "summary": "This work investigates the safe exploration problem in reinforcement learning, where an agent must maximize cumulative performance while simultaneously satisfying safety constraints. This challenge becomes even more pronounced in long-horizon tasks, where existing safe methods face fundamental limit…",
+      "url": "http://arxiv.org/abs/2606.22509v1",
       "category": "agentic-rl",
       "tags": [
         "live",
@@ -526,15 +812,119 @@
       ]
     },
     {
-      "title": "Multi-Granular Attention-Driven Reinforcement Learning Framework for Web Intelligent Enhancement Systems",
-      "org": "Navin Chhibber +4",
-      "year": "2026-06-18",
-      "summary": "From the past few years, web intelligent enhancement systems increasingly rely on heterogeneous and dynamic web data to deliver personalized, context-aware services. However, traditional machine learning, deep learning, and reinforcement learning models often struggle with semantic understanding, ad…",
-      "url": "http://arxiv.org/abs/2606.19690v1",
+      "title": "WebCQ: Cooperative Multi-Agent Deep Reinforcement Learning for Scalable Web GUI Testing",
+      "org": "Yujia Fan +5",
+      "year": "2026-06-21",
+      "summary": "Multi-agent reinforcement learning (MARL)-based techniques have shown promise for GUI testing. However, as the complexity of modern GUI software increases, existing MARL-based approaches (e.g., MARG and Fastbot) struggle to scale due to the inherent limitations of their underlying tabular reinforcem…",
+      "url": "http://arxiv.org/abs/2606.22502v1",
       "category": "agentic-rl",
       "tags": [
         "live",
         "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "A Differentiable Atari VCS:A Complex, Fully Known Ground Truth for Explainable AI",
+      "org": "Andreas Maier +2",
+      "year": "2026-06-21",
+      "summary": "Explanation requires ground truth: to verify an account of a system we must know its inner functioning-just what is missing where explainable AI (XAI) is most needed. Systems we can study fall into two camps. Simple, procedural one-decision trees, rule lists, sparse linear models-have a known but tr…",
+      "url": "http://arxiv.org/abs/2606.22447v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "A Theory-grounded Hybrid Neural Network Integrating Complementary Estimation Mechanisms for Stable Visual Object TrackingA",
+      "org": "Yancheng Zhou +3",
+      "year": "2026-06-21",
+      "summary": "Hybrid neural networks (HNNs) that integrate artificial neural networks (ANNs) with brain-inspired neural networks have achieved broad success across perception and control tasks. However, much of the current success is confined to neuron-scale hybridization, where discrete, spike-based coding funda…",
+      "url": "http://arxiv.org/abs/2606.22604v1",
+      "category": "ascend-npu",
+      "tags": [
+        "live",
+        "ascend-npu",
+        "auto"
+      ]
+    },
+    {
+      "title": "NeutronSparse: Coordinating Heterogeneous Engines for Sparse Matrix Multiplication on NPUs",
+      "org": "Xin Ai +6",
+      "year": "2026-06-21",
+      "summary": "Sparse matrix-matrix multiplication (SpMM) is a fundamental data operation for large-scale sparse data processing. With NPUs increasingly deployed in data centers for their performance and energy efficiency, accelerating SpMM on these platforms is a natural choice. However, high-performance SpMM on …",
+      "url": "http://arxiv.org/abs/2606.22482v1",
+      "category": "ascend-npu",
+      "tags": [
+        "live",
+        "ascend-npu",
+        "auto"
+      ]
+    },
+    {
+      "title": "moBERTo: A Modern Encoder for Portuguese via Continued Pretraining of ModernBERT",
+      "org": "Thiago Laitz +3",
+      "year": "2026-06-21",
+      "summary": "Encoder-only transformer models remain essential for production NLP pipelines. We introduce moBERTo, a Portuguese adaptation of ModernBERT obtained through continued pretraining of the ModernBERT-base checkpoint on 60 billion tokens (5 epochs over a 12-billion-token corpus curated from FineWeb2 and …",
+      "url": "http://arxiv.org/abs/2606.22722v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "VISTA Architect: A graph database-oriented health AI system demonstrated in multidisciplinary tumor boards",
+      "org": "Tuomo Kiiskinen +9",
+      "year": "2026-06-21",
+      "summary": "We introduce VISTA Architect, a database-oriented AI architecture for integrating large language models (LLMs) with longitudinal electronic health records (EHRs). At ingestion, it transforms complex clinical documentation into a persistent, provenance-linked knowledge graph, eliminating repeated rep…",
+      "url": "http://arxiv.org/abs/2606.22692v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Overcoming Imperfect Kinematics in Surgical Robotics Through Sim-to-Real Visuomotor Learning",
+      "org": "Zhaoxuan Yan +4",
+      "year": "2026-06-19",
+      "summary": "Robot-Assisted Surgery is integral to modern minimally invasive procedures, with automation emerging as the next frontier to enhance precision and reduce surgeon fatigue. This evolution is largely impeded by the inherent kinematic inaccuracies of surgical robots, where unreliable internal sensors le…",
+      "url": "http://arxiv.org/abs/2606.21396v1",
+      "category": "ascend-npu",
+      "tags": [
+        "live",
+        "ascend-npu",
+        "auto"
+      ]
+    },
+    {
+      "title": "An Empirical Study of OpenPangu Quantization on Ascend NPUs",
+      "org": "Tong Shi +6",
+      "year": "2026-06-19",
+      "summary": "OpenPangu models are attractive targets for private and domestic large-language-model deployment, yet their robustness under aggressive post-training quantization on Ascend NPUs has not been systematically characterized. This paper conducts a controlled empirical study of OpenPangu 1B and 7B models …",
+      "url": "http://arxiv.org/abs/2606.21257v1",
+      "category": "ascend-npu",
+      "tags": [
+        "live",
+        "ascend-npu",
+        "auto"
+      ]
+    },
+    {
+      "title": "Clinical Term Extraction using Open-Source Small Language Models",
+      "org": "Noah Marchal +3",
+      "year": "2026-06-19",
+      "summary": "Clinical information for amyotrophic lateral sclerosis (ALS) care documented in unstructured clinical notes limits downstream analysis without extraction into structured formats. Open-source small language models with few-shot prompting for detecting the presence of ALS-relevant clinical terms in pa…",
+      "url": "http://arxiv.org/abs/2606.21689v1",
+      "category": "fp8-lowprec",
+      "tags": [
+        "live",
+        "fp8-lowprec",
         "auto"
       ]
     },
@@ -565,58 +955,6 @@
       ]
     },
     {
-      "title": "Execution-State Capsules: Graph-Bound Execution-State Checkpoint and Restore for Low-Latency, Small-Batch, On-Device Physical-AI Serving",
-      "org": "Liang Su",
-      "year": "2026-06-18",
-      "summary": "Mainstream LLM serving systems reuse prefix work mainly through paged or radix key-value (KV) caches. This is highly effective for high-throughput, high-concurrency serving, but it manages only one positional fragment of execution state: the KV cache. We study the opposite regime: low-latency, small…",
-      "url": "http://arxiv.org/abs/2606.20537v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "StreamKL: Fast and Memory-Efficient KL Divergence for Boosting Attention Distillation",
-      "org": "Guangda Liu +8",
-      "year": "2026-06-18",
-      "summary": "Attention distillation, which trains one attention distribution to match another by minimizing their Kullback-Leibler (KL) divergence, is widely used in knowledge distillation, model compression, continual learning, and sparse-attention LLM training. However, existing approaches materialize both att…",
-      "url": "http://arxiv.org/abs/2606.20005v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "ViCoStream: Streaming VideoLLMs Can Run Beyond 100 FPS with Stage-Wise Coordinated Inference",
-      "org": "Yang Tan +5",
-      "year": "2026-06-18",
-      "summary": "Streaming VideoLLMs must continuously process incoming video while maintaining low query latency, making both video-ingestion throughput and query-time responsiveness critical for real-time deployment. Existing methods largely focus on accelerating individual modules, such as visual encoding, token …",
-      "url": "http://arxiv.org/abs/2606.19849v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "SAC: Disaggregated KV Cache System for Sparse Attention LLMs with CXL",
-      "org": "Ruiyang Ma +9",
-      "year": "2026-06-18",
-      "summary": "The scaling of LLMs toward long-context inference has shifted the primary serving system bottleneck from computation to memory capacity. Traditional solutions for dense attention models rely on RDMA-based disaggregated memory pools, which perform coarse-grained fetching of the entire prefix KV cache…",
-      "url": "http://arxiv.org/abs/2606.19746v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
       "title": "Modest, artistic, and radical solutions to the environmental impact of image-generating machine learning",
       "org": "Laura U. Marks +2",
       "year": "2026-06-18",
@@ -630,227 +968,6 @@
       ]
     },
     {
-      "title": "Toward Calibrated Mixture-of-Experts Under Distribution Shift",
-      "org": "Gina Wong +4",
-      "year": "2026-06-18",
-      "summary": "Calibration aligns a model's predictive uncertainty with the frequencies of its empirical outcomes and is important for understanding and trusting reported probabilities. Recent work shows that enforcing calibration at the level of individual predictors can improve ensemble accuracy and calibration,…",
-      "url": "http://arxiv.org/abs/2606.20544v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Rethinking Shrinkage Bias in LLM FP4 Pretraining: Geometric Origin, Systemic Impact, and UFP4 Recipe",
-      "org": "Qian Zhao +11",
-      "year": "2026-06-18",
-      "summary": "FP4 training promises substantial reductions in memory and computation cost for LLM pretraining, yet current FP4 hardware paths and recipes, including NVIDIA Blackwell/Rubin-class systems and AMD MI350-series GPUs, remain centered on E2M1 data elements. In this study, we identify a fundamental limit…",
-      "url": "http://arxiv.org/abs/2606.20381v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Quantization as a Malicious Task: Removing Quantization-Conditioned Backdoors via Task Arithmetic",
-      "org": "Kaihsun Yang +2",
-      "year": "2026-06-18",
-      "summary": "Model quantization is widely adopted to reduce memory usage and inference cost when deploying deep neural networks on resource-constrained devices. However, recent studies have revealed a new security threat known as Quantization-Conditioned Backdoors (QCBs), where a model behaves normally in full p…",
-      "url": "http://arxiv.org/abs/2606.20254v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Alzheimer's Disease Diagnosis using a Multimodal Approach with 3D MRI and PET",
-      "org": "Loukas Ilias +3",
-      "year": "2026-06-18",
-      "summary": "Alzheimer's disease (AD) is an irreversible neurodegenerative disorder and a leading cause of death worldwide. Early diagnosis plays an important part especially at the Mild Cognitive Impairment stage, where timely intervention can help slow its progression before it advances to AD. Neuroimaging dat…",
-      "url": "http://arxiv.org/abs/2606.20037v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Hard or Just Unreached? Diagnosing the Sampling Blind Spot in Math-Reasoning Difficulty Estimation",
-      "org": "Luca Zhou +3",
-      "year": "2026-06-17",
-      "summary": "Math and science reasoning benchmarks rely on pass@k, the fraction of sampled chains that reach gold, as the canonical per-example difficulty signal. The same signal drives RL with verifiable rewards, math data curation, synthetic curricula, and verifier training. We show this proxy has a persistent…",
-      "url": "http://arxiv.org/abs/2606.19636v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "Native Active Perception as Reasoning for Omni-Modal Understanding",
-      "org": "Zhenghao Xing +10",
-      "year": "2026-06-17",
-      "summary": "Passive models for long video understanding typically rely on a \"watch-it-all\" paradigm, processing frames uniformly regardless of query difficulty, causing computational cost to grow with video duration. Although interactive frameworks have emerged, they often rely on global pre-scanning, and their…",
-      "url": "http://arxiv.org/abs/2606.19341v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "Rethinking Reward Supervision: Rubric-Conditioned Self-Distillation",
-      "org": "Siyi Gu +4",
-      "year": "2026-06-17",
-      "summary": "Post-training of reasoning language models is commonly driven by supervised distillation and reinforcement learning with verifiable rewards. Distillation often relies on chain-of-thought annotations that are expensive to obtain and may themselves be noisy, incomplete, or partially incorrect; even wh…",
-      "url": "http://arxiv.org/abs/2606.19327v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "ImageWAM: Do World Action Models Really Need Video Generation, or Just Image Editing?",
-      "org": "Yuyang Zhang +9",
-      "year": "2026-06-17",
-      "summary": "World Action Models (WAMs) commonly rely on video generation to bridge visual world modeling and robot control. However, video-based WAMs face three coupled limitations: dense multi-frame future tokens make inference costly, full video prediction spends capacity on action-irrelevant temporal and app…",
-      "url": "http://arxiv.org/abs/2606.19531v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "Techniques for Peak Memory Reduction for LoRA Fine-tuning of LLMs on Edge Devices",
-      "org": "Hassan Dbouk +4",
-      "year": "2026-06-17",
-      "summary": "Fine-tuning of Large Language Models (LLMs) using Low-Rank Adaptation (LoRA) on an end-user's data offers personalized experiences while keeping data private, but faces severe memory constraints on consumer hardware. Peak memory during fine-tuning often exceeds device limits, especially for models w…",
-      "url": "http://arxiv.org/abs/2606.19528v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "GateMem: Benchmarking Memory Governance in Multi-Principal Shared-Memory Agents",
-      "org": "Zhe Ren +9",
-      "year": "2026-06-17",
-      "summary": "Memory benchmarks for LLM agents largely assume single-user settings, leaving shared assistants for hospitals, workplaces, campuses, and households understudied. In these deployments, multiple principals write to a common memory pool and query it under different roles, scopes, and relationships, so …",
-      "url": "http://arxiv.org/abs/2606.18829v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "ReMP: Low-Downtime Runtime Model-Parallelism Reconfiguration for LLM Serving",
-      "org": "Haipeng Yuan +7",
-      "year": "2026-06-17",
-      "summary": "Current large language model (LLM) inference systems universally deploy ultra-large-scale models using a combination of Tensor Parallelism (TP) and Pipeline Parallelism (PP). However, existing systems treat the model parallelism topology as a static configuration that cannot be flexibly adjusted at …",
-      "url": "http://arxiv.org/abs/2606.18741v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "Dual Dimensionality for Local and Global Attention",
-      "org": "Zhiyuan Wang +3",
-      "year": "2026-06-17",
-      "summary": "Decoder-only Transformers compute attention over the KV cache of preceding tokens. Keys (and Values) are typically represented with the same dimensionality, regardless of its distance from the prediction target. In natural language, however, the next word is most strongly influenced by the immediate…",
-      "url": "http://arxiv.org/abs/2606.18587v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "CTS-MoE: Implicit Terrain Adaptation via Mixture-of-Experts for Perceptive Locomotion",
-      "org": "Francisco Affonso +5",
-      "year": "2026-06-17",
-      "summary": "Perceptive legged locomotion over discontinuous terrain (e.g., stairs, gaps, and obstacles) requires adaptive behavior, as a single conservative gait cannot produce the anticipatory maneuvers needed for abrupt topology changes. Cast as multi-task reinforcement learning, this problem introduces a ten…",
-      "url": "http://arxiv.org/abs/2606.19633v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Understanding Key Features of Time Series Foundation Models from Epidemic Forecasting",
-      "org": "Alireza Jafari +4",
-      "year": "2026-06-17",
-      "summary": "Seasonal influenza infects millions of people and causes substantial morbidity and mortality in the United States each year, making accurate short-term forecasting a core public-health need. Reliable forecasts of epidemic time series can inform vaccination timing, hospital staffing, and resource all…",
-      "url": "http://arxiv.org/abs/2606.19560v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Geometric and Stochastic Analysis of Discontinuities in Sparse Mixture-of-Experts",
-      "org": "Tho Tran Huu +6",
-      "year": "2026-06-17",
-      "summary": "Sparse Mixture-of-Experts (SMoE) architectures are now widely deployed in state-of-the-art language and vision models, where conditional routing allows scaling to very large networks. However, this very Top-$k$ expert selection that enables conditional routing also renders the SMoE map inherently di…",
-      "url": "http://arxiv.org/abs/2606.19036v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "FoMoE: Breaking the Full-Replica Barrier with a Federation of MoEs",
-      "org": "Lorenzo Sani +7",
-      "year": "2026-06-17",
-      "summary": "Pre-training Large Language Models (LLMs) typically demands large-scale infrastructure with tightly coupled hardware accelerators. While increasing model and dataset scale remains the dominant driver of performance, Mixture-of-Experts (MoEs) architectures have recently achieved state-of-the-art resu…",
-      "url": "http://arxiv.org/abs/2606.19025v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "EfficientRollout: System-Aware Self-Speculative Decoding for RL Rollouts",
-      "org": "Minseo Kim +9",
-      "year": "2026-06-17",
-      "summary": "Reinforcement learning (RL) has become a representative post-training paradigm for LLMs, enabling strong reasoning and agentic capabilities. However, rollout generation remains a dominant latency bottleneck because autoregressive sampling decodes responses sequentially and a small number of long-tai…",
-      "url": "http://arxiv.org/abs/2606.18967v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
       "title": "Latency Prediction for LLM Inference on NPU Systems",
       "org": "Juhyun Park +3",
       "year": "2026-06-16",
@@ -860,32 +977,6 @@
       "tags": [
         "live",
         "ascend-npu",
-        "auto"
-      ]
-    },
-    {
-      "title": "ReRAM-aware Model Finetuning addressing I-V Non-linearity and Retention Errors",
-      "org": "Ching-Yi Lin +3",
-      "year": "2026-06-16",
-      "summary": "Traditional CPU, GPU, and NPU architectures are increasingly limited by the von Neumann bottleneck. While In-Memory Computing (IMC) using ReRAM crossbar arrays offers a high-density, energy-efficient alternative, its practical deployment is constrained through their non-idealities. Existing hardware…",
-      "url": "http://arxiv.org/abs/2606.17471v1",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
-        "auto"
-      ]
-    },
-    {
-      "title": "Variable-Width Transformers",
-      "org": "Zhaofeng Wu +5",
-      "year": "2026-06-16",
-      "summary": "Scaling model size, specifically depth and width, has driven significant progress in transformer-based language models. However, most architectures maintain a constant width across all layers, allocating a fixed parameter and computation budget evenly despite different layers potentially playing dis…",
-      "url": "http://arxiv.org/abs/2606.18246v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
         "auto"
       ]
     },
@@ -916,71 +1007,6 @@
       ]
     },
     {
-      "title": "Transfer Learning for FHIR Questionnaire Terminology Binding",
-      "org": "Maxim Gorshkov",
-      "year": "2026-06-13",
-      "summary": "Electronic prior authorization workflows require FHIR Questionnaire items to carry LOINC codes, yet most items in the HL7 Da Vinci CDS-Library lack these bindings. We treat this as a retrieval problem: given a Questionnaire item's text, find the correct LOINC code in a pool of 97,314 active codes. W…",
-      "url": "http://arxiv.org/abs/2606.15449v1",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
-        "auto"
-      ]
-    },
-    {
-      "title": "Controlled Dynamics Attractor Transformer",
-      "org": "Cheng Zhang +5",
-      "year": "2026-06-13",
-      "summary": "Transformer architectures have dramatically advanced representation learning and inference in deep models through self-attention mechanisms. In parallel,associative memory (AM) frameworks map representations onto energy landscapes, offering interpretable retrieval mechanisms. However, their continuo…",
-      "url": "http://arxiv.org/abs/2606.15207v1",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
-        "auto"
-      ]
-    },
-    {
-      "title": "KATANA: A Fast, Low-Power Mapping of Kalman Filters onto Edge NPUs for Real-Time Tracking",
-      "org": "Bodhisatwa Kundu +6",
-      "year": "2026-06-12",
-      "summary": "State estimation is the closed-loop core of every real-time tracking system, from radar surveillance and counter-UAV defense to autonomous driving and robotics. These deployments run on edge platforms, where defense systems mount on vehicles and drones, and civilian pipelines live on cars and handhe…",
-      "url": "http://arxiv.org/abs/2606.14992v1",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
-        "auto"
-      ]
-    },
-    {
-      "title": "Prospective Coding and Path Integration Emerge as Equilibrium Solutions of Self-Organizing Neural Networks with Firing-Rate Adaptation",
-      "org": "Facundo Emina +1",
-      "year": "2026-06-12",
-      "summary": "Continuous Attractor Neural Networks (CANNs) traditionally rely on pre-wired recurrent connectivity to model spatial representations, path integration, and anticipatory dynamics. However, the biological mechanisms through which this structured connectivity emerges via learning remain relatively unex…",
-      "url": "http://arxiv.org/abs/2606.14649v1",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
-        "auto"
-      ]
-    },
-    {
-      "title": "CANN-EUCLID: unsupervised constitutive artificial neural network model discovery from full-field data",
-      "org": "Benjamin Alheit +2",
-      "year": "2026-06-12",
-      "summary": "Constitutive artificial neural networks (CANNs) provide interpretable material model discovery, but have so far been used in stress-supervised settings based on apparent stress-strain data from homogeneous tests. Because each test samples only a narrow loading path and provides homogenized rather th…",
-      "url": "http://arxiv.org/abs/2606.14565v1",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
-        "auto"
-      ]
-    },
-    {
       "title": "Realizing Native INT8 Compute for Diffusion Transformers on Consumer GPUs: A Fused INT8 GEMM Kernel for Ideogram 4.0",
       "org": "Ali Asaria +2",
       "year": "2026-06-12",
@@ -990,19 +1016,6 @@
       "tags": [
         "live",
         "fp8-lowprec",
-        "auto"
-      ]
-    },
-    {
-      "title": "Efficient On-Device Diffusion LLM Inference with Mobile NPU",
-      "org": "Tuowei Wang +2",
-      "year": "2026-06-11",
-      "summary": "Diffusion large language models (dLLMs) accelerate generation by denoising multiple tokens in parallel, making them attractive for latency-sensitive mobile inference. However, repeated denoising introduces substantial computation on smartphones. Mobile neural processing units (NPUs) offer high-throu…",
-      "url": "http://arxiv.org/abs/2606.13740v1",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
         "auto"
       ]
     },
@@ -1038,45 +1051,6 @@
       "year": "2026-06-10",
       "summary": "We study post-training quantization (PTQ) of Ideogram 4.0, a 9.3B flow-matching diffusion transformer (DiT) that realizes classifier-free guidance with two separate-weight copies of a single-stream backbone and is conditioned by a Qwen3-VL text encoder, targeting Ampere RTX~3090 GPUs, which lack FP8…",
       "url": "http://arxiv.org/abs/2606.12280v2",
-      "category": "fp8-lowprec",
-      "tags": [
-        "live",
-        "fp8-lowprec",
-        "auto"
-      ]
-    },
-    {
-      "title": "Beyond Per-Token Pricing: A Concurrency-Aware Methodology for LLM Infrastructure Cost Estimation",
-      "org": "Chitral Patil",
-      "year": "2026-06-10",
-      "summary": "Every public LLM cost calculator we surveyed treats GPU utilization as a fixed input -- entered by the user, baked in as a preset, or silently assumed at 100% -- never measured against the operator's actual load. We show that this assumption is the dominant source of error: on identical H100 hardwar…",
-      "url": "http://arxiv.org/abs/2606.11690v1",
-      "category": "fp8-lowprec",
-      "tags": [
-        "live",
-        "fp8-lowprec",
-        "auto"
-      ]
-    },
-    {
-      "title": "SpenseGPT: Practical One-shot Pruning Enabling Sparse and Dense GEMMs for LLM Inference",
-      "org": "Jaeseong Lee +2",
-      "year": "2026-06-09",
-      "summary": "Semi-structured 2:4 sparsity is widely supported by modern accelerators, providing up to a 2x theoretical speedup. However, its strict 50% sparsity constraint often causes non-negligible accuracy degradation under post-training pruning. Meanwhile, existing relaxed sparsity formats either require spe…",
-      "url": "http://arxiv.org/abs/2606.10445v1",
-      "category": "fp8-lowprec",
-      "tags": [
-        "live",
-        "fp8-lowprec",
-        "auto"
-      ]
-    },
-    {
-      "title": "Joint Structural Pruning and Mixed-Precision Quantization for LLM Compression",
-      "org": "Hoang-Loc La +3",
-      "year": "2026-06-05",
-      "summary": "Recently, the efficiency of Large Language Models (LLMs) deployment has become a critical concern in practical applications. While post-training quantization (PTQ) and structural pruning are established techniques for reducing memory footprint and inference latency, most existing PTQ approaches opti…",
-      "url": "http://arxiv.org/abs/2606.07819v1",
       "category": "fp8-lowprec",
       "tags": [
         "live",
