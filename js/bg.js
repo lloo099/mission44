@@ -9,7 +9,7 @@
   const GLYPHS = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロ0123456789=+*<>/\\{}[]ZX01";
 
   let w = 0, h = 0, dpr = 1, cols = 0, font = 16, drops = [], speeds = [], raf = null;
-  let glyph = "37,99,235", fade = "255,255,255";
+  let glyph = "139,147,163", fade = "255,255,255";
 
   function hexToRgb(hex) {
     const m = hex.trim().replace("#", "");
@@ -19,7 +19,7 @@
   }
   function readTheme() {
     const cs = getComputedStyle(document.documentElement);
-    glyph = hexToRgb(cs.getPropertyValue("--accent")) || glyph;
+    glyph = hexToRgb(cs.getPropertyValue("--rain")) || glyph;
     const dark = document.documentElement.getAttribute("data-theme") === "dark";
     fade = dark ? "11,14,20" : "255,255,255";
     if (w) { ctx.fillStyle = `rgb(${fade})`; ctx.fillRect(0, 0, w, h); } // reset backdrop on theme switch

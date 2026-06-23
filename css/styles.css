@@ -20,6 +20,7 @@
   --grid: rgba(37,99,235,.055);
   --on-accent: #ffffff;
   --surface: rgba(255,255,255,.82);
+  --rain: #8b93a3;
   /* semantic chips (readable on the active background) */
   --ok-fg: #157f3b;  --ok-bg: rgba(34,160,90,.12);   --ok-bd: rgba(34,160,90,.40);
   --warn-fg: #b45309; --warn-bg: rgba(210,140,20,.14); --warn-bd: rgba(210,140,20,.45);
@@ -50,6 +51,7 @@
   --grid: rgba(94,234,212,.045);
   --on-accent: #0b0e14;
   --surface: rgba(17,21,31,.82);
+  --rain: #aab2c0;
   --ok-fg: #6ee7a8;  --ok-bg: rgba(46,160,99,.12);   --ok-bd: rgba(46,160,99,.45);
   --warn-fg: #f5c451; --warn-bg: rgba(210,153,34,.12); --warn-bd: rgba(210,153,34,.45);
   --bad-fg: #f08a8a;  --bad-bg: rgba(200,70,70,.12);   --bad-bd: rgba(200,70,70,.45);
@@ -61,7 +63,7 @@
 * { box-sizing: border-box; }
 
 /* sci-fi animated background canvas (drawn by js/bg.js, behind all content) */
-#bg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; opacity: .5; }
+#bg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; opacity: .65; }
 :root[data-theme="dark"] #bg-canvas { opacity: .8; }
 
 /* Background grid/glow lives on <html> (the viewport layer) so it paints
