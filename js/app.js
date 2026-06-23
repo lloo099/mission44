@@ -33,6 +33,7 @@ async function init() {
     activeFilters[k] = new Set();
   });
 
+  wireTheme();
   buildStats();
   ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel);
   buildFilterbars();
@@ -46,6 +47,25 @@ async function init() {
   wireBlog();
   if (window.wireArch) wireArch();
   setLastUpdated();
+}
+
+/* ---------- light/dark theme toggle (default: light) ---------- */
+function wireTheme() {
+  const btn = document.getElementById("theme-toggle");
+  const root = document.documentElement;
+  const apply = (t) => {
+    if (t === "dark") root.setAttribute("data-theme", "dark");
+    else root.removeAttribute("data-theme");
+    if (btn) { btn.textContent = t === "dark" ? "☀️" : "🌙"; btn.title = t === "dark" ? "切换到浅色" : "切换到深色"; }
+  };
+  let cur;
+  try { cur = localStorage.getItem("theme") || "light"; } catch (e) { cur = "light"; }
+  apply(cur);
+  if (btn) btn.addEventListener("click", () => {
+    cur = cur === "dark" ? "light" : "dark";
+    try { localStorage.setItem("theme", cur); } catch (e) {}
+    apply(cur);
+  });
 }
 
 /* ---------- blog / dispatch (markdown posts, unipat-style index) ---------- */
