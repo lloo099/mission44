@@ -1,6 +1,54 @@
 {
-  "updated": "2026-06-16",
+  "updated": "2026-06-23",
   "items": [
+    {
+      "title": "Jet-RL (on-policy FP8 RL)",
+      "org": "research",
+      "year": "2026-01",
+      "category": "framework",
+      "innovation": "Unified train+rollout precision flow for on-policy FP8 RL",
+      "analysis": "Innovation: unifies the precision of the trainer and the rollout engine so FP8 rollouts stay numerically consistent with the policy the trainer assumes — killing the train-inference mismatch that makes naive FP8 RL unstable. Fit for RL-on-NPU: this is the missing 'how' for FP8 RL, and Ascend 950's native FP8 makes the same recipe a high-novelty target on NPU; the consistency it enforces is exactly what align-probe should measure on Ascend.",
+      "summary": "Enables on-policy FP8 RL by keeping training and rollout on a unified precision flow, so low-precision generation doesn't drift from the higher-precision policy — addressing FP8 RL's core instability.",
+      "url": "https://arxiv.org/abs/2601.14243",
+      "tags": [
+        "FP8",
+        "low-precision",
+        "rollout",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Efficient RL with Quantized Rollout",
+      "org": "research",
+      "year": "2026-02",
+      "category": "algorithm",
+      "innovation": "Quantize only the rollout (INT8/FP8) for 20–80% throughput",
+      "analysis": "Innovation: quantizes just the rollout/generation stage (INT8 or FP8) while keeping training precision, exploiting that rollout is inference. Performance: 20–80% throughput gains on 7B/14B/32B. Fit for RL-on-NPU: rollout is >70% of RL wall-clock and the memory hog on Ascend's no-sleep-mode HBM — a quantized rollout shrinks that footprint directly, the cheapest port of GPU rollout tricks to NPU.",
+      "summary": "Quantizes the rollout phase (INT8/FP8) to accelerate RL generation, reporting 20–80% throughput improvements on 7B–32B models without quantizing the training step.",
+      "url": "https://arxiv.org/abs/2602.13953",
+      "tags": [
+        "rollout",
+        "low-precision",
+        "efficiency",
+        "2026"
+      ]
+    },
+    {
+      "title": "GAC (Gradient Alignment Control)",
+      "org": "research",
+      "year": "2026-03",
+      "category": "algorithm",
+      "innovation": "Aligns gradient directions to stabilize async RL",
+      "analysis": "Innovation: controls/aligns the gradient directions produced under asynchrony so stale-sample updates don't fight the on-policy signal. Fit for RL-on-NPU: async decoupling of rollout vs train is the main lever for NPU throughput (no sleep-mode), but staleness destabilizes GRPO — GAC is one of the 2026 stabilizers that make high-asynchrony RL usable on Ascend.",
+      "summary": "Stabilizes asynchronous RL training for LLMs via Gradient Alignment Control — keeping updates from stale rollouts aligned so high-asynchrony training stays stable.",
+      "url": "https://arxiv.org/abs/2603.01501",
+      "tags": [
+        "async-rl",
+        "stability",
+        "2026"
+      ]
+    },
     {
       "title": "ReSum (RLVR + self-summarization)",
       "org": "research",

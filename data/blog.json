@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-02-rollout-bottleneck",
+      "title": "Dispatch 02 · Rollout 是 RL 的瓶颈:FP8 量化与异步稳定化",
+      "subtitle": "Rollout 吃掉 RL 训练 70% 的时间。2026 H1 的两条主线——量化 rollout(FP8/INT8)与异步稳定化——恰好都压在昇腾的痛点上。",
+      "date": "2026-06-23",
+      "tags": ["RL-systems", "FP8", "async-RL", "Ascend"],
+      "file": "docs/blog/dispatch-02-rollout-bottleneck.md"
+    },
+    {
       "id": "dispatch-01-seed-2-1",
       "title": "Dispatch 01 · Seed 2.1 与开源 1M 上下文浪潮",
       "subtitle": "ByteDance 闭源编码模型 Seed 2.1 Pro 抢先版登场;但 Ascend 的故事仍在开源权重一侧。把它放进对比,看清这意味着什么。",
