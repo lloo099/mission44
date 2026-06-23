@@ -1,0 +1,14 @@
+{
+  "updated": "2026-06-23",
+  "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
+  "posts": [
+    {
+      "id": "dispatch-01-seed-2-1",
+      "title": "Dispatch 01 · Seed 2.1 与开源 1M 上下文浪潮",
+      "subtitle": "ByteDance 闭源编码模型 Seed 2.1 Pro 抢先版登场;但 Ascend 的故事仍在开源权重一侧。把它放进对比,看清这意味着什么。",
+      "date": "2026-06-23",
+      "tags": ["frontier", "Seed 2.1", "RL-on-NPU", "analysis"],
+      "file": "docs/blog/dispatch-01-seed-2-1.md"
+    }
+  ]
+}

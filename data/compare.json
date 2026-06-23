@@ -1,7 +1,7 @@
 {
-  "updated": "2026-06-16",
+  "updated": "2026-06-23",
   "doc": "docs/2026-frontier-models.md",
-  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports.",
+  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far.",
   "models": {
     "columns": ["", "DeepSeek-V4", "MiniMax-M3", "GLM-5.2", "DeepSeek-V3.2 (ref)"],
     "rows": [
@@ -30,6 +30,7 @@
           {"model": "Kimi K2.6", "score": 80.2, "open": true},
           {"model": "DeepSeek-V4-Flash", "score": 79.0, "open": true},
           {"model": "GLM-5", "score": 77.8, "open": true},
+          {"model": "Seed 2.0 Pro (closed)", "score": 76.5, "open": false},
           {"model": "Qwen3.5 397B", "score": 76.2, "open": true},
           {"model": "Llama3-SWE-RL-70B", "score": 41.0, "open": true}
         ]
@@ -69,6 +70,7 @@
         "id": "aime", "label": "AIME (math)", "unit": "%",
         "note": "Math. GLM line tops it; mixed 2025/2026 AIME, partial coverage. GLM-5.2 published no launch benchmarks.",
         "items": [
+          {"model": "Seed 2.0 Pro (closed)", "score": 98.3, "open": false},
           {"model": "GLM-5 (Reasoning)", "score": 98.0, "open": true},
           {"model": "GLM-4.7", "score": 95.7, "open": true},
           {"model": "GLM-5.1 (Reasoning)", "score": 95.3, "open": true},
@@ -83,6 +85,7 @@
           {"model": "MiniMax-M3", "score": 92.7, "open": true},
           {"model": "Kimi K2.6", "score": 90.5, "open": true},
           {"model": "DeepSeek-V4", "score": 90.1, "open": true},
+          {"model": "Seed 2.0 Pro (closed)", "score": 88.9, "open": false},
           {"model": "Qwen3.5", "score": 88.4, "open": true}
         ]
       },
@@ -110,11 +113,19 @@
       },
       {
         "id": "price", "label": "Output price", "unit": "$", "lowerBetter": true,
-        "note": "$/1M output tokens — lower is better. M3 promo pricing; sparse coverage.",
+        "note": "$/1M output tokens — lower is better. M3 promo pricing; sparse coverage. Seed is closed-API pricing.",
         "items": [
           {"model": "DeepSeek-V4-Pro", "score": 3.48, "open": true},
+          {"model": "Seed 2.0 Pro (closed)", "score": 2.37, "open": false},
           {"model": "MiniMax-M3 (promo)", "score": 1.20, "open": true},
           {"model": "DeepSeek-V4-Flash", "score": 0.87, "open": true}
+        ]
+      },
+      {
+        "id": "codearena", "label": "Code Arena · Frontend (Elo)", "unit": "Elo", "neutral": true,
+        "note": "LMArena Code-Arena Frontend Elo. Seed 2.1 Pro Preview (Jun 19 2026) entered at 1539 — 8th globally, ~tied with Claude Opus 4.6; full Seed-2.1 benchmarks pending. Only a few public Elos here.",
+        "items": [
+          {"model": "Seed 2.1 Pro (preview)", "score": 1539, "open": false}
         ]
       }
     ]
@@ -132,6 +143,7 @@
     "Best Ascend port targets: MiniMax-M3 (plain GQA → easiest on NPU, fast decode) + GLM-5.2 (MIT base for RL post-training); DeepSeek-V4 as the already-supported large rollout/eval baseline.",
     "Decode-side sparse attention directly eases Ascend's no-sleep-mode rollout/train memory contention — quantify it in the benchmark.",
     "Custom attention (CSA/HCA/DSA/MSA) re-implemented on NPU raises numeric-drift risk — exactly what align-probe should diagnose.",
-    "V4's validated FP8 training + Ascend 950 native FP8 make FP8 RL on Ascend a viable, high-novelty topic."
+    "V4's validated FP8 training + Ascend 950 native FP8 make FP8 RL on Ascend a viable, high-novelty topic.",
+    "Seed 2.1 Pro (preview, Jun 19) is a strong closed coding/agent model (Code-Arena Frontend ~Opus 4.6) but it's API-only and not Ascend-portable — it sets the bar to chase, not a model to host on NPU. The Ascend story stays with the open-weight wave (DeepSeek-V4 / MiniMax-M3 / GLM-5.2)."
   ]
 }

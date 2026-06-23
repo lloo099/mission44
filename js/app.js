@@ -43,8 +43,62 @@ async function init() {
   wireCompare();
   wireSurvey();
   wireTimeline();
+  wireBlog();
   if (window.wireArch) wireArch();
   setLastUpdated();
+}
+
+/* ---------- blog / dispatch (markdown posts, unipat-style index) ---------- */
+async function wireBlog() {
+  const idx = document.getElementById("blog-index");
+  const post = document.getElementById("blog-post");
+  if (!idx || !post) return;
+  let posts = [];
+  try {
+    const res = await fetch("data/blog.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error(res.status);
+    posts = (await res.json()).posts || [];
+  } catch (e) {
+    idx.innerHTML = `<div class="empty">Couldn't load blog index (${escapeHtml(String(e.message || e))}).</div>`;
+    return;
+  }
+
+  function showIndex() {
+    post.hidden = true; idx.hidden = false;
+    if (!posts.length) { idx.innerHTML = `<div class="empty">No posts yet.</div>`; return; }
+    idx.innerHTML = posts.map((p) => `<a class="blog-card" href="#blog/${escapeAttr(p.id)}">
+      <div class="blog-card-date">${escapeHtml(p.date || "")}</div>
+      <h3>${escapeHtml(p.title)}</h3>
+      <p>${escapeHtml(p.subtitle || "")}</p>
+      <div class="blog-card-tags">${(p.tags || []).map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
+    </a>`).join("");
+  }
+
+  async function openPost(id) {
+    const p = posts.find((x) => x.id === id);
+    if (!p) { showIndex(); return; }
+    idx.hidden = true; post.hidden = false;
+    post.innerHTML = `<div class="empty">Loading…</div>`;
+    try {
+      const res = await fetch(p.file, { cache: "no-cache" });
+      if (!res.ok) throw new Error(res.status);
+      post.innerHTML = `<a class="blog-back" href="#blog">← 所有 Dispatch</a>`
+        + `<div class="prose blog-prose">${renderMarkdown(await res.text())}</div>`
+        + `<a class="blog-back foot" href="#blog">← 所有 Dispatch</a>`;
+    } catch (e) {
+      post.innerHTML = `<a class="blog-back" href="#blog">← 返回</a><div class="empty">Couldn't load post (${escapeHtml(String(e.message || e))}).</div>`;
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function route() {
+    const parts = location.hash.slice(1).split("/");
+    if (parts[0] !== "blog") return;       // only react to our own tab
+    if (parts[1]) openPost(parts[1]); else showIndex();
+  }
+  window.addEventListener("hashchange", route);
+  showIndex();
+  route();
 }
 
 /* ---------- timeline (aggregated from curated data) ---------- */
@@ -356,7 +410,7 @@ function wireTabs() {
     tab.addEventListener("click", () => activateTab(tab.dataset.tab, true));
   });
   // deep-link: open the tab named in the URL hash, and react to back/forward
-  const fromHash = () => { const h = location.hash.slice(1); if (h && document.getElementById(h)) activateTab(h, false); };
+  const fromHash = () => { const h = location.hash.slice(1).split("/")[0]; if (h && document.getElementById(h)) activateTab(h, false); };
   window.addEventListener("hashchange", fromHash);
   fromHash();
   // number keys 1..9 jump to tabs (when not typing in a field)

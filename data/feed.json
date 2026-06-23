@@ -5,6 +5,20 @@
   "pinned": 23,
   "items": [
     {
+      "title": "Seed 2.1 Pro 抢先版上线 LMArena (闭源, 编码/Agent)",
+      "org": "ByteDance Seed",
+      "year": "2026-06",
+      "category": "modeling",
+      "summary": "6 月 19 日 ByteDance 把 Seed-2.1-Pro-Preview 放上 Code Arena 试用:前端编码子榜 1539 Elo、全球第 8,约等于 Claude Opus 4.6。闭源 API、无 Ascend 移植——是标杆而非 NPU 载荷。完整基准随正式版未来几周公布。分析见 Blog → Dispatch 01。",
+      "url": "https://seed.bytedance.com/en/blog/seed-2-1-preview-model-release-on-arena",
+      "tags": [
+        "live",
+        "modeling",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
       "title": "新一批开源模型 (6月中): Qwen3 Coder Next · MiniMax M2.7 · Nemotron 3 Ultra",
       "org": "various",
       "year": "2026-06",
