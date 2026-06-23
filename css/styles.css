@@ -58,6 +58,10 @@
 
 * { box-sizing: border-box; }
 
+/* sci-fi animated background canvas (drawn by js/bg.js, behind all content) */
+#bg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; opacity: .6; }
+:root[data-theme="dark"] #bg-canvas { opacity: .9; }
+
 html, body {
   margin: 0;
   background:
