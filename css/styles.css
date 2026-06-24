@@ -160,6 +160,30 @@ main { padding: 28px; max-width: 1280px; margin: 0 auto; }
 .ov-card ol { margin: 0; padding-left: 18px; color: var(--text-soft); }
 .ov-card p { margin: 0; color: var(--text-soft); }
 
+/* Data Quality Ledger (Overview) */
+.ledger { background: var(--surface); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 20px; }
+.ledger-head { display: flex; align-items: baseline; gap: 10px; justify-content: space-between; flex-wrap: wrap; margin-bottom: 12px; }
+.ledger-head h3 { margin: 0; font-size: 15px; color: var(--accent); }
+.ledger-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+.ledger-cell { font-size: 12.5px; }
+.ledger-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.ledger-pct { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.ledger-bar { display: block; height: 7px; background: var(--bg-3); border-radius: 999px; overflow: hidden; }
+.ledger-bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 999px; }
+.ledger-hint { font-size: 11px; margin-top: 4px; }
+
+/* card source-provenance line */
+.provenance { font-size: 11px; color: var(--dim); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: -.1px; }
+
+/* training-curve experiment metadata panel */
+.curve-meta { margin-bottom: 14px; }
+.curve-synth { font-size: 12px; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--warn-bd); color: var(--warn-fg); background: var(--warn-bg); }
+.curve-synth.real { border-color: var(--ok-bd); color: var(--ok-fg); background: var(--ok-bg); }
+
+/* keyboard focus for the ARIA tablist */
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.panel:focus { outline: none; }
+
 /* Filter bar */
 .filterbar { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
 .chip {

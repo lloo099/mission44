@@ -56,6 +56,14 @@ def parse_log(path):
     return {m: pts for m, pts in series.items() if pts}
 
 
+SYNTH_META = {
+    "gpu": {"model": "Qwen2.5-0.5B-Instruct", "dataset": "GSM8K", "hardware": "1× NVIDIA A100 80GB",
+            "framework": "verl + vLLM", "precision": "bf16", "seed": 1, "synthetic": True},
+    "npu": {"model": "Qwen2.5-0.5B-Instruct", "dataset": "GSM8K", "hardware": "1× Ascend 910B 64GB",
+            "framework": "MindSpeed-RL + vLLM-Ascend", "precision": "bf16", "seed": 2, "synthetic": True},
+}
+
+
 def synthetic(name="qwen0.5b_gsm8k_grpo"):
     """Two plausible runs (gpu baseline + npu with slight drift)."""
     import random
@@ -71,8 +79,21 @@ def synthetic(name="qwen0.5b_gsm8k_grpo"):
             metrics["kl"].append([step, round(0.0005 + 0.004 * t + rng.uniform(0, 5e-4), 5)])
             metrics["entropy"].append([step, round(1.25 - 0.5 * t + rng.uniform(-0.03, 0.03), 4)])
             metrics["response_length"].append([step, round(120 + 80 * t + rng.uniform(-6, 6), 1)])
-        exps.append({"name": name, "device": device, "metrics": metrics})
+        exps.append({"name": name, "device": device, "metrics": metrics, "meta": dict(SYNTH_META[device])})
     return exps
+
+
+def build_meta(args, synthetic_run):
+    """Assemble experiment metadata from CLI flags (only keys that were given)."""
+    meta = {}
+    for k in ("model", "dataset", "hardware", "framework", "precision"):
+        v = getattr(args, k, None)
+        if v:
+            meta[k] = v
+    if getattr(args, "seed", None) is not None:
+        meta["seed"] = args.seed
+    meta["synthetic"] = bool(synthetic_run)
+    return meta
 
 
 def load_existing(out):
@@ -96,6 +117,13 @@ def main():
     ap.add_argument("--name", default="run", help="experiment name")
     ap.add_argument("--device", default="gpu", help="gpu|npu (legend grouping)")
     ap.add_argument("--synthetic", action="store_true", help="emit a demo curve set")
+    # experiment metadata (recorded so the dashboard can show run provenance)
+    ap.add_argument("--model", help="model id, e.g. Qwen2.5-0.5B-Instruct")
+    ap.add_argument("--dataset", help="dataset, e.g. GSM8K")
+    ap.add_argument("--hardware", help="hardware, e.g. '1× Ascend 910B 64GB'")
+    ap.add_argument("--framework", help="framework, e.g. 'MindSpeed-RL + vLLM-Ascend'")
+    ap.add_argument("--precision", help="precision, e.g. bf16 / fp8")
+    ap.add_argument("--seed", type=int, help="random seed")
     ap.add_argument("--out", default=DEFAULT_OUT)
     args = ap.parse_args()
 
@@ -105,7 +133,8 @@ def main():
         metrics = parse_log(args.log)
         if not metrics:
             print(f"[curves] no metrics parsed from {args.log} — check key names in ALIASES")
-        new = [{"name": args.name, "device": args.device, "metrics": metrics}]
+        new = [{"name": args.name, "device": args.device, "metrics": metrics,
+                "meta": build_meta(args, synthetic_run=False)}]
     else:
         ap.error("need --log <file> or --synthetic")
 
@@ -114,6 +143,7 @@ def main():
     experiments = merge(load_existing(out), new)
     payload = {
         "updated": dt.datetime.utcnow().isoformat() + "Z",
+        "synthetic": any((e.get("meta") or {}).get("synthetic") for e in experiments),
         "experiments": experiments,
     }
     with open(out, "w", encoding="utf-8") as f:

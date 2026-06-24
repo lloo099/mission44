@@ -84,11 +84,65 @@ Each curated `data/*.json` file has the shape:
 }
 ```
 
-`ideas.json` entries additionally use `pitch`, `impact`/`difficulty`/`novelty` (0–5),
-`why`, and a `steps` array.
+Optional per-item fields the dashboard understands:
+
+- `confidence` — one of `confirmed` / `secondary` / `self-reported` (rendered as a 确证/二手/自报 badge).
+- `ascend` — `ready` / `partial` / `none` (Ascend-readiness badge) with optional `ascendNote`.
+- `analysis` — a deeper write-up (marked ★ analyzed; counts toward the ledger).
+- `source` / `verified` — provenance shown on each card as `source: arXiv · verified 2026-06-23`.
+  If `source` is omitted it is inferred from the URL host; if `verified` is omitted the file's
+  top-level `updated` date is used.
+
+`ideas.json` entries additionally use `pitch`, `impact`/`difficulty`/`novelty` (0–5), `why`,
+a `steps` array, and — to keep ideas executable — **`minimumExperiment`** (the smallest run that
+tests the thesis) and **`successMetric`** (how you know it worked).
 
 To add an entry, append an object to the relevant `items` array — the dashboard picks up
 new `category`/`tags` values automatically as filter chips.
+
+## Data quality & provenance
+
+The **Overview → Data Quality Ledger** summarizes coverage across the curated catalog
+(RL · Ascend · Modeling): % of entries with a source, a confidence label, an Ascend-readiness
+rating, and a deep analysis. Every card also shows a `source: … · verified …` line so the
+provenance of each claim is visible inline. Benchmark numbers for unreleased/early models are
+labelled **provisional** in the data and copy.
+
+### Training-curve provenance
+
+`data/curves.json` carries a top-level `synthetic` flag and a per-experiment `meta` block
+(`model`, `dataset`, `hardware`, `framework`, `precision`, `seed`, `synthetic`). The **Training
+Curves** tab renders this as an experiment-metadata panel with a clear **synthetic-demo vs
+real-logs** banner. Generate curves with:
+
+```bash
+# synthetic demo (no run needed) — clearly flagged as synthetic in the UI
+python3 ascend-rl-bench/tools/logs_to_dashboard.py --synthetic
+
+# real run — record full provenance
+python3 ascend-rl-bench/tools/logs_to_dashboard.py \
+  --log logs/run/train.log --name qwen0.5b_gsm8k_grpo --device npu \
+  --model Qwen2.5-0.5B-Instruct --dataset GSM8K \
+  --hardware "1× Ascend 910B 64GB" --framework "MindSpeed-RL + vLLM-Ascend" \
+  --precision bf16 --seed 42
+```
+
+## Local validation
+
+Before committing, run the same checks CI runs:
+
+```bash
+node --check js/*.js                         # JS syntax
+python3 -m py_compile scripts/*.py           # Python syntax
+python3 scripts/validate_data.py             # data + curve-metadata schema
+git diff --check                             # whitespace/conflict markers
+```
+
+`validate_data.py` checks item titles/URLs/confidence values **and** that every
+`curves.json` experiment carries a complete `meta` block — so missing curve provenance fails CI.
+Accessibility: tabs use a standard `tablist`/`tab`/`tabpanel` pattern (arrow-key navigation,
+`aria-selected`), and inactive panels are truly `hidden` so screen readers and automation don't
+read offscreen content.
 
 ## Notes
 

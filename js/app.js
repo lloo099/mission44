@@ -9,6 +9,7 @@ const DATA_SOURCES = {
 };
 
 const store = {}; // key -> array of entries
+const storeUpdated = {}; // key -> ISO date string (from each file's "updated")
 const activeFilters = {}; // key -> Set of active tags
 let searchTerm = "";
 
@@ -30,11 +31,13 @@ async function init() {
   keys.forEach((k, i) => {
     const payload = results[i];
     store[k] = (payload && payload.items) ? payload.items : (Array.isArray(payload) ? payload : []);
+    storeUpdated[k] = (payload && payload.updated) ? String(payload.updated).slice(0, 10) : "";
     activeFilters[k] = new Set();
   });
 
   wireTheme();
   buildStats();
+  buildLedger();
   ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel);
   buildFilterbars();
   wireTabs();
@@ -246,6 +249,44 @@ function buildStats() {
     .join("");
 }
 
+/* ---------- Data Quality Ledger (Overview) ---------- */
+function buildLedger() {
+  const el = document.getElementById("data-ledger");
+  if (!el) return;
+  const KEYS = ["rl", "ascend", "modeling"];
+  const all = KEYS.flatMap((k) => (store[k] || []));
+  const n = all.length || 1;
+  const pct = (c) => Math.round((c / n) * 100);
+  const withSource = all.filter((e) => inferSource(e)).length;
+  const withConf = all.filter((e) => e.confidence).length;
+  const withAscend = all.filter((e) => e.ascend).length;
+  const withAnalysis = all.filter((e) => e.analysis).length;
+  const aReady = all.filter((e) => e.ascend === "ready").length;
+  const aPartial = all.filter((e) => e.ascend === "partial").length;
+  const rows = [
+    { lbl: "Source provenance", c: withSource, hint: "有可溯源信源(字段或 URL)" },
+    { lbl: "Confidence labelled", c: withConf, hint: "标了 确证/二手/自报" },
+    { lbl: "Ascend readiness", c: withAscend, hint: `就绪 ${aReady} · 部分 ${aPartial}` },
+    { lbl: "Deep analysis", c: withAnalysis, hint: "带 analysis 深析" },
+  ];
+  const bar = (p) => `<span class="ledger-bar"><span style="width:${p}%"></span></span>`;
+  el.innerHTML = `
+    <div class="ledger-head">
+      <h3>Data Quality Ledger</h3>
+      <span class="dim">covers ${all.length} curated entries (RL · Ascend · Modeling)</span>
+    </div>
+    <div class="ledger-grid">
+      ${rows.map((r) => {
+        const p = pct(r.c);
+        return `<div class="ledger-cell">
+          <div class="ledger-top"><span>${escapeHtml(r.lbl)}</span><span class="ledger-pct">${p}%</span></div>
+          ${bar(p)}
+          <div class="ledger-hint dim">${r.c}/${all.length} · ${escapeHtml(r.hint)}</div>
+        </div>`;
+      }).join("")}
+    </div>`;
+}
+
 /* ---------- filters ---------- */
 function uniqueTags(key) {
   const tags = new Set();
@@ -311,10 +352,32 @@ function renderPanel(key) {
     return;
   }
   const count = `<div class="result-count">${items.length} of ${store[key].length} shown${searchTerm ? ` · “${escapeHtml(searchTerm)}”` : ""}</div>`;
-  container.innerHTML = count + items.map(cardHTML).join("");
+  container.innerHTML = count + items.map((e) => cardHTML(e, key)).join("");
 }
 
-function cardHTML(e) {
+/* derive a human source label from an explicit field or the URL host */
+function inferSource(e) {
+  if (e.source) return e.source;
+  const u = e.url || "";
+  const m = u.match(/^https?:\/\/([^/]+)/i);
+  if (!m) return "";
+  const host = m[1].replace(/^www\./, "");
+  const MAP = {
+    "arxiv.org": "arXiv", "huggingface.co": "Hugging Face", "github.com": "GitHub",
+    "docs.vllm.ai": "vLLM docs", "seed.bytedance.com": "ByteDance Seed",
+    "trendforce.com": "TrendForce", "tomshardware.com": "Tom's Hardware",
+    "techpowerup.com": "TechPowerUp", "llm-stats.com": "llm-stats",
+  };
+  return MAP[host] || host;
+}
+function provenanceLine(e, key) {
+  const src = inferSource(e);
+  if (!src) return "";
+  const verified = e.verified || storeUpdated[key] || "";
+  return `<div class="provenance" title="数据来源与最近校验日期">source: ${escapeHtml(src)}${verified ? ` · verified ${escapeHtml(verified)}` : ""}</div>`;
+}
+
+function cardHTML(e, key) {
   const meta = [e.org, e.year].filter(Boolean).join(" · ");
   const tags = (e.tags || []).map((t) => `<span class="t">${escapeHtml(t)}</span>`).join("");
   const slim = JSON.stringify({ title: e.title, org: e.org, year: e.year, category: e.category, innovation: e.innovation, summary: e.summary, url: e.url, tags: e.tags, analysis: e.analysis });
@@ -323,6 +386,7 @@ function cardHTML(e) {
     <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}<span class="card-badges">${confBadge(e)}${ascendBadge(e)}</span></div>
     <h3>${hl(e.title || "Untitled")}</h3>
     ${meta ? `<div class="meta">${escapeHtml(meta)}</div>` : ""}
+    ${provenanceLine(e, key)}
     ${e.innovation ? `<div class="innov">▸ ${hl(e.innovation)}</div>` : ""}
     ${e.summary ? `<p class="summary">${hl(e.summary)}</p>` : ""}
     <div class="tags">${tags}</div>
@@ -396,6 +460,8 @@ function ideaHTML(e) {
       ${bar("novelty", e.novelty ?? 0)}
     </div>
     ${e.why ? `<div class="why"><strong>Why now:</strong> ${escapeHtml(e.why)}</div>` : ""}
+    ${e.minimumExperiment ? `<div class="why"><strong>Minimum experiment:</strong> ${escapeHtml(e.minimumExperiment)}</div>` : ""}
+    ${e.successMetric ? `<div class="why"><strong>Success metric:</strong> ${escapeHtml(e.successMetric)}</div>` : ""}
     ${steps ? `<div class="why"><strong>First steps:</strong><ul>${steps}</ul></div>` : ""}
     ${(e.tags || []).length ? `<div class="tags">${(e.tags || []).map((t) => `<span class="t">${escapeHtml(t)}</span>`).join("")}</div>` : ""}
   </article>`;
@@ -406,17 +472,42 @@ function activateTab(name, push) {
   const tab = document.querySelector(`.tab[data-tab="${name}"]`);
   const panel = document.getElementById(name);
   if (!tab || !panel) return;
-  document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
-  document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
-  tab.classList.add("active");
-  panel.classList.add("active");
+  document.querySelectorAll(".tab").forEach((t) => {
+    const on = t === tab;
+    t.classList.toggle("active", on);
+    t.setAttribute("aria-selected", on ? "true" : "false");
+    t.tabIndex = on ? 0 : -1;
+  });
+  document.querySelectorAll(".panel").forEach((p) => {
+    const on = p === panel;
+    p.classList.toggle("active", on);
+    if (on) p.removeAttribute("hidden"); else p.setAttribute("hidden", "");
+  });
   if (push && location.hash.slice(1) !== name) history.replaceState(null, "", "#" + name);
 }
 
 function wireTabs() {
-  document.querySelectorAll(".tab").forEach((tab) => {
+  const tabs = [...document.querySelectorAll(".tab")];
+  tabs.forEach((tab) => {
     tab.addEventListener("click", () => activateTab(tab.dataset.tab, true));
   });
+  // standard tablist keyboard interaction: ←/→/Home/End move focus + activate
+  const tablist = document.getElementById("tabs");
+  if (tablist) {
+    tablist.addEventListener("keydown", (e) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+      const cur = tabs.indexOf(document.activeElement);
+      if (cur < 0) return;
+      e.preventDefault();
+      let next = cur;
+      if (e.key === "ArrowRight") next = (cur + 1) % tabs.length;
+      else if (e.key === "ArrowLeft") next = (cur - 1 + tabs.length) % tabs.length;
+      else if (e.key === "Home") next = 0;
+      else if (e.key === "End") next = tabs.length - 1;
+      tabs[next].focus();
+      activateTab(tabs[next].dataset.tab, true);
+    });
+  }
   // deep-link: open the tab named in the URL hash, and react to back/forward
   const fromHash = () => { const h = location.hash.slice(1).split("/")[0]; if (h && document.getElementById(h)) activateTab(h, false); };
   window.addEventListener("hashchange", fromHash);
@@ -426,7 +517,6 @@ function wireTabs() {
     if (!/^[1-9]$/.test(e.key)) return;
     const el = document.activeElement;
     if (el && /INPUT|TEXTAREA|SELECT/.test(el.tagName)) return;
-    const tabs = [...document.querySelectorAll(".tab")];
     if (tabs[+e.key - 1]) tabs[+e.key - 1].click();
   });
 }
@@ -614,6 +704,7 @@ async function wireCurves() {
     return;
   }
   curvesData = payload;
+  renderCurveMeta(payload);
   const metrics = [];
   payload.experiments.forEach((e) =>
     Object.keys(e.metrics || {}).forEach((m) => { if (!metrics.includes(m)) metrics.push(m); }));
@@ -624,6 +715,28 @@ async function wireCurves() {
     status.textContent = `${payload.experiments.length} run(s)${upd}`;
   }
   if (metrics.length) renderCurve(metrics[0]);
+}
+
+/* Experiment metadata panel — makes provenance of the curves explicit */
+function renderCurveMeta(payload) {
+  const el = document.getElementById("curve-meta");
+  if (!el) return;
+  const exps = payload.experiments || [];
+  const isSynthetic = payload.synthetic || exps.some((e) => e.meta && e.meta.synthetic);
+  const COLS = [
+    ["model", "Model"], ["dataset", "Dataset"], ["hardware", "Hardware"],
+    ["framework", "Framework"], ["precision", "Precision"], ["seed", "Seed"],
+  ];
+  const banner = isSynthetic
+    ? `<div class="curve-synth">⚠ Synthetic demo data — illustrative shapes, not measured results. Replace via <code>logs_to_dashboard.py --log train.log</code>.</div>`
+    : `<div class="curve-synth real">✓ Parsed from real training logs.</div>`;
+  const head = `<tr><th>Run</th>${COLS.map(([, l]) => `<th>${escapeHtml(l)}</th>`).join("")}</tr>`;
+  const rows = exps.map((e) => {
+    const m = e.meta || {};
+    const cells = COLS.map(([k]) => `<td>${m[k] !== undefined && m[k] !== "" ? escapeHtml(String(m[k])) : "—"}</td>`).join("");
+    return `<tr><td class="rowhead">${escapeHtml(e.name)} · ${escapeHtml(e.device || "")}</td>${cells}</tr>`;
+  }).join("");
+  el.innerHTML = `${banner}<div class="cmp-scroll"><table class="cmp">${head}${rows}</table></div>`;
 }
 
 function renderCurve(metric) {

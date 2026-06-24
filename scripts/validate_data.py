@@ -26,6 +26,33 @@ for f in sorted(glob.glob("data/*.json")):
         if it.get("confidence") not in OK_CONF:
             errs.append(f"{f}[{i}] ({it.get('title','?')[:30]}): bad confidence {it.get('confidence')!r}")
 
+# ---- curves.json: validate experiment metadata (provenance) ----
+CURVE_META_KEYS = ("model", "dataset", "hardware", "framework", "precision", "seed")
+import os
+if os.path.exists("data/curves.json"):
+    try:
+        cv = json.load(open("data/curves.json", encoding="utf-8"))
+    except Exception as e:
+        errs.append(f"data/curves.json: invalid JSON: {e}"); cv = None
+    if isinstance(cv, dict):
+        exps = cv.get("experiments")
+        if not isinstance(exps, list) or not exps:
+            errs.append("data/curves.json: 'experiments' missing or empty")
+        else:
+            for i, e in enumerate(exps):
+                tag = f"data/curves.json[{i}] ({e.get('name','?')}·{e.get('device','?')})"
+                if not e.get("name") or not e.get("device"):
+                    errs.append(f"{tag}: missing name/device")
+                if not isinstance(e.get("metrics"), dict) or not e.get("metrics"):
+                    errs.append(f"{tag}: missing metrics")
+                meta = e.get("meta")
+                if not isinstance(meta, dict):
+                    errs.append(f"{tag}: missing meta block (model/dataset/hardware/framework/precision/seed)")
+                else:
+                    missing = [k for k in CURVE_META_KEYS if meta.get(k) in (None, "")]
+                    if missing:
+                        errs.append(f"{tag}: meta missing {missing}")
+
 print(f"[validate] checked {len(glob.glob('data/*.json'))} files")
 if errs:
     print("VALIDATION ERRORS:")
