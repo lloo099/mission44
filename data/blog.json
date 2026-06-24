@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-04-minimax-msa",
+      "title": "Dispatch 04 · 详解 MiniMax MSA:真实 KV 上的块稀疏注意力",
+      "subtitle": "在 GQA 主干上,用 Index 分支为每个 query 选 top-k 个 KV 块、Main 分支只在选中块上做精确注意力——每 query 固定看 2048 token,1M 上下文算力降 28.4×。怎么训、怎么和 DSA/MLA 比、对昇腾意味着什么。",
+      "date": "2026-06-23",
+      "tags": ["attention", "sparse", "MiniMax M3", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-04-minimax-msa.md"
+    },
+    {
       "id": "dispatch-03-ascend-950",
       "title": "Dispatch 03 · 昇腾 950 硬件深读:自研 HBM、原生 FP8",
       "subtitle": "第一代自研 HBM + 原生 FP8/MXFP4 的 Ascend,拆成 PR(prefill)/ DT(decode/训练)两颗。三个改变恰好对上 RL 的显存争用、FP8 rollout 与解耦训练。",
