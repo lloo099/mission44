@@ -8,6 +8,8 @@
       "difficulty": 2,
       "novelty": 3,
       "why": "Everyone porting RL to Ascend hits accuracy drift (DAPO reward MAE ~3.7–4.3% vs GRPO ~0.3–3.3%) and nobody has a clean cross-platform baseline. High value, modest compute, and a great first project that builds deep familiarity with the whole stack.",
+      "minimumExperiment": "Run the same Qwen2.5-0.5B GRPO GSM8K job once on GPU and once on Ascend, exporting reward/KL/memory curves.",
+      "successMetric": "Dashboard shows throughput, peak memory, final accuracy, and reward-curve delta with enough metadata to reproduce the run.",
       "steps": [
         "Get verl running on a single Atlas 800T A2 node (8x 910B) with vLLM-Ascend",
         "Run GRPO on Qwen2.5-0.5B/7B on GSM8K/MATH; log throughput, MFU, peak HBM",
@@ -23,6 +25,8 @@
       "difficulty": 5,
       "novelty": 5,
       "why": "Identified across the research as the single biggest RL-specific blocker on Ascend — its absence caps per-node model size and forces disaggregated setups. Solving it is a genuine systems contribution that the whole open ecosystem (verl, OpenRLHF) needs.",
+      "minimumExperiment": "Prototype phase-by-phase memory release/reload for a tiny actor + rollout pair on one 910B-class node.",
+      "successMetric": "A colocated RL step completes with lower peak HBM than the baseline and no measurable output drift on fixed prompts.",
       "steps": [
         "Profile NPU memory during a colocated GRPO step; quantify what sleep mode would free",
         "Study vLLM's CUDA sleep-mode implementation and map it to CANN/torch_npu memory APIs",
@@ -38,6 +42,8 @@
       "difficulty": 4,
       "novelty": 4,
       "why": "Async RL sidesteps the exact bottleneck Ascend suffers from, and AReaL already ships a stable 'ascend' branch to build on. Off-policy replay (ExGRPO) also improves sample efficiency — doubly valuable when per-chip throughput trails GPUs.",
+      "minimumExperiment": "Reproduce a small async rollout/train loop on Ascend, then add one replay buffer policy and compare against synchronous GRPO.",
+      "successMetric": "Wall-clock reward improvement per NPU-hour beats synchronous GRPO without widening final accuracy variance beyond a set threshold.",
       "steps": [
         "Reproduce AReaL's async pipeline on Ascend using its ascend branch + SGLang rollout",
         "Add prioritized experience replay (ExGRPO-style) keyed on rollout correctness/entropy",
@@ -53,6 +59,8 @@
       "difficulty": 5,
       "novelty": 5,
       "why": "FP8 is the most direct lever against the NPU memory wall, but FP8 *RL* (with its rollout + multiple model copies) is barely explored anywhere, let alone on Ascend. Pairs naturally with prime-rl's FP8 RL direction on GPU.",
+      "minimumExperiment": "Use a 0.5B-1.5B model to compare BF16 GRPO against FP8 rollout or FP8 policy forward on one math dataset.",
+      "successMetric": "At least 25% peak-memory reduction with reward and entropy curves staying within an agreed tolerance of BF16.",
       "steps": [
         "Confirm Ascend FP8 GEMM support and numerical behavior for forward/backward",
         "Apply fine-grained tile/block scaling to the policy model in a GRPO run",
@@ -68,6 +76,8 @@
       "difficulty": 2,
       "novelty": 2,
       "why": "R1-Zero recipes exist on Ascend but are scattered and brittle; a polished, reproducible cookbook has outsized community impact and is very achievable. Leverages the 1-shot/spurious-rewards findings to keep data and compute tiny.",
+      "minimumExperiment": "Ship one command that prepares data, runs a short GRPO job, evaluates GSM8K, and exports curves to this dashboard.",
+      "successMetric": "A fresh machine can reproduce the run from README steps and match the published curve envelope.",
       "steps": [
         "Pick Qwen2.5-Math-1.5B and a verifiable math reward (GSM8K/MATH)",
         "Run GRPO via verl-Ascend or TRL-Ascend; capture the emergent long-CoT transition",
@@ -83,6 +93,8 @@
       "difficulty": 3,
       "novelty": 4,
       "why": "Entropy collapse caps RL reasoning gains, and the interaction between Ascend's precision differences and exploration dynamics is genuinely unstudied. A focused, publishable research contribution on top of a known fix.",
+      "minimumExperiment": "Trigger entropy collapse in one baseline GRPO run, then rerun with Clip-Cov or KL-Cov enabled on the same setup.",
+      "successMetric": "Entropy remains healthier for longer while final reward/accuracy improves or holds steady against baseline.",
       "steps": [
         "Reproduce entropy collapse on a GRPO reasoning run on Ascend",
         "Implement Clip-Cov/KL-Cov token-level interventions",
@@ -98,6 +110,8 @@
       "difficulty": 4,
       "novelty": 4,
       "why": "Long reasoning chains explode the KV cache, and the 910B's weak memory bandwidth (~36% of H100) makes this acute. MLA (~93% KV reduction) + ChunkKV directly target the bottleneck that limits reasoning-RL context length on Ascend.",
+      "minimumExperiment": "Measure KV-cache memory and max rollout length before/after one compression strategy on an MLA-family model.",
+      "successMetric": "Longer context or larger batch fits in HBM with less than a small, reported accuracy drop.",
       "steps": [
         "Quantify KV-cache memory across a long-CoT GRPO rollout on Ascend",
         "Use an MLA-based model (DeepSeek-family) and add ChunkKV-style compression to rollouts",
@@ -113,6 +127,8 @@
       "difficulty": 5,
       "novelty": 4,
       "why": "Only ~65% of PyTorch ops auto-convert and FlashAttention has no Ascend equivalent, so kernel work is the durable moat. A tool that systematizes this for RL workloads helps every team and is a strong systems/compiler contribution.",
+      "minimumExperiment": "Trace one verl GRPO step and emit an operator coverage report that ranks unsupported or fallback-heavy ops.",
+      "successMetric": "Report identifies the top bottleneck operators and links each one to an Ascend kernel, fallback, or implementation task.",
       "steps": [
         "Trace a verl GRPO step and enumerate ops with no/slow Ascend support",
         "Prioritize the RL-critical kernels (fused attention, top-k/sampling, logprob gather)",

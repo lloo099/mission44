@@ -5,7 +5,9 @@ reward / KL / entropy / response-length curves.
 Parse a real run:
     python3 tools/logs_to_dashboard.py \
         --log logs/qwen0.5b_gsm8k_grpo-gpu/train.log \
-        --name qwen0.5b_gsm8k_grpo --device gpu
+        --name qwen0.5b_gsm8k_grpo --device gpu \
+        --model Qwen2.5-0.5B --dataset GSM8K --hardware "8x H100" \
+        --framework verl --precision bf16 --seed 1
 
 Generate a demo curve set (no run needed) so the chart has something to show:
     python3 tools/logs_to_dashboard.py --synthetic
@@ -71,8 +73,38 @@ def synthetic(name="qwen0.5b_gsm8k_grpo"):
             metrics["kl"].append([step, round(0.0005 + 0.004 * t + rng.uniform(0, 5e-4), 5)])
             metrics["entropy"].append([step, round(1.25 - 0.5 * t + rng.uniform(-0.03, 0.03), 4)])
             metrics["response_length"].append([step, round(120 + 80 * t + rng.uniform(-6, 6), 1)])
-        exps.append({"name": name, "device": device, "metrics": metrics})
+        exps.append({
+            "name": name,
+            "device": device,
+            "model": "Qwen2.5-0.5B-style synthetic run",
+            "dataset": "GSM8K synthetic",
+            "framework": "verl-compatible log schema",
+            "hardware": "Synthetic GPU baseline" if device == "gpu" else "Synthetic Ascend 910B-class NPU",
+            "precision": "simulated BF16",
+            "seed": seed,
+            "runType": "synthetic-demo",
+            "notes": "Generated demo curve; replace with parsed training logs before citing results.",
+            "metrics": metrics,
+        })
     return exps
+
+
+def run_metadata(args):
+    fields = {
+        "model": args.model,
+        "dataset": args.dataset,
+        "framework": args.framework,
+        "hardware": args.hardware,
+        "precision": args.precision,
+        "seed": args.seed,
+        "commit": args.commit,
+        "notes": args.notes,
+    }
+    meta = {k: v for k, v in fields.items() if v not in (None, "")}
+    if args.log:
+        meta["sourceLog"] = os.path.relpath(os.path.abspath(args.log))
+    meta["runType"] = "parsed-log"
+    return meta
 
 
 def load_existing(out):
@@ -95,6 +127,14 @@ def main():
     ap.add_argument("--log", help="verl train.log to parse")
     ap.add_argument("--name", default="run", help="experiment name")
     ap.add_argument("--device", default="gpu", help="gpu|npu (legend grouping)")
+    ap.add_argument("--model", help="model/checkpoint under test")
+    ap.add_argument("--dataset", help="training/eval dataset")
+    ap.add_argument("--framework", help="training framework and version, e.g. verl@commit")
+    ap.add_argument("--hardware", help="hardware inventory, e.g. 8x Ascend 910B")
+    ap.add_argument("--precision", help="precision recipe, e.g. bf16 or fp8 rollout + bf16 train")
+    ap.add_argument("--seed", type=int, help="random seed")
+    ap.add_argument("--commit", help="code commit used for the run")
+    ap.add_argument("--notes", help="short note shown in the dashboard")
     ap.add_argument("--synthetic", action="store_true", help="emit a demo curve set")
     ap.add_argument("--out", default=DEFAULT_OUT)
     args = ap.parse_args()
@@ -105,7 +145,7 @@ def main():
         metrics = parse_log(args.log)
         if not metrics:
             print(f"[curves] no metrics parsed from {args.log} — check key names in ALIASES")
-        new = [{"name": args.name, "device": args.device, "metrics": metrics}]
+        new = [{"name": args.name, "device": args.device, **run_metadata(args), "metrics": metrics}]
     else:
         ap.error("need --log <file> or --synthetic")
 
@@ -114,6 +154,11 @@ def main():
     experiments = merge(load_existing(out), new)
     payload = {
         "updated": dt.datetime.utcnow().isoformat() + "Z",
+        "provenance": {
+            "kind": "synthetic-demo" if args.synthetic else "parsed-log",
+            "generator": "ascend-rl-bench/tools/logs_to_dashboard.py",
+            "purpose": "Dashboard-ready curve data with explicit run metadata.",
+        },
         "experiments": experiments,
     }
     with open(out, "w", encoding="utf-8") as f:

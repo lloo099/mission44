@@ -30,6 +30,7 @@ async function init() {
   keys.forEach((k, i) => {
     const payload = results[i];
     store[k] = (payload && payload.items) ? payload.items : (Array.isArray(payload) ? payload : []);
+    store[k + "_meta"] = payload && !Array.isArray(payload) ? payload : {};
     activeFilters[k] = new Set();
   });
 
@@ -244,6 +245,48 @@ function buildStats() {
   grid.innerHTML = stats
     .map((s) => `<div class="stat"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`)
     .join("");
+  buildTrustPanel();
+}
+
+function buildTrustPanel() {
+  const el = document.getElementById("trust-panel");
+  if (!el) return;
+  const keys = ["rl", "ascend", "modeling", "live"];
+  const rows = keys.flatMap((key) => (store[key] || []).map((entry) => ({ key, entry })));
+  const total = rows.length || 1;
+  const sourced = rows.filter(({ entry }) => entry.url).length;
+  const confidence = rows.filter(({ entry }) => entry.confidence).length;
+  const ascend = rows.filter(({ entry }) => entry.ascend).length;
+  const analyzed = rows.filter(({ entry }) => entry.analysis || (window.hasSavedAnalysis && window.hasSavedAnalysis(entry))).length;
+  const updated = keys
+    .map((key) => store[key + "_meta"] && store[key + "_meta"].updated)
+    .filter(Boolean)
+    .sort()
+    .reverse()[0];
+  const pct = (n) => Math.round((n / total) * 100);
+  const items = [
+    ["Source links", `${sourced}/${rows.length}`, `${pct(sourced)}% cards point to a primary or tracking URL.`],
+    ["Confidence labels", `${confidence}/${rows.length}`, "Use confirmed / secondary / self-reported before citing."],
+    ["Ascend status", `${ascend}/${rows.length}`, "Cards with ready / partial / none portability notes."],
+    ["Analyst notes", `${analyzed}/${rows.length}`, "Hand-written or saved analysis attached to cards."],
+  ];
+  el.innerHTML = `<div class="trust-head">
+      <div>
+        <h3>Data Quality Ledger</h3>
+        <p>Every card now exposes its source type and snapshot date. Treat live model metrics as provisional unless the badge says confirmed.</p>
+      </div>
+      <span class="trust-date">Latest snapshot ${escapeHtml(updated || "unknown")}</span>
+    </div>
+    <div class="trust-grid">${items.map(([label, value, note]) => `<div class="trust-item">
+      <div class="trust-val">${escapeHtml(value)}</div>
+      <div class="trust-label">${escapeHtml(label)}</div>
+      <p>${escapeHtml(note)}</p>
+    </div>`).join("")}</div>
+    <div class="trust-legend">
+      <span class="conf conf">确证</span><span>primary/official or directly checked</span>
+      <span class="conf sec">二手</span><span>media/community sourced</span>
+      <span class="conf self">自报</span><span>vendor or model-card claim</span>
+    </div>`;
 }
 
 /* ---------- filters ---------- */
@@ -311,18 +354,19 @@ function renderPanel(key) {
     return;
   }
   const count = `<div class="result-count">${items.length} of ${store[key].length} shown${searchTerm ? ` · “${escapeHtml(searchTerm)}”` : ""}</div>`;
-  container.innerHTML = count + items.map(cardHTML).join("");
+  container.innerHTML = count + items.map((e) => cardHTML(e, key)).join("");
 }
 
-function cardHTML(e) {
+function cardHTML(e, key) {
   const meta = [e.org, e.year].filter(Boolean).join(" · ");
   const tags = (e.tags || []).map((t) => `<span class="t">${escapeHtml(t)}</span>`).join("");
-  const slim = JSON.stringify({ title: e.title, org: e.org, year: e.year, category: e.category, innovation: e.innovation, summary: e.summary, url: e.url, tags: e.tags, analysis: e.analysis });
+  const slim = JSON.stringify({ title: e.title, org: e.org, year: e.year, category: e.category, innovation: e.innovation, summary: e.summary, url: e.url, tags: e.tags, analysis: e.analysis, confidence: e.confidence, ascend: e.ascend });
   const analyzed = !!e.analysis || (window.hasSavedAnalysis && window.hasSavedAnalysis(e));
   return `<article class="card">
     <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}<span class="card-badges">${confBadge(e)}${ascendBadge(e)}</span></div>
     <h3>${hl(e.title || "Untitled")}</h3>
     ${meta ? `<div class="meta">${escapeHtml(meta)}</div>` : ""}
+    ${sourceMetaHTML(e, key)}
     ${e.innovation ? `<div class="innov">▸ ${hl(e.innovation)}</div>` : ""}
     ${e.summary ? `<p class="summary">${hl(e.summary)}</p>` : ""}
     <div class="tags">${tags}</div>
@@ -334,6 +378,33 @@ function cardHTML(e) {
       </span>
     </div>
   </article>`;
+}
+
+function sourceMetaHTML(e, key) {
+  const meta = store[key + "_meta"] || {};
+  const verified = e.verified || e.lastVerified || e.checked || meta.updated;
+  const pieces = [];
+  if (e.url) pieces.push(sourceKind(e.url));
+  if (verified) pieces.push(`verified ${String(verified).slice(0, 10)}`);
+  if (e.sourceType) pieces.push(e.sourceType);
+  if (!pieces.length) return "";
+  return `<div class="source-line" title="Source provenance for this snapshot">${pieces.map((p) => `<span>${escapeHtml(p)}</span>`).join("")}</div>`;
+}
+
+function sourceKind(url) {
+  try {
+    const u = new URL(url, location.href);
+    const host = u.hostname.replace(/^www\./, "");
+    if (host === "arxiv.org") return "source: arXiv";
+    if (host === "github.com" || host === "gitee.com" || host === "gitcode.com") return `source: ${host.split(".")[0]}`;
+    if (host.includes("huggingface.co")) return "source: Hugging Face";
+    if (host.includes("hiascend.com")) return "source: Ascend docs";
+    if (host.includes("docs.vllm.ai")) return "source: docs";
+    if (u.pathname.startsWith("/mission44/docs/") || u.pathname.startsWith("/docs/")) return "source: local note";
+    return `source: ${host}`;
+  } catch (_) {
+    return String(url).startsWith("docs/") ? "source: local note" : "source: linked";
+  }
 }
 
 // highlight the active search term inside escaped text
@@ -387,6 +458,8 @@ function ideaHTML(e) {
   const bar = (cls, v) => `<div class="rating">${cls[0].toUpperCase() + cls.slice(1)}: ${v}/5
     <div class="bar ${cls}"><span style="width:${(v / 5) * 100}%"></span></div></div>`;
   const steps = (e.steps || []).map((s) => `<li>${escapeHtml(s)}</li>`).join("");
+  const mvp = e.minimumExperiment || e.mvp;
+  const success = e.successMetric || e.acceptanceCriteria;
   return `<article class="idea">
     <h3>${escapeHtml(e.title)}</h3>
     <p class="pitch">${escapeHtml(e.pitch || "")}</p>
@@ -396,6 +469,10 @@ function ideaHTML(e) {
       ${bar("novelty", e.novelty ?? 0)}
     </div>
     ${e.why ? `<div class="why"><strong>Why now:</strong> ${escapeHtml(e.why)}</div>` : ""}
+    ${mvp || success ? `<div class="idea-proof">
+      ${mvp ? `<div><strong>Minimum experiment</strong><span>${escapeHtml(mvp)}</span></div>` : ""}
+      ${success ? `<div><strong>Success signal</strong><span>${escapeHtml(success)}</span></div>` : ""}
+    </div>` : ""}
     ${steps ? `<div class="why"><strong>First steps:</strong><ul>${steps}</ul></div>` : ""}
     ${(e.tags || []).length ? `<div class="tags">${(e.tags || []).map((t) => `<span class="t">${escapeHtml(t)}</span>`).join("")}</div>` : ""}
   </article>`;
@@ -406,16 +483,37 @@ function activateTab(name, push) {
   const tab = document.querySelector(`.tab[data-tab="${name}"]`);
   const panel = document.getElementById(name);
   if (!tab || !panel) return;
-  document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
-  document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach((t) => {
+    const isActive = t === tab;
+    t.classList.toggle("active", isActive);
+    t.setAttribute("aria-selected", isActive ? "true" : "false");
+    t.tabIndex = isActive ? 0 : -1;
+  });
+  document.querySelectorAll(".panel").forEach((p) => {
+    const isActive = p === panel;
+    p.classList.toggle("active", isActive);
+    p.hidden = !isActive;
+  });
   tab.classList.add("active");
   panel.classList.add("active");
+  panel.hidden = false;
   if (push && location.hash.slice(1) !== name) history.replaceState(null, "", "#" + name);
 }
 
 function wireTabs() {
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.addEventListener("click", () => activateTab(tab.dataset.tab, true));
+    tab.addEventListener("keydown", (e) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+      e.preventDefault();
+      const tabs = [...document.querySelectorAll(".tab")];
+      const i = tabs.indexOf(tab);
+      const next = e.key === "Home" ? tabs[0]
+        : e.key === "End" ? tabs[tabs.length - 1]
+        : tabs[(i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+      next.focus();
+      activateTab(next.dataset.tab, true);
+    });
   });
   // deep-link: open the tab named in the URL hash, and react to back/forward
   const fromHash = () => { const h = location.hash.slice(1).split("/")[0]; if (h && document.getElementById(h)) activateTab(h, false); };
@@ -476,8 +574,10 @@ function wireLive() {
       const items = payload && (payload.items || (Array.isArray(payload) ? payload : null));
       if (items) {
         store.live = items;
+        store.live_meta = payload && !Array.isArray(payload) ? payload : {};
         renderPanel("live");
         buildFilterbars();
+        buildTrustPanel();
         const upd = payload.updated ? ` · updated ${String(payload.updated).slice(0, 10)}` : "";
         status.textContent = `Loaded ${items.length} entries${upd}.`;
       } else {
@@ -490,8 +590,10 @@ function wireLive() {
     const fresh = await tryArxivLive();
     if (fresh && fresh.length) {
       store.live = fresh;
+      store.live_meta = { updated: new Date().toISOString(), source: "browser-arxiv-attempt" };
       renderPanel("live");
       buildFilterbars();
+      buildTrustPanel();
       status.textContent = `Fetched ${fresh.length} live entries.`;
     } else {
       status.textContent = "Live in-browser fetch blocked (CORS). Use scripts/fetch_arxiv.py to refresh data/feed.json instead.";
@@ -621,7 +723,8 @@ async function wireCurves() {
   sel.addEventListener("change", () => renderCurve(sel.value));
   if (status) {
     const upd = payload.updated ? ` · updated ${String(payload.updated).slice(0, 10)}` : "";
-    status.textContent = `${payload.experiments.length} run(s)${upd}`;
+    const kind = payload.provenance && payload.provenance.kind ? ` · ${payload.provenance.kind}` : "";
+    status.textContent = `${payload.experiments.length} run(s)${upd}${kind}`;
   }
   if (metrics.length) renderCurve(metrics[0]);
 }
@@ -633,16 +736,51 @@ function renderCurve(metric) {
   const series = [];
   curvesData.experiments.forEach((e, i) => {
     const pts = (e.metrics || {})[metric];
-    if (pts && pts.length) series.push({ label: `${e.name} · ${e.device}`, color: curveColor(e.device, i), points: pts });
+    if (pts && pts.length) series.push({ label: `${e.name} · ${e.device}`, color: curveColor(e.device, i), points: pts, meta: e });
   });
   if (!series.length) {
     chart.innerHTML = `<div class="empty">No data for ${escapeHtml(metric)}.</div>`;
     legend.innerHTML = "";
+    renderCurveMeta(metric, []);
     return;
   }
   chart.innerHTML = svgLineChart(series, metricLabel(metric));
   legend.innerHTML = series.map((s) =>
     `<span class="lg"><span class="sw" style="background:${s.color}"></span>${escapeHtml(s.label)}</span>`).join("");
+  renderCurveMeta(metric, series);
+}
+
+function renderCurveMeta(metric, series) {
+  const el = document.getElementById("curve-meta");
+  if (!el) return;
+  if (!series.length) { el.innerHTML = ""; return; }
+  const prov = curvesData.provenance || {};
+  const provenance = [
+    prov.kind,
+    prov.generator,
+    curvesData.updated ? `updated ${String(curvesData.updated).slice(0, 10)}` : "",
+  ].filter(Boolean).join(" · ");
+  const rows = series.map((s) => {
+    const e = s.meta || {};
+    const fields = [
+      ["hardware", e.hardware],
+      ["framework", e.framework],
+      ["model", e.model],
+      ["dataset", e.dataset],
+      ["precision", e.precision],
+      ["seed", e.seed],
+      ["commit", e.commit],
+    ].filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== "");
+    return `<div class="curve-run">
+      <div class="curve-run-title"><span class="sw" style="background:${s.color}"></span>${escapeHtml(s.label)}</div>
+      <div class="curve-run-fields">${fields.map(([k, v]) => `<span><strong>${escapeHtml(k)}</strong> ${escapeHtml(v)}</span>`).join("") || `<span class="dim">No run metadata yet</span>`}</div>
+      ${e.notes ? `<p>${escapeHtml(e.notes)}</p>` : ""}
+    </div>`;
+  }).join("");
+  el.innerHTML = `<div class="curve-meta-head">
+      <strong>${escapeHtml(metricLabel(metric))} provenance</strong>
+      ${provenance ? `<span>${escapeHtml(provenance)}</span>` : ""}
+    </div>${rows}`;
 }
 
 function svgLineChart(series, title) {
@@ -680,13 +818,13 @@ function svgLineChart(series, title) {
 
 /* ---------- utils ---------- */
 function setLastUpdated() {
-  let stamp = null;
-  for (const k of ["rl", "ascend", "modeling"]) {
-    const p = store[k + "_meta"];
-    if (p && p.updated) stamp = p.updated;
-  }
+  const stamp = ["rl", "ascend", "modeling", "ideas", "live"]
+    .map((k) => store[k + "_meta"] && store[k + "_meta"].updated)
+    .filter(Boolean)
+    .sort()
+    .reverse()[0];
   document.getElementById("last-updated").textContent =
-    "Curated content snapshot · refresh Live Papers for the newest arXiv entries.";
+    `Curated content snapshot${stamp ? ` · latest ${String(stamp).slice(0, 10)}` : ""} · refresh Live Papers for the newest arXiv entries.`;
 }
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -694,6 +832,6 @@ function escapeHtml(s) {
 function escapeAttr(s) { return escapeHtml(s); }
 
 // re-render all card panels (used by analyst.js after saving an analysis)
-window.refreshDashboard = () => ["rl", "ascend", "modeling", "live"].forEach(renderPanel);
+window.refreshDashboard = () => ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel);
 
 init();

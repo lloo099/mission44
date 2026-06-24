@@ -1,9 +1,22 @@
 {
   "updated": "2026-06-16T02:56:29.267002Z",
+  "provenance": {
+    "kind": "synthetic-demo",
+    "generator": "ascend-rl-bench/tools/logs_to_dashboard.py --synthetic",
+    "purpose": "Demonstrates the dashboard schema and expected GPU-vs-NPU comparison shape. Replace with parsed training logs before citing results."
+  },
   "experiments": [
     {
       "name": "qwen0.5b_gsm8k_grpo",
       "device": "gpu",
+      "model": "Qwen2.5-0.5B-style synthetic run",
+      "dataset": "GSM8K synthetic",
+      "framework": "verl-compatible log schema",
+      "hardware": "Synthetic GPU baseline",
+      "precision": "simulated BF16",
+      "seed": 1,
+      "runType": "synthetic-demo",
+      "notes": "Generated demo curve; use a real train.log export for any benchmark claim.",
       "metrics": {
         "reward_mean": [
           [
@@ -354,6 +367,14 @@
     {
       "name": "qwen0.5b_gsm8k_grpo",
       "device": "npu",
+      "model": "Qwen2.5-0.5B-style synthetic run",
+      "dataset": "GSM8K synthetic",
+      "framework": "verl-compatible log schema",
+      "hardware": "Synthetic Ascend 910B-class NPU",
+      "precision": "simulated BF16",
+      "seed": 2,
+      "runType": "synthetic-demo",
+      "notes": "Generated with a small synthetic drift versus the GPU baseline to exercise alignment visualization.",
       "metrics": {
         "reward_mean": [
           [

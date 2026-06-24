@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap" />
-  <link rel="stylesheet" href="css/styles.css?v=20260618t" />
+  <link rel="stylesheet" href="css/styles.css?v=20260624q" />
 </head>
 <body>
   <canvas id="bg-canvas" aria-hidden="true"></canvas>
@@ -34,22 +34,22 @@
     </div>
   </header>
 
-  <nav class="tabs" id="tabs">
-    <button class="tab active" data-tab="overview">Overview</button>
-    <button class="tab" data-tab="rl">RL for LLMs</button>
-    <button class="tab" data-tab="ascend">Ascend / NPU</button>
-    <button class="tab" data-tab="modeling">LLM Modeling</button>
-    <button class="tab" data-tab="live">Live Papers</button>
-    <button class="tab" data-tab="training">Training Curves</button>
-    <button class="tab" data-tab="arch">NPU 架构</button>
-    <button class="tab" data-tab="timeline">时间线</button>
-    <button class="tab" data-tab="blog">Blog</button>
-    <button class="tab" data-tab="ideas">Project Ideas</button>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Dashboard sections">
+    <button class="tab active" id="tab-overview" data-tab="overview" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+    <button class="tab" id="tab-rl" data-tab="rl" role="tab" aria-controls="rl" aria-selected="false" tabindex="-1">RL for LLMs</button>
+    <button class="tab" id="tab-ascend" data-tab="ascend" role="tab" aria-controls="ascend" aria-selected="false" tabindex="-1">Ascend / NPU</button>
+    <button class="tab" id="tab-modeling" data-tab="modeling" role="tab" aria-controls="modeling" aria-selected="false" tabindex="-1">LLM Modeling</button>
+    <button class="tab" id="tab-live" data-tab="live" role="tab" aria-controls="live" aria-selected="false" tabindex="-1">Live Papers</button>
+    <button class="tab" id="tab-training" data-tab="training" role="tab" aria-controls="training" aria-selected="false" tabindex="-1">Training Curves</button>
+    <button class="tab" id="tab-arch" data-tab="arch" role="tab" aria-controls="arch" aria-selected="false" tabindex="-1">NPU 架构</button>
+    <button class="tab" id="tab-timeline" data-tab="timeline" role="tab" aria-controls="timeline" aria-selected="false" tabindex="-1">时间线</button>
+    <button class="tab" id="tab-blog" data-tab="blog" role="tab" aria-controls="blog" aria-selected="false" tabindex="-1">Blog</button>
+    <button class="tab" id="tab-ideas" data-tab="ideas" role="tab" aria-controls="ideas" aria-selected="false" tabindex="-1">Project Ideas</button>
   </nav>
 
   <main id="main">
     <!-- Overview -->
-    <section class="panel active" id="overview">
+    <section class="panel active" id="overview" role="tabpanel" aria-labelledby="tab-overview">
       <div class="hero">
         <h2>Where reinforcement learning meets domestic AI silicon</h2>
         <p>
@@ -60,6 +60,7 @@
         </p>
       </div>
       <div class="stat-grid" id="stat-grid"><!-- filled by JS --></div>
+      <div class="trust-panel" id="trust-panel"><!-- filled by JS --></div>
       <div class="overview-cols">
         <div class="ov-card">
           <h3>How to use this</h3>
@@ -83,7 +84,7 @@
     </section>
 
     <!-- Domain panels: populated from data/*.json -->
-    <section class="panel" id="rl">
+    <section class="panel" id="rl" role="tabpanel" aria-labelledby="tab-rl" hidden>
       <div class="panel-head">
         <h2>RL for LLMs</h2>
         <p class="panel-sub">Post-training algorithms, reasoning models, and training frameworks.</p>
@@ -92,7 +93,7 @@
       <div class="cards" data-cards="rl"></div>
     </section>
 
-    <section class="panel" id="ascend">
+    <section class="panel" id="ascend" role="tabpanel" aria-labelledby="tab-ascend" hidden>
       <div class="panel-head">
         <h2>Ascend / NPU Ecosystem</h2>
         <p class="panel-sub">Hardware, CANN software stack, training &amp; inference frameworks, RL-on-Ascend status.</p>
@@ -101,7 +102,7 @@
       <div class="cards" data-cards="ascend"></div>
     </section>
 
-    <section class="panel" id="modeling">
+    <section class="panel" id="modeling" role="tabpanel" aria-labelledby="tab-modeling" hidden>
       <div class="panel-head">
         <h2>LLM Modeling &amp; Architecture</h2>
         <p class="panel-sub">MoE, attention, long context, and low-precision training that matter on NPUs.</p>
@@ -111,7 +112,7 @@
     </section>
 
     <!-- Live papers -->
-    <section class="panel" id="live">
+    <section class="panel" id="live" role="tabpanel" aria-labelledby="tab-live" hidden>
       <div class="panel-head">
         <h2>Live Papers</h2>
         <p class="panel-sub">
@@ -130,12 +131,12 @@
     </section>
 
     <!-- Training curves -->
-    <section class="panel" id="training">
+    <section class="panel" id="training" role="tabpanel" aria-labelledby="tab-training" hidden>
       <div class="panel-head">
         <h2>Training Curves</h2>
         <p class="panel-sub">
           GRPO runs from <code>ascend-rl-bench</code>, plotted from <code>data/curves.json</code>.
-          Generate it with <code>tools/logs_to_dashboard.py</code> (parse a real <code>train.log</code>
+          Generate it with <code>ascend-rl-bench/tools/logs_to_dashboard.py</code> (parse a real <code>train.log</code>
           or <code>--synthetic</code> for a demo). GPU vs NPU show on the same axes.
         </p>
         <div class="live-controls">
@@ -144,12 +145,13 @@
           <span id="curve-status" class="dim"></span>
         </div>
       </div>
+      <div id="curve-meta" class="curve-meta"></div>
       <div id="curve-chart" class="curve-chart"></div>
       <div id="curve-legend" class="curve-legend"></div>
     </section>
 
     <!-- NPU architecture animation -->
-    <section class="panel" id="arch">
+    <section class="panel" id="arch" role="tabpanel" aria-labelledby="tab-arch" hidden>
       <div class="panel-head">
         <h2>Ascend NPU 架构动画</h2>
         <p class="panel-sub">
@@ -160,7 +162,7 @@
     </section>
 
     <!-- Timeline (built from data) -->
-    <section class="panel" id="timeline">
+    <section class="panel" id="timeline" role="tabpanel" aria-labelledby="tab-timeline" hidden>
       <div class="panel-head">
         <h2>时间线 · Timeline</h2>
         <p class="panel-sub">把 RL / Ascend / Modeling 三个领域里有日期的条目按月排开,看清 2025–26 的演进节奏。点标题跳原文。</p>
@@ -169,7 +171,7 @@
     </section>
 
     <!-- Blog / Dispatch (rendered markdown) -->
-    <section class="panel" id="blog">
+    <section class="panel" id="blog" role="tabpanel" aria-labelledby="tab-blog" hidden>
       <div class="panel-head">
         <h2>NPU Frontier Dispatch</h2>
         <p class="panel-sub">每隔一段时间的横向总结:把新出的模型/论文放进统一对比,只问一件事——它对"在昇腾 NPU 上做高效 RL"意味着什么。研究博客式排版,灵感来自 <a class="link" href="https://unipat.ai/blog" target="_blank" rel="noopener">unipat.ai/blog</a>。</p>
@@ -179,7 +181,7 @@
     </section>
 
     <!-- Ideas -->
-    <section class="panel" id="ideas">
+    <section class="panel" id="ideas" role="tabpanel" aria-labelledby="tab-ideas" hidden>
       <div class="panel-head">
         <h2>Project Ideas</h2>
         <p class="panel-sub">Synthesized directions for RL-on-NPU work, rated by impact, difficulty, and novelty.</p>
@@ -194,9 +196,9 @@
     <span class="dim">Built as a research aid · data is hand-curated + script-refreshable · verify primary sources before citing.</span>
   </footer>
 
-  <script src="js/bg.js?v=20260618t"></script>
-  <script src="js/app.js?v=20260618t"></script>
-  <script src="js/analyst.js?v=20260618t"></script>
-  <script src="js/arch-demo.js?v=20260618t"></script>
+  <script src="js/bg.js?v=20260624q"></script>
+  <script src="js/app.js?v=20260624q"></script>
+  <script src="js/analyst.js?v=20260624q"></script>
+  <script src="js/arch-demo.js?v=20260624q"></script>
 </body>
 </html>
