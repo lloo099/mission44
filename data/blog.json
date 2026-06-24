@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-06-glm-5-2",
+      "title": "Dispatch 06 · GLM-5.2 全面评测与技术分析",
+      "subtitle": "智谱 MIT 开源旗舰:~753B MoE / 40B 激活 + IndexShare 稀疏注意力 + 可用 1M 上下文。编程 SWE-bench Pro 62.1 超 GPT-5.5、AIME'26 99.2、价格约 1/6——附完整评测表、短板与读榜须知、对昇腾的意义。",
+      "date": "2026-06-23",
+      "tags": ["model", "GLM-5.2", "benchmarks", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-06-glm-5-2.md"
+    },
+    {
       "id": "dispatch-05-deepseek-v4",
       "title": "Dispatch 05 · 详解 DeepSeek-V4:混合注意力(CSA + HCA)与 1M 上下文",
       "subtitle": "逐层交替 CSA(KV 压 4× + 选块)与 HCA(KV 压 128× + 全看),叠加 mHC / Muon / MTP 和 FP4+FP8 混合精度。1M 上下文下 FLOPs 降到 V3.2 的 27%、KV 降到 10%。怎么训、和 MSA 怎么比、对昇腾意味着什么。",

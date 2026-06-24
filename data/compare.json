@@ -37,9 +37,10 @@
       },
       {
         "id": "swepro", "label": "SWE-bench Pro", "unit": "%",
-        "note": "Harder agentic-coding variant (≠ Verified). GLM-5.1 / M3 reported; partial coverage.",
+        "note": "Harder agentic-coding variant (≠ Verified). GLM-5.2 (62.1) tops the open set, ahead of GPT-5.5 (~58.6); media/vendor-reported, partial coverage.",
         "items": [
           {"model": "Claude Fable 5", "score": 80.3, "open": false},
+          {"model": "GLM-5.2", "score": 62.1, "open": true},
           {"model": "MiniMax-M3", "score": 59.0, "open": true},
           {"model": "GLM-5.1", "score": 58.4, "open": true}
         ]
@@ -68,8 +69,9 @@
       },
       {
         "id": "aime", "label": "AIME (math)", "unit": "%",
-        "note": "Math. GLM line tops it; mixed 2025/2026 AIME, partial coverage. GLM-5.2 published no launch benchmarks.",
+        "note": "Math. GLM line tops it; mixed 2025/2026 AIME, partial coverage. GLM-5.2 number is AIME 2026 (media/vendor).",
         "items": [
+          {"model": "GLM-5.2 (AIME'26)", "score": 99.2, "open": true},
           {"model": "Seed 2.0 Pro (closed)", "score": 98.3, "open": false},
           {"model": "GLM-5 (Reasoning)", "score": 98.0, "open": true},
           {"model": "GLM-4.7", "score": 95.7, "open": true},
@@ -83,6 +85,7 @@
         "items": [
           {"model": "GLM-5 (Reasoning)", "score": 94.0, "open": true},
           {"model": "MiniMax-M3", "score": 92.7, "open": true},
+          {"model": "GLM-5.2", "score": 91.2, "open": true},
           {"model": "Kimi K2.6", "score": 90.5, "open": true},
           {"model": "DeepSeek-V4", "score": 90.1, "open": true},
           {"model": "Seed 2.0 Pro (closed)", "score": 88.9, "open": false},
@@ -115,6 +118,7 @@
         "id": "price", "label": "Output price", "unit": "$", "lowerBetter": true,
         "note": "$/1M output tokens — lower is better. M3 promo pricing; sparse coverage. Seed is closed-API pricing.",
         "items": [
+          {"model": "GLM-5.2 (API)", "score": 4.40, "open": true},
           {"model": "DeepSeek-V4-Pro", "score": 3.48, "open": true},
           {"model": "Seed 2.0 Pro (closed)", "score": 2.37, "open": false},
           {"model": "MiniMax-M3 (promo)", "score": 1.20, "open": true},
