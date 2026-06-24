@@ -63,7 +63,7 @@
     ctx.clearRect(0, 0, w, h);
     // traces
     ctx.lineWidth = 1.2; ctx.lineJoin = "round"; ctx.lineCap = "round";
-    ctx.strokeStyle = `rgba(${glyph},0.14)`;
+    ctx.strokeStyle = `rgba(${glyph},0.20)`;
     for (const tr of traces) {
       ctx.beginPath();
       ctx.moveTo(tr.pts[0][0], tr.pts[0][1]);
@@ -71,7 +71,7 @@
       ctx.stroke();
     }
     // solder pads at vertices
-    ctx.fillStyle = `rgba(${glyph},0.22)`;
+    ctx.fillStyle = `rgba(${glyph},0.30)`;
     for (const tr of traces) for (const p of tr.pts) ctx.fillRect(p[0] - 1.7, p[1] - 1.7, 3.4, 3.4);
     // travelling signal pulses
     ctx.shadowColor = `rgba(${glyph},0.9)`; ctx.shadowBlur = 8;
