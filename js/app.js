@@ -42,7 +42,6 @@ async function init() {
   wireLive();
   wireCurves();
   wireCompare();
-  wireSurvey();
   wireTimeline();
   wireBlog();
   if (window.wireArch) wireArch();
@@ -156,18 +155,7 @@ function wireTimeline() {
   el.innerHTML = `<div class="tl-count">${rows.length} dated entries</div>${html}`;
 }
 
-/* ---------- survey (tiny markdown renderer, no deps) ---------- */
-async function wireSurvey() {
-  const el = document.getElementById("survey-body");
-  if (!el) return;
-  try {
-    const res = await fetch("docs/2026-h1-architecture-survey.md", { cache: "no-cache" });
-    if (!res.ok) throw new Error(res.status);
-    el.innerHTML = renderMarkdown(await res.text());
-  } catch (e) {
-    el.innerHTML = `<div class="empty">Couldn't load the survey markdown (${escapeHtml(String(e.message || e))}).</div>`;
-  }
-}
+/* ---------- markdown renderer (no deps; used by the blog) ---------- */
 
 function mdInline(s) {
   const SENT = "\u0000";
