@@ -4,7 +4,7 @@
   "posts": [
     {
       "id": "dispatch-08-agentic-rl",
-      "title": "Dispatch 08 · Agentic RL 入门:从"会推理"到"会行动"",
+      "title": "Dispatch 08 · Agentic RL 入门:从「会推理」到「会行动」",
       "subtitle": "把 LLM 从单轮 RLVR(一步 MDP)训成跨 10–100+ 回合的智能体(POMDP)。三大难题(信用分配 / 工具集成 / 长 rollout)、框架地图、环境奖励设计,以及为什么超长 agentic rollout 把昇腾显存痛点放大到极致。",
       "date": "2026-06-25",
       "tags": ["agentic-RL", "tool-use", "credit-assignment", "RL-on-NPU"],
