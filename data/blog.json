@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-07-mimo-v2-5",
+      "title": "Dispatch 07 · 详解 MiMo-V2.5-Pro:滑窗×全局 6:1 混合注意力 + MiMo Code",
+      "subtitle": "小米 MIT 开源 1.02T/42B MoE。不走块稀疏,而是 SWA(128-窗)×全局 6:1 交替把 KV 砍 ~7×;配 MiMo Code agent harness,SWE-bench Verified 82 / Pro 62 压过 Claude Code。机制、读榜须知、对昇腾的意义。",
+      "date": "2026-06-25",
+      "tags": ["model", "MiMo-V2.5", "hybrid-attention", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-07-mimo-v2-5.md"
+    },
+    {
       "id": "dispatch-06-glm-5-2",
       "title": "Dispatch 06 · GLM-5.2 全面评测与技术分析",
       "subtitle": "智谱 MIT 开源旗舰:~753B MoE / 40B 激活 + IndexShare 稀疏注意力 + 可用 1M 上下文。编程 SWE-bench Pro 62.1 超 GPT-5.5、AIME'26 99.2、价格约 1/6——附完整评测表、短板与读榜须知、对昇腾的意义。",
