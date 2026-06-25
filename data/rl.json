@@ -1,6 +1,22 @@
 {
-  "updated": "2026-06-23",
+  "updated": "2026-06-25",
   "items": [
+    {
+      "title": "Train Less, Learn More (adaptive rollout optimization)",
+      "org": "research",
+      "year": "2026-02",
+      "category": "algorithm",
+      "innovation": "Adaptively allocates rollout budget per group in GRPO-style RL",
+      "analysis": "Innovation: an adaptive, efficient rollout scheme for group-based RL (GRPO) — spends more sampling budget on prompt-groups where extra rollouts actually move the gradient and fewer where they don't, plus response reuse. Fit for RL-on-NPU: rollout is >70% of RL wall-clock and the memory hog on Ascend; spending fewer/cheaper rollouts is a direct, framework-level lever against the no-sleep-mode contention (see Dispatch 02).",
+      "summary": "Adaptive Efficient Rollout Optimization for group-based RL: allocates sampling budget per group and reuses responses to improve RLVR sample efficiency without hurting final reward.",
+      "url": "https://arxiv.org/abs/2602.14338",
+      "tags": [
+        "rollout",
+        "efficiency",
+        "GRPO",
+        "2026"
+      ]
+    },
     {
       "title": "Jet-RL (on-policy FP8 RL)",
       "org": "research",

@@ -1,6 +1,26 @@
 {
-  "updated": "2026-06-16",
+  "updated": "2026-06-25",
   "items": [
+    {
+      "title": "MiMo-V2.5-Pro (Xiaomi)",
+      "org": "Xiaomi",
+      "year": "2026-04",
+      "category": "model-report",
+      "innovation": "1.02T MoE with SWA+Global hybrid attention (6:1), strong agentic coding",
+      "analysis": "Innovation: a 1.02T / 42B-active MoE on a hybrid-attention backbone that interleaves sliding-window attention (128-token window) with global attention at a 6:1 ratio, cutting KV-cache ~7x on long context while holding quality; paired with the MiMo Code agentic harness. Performance: vendor-reported #1 open-source on GDPVal-AA / ClawEval, and MiMo Code + V2.5-Pro beats Claude Code + Sonnet 4.6 on SWE-bench Verified (82 vs 79), SWE-bench Pro (62 vs 55), Terminal-Bench 2 (73 vs 69) — provisional and harness-coupled. Fit for RL-on-NPU: SWA-heavy hybrid attention is decode-cheap and the ~7x KV cut directly eases rollout memory on memory-bound NPUs; MIT license makes it a viable open RL base — but it is not yet on vLLM-Ascend.",
+      "summary": "Released Apr 28 2026 (MIT open). MiMo-V2.5-Pro: 1.02T total / 42B active MoE, 1M context, hybrid attention interleaving a 128-token sliding-window attention with global attention at 6:1 (~7x KV-cache reduction). Standard MiMo-V2.5: 310B / 15B active, ~48T-token pretrain. Strong agentic coding via the MiMo Code harness (vendor benchmarks beat Claude Code + Sonnet 4.6). All numbers vendor/media — provisional.",
+      "ascend": "none",
+      "ascendNote": "Not yet listed on vLLM-Ascend; no Ascend port reported.",
+      "url": "https://mimo.mi.com/docs/en-US/news/v2.5-open-sourced",
+      "tags": [
+        "MoE",
+        "sliding-window",
+        "long-context",
+        "2026",
+        "model"
+      ],
+      "confidence": "secondary"
+    },
     {
       "title": "HISA: Hierarchical Indexing for Sparse Attention",
       "org": "research",
@@ -42,7 +62,7 @@
       "category": "model-report",
       "innovation": "Open-weight (MIT) frontier model, 1M context, coding-first",
       "analysis": "Innovation: an MIT-licensed, fully open-weight frontier model with a 1M-token window, tuned coding-first and shipped on a fast cadence (GLM-5 → 5.2 in months) as a deliberate open answer to export controls. Performance: reported competitive with closed models on multi-step reasoning and code generation — numbers are largely vendor/media-sourced pending independent evals. Fit for RL-on-NPU: GLM-5 is already supported on vLLM-Ascend (W8A8C8 quant), so 5.2 is likely a near-term target; its permissive license makes it an attractive base model for open RL post-training experiments on Ascend.",
-      "summary": "Launched Jun 13 2026; MIT open weights on Hugging Face (zai-org/GLM-5.2). ~753B MoE / ~40B active, new IndexShare sparse attention, usable 1M context (5× over 5.1's ~200K), 131K output, 28.5T-token pretrain, dual High/Max reasoning. Media/vendor benchmarks: SWE-bench Pro 62.1 (> GPT-5.5 ~58.6), FrontierSWE 74.4, Terminal-Bench 2.1 81.0, AIME 2026 99.2, GPQA 91.2; weak on agentic Tool-Decathlon. API $1.40/$4.40 per 1M (~1/6 of GPT-5.5). Note: SWE-bench Verified/LiveCodeBench/Aider not published. All provisional. Full writeup in Blog → Dispatch 06.",
+      "summary": "Launched Jun 13 2026; MIT open weights on Hugging Face (zai-org/GLM-5.2). ~753B MoE / ~40B active, DSA-style sparse attention with IndexShare (the sparse-attention indexer is reused across each group of 4 layers instead of recomputed per layer), usable 1M context (5× over 5.1's ~200K), 131K output, 28.5T-token pretrain, dual High/Max reasoning. Media/vendor benchmarks: SWE-bench Pro 62.1 (> GPT-5.5 ~58.6), FrontierSWE 74.4, Terminal-Bench 2.1 81.0, AIME 2026 99.2, GPQA 91.2; weak on agentic Tool-Decathlon. API $1.40/$4.40 per 1M (~1/6 of GPT-5.5). Note: SWE-bench Verified/LiveCodeBench/Aider not published. All provisional. Full writeup in Blog → Dispatch 06.",
       "ascend": "partial",
       "ascendNote": "GLM-5 is supported on vLLM-Ascend (perf optimizations + W8A8C8 quant); GLM-5.2 not yet listed by name.",
       "url": "https://huggingface.co/zai-org/GLM-5.2",
@@ -61,7 +81,7 @@
       "category": "attention",
       "innovation": "New sparse attention for 1M context + native multimodal/agentic",
       "analysis": "Innovation: MSA (MiniMax Sparse Attention) — a blockwise sparse attention on GQA where a lightweight index branch scores KV blocks and selects a per-group Top-k, so exact attention runs over only the selected blocks. Performance: on a 109B multimodal model it matches dense GQA quality while cutting per-token attention compute ~28.4x at 1M context (~14.2x prefill / ~7.6x decode speedup on H800, per the paper). Fit for RL-on-NPU: the large decode-side speedup is exactly what helps RL rollouts on memory-bound NPUs; MiniMax-family quant (W8A8/QuaRot) exists on vLLM-Ascend though M3 isn't listed by name yet — a strong candidate once support lands.",
-      "summary": "Released Jun 2026. MSA (MiniMax Sparse Attention) is a blockwise sparse attention on GQA: a lightweight index branch scores KV blocks and picks a per-group Top-k, then exact block-sparse attention runs over only those blocks. On a 109B multimodal model it matches GQA while cutting per-token attention compute ~28.4x at 1M context (~14.2x prefill / ~7.6x decode speedup on H800). Open-weight, native multimodal, strong agentic coding.",
+      "summary": "Released Jun 2026. MSA (MiniMax Sparse Attention) is a blockwise sparse attention on GQA: a lightweight index branch scores KV blocks and picks a per-group Top-k, then exact block-sparse attention runs over only those blocks. On a 109B multimodal model it matches GQA while cutting per-token attention compute ~28.4x at 1M context (~14.2x prefill / ~7.6x decode speedup on H800). Open-weight, native multimodal, strong agentic coding. (Shipped MiniMax-M3 is reportedly ~428B total / ~23B active; the MSA paper's experiments were on a 109B model.)",
       "ascend": "partial",
       "ascendNote": "MiniMax family has W8A8/QuaRot on vLLM-Ascend (M2.x); M3 not yet listed by name.",
       "url": "https://arxiv.org/abs/2606.13392",

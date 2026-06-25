@@ -5,6 +5,20 @@
   "pinned": 24,
   "items": [
     {
+      "title": "Xiaomi 开源 MiMo-V2.5-Pro (1.02T MoE, 强 Agent 编码)",
+      "org": "Xiaomi",
+      "year": "2026-04",
+      "category": "modeling",
+      "summary": "4 月 28 日小米开源 MiMo-V2.5 系列(MIT)。Pro 版 1.02T/42B 激活,混合注意力(128-token 滑窗 : 全局 = 6:1,KV cache ~7×↓),1M 上下文。配 MiMo Code agent harness,厂商基准在 SWE-bench Verified(82 vs 79)/Pro(62 vs 55)/Terminal-Bench 2(73 vs 69)超 Claude Code+Sonnet 4.6。尚无 Ascend 移植。数字均厂商口径,provisional。",
+      "url": "https://mimo.mi.com/docs/en-US/news/v2.5-open-sourced",
+      "tags": [
+        "live",
+        "modeling",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
       "title": "Seed 2.1 Pro 抢先版上线 LMArena (闭源, 编码/Agent)",
       "org": "ByteDance Seed",
       "year": "2026-06",
