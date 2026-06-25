@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-09-radixark-miles",
+      "title": "Dispatch 09 · RadixArk / Miles:SGLang 团队的 RL 框架与投资视角",
+      "subtitle": "SGLang 核心团队的商业化(~$400M,Accel 领投)。两条腿:推理 SGLang(RadixAttention)+ RL 训练 Miles(端到端 FP8 + Rollout Routing Replay 逐比特对齐 MoE 训推)。技术优势、同行对比、技术壁垒、投资视角,以及 R3 对昇腾 MoE RL 的启发。",
+      "date": "2026-06-25",
+      "tags": ["infra", "SGLang", "Miles", "investment"],
+      "file": "docs/blog/dispatch-09-radixark-miles.md"
+    },
+    {
       "id": "dispatch-08-agentic-rl",
       "title": "Dispatch 08 · Agentic RL 入门:从「会推理」到「会行动」",
       "subtitle": "把 LLM 从单轮 RLVR(一步 MDP)训成跨 10–100+ 回合的智能体(POMDP)。三大难题(信用分配 / 工具集成 / 长 rollout)、框架地图、环境奖励设计,以及为什么超长 agentic rollout 把昇腾显存痛点放大到极致。",

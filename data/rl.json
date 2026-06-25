@@ -2,6 +2,24 @@
   "updated": "2026-06-25",
   "items": [
     {
+      "title": "Miles (RadixArk RL framework: FP8 + R3)",
+      "org": "RadixArk",
+      "year": "2025-11",
+      "category": "framework",
+      "innovation": "End-to-end FP8 + Rollout Routing Replay for bit-exact MoE RL",
+      "analysis": "Innovation: an enterprise RL post-training framework (SGLang rollout + Megatron training, forked from slime) with two standout pieces — a unified end-to-end FP8 sampling+training pipeline, and Rollout Routing Replay (R3): record MoE expert-routing during SGLang inference and replay it during Megatron training for bit-wise train/inference alignment, fixing the quantization/routing mismatch that collapses MoE RL. Plus INT4 QAT (1TB+ models), online-draft speculative decoding (~25% rollout speedup), zero-copy CUDA-IPC weight sync. Fit for RL-on-NPU: R3 is the GPU answer to exactly what align-probe wants to measure on Ascend — whether MoE routing + FP8 stay consistent across the NPU train/inference gap; porting R3 + unified FP8 to SGLang-Ascend + MindSpeed is a concrete, high-value gap.",
+      "summary": "RadixArk's open RL framework for LLM/VLM post-training (from the SGLang team; built on slime). First end-to-end FP8 sampling+training, and Rollout Routing Replay (R3) for bit-exact MoE train-inference alignment. SGLang rollout + Megatron training. Supports DeepSeek/Qwen/Llama/GLM.",
+      "url": "https://github.com/radixark/miles",
+      "tags": [
+        "framework",
+        "FP8",
+        "MoE",
+        "train-inference",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
       "title": "Agentic RL for LLMs (Landscape survey)",
       "org": "research",
       "year": "2025-09",
