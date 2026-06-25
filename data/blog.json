@@ -3,6 +3,22 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-11-vllm-vs-sglang",
+      "title": "Dispatch 11 · vLLM/Inferact vs SGLang/RadixArk:两家伯克利系推理公司的对决",
+      "subtitle": "同源(Berkeley)、同台(推理)、同期(2026初)商业化。Inferact $800M(a16z+Lightspeed,vLLM 40万 GPU)vs RadixArk $400M(Accel,SGLang+Miles)。引擎、战略、投资视角与昇腾 rollout 引擎选型。",
+      "date": "2026-06-25",
+      "tags": ["inference", "vLLM", "SGLang", "investment"],
+      "file": "docs/blog/dispatch-11-vllm-vs-sglang.md"
+    },
+    {
+      "id": "dispatch-10-radixattention",
+      "title": "Dispatch 10 · RadixAttention 详解:SGLang 怎么靠「前缀树」赢 KV 复用",
+      "subtitle": "把 KV cache 组织成基数树,自动发现并复用共享前缀 + cache-aware 调度 + 优雅处理 fork。对比 PagedAttention,以及为什么 GRPO 组内共享前缀让它对 RL rollout 特别值钱。",
+      "date": "2026-06-25",
+      "tags": ["inference", "SGLang", "KV-cache", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-10-radixattention.md"
+    },
+    {
       "id": "dispatch-09-radixark-miles",
       "title": "Dispatch 09 · RadixArk / Miles:SGLang 团队的 RL 框架与投资视角",
       "subtitle": "SGLang 核心团队的商业化(~$400M,Accel 领投)。两条腿:推理 SGLang(RadixAttention)+ RL 训练 Miles(端到端 FP8 + Rollout Routing Replay 逐比特对齐 MoE 训推)。技术优势、同行对比、技术壁垒、投资视角,以及 R3 对昇腾 MoE RL 的启发。",
