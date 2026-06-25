@@ -15,7 +15,8 @@
         "efficiency",
         "GRPO",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Jet-RL (on-policy FP8 RL)",
@@ -48,7 +49,8 @@
         "low-precision",
         "efficiency",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "GAC (Gradient Alignment Control)",
@@ -63,7 +65,8 @@
         "async-rl",
         "stability",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ReSum (RLVR + self-summarization)",
@@ -111,7 +114,8 @@
         "async-rl",
         "agentic-rl",
         "systems"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "TR-GRPO (Token-Regulated GRPO)",
@@ -125,7 +129,8 @@
         "GRPO",
         "stability",
         "reasoning"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "From Player to Master (test-time RL over memory)",
@@ -140,7 +145,8 @@
         "test-time",
         "memory",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Rethinking Agentic RL in LLMs (survey)",
@@ -154,7 +160,8 @@
         "agentic-rl",
         "survey",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ProRL Agent (Rollout-as-a-Service)",
@@ -168,7 +175,8 @@
         "agentic-rl",
         "rollout",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Stable Asynchrony (Variance-Controlled Off-Policy RL)",
@@ -182,7 +190,8 @@
         "async-rl",
         "off-policy",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "RollMux (Disaggregated RL Post-Training)",
@@ -196,7 +205,8 @@
         "async-rl",
         "disaggregated",
         "systems"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "GDRO-RL (Group Distributionally Robust Optimization)",
@@ -210,7 +220,8 @@
         "GRPO",
         "robustness",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "G2RL (Gradient-Guided RL)",
@@ -224,7 +235,8 @@
         "GRPO",
         "exploration",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Critique-GRPO",
@@ -238,7 +250,8 @@
         "GRPO",
         "feedback",
         "reasoning"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "InstructGPT / PPO-RLHF",
@@ -252,7 +265,8 @@
         "PPO",
         "RLHF",
         "foundational"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "GRPO (DeepSeekMath)",
@@ -267,7 +281,8 @@
         "GRPO",
         "critic-free",
         "reasoning"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "RLVR (Tülu 3)",
@@ -281,7 +296,8 @@
         "RLVR",
         "verifiable-rewards",
         "reasoning"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "RLOO (REINFORCE Leave-One-Out)",
@@ -295,7 +311,8 @@
         "REINFORCE",
         "critic-free",
         "efficiency"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ReMax",
@@ -309,7 +326,8 @@
         "REINFORCE",
         "critic-free",
         "efficiency"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DPO (Direct Preference Optimization)",
@@ -324,7 +342,8 @@
         "offline",
         "preference-optimization"
       ],
-      "analysis": "Innovation: reparameterizes the RLHF reward in terms of the policy itself, collapsing alignment into one logistic loss on preference pairs against a frozen reference — no reward model, no sampling, no RL loop. Performance: matches or beats PPO-RLHF on summarization/dialogue/sentiment while being far simpler and more stable. Fit for RL-on-NPU: with no online rollouts it sidesteps the biggest NPU pain point (the missing vLLM sleep-mode) entirely — the easiest alignment method to stand up first on Ascend."
+      "analysis": "Innovation: reparameterizes the RLHF reward in terms of the policy itself, collapsing alignment into one logistic loss on preference pairs against a frozen reference — no reward model, no sampling, no RL loop. Performance: matches or beats PPO-RLHF on summarization/dialogue/sentiment while being far simpler and more stable. Fit for RL-on-NPU: with no online rollouts it sidesteps the biggest NPU pain point (the missing vLLM sleep-mode) entirely — the easiest alignment method to stand up first on Ascend.",
+      "confidence": "confirmed"
     },
     {
       "title": "IPO (Identity Preference Optimization)",
@@ -338,7 +357,8 @@
         "IPO",
         "offline",
         "theory"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "KTO (Kahneman-Tversky Optimization)",
@@ -352,7 +372,8 @@
         "KTO",
         "offline",
         "unpaired"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ORPO",
@@ -366,7 +387,8 @@
         "ORPO",
         "offline",
         "reference-free"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "SimPO",
@@ -380,7 +402,8 @@
         "SimPO",
         "offline",
         "reference-free"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DAPO",
@@ -396,7 +419,8 @@
         "reasoning",
         "open-source"
       ],
-      "analysis": "Innovation: a fully open GRPO recipe fixing practical instabilities — Clip-Higher (decoupled clip bounds), dynamic sampling (drop all-correct/all-wrong groups), token-level loss, and overlong-reward shaping. Performance: 50 on AIME-2024 with Qwen2.5-32B at ~half the steps of prior baselines, with data + code released. Fit for RL-on-NPU: its tricks target the noisy-gradient and length-bias problems that worsen under NPU numeric drift, so it's a strong, well-documented baseline to port."
+      "analysis": "Innovation: a fully open GRPO recipe fixing practical instabilities — Clip-Higher (decoupled clip bounds), dynamic sampling (drop all-correct/all-wrong groups), token-level loss, and overlong-reward shaping. Performance: 50 on AIME-2024 with Qwen2.5-32B at ~half the steps of prior baselines, with data + code released. Fit for RL-on-NPU: its tricks target the noisy-gradient and length-bias problems that worsen under NPU numeric drift, so it's a strong, well-documented baseline to port.",
+      "confidence": "confirmed"
     },
     {
       "title": "Dr. GRPO",
@@ -410,7 +434,8 @@
         "GRPO",
         "bias-fix",
         "reasoning"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "VAPO",
@@ -424,7 +449,8 @@
         "PPO",
         "value-based",
         "reasoning"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "GSPO (Group Sequence Policy Optimization)",
@@ -438,7 +464,8 @@
         "GSPO",
         "MoE",
         "stability"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "CISPO (MiniMax-M1)",
@@ -452,7 +479,8 @@
         "CISPO",
         "off-policy",
         "efficiency"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ProRL",
@@ -466,7 +494,8 @@
         "prolonged-rl",
         "stability",
         "reasoning"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeek-R1 / R1-Zero",
@@ -481,7 +510,10 @@
         "GRPO",
         "open-weights"
       ],
-      "analysis": "Innovation: showed that large-scale RL with verifiable rewards (GRPO) alone — no SFT cold-start in R1-Zero — can elicit emergent long chain-of-thought, self-verification, and reflection. Performance: R1 reached o1-level math/code reasoning and, crucially, shipped open-weight, catalyzing the entire 2025 RLVR wave. Fit for RL-on-NPU: R1-Zero recipes are the canonical thing people reproduce on Ascend (small scale and 671B-MoE via MindSpeed-RL), making it the reference workload for any RL-on-NPU benchmark."
+      "analysis": "Innovation: showed that large-scale RL with verifiable rewards (GRPO) alone — no SFT cold-start in R1-Zero — can elicit emergent long chain-of-thought, self-verification, and reflection. Performance: R1 reached o1-level math/code reasoning and, crucially, shipped open-weight, catalyzing the entire 2025 RLVR wave. Fit for RL-on-NPU: R1-Zero recipes are the canonical thing people reproduce on Ascend (small scale and 671B-MoE via MindSpeed-RL), making it the reference workload for any RL-on-NPU benchmark.",
+      "confidence": "confirmed",
+      "ascend": "ready",
+      "ascendNote": "DeepSeek family supported on vLLM-Ascend (910B)."
     },
     {
       "title": "OpenAI o1",
@@ -495,7 +527,10 @@
         "reasoning",
         "test-time-compute",
         "closed"
-      ]
+      ],
+      "confidence": "confirmed",
+      "ascend": "none",
+      "ascendNote": "Closed / API-only — no Ascend port."
     },
     {
       "title": "OpenAI o3 / o4-mini",
@@ -509,7 +544,10 @@
         "reasoning",
         "agentic",
         "tools"
-      ]
+      ],
+      "confidence": "confirmed",
+      "ascend": "none",
+      "ascendNote": "Closed / API-only — no Ascend port."
     },
     {
       "title": "QwQ-32B",
@@ -523,7 +561,10 @@
         "reasoning",
         "open-weights",
         "verifiers"
-      ]
+      ],
+      "confidence": "confirmed",
+      "ascend": "ready",
+      "ascendNote": "Qwen family — supported on vLLM-Ascend."
     },
     {
       "title": "Qwen3",
@@ -537,7 +578,10 @@
         "reasoning",
         "MoE",
         "open-weights"
-      ]
+      ],
+      "confidence": "confirmed",
+      "ascend": "ready",
+      "ascendNote": "Qwen3 family supported on vLLM-Ascend (W8A8)."
     },
     {
       "title": "Kimi k1.5",
@@ -551,7 +595,10 @@
         "reasoning",
         "long-cot",
         "multimodal"
-      ]
+      ],
+      "confidence": "confirmed",
+      "ascend": "none",
+      "ascendNote": "API model — no public Ascend port."
     },
     {
       "title": "MiniMax-M1",
@@ -566,7 +613,10 @@
         "linear-attention",
         "MoE",
         "open-weights"
-      ]
+      ],
+      "confidence": "confirmed",
+      "ascend": "partial",
+      "ascendNote": "MiniMax family has W8A8/QuaRot on vLLM-Ascend (M2.x)."
     },
     {
       "title": "Llama-Nemotron",
@@ -580,7 +630,8 @@
         "reasoning",
         "open-weights",
         "efficiency"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Phi-4-reasoning(-plus)",
@@ -594,7 +645,8 @@
         "reasoning",
         "small-model",
         "distillation"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Magistral",
@@ -608,7 +660,8 @@
         "reasoning",
         "async-rl",
         "open-weights"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Seed1.5-Thinking",
@@ -622,7 +675,8 @@
         "reasoning",
         "MoE",
         "stability"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "GLM-4.5",
@@ -637,7 +691,10 @@
         "MoE",
         "agentic",
         "open-weights"
-      ]
+      ],
+      "confidence": "confirmed",
+      "ascend": "partial",
+      "ascendNote": "GLM family on vLLM-Ascend (GLM-5 W8A8C8); 4.5 is older."
     },
     {
       "title": "Grok 3 (Think)",
@@ -651,7 +708,10 @@
         "reasoning",
         "agentic",
         "closed"
-      ]
+      ],
+      "confidence": "confirmed",
+      "ascend": "none",
+      "ascendNote": "Closed / API-only — no Ascend port."
     },
     {
       "title": "verl (HybridFlow)",
@@ -667,7 +727,8 @@
         "multi-node",
         "GRPO"
       ],
-      "analysis": "Innovation: a hybrid-controller dataflow separating single-controller RL orchestration from multi-controller distributed compute, making PPO/GRPO/RLOO pipelines composable — and it ships first-class Ascend NPU support. Performance: among the most widely adopted open RL frameworks, with strong throughput via colocated train/rollout. Fit for RL-on-NPU: this is the primary stack RL-on-Ascend work targets; its vLLM-Ascend rollout path is the realistic way to run GRPO on 910B today."
+      "analysis": "Innovation: a hybrid-controller dataflow separating single-controller RL orchestration from multi-controller distributed compute, making PPO/GRPO/RLOO pipelines composable — and it ships first-class Ascend NPU support. Performance: among the most widely adopted open RL frameworks, with strong throughput via colocated train/rollout. Fit for RL-on-NPU: this is the primary stack RL-on-Ascend work targets; its vLLM-Ascend rollout path is the realistic way to run GRPO on 910B today.",
+      "confidence": "confirmed"
     },
     {
       "title": "OpenRLHF",
@@ -681,7 +742,8 @@
         "framework",
         "ray",
         "multi-node"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "TRL",
@@ -695,7 +757,8 @@
         "framework",
         "huggingface",
         "accessible"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "NeMo-RL / NeMo-Aligner",
@@ -709,7 +772,8 @@
         "framework",
         "megatron",
         "multi-node"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "AReaL",
@@ -724,7 +788,8 @@
         "async-rl",
         "efficiency"
       ],
-      "analysis": "Innovation: a fully asynchronous RL system that decouples generation from training so rollout workers never block on the trainer, attacking the idle/bubble problem of synchronous colocated RL. Performance: large throughput gains over synchronous baselines, at the cost of off-policy staleness that needs correction. Fit for RL-on-NPU: async decoupling is especially valuable on Ascend, where the missing vLLM sleep-mode makes colocated rollout/train memory-contended; AReaL has a dedicated Ascend branch."
+      "analysis": "Innovation: a fully asynchronous RL system that decouples generation from training so rollout workers never block on the trainer, attacking the idle/bubble problem of synchronous colocated RL. Performance: large throughput gains over synchronous baselines, at the cost of off-policy staleness that needs correction. Fit for RL-on-NPU: async decoupling is especially valuable on Ascend, where the missing vLLM sleep-mode makes colocated rollout/train memory-contended; AReaL has a dedicated Ascend branch.",
+      "confidence": "confirmed"
     },
     {
       "title": "slime",
@@ -738,7 +803,8 @@
         "framework",
         "megatron",
         "production"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ROLL",
@@ -752,7 +818,8 @@
         "framework",
         "ray",
         "agentic"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "SkyRL",
@@ -766,7 +833,8 @@
         "framework",
         "agentic",
         "modular"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "PRIME",
@@ -780,7 +848,8 @@
         "framework",
         "process-reward",
         "reasoning"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "prime-rl (Prime Intellect)",
@@ -794,7 +863,8 @@
         "framework",
         "decentralized",
         "async-rl"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "open-instruct",
@@ -808,7 +878,8 @@
         "framework",
         "RLVR",
         "open-science"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Unsloth (RL)",
@@ -822,7 +893,8 @@
         "framework",
         "low-resource",
         "single-gpu"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Axolotl (RL)",
@@ -836,7 +908,8 @@
         "framework",
         "config-driven",
         "multi-node"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Let's Verify Step by Step (PRM800K)",
@@ -850,7 +923,8 @@
         "process-reward",
         "math",
         "foundational"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Qwen2.5-Math-PRM",
@@ -864,7 +938,8 @@
         "process-reward",
         "math",
         "open-weights"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Scaling Test-Time Compute",
@@ -878,7 +953,8 @@
         "test-time-compute",
         "scaling",
         "verifiers"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ExGRPO",
@@ -892,7 +968,8 @@
         "off-policy",
         "experience-replay",
         "stability"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Search-R1",
@@ -906,7 +983,8 @@
         "agentic-rl",
         "tool-use",
         "search"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ReTool",
@@ -920,7 +998,8 @@
         "agentic-rl",
         "tool-use",
         "code"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "RAGEN / StarPO",
@@ -934,7 +1013,8 @@
         "agentic-rl",
         "multi-turn",
         "stability"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Self-Rewarding Language Models",
@@ -947,7 +1027,8 @@
       "tags": [
         "self-rewarding",
         "llm-as-judge"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Spurious Rewards",
@@ -961,7 +1042,8 @@
         "RLVR",
         "analysis",
         "caution"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "1-shot RLVR",
@@ -975,7 +1057,8 @@
         "RLVR",
         "data-efficiency",
         "analysis"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Entropy Mechanism of RL",
@@ -989,7 +1072,8 @@
         "entropy-collapse",
         "exploration",
         "stability"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "TTRL (Test-Time RL)",
@@ -1003,7 +1087,8 @@
         "test-time-rl",
         "unlabeled",
         "self-consistency"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Reward Shaping vs Reward Hacking",
@@ -1017,7 +1102,8 @@
         "reward-hacking",
         "robustness",
         "RLHF"
-      ]
+      ],
+      "confidence": "confirmed"
     }
   ]
 }

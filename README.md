@@ -102,11 +102,20 @@ new `category`/`tags` values automatically as filter chips.
 
 ## Data quality & provenance
 
-The **Overview → Data Quality Ledger** summarizes coverage across the curated catalog
-(RL · Ascend · Modeling): % of entries with a source, a confidence label, an Ascend-readiness
-rating, and a deep analysis. Every card also shows a `source: … · verified …` line so the
-provenance of each claim is visible inline. Benchmark numbers for unreleased/early models are
-labelled **provisional** in the data and copy.
+The **Overview → Data Quality Ledger** summarizes the catalog (RL · Ascend · Modeling) on four
+axes (hover any cell for its definition):
+
+- **Primary sources** — % whose source host is primary/official (arXiv · HuggingFace · GitHub ·
+  official docs/vendor pages) rather than media/aggregator.
+- **Confidence labelled** — % carrying a credibility label, with the `confirmed / secondary /
+  self-reported` breakdown. (Labels are auto-assigned by source type: primary host → confirmed,
+  media → secondary, a 2026 vendor model-report → self-reported.)
+- **Ascend readiness** — % of **model cards** (not algorithm/framework papers) with an explicit
+  `ready / partial / none` Ascend call.
+- **Deep analysis** — % with a ▸ analysis paragraph beyond the one-line summary.
+
+Every card also shows a `source: … · verified …` line so the provenance of each claim is visible
+inline. Benchmark numbers for unreleased/early models are labelled **provisional**.
 
 ### Training-curve provenance
 

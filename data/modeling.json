@@ -35,7 +35,8 @@
         "kv-cache",
         "long-context",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeek-V4 (V4-Pro / V4-Flash)",
@@ -53,7 +54,8 @@
         "long-context",
         "2026",
         "model"
-      ]
+      ],
+      "confidence": "self-reported"
     },
     {
       "title": "GLM-5.2",
@@ -106,7 +108,8 @@
         "long-context",
         "inference",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "RedKnot: Head-Aware KV Reuse",
@@ -121,7 +124,8 @@
         "long-context",
         "serving",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeek-V3.2 + DeepSeek Sparse Attention (DSA)",
@@ -137,7 +141,8 @@
         "sparse-attention",
         "long-context",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeekMoE",
@@ -150,7 +155,8 @@
       "tags": [
         "MoE",
         "expert-specialization"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Auxiliary-Loss-Free Load Balancing",
@@ -163,7 +169,8 @@
       "tags": [
         "MoE",
         "load-balancing"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Mixtral of Experts",
@@ -176,7 +183,8 @@
       "tags": [
         "MoE",
         "open-weights"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Qwen3 (MoE design)",
@@ -189,7 +197,8 @@
       "tags": [
         "MoE",
         "open-weights"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Drop-Upcycling",
@@ -203,7 +212,8 @@
         "MoE",
         "upcycling",
         "efficiency"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Scaling Laws for Optimal MoE Sparsity",
@@ -216,7 +226,8 @@
       "tags": [
         "MoE",
         "scaling-laws"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Multi-head Latent Attention (DeepSeek-V2)",
@@ -231,7 +242,8 @@
         "MLA",
         "kv-cache"
       ],
-      "analysis": "Innovation: compresses keys/values into a low-rank latent shared across heads, shrinking the KV cache ~93% while preserving quality, with decoupled RoPE to stay rotary-compatible. Performance: enables much longer context and cheaper inference at frontier scale (DeepSeek-V2/V3). Fit for RL-on-NPU: a smaller KV cache directly cuts rollout memory — meaningful on 64GB 910B where the missing sleep-mode already squeezes generation memory."
+      "analysis": "Innovation: compresses keys/values into a low-rank latent shared across heads, shrinking the KV cache ~93% while preserving quality, with decoupled RoPE to stay rotary-compatible. Performance: enables much longer context and cheaper inference at frontier scale (DeepSeek-V2/V3). Fit for RL-on-NPU: a smaller KV cache directly cuts rollout memory — meaningful on 64GB 910B where the missing sleep-mode already squeezes generation memory.",
+      "confidence": "confirmed"
     },
     {
       "title": "Grouped-Query Attention (GQA)",
@@ -245,7 +257,8 @@
         "attention",
         "kv-cache",
         "foundational"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Sliding Window Attention (Mistral 7B)",
@@ -259,7 +272,8 @@
         "attention",
         "kv-cache",
         "efficiency"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "FlashAttention-3",
@@ -273,7 +287,8 @@
         "attention",
         "kernels",
         "fp8"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Mamba-2 / SSM-Attention Duality",
@@ -287,7 +302,8 @@
         "ssm",
         "linear-attention",
         "efficiency"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Jamba (Transformer-Mamba hybrid)",
@@ -301,7 +317,8 @@
         "ssm",
         "hybrid",
         "long-context"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Native Sparse Attention (NSA)",
@@ -316,7 +333,8 @@
         "sparse",
         "long-context"
       ],
-      "analysis": "Innovation: a trainable, hardware-aligned hierarchical sparse attention (compressed + selected + sliding branches) where the sparsity is learned end-to-end rather than bolted on. Performance: matches full-attention quality with large long-context speedups, trained sparse from the start. Fit for RL-on-NPU: cheaper long-context attention lowers rollout cost on memory-bound NPUs, and the same DeepSeek lineage (DSA in V3.2) is what 910B inference paths are adapting."
+      "analysis": "Innovation: a trainable, hardware-aligned hierarchical sparse attention (compressed + selected + sliding branches) where the sparsity is learned end-to-end rather than bolted on. Performance: matches full-attention quality with large long-context speedups, trained sparse from the start. Fit for RL-on-NPU: cheaper long-context attention lowers rollout cost on memory-bound NPUs, and the same DeepSeek lineage (DSA in V3.2) is what 910B inference paths are adapting.",
+      "confidence": "confirmed"
     },
     {
       "title": "MoBA (Mixture of Block Attention)",
@@ -330,7 +348,8 @@
         "attention",
         "sparse",
         "long-context"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Position Interpolation (PI)",
@@ -344,7 +363,8 @@
         "long-context",
         "rope",
         "foundational"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "YaRN",
@@ -357,7 +377,8 @@
       "tags": [
         "long-context",
         "rope"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Ring Attention",
@@ -371,7 +392,8 @@
         "long-context",
         "distributed",
         "exact"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "LongRoPE",
@@ -385,7 +407,8 @@
         "long-context",
         "rope",
         "search"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Gemini 1.5 (1M+ context)",
@@ -399,7 +422,8 @@
         "long-context",
         "multimodal",
         "MoE"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ChunkKV",
@@ -413,7 +437,8 @@
         "long-context",
         "kv-cache",
         "compression"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeek-V3 FP8 Training",
@@ -428,7 +453,8 @@
         "mixed-precision",
         "MoE"
       ],
-      "analysis": "Innovation: the first validated FP8 training at frontier (671B-MoE) scale — fine-grained per-tile/per-block scaling, selective high-precision accumulation, and careful outlier handling. Performance: matched BF16 quality at large compute/memory savings, proving FP8 pretraining is production-viable. Fit for RL-on-NPU: directly motivates FP8 RL on Ascend now that the 950 series adds native FP8 — while raising the precision-alignment stakes that align-probe is built to measure."
+      "analysis": "Innovation: the first validated FP8 training at frontier (671B-MoE) scale — fine-grained per-tile/per-block scaling, selective high-precision accumulation, and careful outlier handling. Performance: matched BF16 quality at large compute/memory savings, proving FP8 pretraining is production-viable. Fit for RL-on-NPU: directly motivates FP8 RL on Ascend now that the 950 series adds native FP8 — while raising the precision-alignment stakes that align-probe is built to measure.",
+      "confidence": "confirmed"
     },
     {
       "title": "FP4 Training Framework",
@@ -441,7 +467,8 @@
       "tags": [
         "fp4",
         "low-precision"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "NVFP4 Pretraining",
@@ -455,7 +482,8 @@
         "fp4",
         "low-precision",
         "blackwell"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "AWQ (Activation-aware Weight Quantization)",
@@ -469,7 +497,8 @@
         "quantization",
         "ptq",
         "inference"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "muP / muTransfer (Tensor Programs V)",
@@ -483,7 +512,8 @@
         "hyperparameters",
         "scaling",
         "stability"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Compute-Optimal QAT",
@@ -497,7 +527,8 @@
         "quantization",
         "qat",
         "scaling-laws"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeek-V3 Technical Report",
@@ -511,7 +542,10 @@
         "model-report",
         "MoE",
         "fp8"
-      ]
+      ],
+      "confidence": "confirmed",
+      "ascend": "ready",
+      "ascendNote": "DeepSeek V3.x supported on vLLM-Ascend (910B)."
     },
     {
       "title": "Kimi K2 (MuonClip)",
@@ -526,7 +560,8 @@
         "MoE",
         "optimizer",
         "stability"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "MiniMax-01 (Lightning Attention)",
@@ -541,7 +576,8 @@
         "linear-attention",
         "MoE",
         "long-context"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Gemma 3",
@@ -555,7 +591,8 @@
         "model-report",
         "small-model",
         "kv-cache"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Llama 4 Herd (Scout / Maverick)",
@@ -570,7 +607,8 @@
         "MoE",
         "multimodal",
         "long-context"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "OLMo 2",
@@ -584,7 +622,8 @@
         "model-report",
         "open-science",
         "stability"
-      ]
+      ],
+      "confidence": "confirmed"
     }
   ]
 }

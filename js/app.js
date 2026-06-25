@@ -250,38 +250,57 @@ function buildStats() {
 }
 
 /* ---------- Data Quality Ledger (Overview) ---------- */
+const PRIMARY_HOSTS = new Set([
+  "arxiv.org", "github.com", "gitee.com", "huggingface.co", "hiascend.com", "docs.vllm.ai",
+  "mindspore.cn", "pytorch.org", "docs.sglang.ai", "qwenlm.github.io", "ai.meta.com",
+  "openai.com", "x.ai", "mimo.mi.com", "mimo.xiaomi.com", "seed.bytedance.com", "deepseek.com",
+]);
+function hostOf(u) { const m = String(u || "").match(/^https?:\/\/([^/]+)/i); return m ? m[1].replace(/^www\./, "") : ""; }
+function isPrimarySource(e) { const h = hostOf(e.url); return PRIMARY_HOSTS.has(h) || h.endsWith(".edu") || h.endsWith(".edu.cn"); }
+
 function buildLedger() {
   const el = document.getElementById("data-ledger");
   if (!el) return;
   const KEYS = ["rl", "ascend", "modeling"];
   const all = KEYS.flatMap((k) => (store[k] || []));
   const n = all.length || 1;
-  const pct = (c) => Math.round((c / n) * 100);
-  const withSource = all.filter((e) => inferSource(e)).length;
-  const withConf = all.filter((e) => e.confidence).length;
-  const withAscend = all.filter((e) => e.ascend).length;
-  const withAnalysis = all.filter((e) => e.analysis).length;
-  const aReady = all.filter((e) => e.ascend === "ready").length;
-  const aPartial = all.filter((e) => e.ascend === "partial").length;
+  const cnt = (f) => all.filter(f).length;
+  const prim = cnt(isPrimarySource);
+  const labelled = cnt((e) => e.confidence);
+  const confirmedN = cnt((e) => ["confirmed", "确证"].includes(e.confidence));
+  const secN = cnt((e) => ["secondary", "二手"].includes(e.confidence));
+  const selfN = cnt((e) => ["self-reported", "自报"].includes(e.confidence));
+  const models = all.filter((e) => ["model", "model-report"].includes(e.category));
+  const md = models.length || 1;
+  const mAsc = models.filter((e) => e.ascend).length;
+  const aReady = models.filter((e) => e.ascend === "ready").length;
+  const aPartial = models.filter((e) => e.ascend === "partial").length;
+  const aNone = models.filter((e) => e.ascend === "none").length;
+  const analysis = cnt((e) => e.analysis);
+
   const rows = [
-    { lbl: "Source provenance", c: withSource, hint: "有可溯源信源(字段或 URL)" },
-    { lbl: "Confidence labelled", c: withConf, hint: "标了 确证/二手/自报" },
-    { lbl: "Ascend readiness", c: withAscend, hint: `就绪 ${aReady} · 部分 ${aPartial}` },
-    { lbl: "Deep analysis", c: withAnalysis, hint: "带 analysis 深析" },
+    { lbl: "Primary sources", c: prim, d: n, hint: `${n - prim} 来自媒体/二手`,
+      tip: "信源来自一手/官方渠道(arXiv · HuggingFace · GitHub · 官方文档/厂商页)的占比。越高 = 越可溯源。" },
+    { lbl: "Confidence labelled", c: labelled, d: n, hint: `确证 ${confirmedN} · 二手 ${secN} · 自报 ${selfN}`,
+      tip: "已标注信源可信度(确证 confirmed / 二手 secondary / 自报 self-reported)的条目占比。" },
+    { lbl: "Ascend readiness", c: mAsc, d: md, hint: `就绪 ${aReady} · 部分 ${aPartial} · 无 ${aNone} · 共 ${models.length} 张模型卡`,
+      tip: "在『模型卡』里已给出昇腾就绪度判断(就绪/部分/无)的占比。只对模型类条目计——算法/框架论文不适用。" },
+    { lbl: "Deep analysis", c: analysis, d: n, hint: `${analysis}/${n} 带 ▸ 深析`,
+      tip: "带 ▸ 深度分析段落(创新 / 性能 / 对昇腾意义)的条目占比,而非仅一句话摘要。" },
   ];
   const bar = (p) => `<span class="ledger-bar"><span style="width:${p}%"></span></span>`;
   el.innerHTML = `
     <div class="ledger-head">
       <h3>Data Quality Ledger</h3>
-      <span class="dim">covers ${all.length} curated entries (RL · Ascend · Modeling)</span>
+      <span class="dim">${all.length} curated entries (RL · Ascend · Modeling) · 悬停看含义</span>
     </div>
     <div class="ledger-grid">
       ${rows.map((r) => {
-        const p = pct(r.c);
-        return `<div class="ledger-cell">
+        const p = Math.round((r.c / r.d) * 100);
+        return `<div class="ledger-cell" title="${escapeAttr(r.tip)}">
           <div class="ledger-top"><span>${escapeHtml(r.lbl)}</span><span class="ledger-pct">${p}%</span></div>
           ${bar(p)}
-          <div class="ledger-hint dim">${r.c}/${all.length} · ${escapeHtml(r.hint)}</div>
+          <div class="ledger-hint dim">${r.c}/${r.d} · ${escapeHtml(r.hint)}</div>
         </div>`;
       }).join("")}
     </div>`;
