@@ -2,6 +2,88 @@
   "updated": "2026-06-25",
   "items": [
     {
+      "title": "Agentic RL for LLMs (Landscape survey)",
+      "org": "research",
+      "year": "2025-09",
+      "category": "trend",
+      "innovation": "Maps agentic RL as a distinct POMDP paradigm vs single-step LLM RL",
+      "analysis": "Innovation: the reference map of the field — frames agentic RL as temporally-extended POMDPs (vs the single-step MDP of vanilla RLVR), organizing methods by capability (planning, tool use, memory, reflection) and challenge. Fit for RL-on-NPU: the survey's emphasis on long multi-turn rollouts is exactly the regime that stresses Ascend's 64GB HBM + no-sleep-mode; good orientation before porting agentic RL to NPU.",
+      "summary": "The Landscape of Agentic RL for LLMs — a 2025/26 survey reframing LLMs from passive generators into decision-making agents, with a taxonomy of capabilities (planning, tool use, memory, reflection) and open challenges.",
+      "url": "https://arxiv.org/abs/2509.02547",
+      "tags": [
+        "agentic-rl",
+        "survey",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Credit Assignment in RL for LLMs (survey)",
+      "org": "research",
+      "year": "2026-04",
+      "category": "trend",
+      "innovation": "Two-dimensional taxonomy of 47 credit-assignment methods",
+      "analysis": "Innovation: surveys 47 credit-assignment (CA) methods (41 core + 6 enablers, 2024–early 2026) along granularity (token / segment / step / turn / multi-agent) × methodology (MC / TD / model-based / game-theoretic / info-theoretic). Fit for RL-on-NPU: CA is the central bottleneck of long-horizon agentic RL; the per-turn advantage math layered on NPU-rewritten ops compounds train-inference drift — what align-probe should watch.",
+      "summary": "From Reasoning to Agentic: a survey of temporal credit assignment in LLM RL — episode-level reward is uninformative over 10–100+ turn trajectories, so CA granularity/method is the key design axis.",
+      "url": "https://arxiv.org/abs/2604.09459",
+      "tags": [
+        "agentic-rl",
+        "credit-assignment",
+        "survey",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "VerlTool (ARLT: agentic RL with tool use)",
+      "org": "research",
+      "year": "2025-09",
+      "category": "framework",
+      "innovation": "Unified tool-use agentic RL on verl with fully async rollouts",
+      "analysis": "Innovation: extends verl to Agentic RL with Tool use (ARLT) — a unified tool interface + credit assignment across sequential tool calls, with fully asynchronous rollouts to avoid synchronous batch stalls. Fit for RL-on-NPU: async rollout is precisely the lever Ascend needs (no sleep-mode), and tool-use rollouts are long/memory-heavy — a strong target to port and pair with quantized rollout.",
+      "summary": "A holistic ARLT framework on the verl codebase: standardizes multi-turn tool use, handles credit assignment across tool calls, and runs fully asynchronous rollouts for efficiency.",
+      "url": "https://arxiv.org/abs/2509.01055",
+      "tags": [
+        "agentic-rl",
+        "tool-use",
+        "async-rl",
+        "framework"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "AgentRL (multi-turn, multi-task agentic RL)",
+      "org": "research",
+      "year": "2025-10",
+      "category": "framework",
+      "innovation": "Scales agentic RL across many turns and tasks in one system",
+      "summary": "A multi-turn, multi-task RL framework for scaling agentic training — coordinates diverse environments/tasks so a single agent learns across them, addressing the systems cost of long agentic rollouts.",
+      "url": "https://arxiv.org/abs/2510.04206",
+      "tags": [
+        "agentic-rl",
+        "multi-turn",
+        "systems",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "SkyRL-Agent (efficient multi-turn agent RL)",
+      "org": "research",
+      "year": "2025-11",
+      "category": "framework",
+      "innovation": "Training-efficiency techniques targeted at multi-turn agents",
+      "summary": "Efficient RL training for multi-turn LLM agents — reduces the rollout/training cost that dominates agentic RL, complementing async frameworks like VerlTool/ProRL Agent.",
+      "url": "https://arxiv.org/abs/2511.16108",
+      "tags": [
+        "agentic-rl",
+        "efficiency",
+        "multi-turn",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
       "title": "Train Less, Learn More (adaptive rollout optimization)",
       "org": "research",
       "year": "2026-02",

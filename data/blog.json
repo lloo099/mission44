@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-08-agentic-rl",
+      "title": "Dispatch 08 · Agentic RL 入门:从"会推理"到"会行动"",
+      "subtitle": "把 LLM 从单轮 RLVR(一步 MDP)训成跨 10–100+ 回合的智能体(POMDP)。三大难题(信用分配 / 工具集成 / 长 rollout)、框架地图、环境奖励设计,以及为什么超长 agentic rollout 把昇腾显存痛点放大到极致。",
+      "date": "2026-06-25",
+      "tags": ["agentic-RL", "tool-use", "credit-assignment", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-08-agentic-rl.md"
+    },
+    {
       "id": "dispatch-07-mimo-v2-5",
       "title": "Dispatch 07 · 详解 MiMo-V2.5-Pro:滑窗×全局 6:1 混合注意力 + MiMo Code",
       "subtitle": "小米 MIT 开源 1.02T/42B MoE。不走块稀疏,而是 SWA(128-窗)×全局 6:1 交替把 KV 砍 ~7×;配 MiMo Code agent harness,SWE-bench Verified 82 / Pro 62 压过 Claude Code。机制、读榜须知、对昇腾的意义。",
