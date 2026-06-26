@@ -184,6 +184,19 @@ main { padding: 28px; max-width: 1280px; margin: 0 auto; }
 .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .panel:focus { outline: none; }
 
+/* Agentic RL — trends block + track badge */
+.agentic-trends { margin-bottom: 18px; }
+.trend-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.trend-head h3 { margin: 0; font-size: 15px; color: var(--accent); }
+.trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.trend-card { position: relative; background: var(--surface); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 14px 16px; }
+.trend-card .trend-num { font-size: 11px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: .08em; }
+.trend-card h4 { margin: 4px 0 6px; font-size: 14.5px; line-height: 1.35; color: var(--text); }
+.trend-card p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--text-soft); }
+.track { font-size: 10px; font-weight: 700; border-radius: 5px; padding: 1px 7px; white-space: nowrap; border: 1px solid var(--line); }
+.track.ind { color: var(--accent); background: var(--blue-bg); border-color: var(--line); }
+.track.acad { color: var(--purple-fg); background: var(--purple-bg); border-color: var(--line); }
+
 /* Filter bar */
 .filterbar { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
 .chip {
@@ -419,6 +432,7 @@ table.cmp td.cmp-none { color: var(--bad-fg); }
 .tl-dom.dom-rl { color: var(--blue-fg); background: var(--blue-bg); }
 .tl-dom.dom-ascend { color: var(--orange-fg); background: var(--orange-bg); }
 .tl-dom.dom-modeling { color: var(--purple-fg); background: var(--purple-bg); }
+.tl-dom.dom-agentic { color: var(--ok-fg); background: var(--ok-bg); }
 .tl-title { color: var(--text); }
 .tl-title a { color: var(--text); }
 .tl-title a:hover { color: var(--accent-2, #6aa6ff); }

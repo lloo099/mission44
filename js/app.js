@@ -4,6 +4,7 @@ const DATA_SOURCES = {
   rl: "data/rl.json",
   ascend: "data/ascend.json",
   modeling: "data/modeling.json",
+  agentic: "data/agentic.json",
   ideas: "data/ideas.json",
   live: "data/feed.json",
 };
@@ -12,6 +13,7 @@ const store = {}; // key -> array of entries
 const storeUpdated = {}; // key -> ISO date string (from each file's "updated")
 const activeFilters = {}; // key -> Set of active tags
 let searchTerm = "";
+let agenticTrends = []; // {title, body} blurbs for the Agentic RL section
 
 /* ---------- data loading ---------- */
 async function loadJSON(url) {
@@ -32,13 +34,15 @@ async function init() {
     const payload = results[i];
     store[k] = (payload && payload.items) ? payload.items : (Array.isArray(payload) ? payload : []);
     storeUpdated[k] = (payload && payload.updated) ? String(payload.updated).slice(0, 10) : "";
+    if (k === "agentic" && payload) agenticTrends = payload.trends || [];
     activeFilters[k] = new Set();
   });
 
   wireTheme();
   buildStats();
   buildLedger();
-  ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel);
+  renderAgenticTrends();
+  ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach(renderPanel);
   buildFilterbars();
   wireTabs();
   wireSearch();
@@ -127,7 +131,7 @@ async function wireBlog() {
 function wireTimeline() {
   const el = document.getElementById("timeline-body");
   if (!el) return;
-  const DOMAINS = { rl: "RL", ascend: "Ascend", modeling: "Modeling" };
+  const DOMAINS = { rl: "RL", agentic: "Agentic", ascend: "Ascend", modeling: "Modeling" };
   const rows = [];
   Object.keys(DOMAINS).forEach((key) => {
     (store[key] || []).forEach((e) => {
@@ -242,6 +246,7 @@ function buildStats() {
     { num: store.rl.length, lbl: "RL papers & frameworks" },
     { num: store.ascend.length, lbl: "Ascend / NPU entries" },
     { num: store.modeling.length, lbl: "Modeling advances" },
+    { num: store.agentic.length, lbl: "Agentic RL entries" },
     { num: store.ideas.length, lbl: "Project ideas" },
   ];
   grid.innerHTML = stats
@@ -304,6 +309,29 @@ function buildLedger() {
         </div>`;
       }).join("")}
     </div>`;
+}
+
+/* ---------- Agentic RL trends block ---------- */
+function renderAgenticTrends() {
+  const el = document.getElementById("agentic-trends");
+  if (!el) return;
+  if (!agenticTrends.length) { el.innerHTML = ""; return; }
+  el.innerHTML = `<div class="trend-head"><h3>本期趋势 · Trends</h3>
+      <span class="dim">工业界为主,兼顾学术 · ${storeUpdated.agentic || ""}</span></div>
+    <div class="trend-grid">${agenticTrends.map((t, i) => `<div class="trend-card">
+      <div class="trend-num">${String(i + 1).padStart(2, "0")}</div>
+      <h4>${escapeHtml(t.title)}</h4>
+      <p>${escapeHtml(t.body)}</p>
+    </div>`).join("")}</div>`;
+}
+
+/* industry / academic track badge */
+function trackBadge(track) {
+  if (!track) return "";
+  const map = { industry: ["工业界", "ind"], academic: ["学术", "acad"] };
+  const m = map[track];
+  if (!m) return "";
+  return `<span class="track ${m[1]}" title="来源:${m[0]}">${m[0]}</span>`;
 }
 
 /* ---------- filters ---------- */
@@ -402,7 +430,7 @@ function cardHTML(e, key) {
   const slim = JSON.stringify({ title: e.title, org: e.org, year: e.year, category: e.category, innovation: e.innovation, summary: e.summary, url: e.url, tags: e.tags, analysis: e.analysis });
   const analyzed = !!e.analysis || (window.hasSavedAnalysis && window.hasSavedAnalysis(e));
   return `<article class="card">
-    <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}<span class="card-badges">${confBadge(e)}${ascendBadge(e)}</span></div>
+    <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}<span class="card-badges">${trackBadge(e.track)}${confBadge(e)}${ascendBadge(e)}</span></div>
     <h3>${hl(e.title || "Untitled")}</h3>
     ${meta ? `<div class="meta">${escapeHtml(meta)}</div>` : ""}
     ${provenanceLine(e, key)}
@@ -541,7 +569,7 @@ function wireTabs() {
 }
 
 function updateTabCounts() {
-  ["rl", "ascend", "modeling", "ideas", "live"].forEach((key) => {
+  ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach((key) => {
     const tab = document.querySelector(`.tab[data-tab="${key === "live" ? "live" : key}"]`);
     if (!tab) return;
     let sup = tab.querySelector(".tab-count");
@@ -557,13 +585,13 @@ function wireSearch() {
   const box = document.getElementById("search");
   box.addEventListener("input", () => {
     searchTerm = box.value.trim().toLowerCase();
-    ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel);
+    ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach(renderPanel);
     updateTabCounts();
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "/" && document.activeElement !== box) { e.preventDefault(); box.focus(); }
     if (e.key === "Escape" && document.activeElement === box && box.value) {
-      box.value = ""; searchTerm = ""; ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel); updateTabCounts();
+      box.value = ""; searchTerm = ""; ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach(renderPanel); updateTabCounts();
     }
   });
 }
