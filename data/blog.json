@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-12-swe-agents",
+      "title": "Dispatch 12 · SWE Agents + Agentic RL 上手指南",
+      "subtitle": "多 agent 工作流产出:SWE-bench 家族 / ScaleSWE、scaffold 三大模式、SWE-smith 造可验证任务、RLVR 奖励与信用分配,以及怎么端到端搭一个 SWE 的 agentic RL 系统(参考栈 + 分步 + 坑)。",
+      "date": "2026-06-26",
+      "tags": ["SWE-agents", "agentic-RL", "guide", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-12-swe-agents.md"
+    },
+    {
       "id": "dispatch-11-vllm-vs-sglang",
       "title": "Dispatch 11 · vLLM/Inferact vs SGLang/RadixArk:两家伯克利系推理公司的对决",
       "subtitle": "同源(Berkeley)、同台(推理)、同期(2026初)商业化。Inferact $800M(a16z+Lightspeed,vLLM 40万 GPU)vs RadixArk $400M(Accel,SGLang+Miles)。引擎、战略、投资视角与昇腾 rollout 引擎选型。",
