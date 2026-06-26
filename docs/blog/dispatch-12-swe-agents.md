@@ -24,6 +24,18 @@
 **① 评测(SWE-bench 家族 + ScaleSWE)**
 SWE-bench 家族都给 agent (repo + issue),要求产出能过隐藏 F2P/P2P 测试的 patch。主要切片:**Full**(2294 实例)、**Lite**(300,快测)、**Verified**(500,OpenAI 人工校验,事实标准但已接近饱和)、**Multimodal/M**(JS+截图)、**Bash-Only**(只给一个 bash 工具,隔离脚手架影响,参考实现即 mini-swe-agent)、**SWE-bench-Live**(post-cutoff issue,抗污染,https://swe-bench-live.github.io/ · arXiv:2505.23419)。**"ScaleSWE" 不是单一基准**,而是 Scale AI 的 SWE 评测体系:**SWE-bench Pro**(1865 实例,含私有/copyleft 仓库抗污染,https://scale.com/blog/swe-bench-pro)和其后续 **SWE Atlas**(扩展到 Codebase Q&A / Test Writing / Refactoring,https://scale.com/blog/swe-atlas-complete)。**关键提醒(均为暂定数字):** 跨来源分数因 harness/scaffold 不同不可直接比较;Verified 存在污染(一项研究称约 32.7% 成功 patch 涉及解泄漏)和测试过拟合(审计显示榜单虚高约 6–7 分),OpenAI 已停止报告 Verified(https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/)。
 
+**ScaleSWE 专题:Scale 的 SWE 评测体系,以及它和谁有关系**
+
+「ScaleSWE」指 **Scale AI(SEAL 评测实验室)** 做的一套**抗污染** SWE 评测体系,核心是 **SWE-bench Pro + SWE Atlas**:
+- **SWE-bench Pro**(https://scale.com/blog/swe-bench-pro · https://labs.scale.com/leaderboard/swe_bench_pro_public):**1865 个任务 / 41 个专业仓库**,三层抗污染——① 公开集只取**强 copyleft(GPL)**仓库,用许可证当「法律门槛」阻止被纳入训练数据;② **私有集**(276 个实例 / 18 个收购来的非公开商业代码库)是泛化的终极考验;③ **held-out 集**永久保密,用于日后查「在公开集上过拟合」。任务也更**长程**(多文件、工业级)。
+- **SWE Atlas**(https://scale.com/blog/swe-atlas-complete):把同一套抗污染方法**从「修 bug」扩到整个软件工程闭环**——Codebase Q&A、写测试(Test Writing)、重构(Refactoring)。
+- **榜单(2026-06-18,暂定)**:标准化口径 **GPT-5.4(xHigh)59.1%** 领先,厂商自报口径 **Opus 4.8 69.2%**——比 Verified 低一大截,说明「真的难」。
+
+**它和谁有关系:**
+- **↔ SWE-bench(Verified)**:是**抗污染的接班人 / 补充**。Verified 已饱和又被污染(解泄漏 + 测试过拟合),Pro 用 copyleft + 私有 + held-out 把「背题」堵死;OpenAI Codex 等已转向报告 Pro。
+- **↔ SWE-smith / 训练数据**:评测侧的 Pro/Atlas 与训练侧的 SWE-smith/R2E-Gym 是**一体两面**——前者要「模型没见过的题」,后者要「可大规模造的可验证题」,两者都在回答「SWE 任务从哪来、怎么不被污染」。
+- **↔ 环境 / 数据赛道**:Scale 本是数据/评测公司,ScaleSWE 把它放进「**环境与评测 = 后训练时代新护城河**」这条线(见看板 Agentic RL 标签的环境融资潮:Mechanize / Deeptune / RL gym)。评测榜 + 私有题库 + 数据供给,在 Scale 这里合流。
+
 **② Agent 脚手架(主流架构与模式)**
 Scaffold = 模型外的一切(控制循环、工具/ACI、上下文检索、状态管理)。三种主导模式:
 - **A. ReAct agentic loop**(SWE-agent、OpenHands、mini-swe-agent、CCA):Thought→Action→Observation,模型自己决定每一步。最灵活,但成本高、易陷循环、上下文易爆。
