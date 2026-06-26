@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-13-swe-rl-on-ascend",
+      "title": "Dispatch 13 · 在昇腾上搭一个 SWE Agentic RL 最小原型:方案设计",
+      "subtitle": "把 Dispatch 12 的 SWE-RL 配方落到单节点 8×910B:环境(R2E-Gym+沙箱)+ rollout(mini-swe-agent+vLLM-Ascend)+ MindSpeed-RL GRPO++ + 解耦异步。四个昇腾坑(无 sleep-mode/logprob 一致性/长 rollout/沙箱成本)+ M0–M3 里程碑。",
+      "date": "2026-06-26",
+      "tags": ["方案设计", "SWE-RL", "Ascend", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-13-swe-rl-on-ascend.md"
+    },
+    {
       "id": "dispatch-12-swe-agents",
       "title": "Dispatch 12 · SWE Agents + Agentic RL 上手指南",
       "subtitle": "多 agent 工作流产出:SWE-bench 家族 / ScaleSWE、scaffold 三大模式、SWE-smith 造可验证任务、RLVR 奖励与信用分配,以及怎么端到端搭一个 SWE 的 agentic RL 系统(参考栈 + 分步 + 坑)。",
