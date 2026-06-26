@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-14-scaleswe",
+      "title": "Dispatch 14 · 详解 ScaleSWE:把 GitHub 宇宙挖成 SWE 训练数据",
+      "subtitle": "AweAI-Team(非 Scale AI)的 arXiv 2602.09892:6M PR→10万实例 + 合成 F2P + DeepSeek 蒸馏 71k 轨迹 → SFT Qwen3-30B-A3B 拿 64% Verified(SFT-only)。方法、AweAgent/DeNovoSWE 生态,以及 vs SWE-smith/SWE-Gym/R2E-Gym/DeepSWE 对比表。",
+      "date": "2026-06-26",
+      "tags": ["SWE", "ScaleSWE", "训练数据", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-14-scaleswe.md"
+    },
+    {
       "id": "dispatch-13-swe-rl-on-ascend",
       "title": "Dispatch 13 · 在昇腾上搭一个 SWE Agentic RL 最小原型:方案设计",
       "subtitle": "把 Dispatch 12 的 SWE-RL 配方落到单节点 8×910B:环境(R2E-Gym+沙箱)+ rollout(mini-swe-agent+vLLM-Ascend)+ MindSpeed-RL GRPO++ + 解耦异步。四个昇腾坑(无 sleep-mode/logprob 一致性/长 rollout/沙箱成本)+ M0–M3 里程碑。",
