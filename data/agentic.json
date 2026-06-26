@@ -28,6 +28,54 @@
   ],
   "items": [
     {
+      "title": "SWE-bench(+Verified/Live/家族,评测事实标准)",
+      "org": "Princeton", "year": "2023-10", "category": "benchmark", "track": "academic",
+      "innovation": "(repo + issue → 过隐藏 F2P/P2P 测试的 patch)的任务格式",
+      "summary": "SWE agent 生态的评测基石:给定真实仓库 buggy commit + issue,要求产出能让原本失败测试通过(F2P)、不退化(P2P)的 patch。Verified(500,人工校验)是事实标准但已饱和+污染;Live(post-cutoff)抗污染。详解见 Blog → Dispatch 12。",
+      "url": "https://www.swebench.com", "tags": ["academic", "SWE", "benchmark", "eval"], "confidence": "confirmed"
+    },
+    {
+      "title": "SWE-bench Pro / SWE Atlas(Scale 的 ScaleSWE 体系)",
+      "org": "Scale AI", "year": "2026", "category": "benchmark", "track": "industry",
+      "innovation": "含私有/copyleft 仓库抗污染 + 扩到全工程闭环",
+      "summary": "Scale 的 SWE 评测体系:SWE-bench Pro(1865 实例、含私有/copyleft 抗污染)与后续 SWE Atlas(扩展到 Codebase Q&A / 写测试 / 重构)。前沿模型已转向用它取代饱和的 Verified。",
+      "url": "https://scale.com/blog/swe-bench-pro", "tags": ["industry", "SWE", "benchmark", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "SWE-agent(ACI 脚手架)",
+      "org": "Princeton", "year": "2024-05", "category": "framework", "track": "academic",
+      "innovation": "Agent-Computer Interface:为 LM 设计的工具集 + 编辑前 lint",
+      "summary": "证明「接口设计而非模型本身」能撬动 10–30 分:LM 友好的工具/ACI + ReAct 循环。scaffold 三大模式之一,是 SWE agent 的奠基工作。",
+      "url": "https://arxiv.org/abs/2405.15793", "tags": ["academic", "SWE", "scaffold", "agentic-rl"], "confidence": "confirmed"
+    },
+    {
+      "title": "SWE-smith(任意 repo → 5 万可验证任务工厂)",
+      "org": "Princeton / SWE-bench team", "year": "2025-04", "category": "framework", "track": "academic",
+      "innovation": "四种造 bug 策略 + 「一 repo 一执行环境」做规模化",
+      "summary": "把任意 Python repo 自动变成任务工厂(LM Rewrite / AST 改写 / PR Mirroring / Combine),只保留能把通过测试翻成失败的 patch 验证;产出 ~5 万任务 + 2.6 万 trajectory。可验证 SWE 任务规模化的关键。",
+      "url": "https://github.com/SWE-bench/SWE-smith", "tags": ["academic", "SWE", "data", "environments"], "confidence": "confirmed"
+    },
+    {
+      "title": "SWE-Gym(首个训练用真实 SWE 环境)",
+      "org": "research", "year": "2024-12", "category": "framework", "track": "academic",
+      "summary": "首个为「训练」而非评测建的环境:2438 个真实任务/11 repo,带可执行 runtime + 单元测试奖励,还训 verifier 做 best-of-n。RL-for-SWE 的常用起点。",
+      "url": "https://arxiv.org/abs/2412.21139", "tags": ["academic", "SWE", "data", "RL-env"], "confidence": "confirmed"
+    },
+    {
+      "title": "DeepSWE(Qwen3-32B 纯 RL 开源复现)",
+      "org": "Together / Agentica", "year": "2025-07", "category": "algorithm", "track": "industry",
+      "innovation": "rLLM + R2E-Gym + GRPO++ 的端到端开源 RL 栈",
+      "summary": "从 Qwen3-32B 纯 RL 训上去的完整开源复现(GRPO++:clip-higher、无 KL、长度归一化),42.2% Pass@1(暂定)。搭 SWE agentic RL 的「最省力起点」参考栈。",
+      "url": "https://www.together.ai/blog/deepswe", "tags": ["industry", "SWE", "RL", "open-source"], "confidence": "confirmed"
+    },
+    {
+      "title": "Meta SWE-RL(相似度规则奖励)",
+      "org": "Meta", "year": "2025-02", "category": "algorithm", "track": "academic",
+      "innovation": "用与 ground-truth patch 的序列相似度做奖励,绕开大规模执行",
+      "summary": "不跑测试,而用与正确 patch 的序列相似度当 reward——免去为每个任务搭执行环境的成本,是 RL-for-SWE 奖励设计的另一条路线。",
+      "url": "https://arxiv.org/abs/2502.18449", "tags": ["academic", "SWE", "RL", "reward-design"], "confidence": "confirmed"
+    },
+    {
       "title": "xAI · Grok Build (grok-code-fast-1)",
       "org": "xAI", "year": "2026-05", "category": "product", "track": "industry",
       "innovation": "终端式编码代理 + 用真实 PR 做 RL 后训练的自有快模型",
