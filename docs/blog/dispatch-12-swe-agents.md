@@ -21,20 +21,28 @@
 
 ## 2. 核心概念
 
-**① 评测(SWE-bench 家族 + ScaleSWE)**
-SWE-bench 家族都给 agent (repo + issue),要求产出能过隐藏 F2P/P2P 测试的 patch。主要切片:**Full**(2294 实例)、**Lite**(300,快测)、**Verified**(500,OpenAI 人工校验,事实标准但已接近饱和)、**Multimodal/M**(JS+截图)、**Bash-Only**(只给一个 bash 工具,隔离脚手架影响,参考实现即 mini-swe-agent)、**SWE-bench-Live**(post-cutoff issue,抗污染,https://swe-bench-live.github.io/ · arXiv:2505.23419)。**"ScaleSWE" 不是单一基准**,而是 Scale AI 的 SWE 评测体系:**SWE-bench Pro**(1865 实例,含私有/copyleft 仓库抗污染,https://scale.com/blog/swe-bench-pro)和其后续 **SWE Atlas**(扩展到 Codebase Q&A / Test Writing / Refactoring,https://scale.com/blog/swe-atlas-complete)。**关键提醒(均为暂定数字):** 跨来源分数因 harness/scaffold 不同不可直接比较;Verified 存在污染(一项研究称约 32.7% 成功 patch 涉及解泄漏)和测试过拟合(审计显示榜单虚高约 6–7 分),OpenAI 已停止报告 Verified(https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/)。
+**① 评测(SWE-bench 家族)**
+SWE-bench 家族都给 agent (repo + issue),要求产出能过隐藏 F2P/P2P 测试的 patch。主要切片:**Full**(2294 实例)、**Lite**(300,快测)、**Verified**(500,OpenAI 人工校验,事实标准但已接近饱和)、**Multimodal/M**(JS+截图)、**Bash-Only**(只给一个 bash 工具,隔离脚手架影响,参考实现即 mini-swe-agent)、**SWE-bench-Live**(post-cutoff issue,抗污染,https://swe-bench-live.github.io/ · arXiv:2505.23419)。此外 **Scale AI(SEAL)** 还有更难、抗污染的 **SWE-bench Pro**(1865 实例,含私有/copyleft 仓库,https://scale.com/blog/swe-bench-pro)和 **SWE Atlas**(扩到 Codebase Q&A / 写测试 / 重构,https://scale.com/blog/swe-atlas-complete)。**(注:「ScaleSWE」另有所指 —— 是 AweAI-Team 的大规模 SWE 训练数据项目 arXiv 2602.09892,见下方专题,与 Scale AI 无关。)** **关键提醒(均为暂定数字):** 跨来源分数因 harness/scaffold 不同不可直接比较;Verified 存在污染(一项研究称约 32.7% 成功 patch 涉及解泄漏)和测试过拟合(审计显示榜单虚高约 6–7 分),OpenAI 已停止报告 Verified(https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/)。
 
-**ScaleSWE 专题:Scale 的 SWE 评测体系,以及它和谁有关系**
+**SWE-bench Pro / SWE Atlas 专题:Scale(SEAL)的抗污染评测**
 
-「ScaleSWE」指 **Scale AI(SEAL 评测实验室)** 做的一套**抗污染** SWE 评测体系,核心是 **SWE-bench Pro + SWE Atlas**:
-- **SWE-bench Pro**(https://scale.com/blog/swe-bench-pro · https://labs.scale.com/leaderboard/swe_bench_pro_public):**1865 个任务 / 41 个专业仓库**,三层抗污染——① 公开集只取**强 copyleft(GPL)**仓库,用许可证当「法律门槛」阻止被纳入训练数据;② **私有集**(276 个实例 / 18 个收购来的非公开商业代码库)是泛化的终极考验;③ **held-out 集**永久保密,用于日后查「在公开集上过拟合」。任务也更**长程**(多文件、工业级)。
-- **SWE Atlas**(https://scale.com/blog/swe-atlas-complete):把同一套抗污染方法**从「修 bug」扩到整个软件工程闭环**——Codebase Q&A、写测试(Test Writing)、重构(Refactoring)。
-- **榜单(2026-06-18,暂定)**:标准化口径 **GPT-5.4(xHigh)59.1%** 领先,厂商自报口径 **Opus 4.8 69.2%**——比 Verified 低一大截,说明「真的难」。
+> ⚠️ 更正:本块早前被错标为「ScaleSWE」。「ScaleSWE」其实是 AweAI-Team 的训练数据项目(见紧接的下一个专题),**与 Scale AI 无关,只是名字撞车**。这里讲的是 **Scale AI(SEAL 评测实验室)** 的抗污染 SWE **评测**。
+- **SWE-bench Pro**(https://scale.com/blog/swe-bench-pro):**1865 个任务 / 41 个专业仓库**,三层抗污染——① 公开集只取**强 copyleft(GPL)**仓库,用许可证当「法律门槛」阻止被纳入训练数据;② **私有集**(276 个实例 / 18 个收购来的非公开商业代码库)是泛化的终极考验;③ **held-out 集**永久保密查过拟合。任务也更**长程**。
+- **SWE Atlas**(https://scale.com/blog/swe-atlas-complete):同一套抗污染方法**从「修 bug」扩到全工程闭环**——Codebase Q&A、写测试、重构。
+- **榜单(2026-06-18,暂定)**:标准化口径 **GPT-5.4(xHigh)59.1%**,厂商自报 **Opus 4.8 69.2%**——比 Verified 低一大截,够难。
+- **关系**:是 **Verified 的抗污染接班人**(Verified 已饱和+被解泄漏/测试过拟合污染,Pro 用 copyleft+私有+held-out 堵「背题」,OpenAI Codex 等已转向 Pro)。
 
-**它和谁有关系:**
-- **↔ SWE-bench(Verified)**:是**抗污染的接班人 / 补充**。Verified 已饱和又被污染(解泄漏 + 测试过拟合),Pro 用 copyleft + 私有 + held-out 把「背题」堵死;OpenAI Codex 等已转向报告 Pro。
-- **↔ SWE-smith / 训练数据**:评测侧的 Pro/Atlas 与训练侧的 SWE-smith/R2E-Gym 是**一体两面**——前者要「模型没见过的题」,后者要「可大规模造的可验证题」,两者都在回答「SWE 任务从哪来、怎么不被污染」。
-- **↔ 环境 / 数据赛道**:Scale 本是数据/评测公司,ScaleSWE 把它放进「**环境与评测 = 后训练时代新护城河**」这条线(见看板 Agentic RL 标签的环境融资潮:Mechanize / Deeptune / RL gym)。评测榜 + 私有题库 + 数据供给,在 Scale 这里合流。
+**ScaleSWE 专题(更正):AweAI-Team 的大规模 SWE 训练数据,不是 benchmark**
+
+「**ScaleSWE**」= 论文《Immersion in the GitHub Universe: Scaling Coding Agents to Mastery》(**AweAI-Team**,人大 RUC 关联,arXiv 2602.09892)——一个 **SWE 训练数据 + 智能体**项目(数据/蒸馏侧,与 SWE-smith/SWE-Gym/R2E-Gym 同支)。
+
+- **三件套**:大规模**真实 PR 挖掘** + 强模型**轨迹蒸馏** + **合成 F2P 测试**。数据漏斗 **23k 仓库 / 6M PR →(LLM-as-judge 只看元数据预过滤)→ 沙箱三智能体流水线(建环境 / 造测试 / 写问题陈述,MEGAFLOW 编排,阿里云 ECS+ACR 出可验证 Docker 镜像)→ 10 万已验证实例(5200 repo)**;开源 **2 万 Real-Executable 实例 + 71k 蒸馏轨迹(3.5B token,教师 DeepSeek-V3.2)**。
+- **合成 F2P**:很多真实 PR 没作者写的 F2P,用一个 **unit-test creator agent** 合成可执行的 F2P 复现脚本(F2P/P2P 同 SWE-bench 口径,强制固定执行顺序防 test pollution)。**关键:只在缺测时「恢复可执行性」,不伪造任务本身**——这正是相对 SWE-smith(造合成 bug)/ R2E-Gym(回译任务)的方法论区别。
+- **结果(暂定)**:71k 轨迹 **SFT 到 Qwen3-30B-A3B-Instruct → SWE-bench Verified 64.0%**(基座 22.0%,+42 分),超当时开源 SOTA。**本论文是 SFT-only,没有 RL**。
+- **配套**:**AweAgent**(执行框架,Apache-2.0,Scale-SWE 跑在 `search_swe` scaffold + ACI 工具 + **反泄漏 bash blocklist**;训练模式下 tool 观测 `loss_mask=0` 产出 token 级轨迹)、**Scale-SWE-Agent**(HF 模型,200 轮/256k)、**DeNovoSWE**(2026-06,arXiv 2606.10728,**doc2repo** 长程数据,明确 **for SFT & RL**,Qwen3.5-35B-A3B → ~50% BeyondSWE-Doc2Repo)。
+- **生态位**:和 **SWE-Gym 同路线但规模放大约 3 个数量级**;主打**蒸馏-SFT**(对照 DeepSWE 的从零 RL、Meta SWE-RL 的非执行相似度奖励);Real-Executable + DeNovoSWE「for RL」暗示 **SFT-now → RL-next**(类比 R2E-Gym→DeepSWE 的交接)。
+
+> 链接:arXiv https://arxiv.org/abs/2602.09892 · GitHub https://github.com/AweAI-Team/ScaleSWE · AweAgent https://github.com/AweAI-Team/AweAgent · DeNovoSWE https://github.com/AweAI-Team/DeNovoSWE · HF https://huggingface.co/AweAI-Team。数字为调研快照(全文 PDF 在本环境被 403),标暂定。
 
 **② Agent 脚手架(主流架构与模式)**
 Scaffold = 模型外的一切(控制循环、工具/ACI、上下文检索、状态管理)。三种主导模式:

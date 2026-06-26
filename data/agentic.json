@@ -28,6 +28,30 @@
   ],
   "items": [
     {
+      "title": "ScaleSWE(大规模真实 PR 挖掘 + 轨迹蒸馏)",
+      "org": "AweAI-Team (RUC)", "year": "2026-02", "category": "framework", "track": "academic",
+      "innovation": "6M PR→10万实例 + 合成 F2P + DeepSeek 蒸馏 SFT",
+      "summary": "论文《Immersion in the GitHub Universe》(arXiv 2602.09892)。真实 PR 大规模挖掘(23k 仓库/6M PR→10万实例,MEGAFLOW+阿里云沙箱出可验证镜像)+ unit-test-creator 合成 F2P + DeepSeek-V3.2 蒸馏 71k 轨迹;SFT Qwen3-30B-A3B → SWE-bench Verified 64%(SFT-only,暂定)。与 Scale AI 无关(同名)。",
+      "url": "https://github.com/AweAI-Team/ScaleSWE",
+      "tags": ["academic", "SWE", "data", "distillation"], "confidence": "confirmed"
+    },
+    {
+      "title": "DeNovoSWE(doc2repo 长程数据,for SFT & RL)",
+      "org": "AweAI-Team (RUC)", "year": "2026-06", "category": "framework", "track": "academic",
+      "innovation": "从自然语言 spec 从零生成整个仓库(长程,可 RL)",
+      "summary": "ScaleSWE 的后续(arXiv 2606.10728):任务从「修 PR bug」转为 doc2repo——仅给 spec 从零造仓库。明确为长程 SFT & RL 环境(支持 rollout),4818 实例、DeepSeek-v4-Pro-High 蒸馏;Qwen3.5-35B-A3B → ~50% BeyondSWE-Doc2Repo(暂定)。是 ScaleSWE 走向 RL 的桥。",
+      "url": "https://github.com/AweAI-Team/DeNovoSWE",
+      "tags": ["academic", "SWE", "long-horizon", "RL-env"], "confidence": "confirmed"
+    },
+    {
+      "title": "AweAgent(ScaleSWE 的执行/训练框架)",
+      "org": "AweAI-Team (RUC)", "year": "2026-03", "category": "framework", "track": "academic",
+      "innovation": "统一 build/eval/train 的执行核 + 产 token 级 rollout(loss-mask)",
+      "summary": "Apache-2.0 的 agent 执行框架(TaskRunner/AgentContext/AgentLoop/Scaffolds):Scale-SWE 跑在 search_swe scaffold + ACI 工具 + 反泄漏 bash blocklist;训练模式下 tool 观测 loss_mask=0、产 token 级轨迹+logprobs——即 71k 蒸馏轨迹的产出机制。",
+      "url": "https://github.com/AweAI-Team/AweAgent",
+      "tags": ["academic", "SWE", "scaffold", "framework"], "confidence": "confirmed"
+    },
+    {
       "title": "SWE-bench(+Verified/Live/家族,评测事实标准)",
       "org": "Princeton", "year": "2023-10", "category": "benchmark", "track": "academic",
       "innovation": "(repo + issue → 过隐藏 F2P/P2P 测试的 patch)的任务格式",
@@ -35,10 +59,10 @@
       "url": "https://www.swebench.com", "tags": ["academic", "SWE", "benchmark", "eval"], "confidence": "confirmed"
     },
     {
-      "title": "SWE-bench Pro / SWE Atlas(Scale 的 ScaleSWE 体系)",
+      "title": "SWE-bench Pro / SWE Atlas(Scale SEAL 抗污染评测)",
       "org": "Scale AI", "year": "2026", "category": "benchmark", "track": "industry",
       "innovation": "含私有/copyleft 仓库抗污染 + 扩到全工程闭环",
-      "summary": "Scale 的 SWE 评测体系:SWE-bench Pro(1865 实例、含私有/copyleft 抗污染)与后续 SWE Atlas(扩展到 Codebase Q&A / 写测试 / 重构)。前沿模型已转向用它取代饱和的 Verified。",
+      "summary": "Scale AI(SEAL)的 SWE 评测体系:SWE-bench Pro(1865 实例、含私有/copyleft 抗污染)与后续 SWE Atlas(扩展到 Codebase Q&A / 写测试 / 重构)。前沿模型已转向用它取代饱和的 Verified。(注:与 AweAI 的 ScaleSWE 同名但无关。)",
       "url": "https://scale.com/blog/swe-bench-pro", "tags": ["industry", "SWE", "benchmark", "2026"], "confidence": "confirmed"
     },
     {
