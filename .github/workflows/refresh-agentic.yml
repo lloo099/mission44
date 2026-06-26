@@ -1,0 +1,39 @@
+name: Refresh agentic RL
+
+# Auto-refreshes the ACADEMIC side of data/agentic.json from arXiv weekly.
+# Curated industry items + trend analysis are editorial and never touched here.
+on:
+  schedule:
+    - cron: "23 7 * * 1"   # weekly, Monday 07:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-agentic
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Refresh agentic academic items from arXiv
+        run: python3 scripts/fetch_agentic.py
+      - name: Validate
+        run: python3 scripts/validate_data.py
+      - name: Commit & push if changed
+        run: |
+          if [ -n "$(git status --porcelain data/agentic.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/agentic.json
+            git commit -m "chore: auto-refresh agentic academic items from arXiv"
+            git push
+          else
+            echo "No agentic changes."
+          fi

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-25",
+  "updated": "2026-06-26",
   "trends": [
     {
       "title": "环境(Environment)成为新的 scaling 轴",
@@ -36,7 +36,12 @@
       "innovation": "「RL 环境的 GitHub」——开放、社区化的环境平台",
       "summary": "一个开放、社区驱动的 RL 环境中心:私测期已有 30+ 研究者/公司贡献环境,目标把「环境规模」做成训练通用智能体的新 scaling 轴。配套 verifiers 框架、Prime Sandbox、NeMo Gym 集成。",
       "url": "https://www.primeintellect.ai/blog/environments",
-      "tags": ["industry", "environments", "infrastructure", "2026"],
+      "tags": [
+        "industry",
+        "environments",
+        "infrastructure",
+        "2026"
+      ],
       "confidence": "confirmed"
     },
     {
@@ -48,7 +53,12 @@
       "innovation": "训练-推理分离 + 陈旧策略步语义,跑 verifiers 环境",
       "summary": "Prime Intellect 的开源 agentic RL 训练框架:大规模异步、trainer-inference 分离、stale-policy 步语义,原生支持 verifiers 环境与 2500+ 开源环境。面向「为自家任务定制模型」的 RFT 工作流。",
       "url": "https://github.com/PrimeIntellect-ai/prime-rl",
-      "tags": ["industry", "async-rl", "framework", "environments"],
+      "tags": [
+        "industry",
+        "async-rl",
+        "framework",
+        "environments"
+      ],
       "confidence": "confirmed"
     },
     {
@@ -59,7 +69,12 @@
       "track": "industry",
       "summary": "构建可验证奖励(RLVR)环境与评测的开源库——用代码执行/校验产生「不可作弊」的客观奖励,是 Environments Hub 的底层标准接口。",
       "url": "https://github.com/PrimeIntellect-ai/verifiers",
-      "tags": ["industry", "RLVR", "environments", "evals"],
+      "tags": [
+        "industry",
+        "RLVR",
+        "environments",
+        "evals"
+      ],
       "confidence": "confirmed"
     },
     {
@@ -71,7 +86,12 @@
       "innovation": "用 RFT 把模型深度定制到自家 IDE 工作流",
       "summary": "Cursor 为其 IDE 专门后训练的 agentic 编码模型——「垂直定制 > 通用模型」的标志性案例:赢家用 post-training/RFT 把模型贴合具体工作流,而非用现成通用模型。",
       "url": "https://cursor.com",
-      "tags": ["industry", "coding-agent", "RFT", "product"],
+      "tags": [
+        "industry",
+        "coding-agent",
+        "RFT",
+        "product"
+      ],
       "confidence": "secondary"
     },
     {
@@ -83,7 +103,12 @@
       "innovation": "Parallel Agent RL:训练模型分解并并行复杂任务",
       "summary": "Moonshot 的 Kimi Claw 主打 Agent Swarm,背后是新 RL 技术 PARL(Parallel Agent Reinforcement Learning)——训练模型把复杂任务拆解并并行执行。多智能体/并行是 agentic RL 的工业化方向之一(媒体口径)。",
       "url": "https://press.airstreet.com/p/state-of-ai-may-2026",
-      "tags": ["industry", "multi-agent", "parallel", "2026"],
+      "tags": [
+        "industry",
+        "multi-agent",
+        "parallel",
+        "2026"
+      ],
       "confidence": "secondary"
     },
     {
@@ -95,7 +120,12 @@
       "innovation": "RL 训练的 computer use:OSWorld-Verified 72.5%",
       "summary": "Sonnet 4.6 在编码、computer use、长上下文、agent 规划上全面升级,OSWorld-Verified 达 72.5%(computer use 16 个月前刚出时仅 14.9%)。配套《2026 Agentic Coding Trends Report》是工业界 agentic 编码的风向标。",
       "url": "https://resources.anthropic.com/hubfs/2026%20Agentic%20Coding%20Trends%20Report.pdf",
-      "tags": ["industry", "computer-use", "coding-agent", "2026"],
+      "tags": [
+        "industry",
+        "computer-use",
+        "coding-agent",
+        "2026"
+      ],
       "confidence": "secondary"
     },
     {
@@ -106,7 +136,12 @@
       "track": "industry",
       "summary": "NVIDIA 技术博客给出用 RLVR 训练科学智能体的配方:让模型设计/运行实验、评估结果、朝科学指标优化;NeMo Gym 提供环境与工具集成。工业级 agentic RL 基础设施的一极。",
       "url": "https://developer.nvidia.com/blog/how-to-train-scientific-agents-with-reinforcement-learning/",
-      "tags": ["industry", "RLVR", "environments", "science"],
+      "tags": [
+        "industry",
+        "RLVR",
+        "environments",
+        "science"
+      ],
       "confidence": "confirmed"
     },
     {
@@ -118,7 +153,12 @@
       "innovation": "协议与基础设施收敛:MCP 破 9700 万安装",
       "summary": "2025-12 成立,锚定 Anthropic 的 MCP、OpenAI 的 AGENTS.md、Block 的 goose。MCP 在 2026-03 破 9700 万安装。agentic 生态从「各做各的」走向「共享协议 + 标准环境/工具接口」——RL 训练的环境标准化由此受益。",
       "url": "https://modelcontextprotocol.io",
-      "tags": ["industry", "standards", "MCP", "infrastructure"],
+      "tags": [
+        "industry",
+        "standards",
+        "MCP",
+        "infrastructure"
+      ],
       "confidence": "secondary"
     },
     {
@@ -129,7 +169,12 @@
       "track": "industry",
       "summary": "行业分析:agentic RL 的工程焦点正落到「训练器与生成器吞吐匹配」——长 rollout 让 generator(推理)成为瓶颈,如何让二者不互相等待是异步 RL 系统的核心命题。直接呼应本看板的 rollout 瓶颈主线(Dispatch 02)。",
       "url": "https://newsletter.semianalysis.com/p/rl-systems-mind-the-gap-matching",
-      "tags": ["industry", "systems", "async-rl", "analysis"],
+      "tags": [
+        "industry",
+        "systems",
+        "async-rl",
+        "analysis"
+      ],
       "confidence": "secondary"
     },
     {
@@ -141,7 +186,13 @@
       "innovation": "把 agentic RL 设计空间拆成 5 轴并给出可复用结论",
       "summary": "系统性「配方」:沿奖励塑形 / 模型规模 / 数据配比 / 算法 / 环境稳定性 5 轴拆解长程工具 RL。关键发现:奖励与算法 scale-dependent(小模型分阶段奖励+强探索,大模型简单稠密奖励即收敛);~1K 平衡难度样本是甜点。",
       "url": "https://arxiv.org/abs/2603.21972",
-      "tags": ["academic", "tool-use", "long-horizon", "recipe", "2026"],
+      "tags": [
+        "academic",
+        "tool-use",
+        "long-horizon",
+        "recipe",
+        "2026"
+      ],
       "confidence": "confirmed"
     },
     {
@@ -153,7 +204,12 @@
       "innovation": "面向多回合 agentic 任务的组-图策略优化",
       "summary": "为多轮 agentic 任务量身的组-图策略优化算法,改进跨回合的信用分配(2026-06 新出)。代表了 CA 走向 group/step 级的研究前沿。",
       "url": "https://arxiv.org/abs/2606.22995",
-      "tags": ["academic", "credit-assignment", "multi-turn", "2026"],
+      "tags": [
+        "academic",
+        "credit-assignment",
+        "multi-turn",
+        "2026"
+      ],
       "confidence": "confirmed"
     },
     {
@@ -164,7 +220,12 @@
       "track": "academic",
       "summary": "为长程决策训练 LLM 智能体的多轮 RL 框架 + 环境套件——把多样环境统一起来做多轮 RL,是「环境 + 训练」一体化的学术代表。",
       "url": "https://arxiv.org/abs/2509.08755",
-      "tags": ["academic", "environments", "multi-turn", "long-horizon"],
+      "tags": [
+        "academic",
+        "environments",
+        "multi-turn",
+        "long-horizon"
+      ],
       "confidence": "confirmed"
     },
     {
@@ -175,7 +236,12 @@
       "track": "academic",
       "summary": "面向移动 GUI 控制的分阶段交错 RL 工作流(Staged Workflow for Interleaved RL)。computer-use/GUI 智能体的学术侧推进。",
       "url": "https://arxiv.org/abs/2508.20018",
-      "tags": ["academic", "computer-use", "GUI", "2026"],
+      "tags": [
+        "academic",
+        "computer-use",
+        "GUI",
+        "2026"
+      ],
       "confidence": "confirmed"
     },
     {
@@ -186,7 +252,12 @@
       "track": "academic",
       "summary": "为长程多轮搜索智能体设计 RL——把检索/工具往返做成可训练的多轮决策,是 tool-integrated RL 的典型任务。",
       "url": "https://arxiv.org/abs/2510.24126",
-      "tags": ["academic", "search-agent", "tool-use", "multi-turn"],
+      "tags": [
+        "academic",
+        "search-agent",
+        "tool-use",
+        "multi-turn"
+      ],
       "confidence": "confirmed"
     },
     {
@@ -197,7 +268,12 @@
       "track": "academic",
       "summary": "让 agentic RL 与具体 harness 解耦、可规模化的训练方案——解决「换个 agent 脚手架就要重写训练」的痛点,偏系统/基础设施。",
       "url": "https://arxiv.org/abs/2605.24220",
-      "tags": ["academic", "systems", "harness", "scale"],
+      "tags": [
+        "academic",
+        "systems",
+        "harness",
+        "scale"
+      ],
       "confidence": "confirmed"
     },
     {
@@ -208,7 +284,12 @@
       "track": "academic",
       "summary": "对 LLM 智能体的 RL 环境做分类梳理——随着「环境即 scaling 轴」,如何描述/比较/选择环境本身成为一个研究问题。配合 Environments Hub 看更完整。",
       "url": "https://leehanchung.github.io/blogs/2026/03/21/rl-environments-for-llm-agents/",
-      "tags": ["academic", "environments", "taxonomy", "2026"],
+      "tags": [
+        "academic",
+        "environments",
+        "taxonomy",
+        "2026"
+      ],
       "confidence": "confirmed"
     }
   ]
