@@ -3,7 +3,7 @@
   "trends": [
     {
       "title": "环境(Environment)成为新的 scaling 轴",
-      "body": "继模型规模、数据之后,「环境规模 + 自演化轮次」被工业界当成训练通用智能体的新扩展维度。Prime Intellect 把它做成基础设施——Environments Hub(2500+ 开源 RL 环境)、verifiers 库、Prime Sandbox、NeMo Gym 集成,目标是「RL 环境的 GitHub」。谁拥有环境,谁就掌握 agentic 能力的上游。"
+      "body": "继模型规模、数据之后,「环境规模 + 自演化轮次」被工业界当成训练通用智能体的新扩展维度。Prime Intellect 把它做成基础设施(Environments Hub / verifiers / Prime Sandbox)。2026 环境赛道进入规模化融资(Deeptune 4300 万 / a16z、某 RL gym 估值 7.5 亿、实验室据称投入 > $1B)并走向标准化:Meta+HF 的 OpenEnv(Gymnasium 风)、General Reasoning 的 OpenReward / ORS(把 MCP 扩成奖励标准)。谁拥有环境,谁就掌握 agentic 能力的上游。"
     },
     {
       "title": "长程工具智能体:从「手艺」走向「配方」",
@@ -15,11 +15,11 @@
     },
     {
       "title": "垂直定制 > 通用模型",
-      "body": "工业界共识在变:赢家不用现成通用模型,而是用 RFT/RL 后训练把模型深度定制到自家工作流。代表是 Cursor 的 Composer One——专为其 IDE 后训练的 agentic 编码模型。RL 后训练正从「刷榜」变成「产品差异化」的护城河。"
+      "body": "工业界共识在变:赢家不用现成通用模型,而是用 RFT/RL 后训练把模型深度定制到自家工作流(Cursor Composer One)。编码代理已成前沿实验室标配——「自有快模型 + 并行子代理 CLI」(xAI Grok Build 用真实 PR 做 RL、OpenAI Codex、Cognition),竞争转向延迟/并行/长程可靠;RL 甚至开始共同优化「脚手架」本身(DeepReinforce Ornith 自学 scaffold)。RL 后训练正从「刷榜」变成「产品差异化」的护城河。"
     },
     {
       "title": "Computer-use / GUI 智能体起飞",
-      "body": "RL 把「会用电脑」变成可训练能力:Anthropic Sonnet 4.6 在 OSWorld-Verified 上 72.5%(16 个月前 computer use 刚出时仅 14.9%);学术侧 SWIRL 用分阶段交错 RL 做移动 GUI 控制。屏幕操作类长程任务成为 agentic RL 的新主战场。"
+      "body": "RL 把「会用电脑」变成可训练能力:Anthropic Sonnet 4.6 在 OSWorld-Verified 72.5%(16 个月前仅 14.9%);Zhipu ComputerRL、ByteDance UI-TARS-2/Seed2.1 在数千并行虚拟桌面做在线 RL。瓶颈正从环境成本转向「任务生成 + 奖励验证器」(VeriEnv 克隆网站做确定性验证、ZeroGUI 用 VLM 自动出题)。但 ByteDance Workflow-GYM 显示:最强模型在长程专业软件任务通过率仅 ~30%,天花板明显。"
     },
     {
       "title": "并行 / 多智能体 + 标准化基础设施",
@@ -27,6 +27,146 @@
     }
   ],
   "items": [
+    {
+      "title": "xAI · Grok Build (grok-code-fast-1)",
+      "org": "xAI", "year": "2026-05", "category": "product", "track": "industry",
+      "innovation": "终端式编码代理 + 用真实 PR 做 RL 后训练的自有快模型",
+      "summary": "xAI 的终端编码代理 Grok Build,模型 grok-code-fast-1 用真实 PR 做 RL 后训练,SWE-bench Verified 70.8%。第三家前沿实验室下场做「自有快模型 + 并行子代理 CLI」。",
+      "url": "https://x.ai/news/grok-code-fast-1",
+      "tags": ["industry", "coding-agent", "RL-posttrain", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "Google · Deep Research Max (Gemini 3.1 Pro)",
+      "org": "Google DeepMind", "year": "2026-04", "category": "product", "track": "industry",
+      "innovation": "可接任意工具/私域的长程自主深研代理",
+      "summary": "基于 Gemini 3.1 Pro 的自主深研代理,BrowseComp 85.9%(较 Gemini 3 Pro +~25 分),支持 MCP 工具。深研从「网页搜索器」升级为长程自主代理,靠 test-time compute 迭代检索。",
+      "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/next-generation-gemini-deep-research/",
+      "tags": ["industry", "deep-research", "tool-use", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "Moonshot · Kimi Work(本地桌面代理,K2.6)",
+      "org": "Moonshot AI", "year": "2026-06", "category": "product", "track": "industry",
+      "innovation": "本地优先 + 复用真实登录态 + 300 子代理蜂群",
+      "summary": "基于 K2.6 的本地桌面代理:经 WebBridge 用真实登录态驱动浏览器,可调度多达 300 个子代理。代理从云端转向「本地优先 + 复用会话/cookie」(厂商口径)。",
+      "url": "https://www.marktechpost.com/2026/06/12/moonshot-ai-launches-kimi-work-a-local-desktop-agent-reportedly-running-on-kimi-k2-6-with-a-300-sub-agent-agent-swarm/",
+      "tags": ["industry", "computer-use", "multi-agent", "2026"], "confidence": "secondary"
+    },
+    {
+      "title": "DeepReinforce · Ornith-1.0(自学 RL 脚手架)",
+      "org": "DeepReinforce", "year": "2026-06", "category": "algorithm", "track": "industry",
+      "innovation": "RL 同时优化解题 rollout 与驱动它的 scaffold 本身",
+      "summary": "开源编码模型族(9B/35B/397B):RL 不只学解题策略,还共同优化「脚手架」本身。397B SWE-bench Verified 82.4% / Pro 62.2%(厂商自报)。自改进 agentic RL 范式。",
+      "url": "https://www.marktechpost.com/2026/06/25/deepreinforce-releases-ornith-1-0-an-open-source-coding-model-family-that-learns-its-own-rl-scaffolds/",
+      "tags": ["industry", "coding-agent", "self-improving", "2026"], "confidence": "secondary"
+    },
+    {
+      "title": "ByteDance · Workflow-GYM(长程专业电脑使用基准)",
+      "org": "ByteDance Seed", "year": "2026-06", "category": "trend", "track": "industry",
+      "innovation": "把 computer-use 评测推向 FreeCAD 等专业软件长程工作流",
+      "summary": "长程专业领域电脑使用基准:最强模型(Gemini-3.1-pro)平均通过率仅 30.67%,暴露当前 GUI 代理在真实专业工作流上的天花板。",
+      "url": "https://arxiv.org/abs/2606.11042",
+      "tags": ["industry", "computer-use", "benchmark", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "OpenEnv(Meta + Hugging Face 智能体环境标准)",
+      "org": "Meta PyTorch + Hugging Face", "year": "2025-10", "category": "infrastructure", "track": "industry",
+      "innovation": "Gymnasium 风格、可共享、可插入训练栈的环境标准",
+      "summary": "Meta 与 HF 联合推出 Gymnasium 风格的智能体环境标准与共享 Hub,可插入 TorchForge/verl/TRL 训练循环。把「环境」做成开放标准与生态层。",
+      "url": "https://huggingface.co/blog/openenv",
+      "tags": ["industry", "environments", "standards", "infrastructure"], "confidence": "confirmed"
+    },
+    {
+      "title": "OpenReward / Open Reward Standard(ORS)",
+      "org": "General Reasoning", "year": "2026-03", "category": "infrastructure", "track": "industry",
+      "innovation": "把可验证奖励环境变成托管 API + 把 MCP 扩成奖励标准",
+      "summary": "用一个 API 提供 330+ RL 环境、450 万任务,并把 MCP 扩展为奖励标准(ORS),直接对接 Tinker/Slime 等训练栈。环境=「托管端点 + 课程/奖励原语」。",
+      "url": "https://www.gr.inc/releases/introducing-openreward",
+      "tags": ["industry", "environments", "RLVR", "standards"], "confidence": "confirmed"
+    },
+    {
+      "title": "OpenTinker(RL-as-a-Service)",
+      "org": "open-tinker", "year": "2026-01", "category": "infrastructure", "track": "industry",
+      "innovation": "把 agentic RL 拆成算法/执行/环境三层的可组合服务",
+      "summary": "把智能体 RL 拆为算法、执行、环境交互三层的「RL 即服务」基础设施——从单体 pipeline 转向解耦/服务化。",
+      "url": "https://github.com/open-tinker/OpenTinker",
+      "tags": ["industry", "RL-as-a-service", "async-rl", "infrastructure"], "confidence": "confirmed"
+    },
+    {
+      "title": "OpenRLHF v0.10.x(全异步多轮 agent 训练)",
+      "org": "OpenRLHF", "year": "2026-06", "category": "framework", "track": "industry",
+      "innovation": "partial rollout(vLLM 暂停/恢复)+ 重要性采样校正",
+      "summary": "主流开源 RLHF 框架新增 partial rollout 与 off-policy 重要性采样校正的全异步多轮 agent 训练——「部分 rollout + off-policy 修正」成为标配,异步 RL 走向生产成熟。",
+      "url": "https://github.com/openrlhf/openrlhf",
+      "tags": ["industry", "async-rl", "framework", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "AgileRL / Arena(企业 RLOps 平台,$7.5M)",
+      "org": "AgileRL", "year": "2026-01", "category": "product", "track": "industry",
+      "summary": "获 750 万美元种子轮,Arena 平台号称把企业 RL 端到端流程提速约 10×(被 IBM、空客等采用)。专门面向企业的「RLOps」工具层(媒体口径)。",
+      "url": "https://www.hpcwire.com/aiwire/2026/01/07/agilerl-emerges-with-7-5m-to-help-companies-speed-up-reinforcement-learning-by-10x/",
+      "tags": ["industry", "RLOps", "enterprise", "2026"], "confidence": "secondary"
+    },
+    {
+      "title": "Mechanize(编码 RL 环境供应商)",
+      "org": "Mechanize", "year": "2026", "category": "product", "track": "industry",
+      "summary": "主打与模型能力直接挂钩的高保真编码 RL 环境,已与 Anthropic 合作。头部实验室(传闻未来一年投入 > $1B)把 RL 环境采购规模化,催生专精供应商(媒体口径)。",
+      "url": "https://www.mechanize.work/",
+      "tags": ["industry", "environments", "coding", "2026"], "confidence": "secondary"
+    },
+    {
+      "title": "Deeptune($43M A 轮,a16z 领投「训练 gym」)",
+      "org": "Deeptune", "year": "2026-03", "category": "product", "track": "industry",
+      "summary": "a16z 领投 4300 万美元 A 轮,构建模拟职场工作流的 RL 训练环境。头部 VC 押注「职业角色级」高保真 RL 环境,环境赛道进入规模化融资(媒体口径)。",
+      "url": "https://fortune.com/2026/03/19/andreessen-horowitz-ai-startups-deeptune-series-a/",
+      "tags": ["industry", "environments", "funding", "2026"], "confidence": "secondary"
+    },
+    {
+      "title": "Epoch AI · RL 环境现状 FAQ",
+      "org": "Epoch AI", "year": "2026", "category": "trend", "track": "industry",
+      "summary": "访谈 18 位从业者梳理 RL 环境现状:实验室称将投入 > $10 亿,重心从数学转向真实任务;量化了支出与质量瓶颈。权威机构对环境市场的体系化盘点。",
+      "url": "https://epoch.ai/gradient-updates/state-of-rl-envs",
+      "tags": ["industry", "environments", "analysis", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "GraphGPO(图结构 step 级信用分配)",
+      "org": "NTU / Alibaba", "year": "2026-05", "category": "algorithm", "track": "academic",
+      "innovation": "把所有 rollout 聚合成状态转移图,按到目标的距离分配优势",
+      "summary": "Beyond Trajectory-Level Attribution:用群体图结构做 step 级信用分配,能挖出失败轨迹里被埋没的有价值步骤,替代昂贵的树采样过程奖励。",
+      "url": "https://arxiv.org/abs/2605.26684",
+      "tags": ["academic", "credit-assignment", "multi-turn", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "T²PO(不确定性引导探索,稳定多轮 RL)",
+      "org": "Amazon Science", "year": "2026-05", "category": "algorithm", "track": "academic",
+      "innovation": "token/turn 级不确定性控制探索,重采样低信息轮次",
+      "summary": "把多轮 agentic RL 的「训练崩溃」归因于低信息探索,用 token 级与 turn 级不确定性触发思考干预并重采样(ICML 2026 Spotlight)。",
+      "url": "https://arxiv.org/abs/2605.02178",
+      "tags": ["academic", "stability", "exploration", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "CM2(检查清单奖励,多轮多步工具使用)",
+      "org": "research", "year": "2026-02", "category": "algorithm", "track": "academic",
+      "innovation": "用检查清单二元标准替代可验证奖励",
+      "summary": "针对无可验证奖励的真实多轮工具任务:稀疏赋奖 + 密集评判稳定训练。8B 模型在 τ²-Bench/BFCL-V4/ToolSandbox 显著提升。奖励工程向「无 verifiable」任务延伸。",
+      "url": "https://arxiv.org/abs/2602.12268",
+      "tags": ["academic", "reward-design", "tool-use", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "VeriEnv(克隆网站做可验证奖励的 Web Agent 训练)",
+      "org": "Georgia Tech", "year": "2026-03", "category": "algorithm", "track": "academic",
+      "innovation": "LLM 即环境创建者:把真实网站克隆成可程序化验证的合成环境",
+      "summary": "让模型把真实网站克隆成可执行、可程序化验证奖励的合成环境训练 Web Agent——自动生成确定性奖励,摆脱启发式/LLM 裁判与不安全的真实交互。",
+      "url": "https://arxiv.org/abs/2603.10505",
+      "tags": ["academic", "environments", "web-agent", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "ComputerRL(千桌面在线 RL 的电脑使用代理)",
+      "org": "Zhipu AI", "year": "2025-08", "category": "algorithm", "track": "academic",
+      "innovation": "API-GUI 范式 + 数千并行虚拟桌面在线 RL + Entropulse 抗熵崩",
+      "summary": "把在线 RL 扩到上千并行桌面环境,AutoGLM-OS-9B 在 OSWorld 达 48.9%,用 Entropulse 解决长训练熵崩塌(ICLR 2026)。",
+      "url": "https://arxiv.org/abs/2508.14040",
+      "tags": ["academic", "computer-use", "online-rl", "2026"], "confidence": "confirmed"
+    },
     {
       "title": "Prime Intellect · Environments Hub",
       "org": "Prime Intellect",
