@@ -153,6 +153,45 @@ Accessibility: tabs use a standard `tablist`/`tab`/`tabpanel` pattern (arrow-key
 `aria-selected`), and inactive panels are truly `hidden` so screen readers and automation don't
 read offscreen content.
 
+## Updating the Agentic RL section
+
+The **Agentic RL** tab is driven by `data/agentic.json` and is meant to be refreshed
+periodically (industry-first, plus academia). The file has two arrays:
+
+```jsonc
+{
+  "updated": "2026-06-25",
+  "trends": [
+    { "title": "短标题", "body": "一段趋势分析" }   // 4–6 条,渲染成顶部 Trends 块
+  ],
+  "items": [
+    {
+      "title": "…", "org": "…", "year": "2026-06",
+      "category": "infrastructure | framework | algorithm | product | trend",
+      "track": "industry" | "academic",              // 决定卡片上的 工业界/学术 徽标
+      "innovation": "可选一句话亮点",
+      "summary": "2–3 句",
+      "url": "https://…",                             // 一手优先(arXiv/官方/GitHub)
+      "tags": ["industry"|"academic", "…"],          // 把 track 也放进 tags 以便筛选
+      "confidence": "confirmed | secondary | self-reported"
+    }
+  ]
+}
+```
+
+Refresh playbook (every ~1–2 weeks, or when something notable ships):
+
+1. **Academic candidates auto-surface** in the **Live Papers** tab — `scripts/fetch_arxiv.py`
+   already scans `agentic-rl` queries daily. Skim there for new arXiv work.
+2. **Industry**: check frontier labs/startups (Prime Intellect, Cursor, Moonshot, Anthropic,
+   NVIDIA, etc.) and infra news; prefer official/primary URLs.
+3. Add/curate `trends` (the analysis) and `items`; bump `"updated"`.
+4. Validate and bump the asset cache version, then commit:
+   ```bash
+   python3 scripts/validate_data.py && node --check js/*.js
+   # bump ?v=… in index.html so browsers reload
+   ```
+
 ## Notes
 
 - Content is **hand-curated from primary sources** (arXiv, official repos/blogs) and is a
