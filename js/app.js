@@ -74,6 +74,17 @@ function wireTheme() {
   });
 }
 
+/* render any .mermaid diagrams inside a scope once mermaid.js is ready (it loads async) */
+function renderMermaidIn(scope, tries) {
+  const nodes = scope.querySelectorAll(".mermaid:not([data-processed])");
+  if (!nodes.length) return;
+  if (!window.mermaid) {            // CDN module not ready yet — retry briefly
+    if ((tries || 0) < 25) setTimeout(() => renderMermaidIn(scope, (tries || 0) + 1), 200);
+    return;
+  }
+  try { window.mermaid.run({ nodes }); } catch (e) { console.warn("mermaid", e); }
+}
+
 /* ---------- blog / dispatch (markdown posts, unipat-style index) ---------- */
 async function wireBlog() {
   const idx = document.getElementById("blog-index");
@@ -115,6 +126,7 @@ async function wireBlog() {
       post.innerHTML = `<a class="blog-back" href="#blog">← 所有 Dispatch</a>`
         + `<div class="prose blog-prose">${renderMarkdown(await res.text())}</div>`
         + `<a class="blog-back foot" href="#blog">← 所有 Dispatch</a>`;
+      renderMermaidIn(post);
     } catch (e) {
       post.innerHTML = `<a class="blog-back" href="#blog">← 返回</a><div class="empty">Couldn't load post (${escapeHtml(String(e.message || e))}).</div>`;
     }
@@ -192,6 +204,22 @@ function renderMarkdown(md) {
   while (i < lines.length) {
     let l = lines[i];
     if (!l.trim()) { i++; continue; }
+
+    // fenced code block ``` … ```  (```mermaid → rendered diagram; else monospace block)
+    if (/^```/.test(l)) {
+      const lang = l.replace(/^```/, "").trim().toLowerCase();
+      const buf = [];
+      i++;
+      while (i < lines.length && !/^```/.test(lines[i])) { buf.push(lines[i]); i++; }
+      i++; // skip closing fence
+      const code = buf.join("\n");
+      if (lang === "mermaid") {
+        out.push(`<div class="mermaid">${code.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</div>`);
+      } else {
+        out.push(`<pre class="codeblock"><code>${escapeHtml(code)}</code></pre>`);
+      }
+      continue;
+    }
 
     // heading
     let m = l.match(/^(#{1,6})\s+(.*)$/);

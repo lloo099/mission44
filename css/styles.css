@@ -460,6 +460,13 @@ table.cmp td.cmp-none { color: var(--bad-fg); }
 .blog-prose > p:first-of-type em, .blog-prose h1 + p em { color: var(--dim); font-style: normal; letter-spacing: .02em; }
 .blog-prose blockquote { border-left: 3px solid var(--accent); background: var(--blue-bg); border-radius: 0 8px 8px 0; padding: 10px 16px; margin: 16px 0; }
 
+/* blog diagrams (mermaid) + fenced code blocks */
+.blog-prose .mermaid { margin: 18px 0; text-align: center; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 12px; overflow-x: auto; }
+.blog-prose .mermaid svg { max-width: 100%; height: auto; }
+.blog-prose .mermaid:not([data-processed]) { color: var(--dim); font-size: 12px; min-height: 40px; } /* pre-render placeholder */
+.prose .codeblock { background: var(--bg-3); border: 1px solid var(--line); border-radius: 8px; padding: 10px 13px; overflow-x: auto; margin: 14px 0; font-size: 12.5px; line-height: 1.5; }
+.prose .codeblock code { background: none; padding: 0; color: var(--text-soft); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+
 /* Survey (rendered markdown) */
 .prose { max-width: 860px; color: var(--text-soft); font-size: 14px; line-height: 1.72;
   background: var(--surface); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
