@@ -62,6 +62,10 @@
 
 * { box-sizing: border-box; }
 
+/* the [hidden] attribute must always win over class-level display rules
+   (e.g. .blog-index{display:grid}) — otherwise JS-hidden elements stay visible */
+[hidden] { display: none !important; }
+
 /* sci-fi animated background canvas (drawn by js/bg.js, behind all content) */
 #bg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; opacity: .65; }
 :root[data-theme="dark"] #bg-canvas { opacity: .8; }
