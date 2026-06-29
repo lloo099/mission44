@@ -2,6 +2,23 @@
   "updated": "2026-06-25",
   "items": [
     {
+      "title": "DSpark (DeepSeek-V4 投机解码)",
+      "org": "Peking University / DeepSeek-AI",
+      "year": "2026-06",
+      "category": "inference",
+      "innovation": "半自回归 drafter + 置信度调度(load-aware)验证",
+      "analysis": "Innovation: 两点——(1) 半自回归架构:在并行 draft backbone 上加轻量串行输出 head 注入 token 间依赖,缓解并行 drafter 的后缀衰减,且逐 token 概率仍是精确 softmax(可做精确验证,区别于 CRF-NAT/CTC-drafter);(2) 置信度调度验证:confidence head 估 prefix 存活概率 + 引擎吞吐画像,为每请求动态裁剪验证长度,避免在高拒绝风险 token 上浪费 batch。Performance: 离线 accepted length 超 Eagle3 ~+30% / DFlash ~+18%;线上 DeepSeek-V4 vs MTP-1,单用户 +60–85%(Flash)/+57–78%(Pro)at matched throughput。Fit for RL-on-NPU: rollout 是 decode-heavy,投机解码直接加速 rollout(与 FP8 rollout、稀疏注意力正交);DeepSeek-V4 已在 vLLM-Ascend 做 MTP 投机解码,DSpark 是升级路径,但 NPU 上要保逐 token 概率一致(align-probe)。",
+      "summary": "北大 + DeepSeek-AI 的投机解码框架:半自回归 drafter(治后缀衰减、保精确验证)+ 置信度调度的 load-aware 验证。部署在 DeepSeek-V4 线上,相对 MTP-1 单用户生成 +60–85%(Flash)/+57–78%(Pro)。开源为全栈 DeepSpec(含 DSpark/DFlash/Eagle3 三算法、训练/评测/数据脚本)。数字为论文口径,provisional。",
+      "url": "https://github.com/deepseek-ai/DeepSpec",
+      "tags": [
+        "speculative-decoding",
+        "inference",
+        "DeepSeek-V4",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
       "title": "MiMo-V2.5-Pro (Xiaomi)",
       "org": "Xiaomi",
       "year": "2026-04",

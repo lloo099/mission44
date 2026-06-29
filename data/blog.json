@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-15-dspark",
+      "title": "Dispatch 15 · 详解 DSpark:DeepSeek-V4 服务里的半自回归 + 置信度调度投机解码",
+      "subtitle": "北大+DeepSeek 的投机解码新作:半自回归架构(并行 backbone+轻量串行 head 治后缀衰减,且保精确验证)+ 置信度调度验证(按 prefix 存活概率与负载动态定验证长度)。线上 DeepSeek-V4 vs MTP-1 单用户 +60–85%。以及它为什么直接加速 RL rollout。",
+      "date": "2026-06-26",
+      "tags": ["推理加速", "投机解码", "DeepSeek-V4", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-15-dspark.md"
+    },
+    {
       "id": "dispatch-14-scaleswe",
       "title": "Dispatch 14 · 详解 ScaleSWE:把 GitHub 宇宙挖成 SWE 训练数据",
       "subtitle": "AweAI-Team(非 Scale AI)的 arXiv 2602.09892:6M PR→10万实例 + 合成 F2P + DeepSeek 蒸馏 71k 轨迹 → SFT Qwen3-30B-A3B 拿 64% Verified(SFT-only)。方法、AweAgent/DeNovoSWE 生态,以及 vs SWE-smith/SWE-Gym/R2E-Gym/DeepSWE 对比表。",
