@@ -1,7 +1,15 @@
 {
-  "updated": "2026-06-23",
+  "updated": "2026-06-29",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-17-denovoswe",
+      "title": "Dispatch 17 · 详解 DeNovoSWE:从零生成整个代码仓库的长程环境",
+      "subtitle": "AweAI-Team(ScaleSWE 后续,arXiv 2606.10728):把代码 agent 从「修局部 bug」推到 doc2repo「从文档规格从零造整个仓库」。分而治之 + critic-repair 逆向合成规格 → 4818 实例 + 单测/Docker;34k 轨迹难度感知过滤到 11k SFT。BeyondSWE-Doc2Repo:Qwen3-30B 5.8%→47.2%、Qwen3.5-35B→50%,逼近 DeepSeek-V3.2 的 54.99%。明确 for SFT & RL,自带 RLVR 环境;500 轮/256k 长 rollout 对昇腾意味着什么。",
+      "date": "2026-06-29",
+      "tags": ["SWE", "DeNovoSWE", "long-horizon", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-17-denovoswe.md"
+    },
     {
       "id": "dispatch-16-deepseek-v4-agent",
       "title": "Dispatch 16 · DeepSeek-V4 的 Agent 是怎么开发的",
