@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-16-deepseek-v4-agent",
+      "title": "Dispatch 16 · DeepSeek-V4 的 Agent 是怎么开发的",
+      "subtitle": "两阶段后训练:Stage1 独立培养 10+ 领域专家(含 agent/工具专家,SFT→GRPO 可验证奖励)→ Stage2 on-policy 蒸馏合并。工具机制(跨轮 reasoning + |DSML| XML tool-call + strict function calling)、agent 跑分、为何还没自家 harness、MTP→DSpark 服务、昇腾验证的 rollout 路径。",
+      "date": "2026-06-26",
+      "tags": ["DeepSeek-V4", "agentic", "后训练", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-16-deepseek-v4-agent.md"
+    },
+    {
       "id": "dispatch-15-dspark",
       "title": "Dispatch 15 · 详解 DSpark:DeepSeek-V4 服务里的半自回归 + 置信度调度投机解码",
       "subtitle": "北大+DeepSeek 的投机解码新作:半自回归架构(并行 backbone+轻量串行 head 治后缀衰减,且保精确验证)+ 置信度调度验证(按 prefix 存活概率与负载动态定验证长度)。线上 DeepSeek-V4 vs MTP-1 单用户 +60–85%。以及它为什么直接加速 RL rollout。",
