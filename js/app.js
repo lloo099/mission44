@@ -79,6 +79,7 @@ async function wireBlog() {
   const idx = document.getElementById("blog-index");
   const post = document.getElementById("blog-post");
   if (!idx || !post) return;
+  const head = document.querySelector("#blog .panel-head"); // section intro — hidden while reading a post
   let posts = [];
   try {
     const res = await fetch("data/blog.json", { cache: "no-cache" });
@@ -91,6 +92,7 @@ async function wireBlog() {
 
   function showIndex() {
     post.hidden = true; idx.hidden = false;
+    if (head) head.hidden = false;
     if (!posts.length) { idx.innerHTML = `<div class="empty">No posts yet.</div>`; return; }
     idx.innerHTML = posts.map((p) => `<a class="blog-card" href="#blog/${escapeAttr(p.id)}">
       <div class="blog-card-date">${escapeHtml(p.date || "")}</div>
@@ -104,6 +106,7 @@ async function wireBlog() {
     const p = posts.find((x) => x.id === id);
     if (!p) { showIndex(); return; }
     idx.hidden = true; post.hidden = false;
+    if (head) head.hidden = true;
     post.innerHTML = `<div class="empty">Loading…</div>`;
     try {
       const res = await fetch(p.file, { cache: "no-cache" });
