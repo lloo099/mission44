@@ -107,6 +107,7 @@ async function wireBlog() {
     if (!p) { showIndex(); return; }
     idx.hidden = true; post.hidden = false;
     if (head) head.hidden = true;
+    toTop();                       // jump up immediately, before the async fetch
     post.innerHTML = `<div class="empty">Loading…</div>`;
     try {
       const res = await fetch(p.file, { cache: "no-cache" });
@@ -117,7 +118,13 @@ async function wireBlog() {
     } catch (e) {
       post.innerHTML = `<a class="blog-back" href="#blog">← 返回</a><div class="empty">Couldn't load post (${escapeHtml(String(e.message || e))}).</div>`;
     }
-    window.scrollTo(0, 0);
+    toTop();                       // after content renders
+    requestAnimationFrame(toTop);  // and once more after layout settles
+  }
+  function toTop() {
+    try { window.scrollTo(0, 0); } catch (e) {}
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
   }
 
   function route() {
