@@ -19,6 +19,33 @@
       "confidence": "confirmed"
     },
     {
+      "title": "DFlash (块扩散投机解码草稿)",
+      "org": "Z Lab, UC San Diego", "year": "2026-06", "category": "inference",
+      "innovation": "块扩散草稿模型一次前向并行出整块草稿 token",
+      "summary": "用块扩散(block-diffusion)草稿取代自回归草稿循环,打破 EAGLE-3「草稿仍串行」的 ~2–3× 天花板:Qwen3-8B 平均 4.86× 无损加速,Blackwell 批量吞吐 ~15×;已进 SGLang,NVIDIA/Google 复现。是 DSpark(Dispatch 15)对照的并行 drafter。数字 provisional。",
+      "url": "https://github.com/z-lab/dflash",
+      "tags": ["speculative-decoding", "inference", "diffusion", "2026"],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "JetSpec (因果并行树草稿)",
+      "org": "Hao AI Lab, UC San Diego", "year": "2026-06", "category": "inference",
+      "innovation": "因果并行草稿头单次前向预测多个树节点 + 块级因果注意力保分支一致",
+      "summary": "调和「自回归草稿付深度代价 vs 块扩散草稿分支不一致」的两难:单次前向预测多个树节点、块级因果注意力保分支条件一致;MATH-500 端到端最高 9.64× 加速。与 DFlash 同期(UCSD 邻校)。provisional。",
+      "url": "https://arxiv.org/abs/2606.18394",
+      "tags": ["speculative-decoding", "inference", "tree-drafting", "2026"],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "SGLang Spec V2 (默认投机解码引擎)",
+      "org": "LMSYS / SGLang", "year": "2026-06", "category": "inference",
+      "innovation": "overlap scheduling 隐藏 CPU 开销 + 统一 EAGLE/MTP/DFlash 树草稿",
+      "summary": "SGLang 把 Spec V2 设为默认推测解码路径:overlap scheduling 隐藏 per-step CPU 开销,统一支持 EAGLE/MTP/DFlash 的 topk>1 树草稿,覆盖 triton/FA3/MLA/aiter 后端。是让新 drafter 生产可用的服务底座。",
+      "url": "https://www.lmsys.org/blog/2026-06-15-next-generation-speculative-decoding-dflash-v2/",
+      "tags": ["speculative-decoding", "serving", "SGLang", "2026"],
+      "confidence": "confirmed"
+    },
+    {
       "title": "MiMo-V2.5-Pro (Xiaomi)",
       "org": "Xiaomi",
       "year": "2026-04",

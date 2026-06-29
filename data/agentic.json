@@ -28,6 +28,44 @@
   ],
   "items": [
     {
+      "title": "OpenAI Codex(GPT-5.5,1000+ 连续工具调用)",
+      "org": "OpenAI", "year": "2026-06", "category": "product", "track": "industry",
+      "innovation": "真实工程任务连续 1000+ 次工具调用无人工干预",
+      "summary": "Codex 升级 GPT-5.5、跑在 NVIDIA GB200 NVL72 上,演示真实软件任务连续 1000+ 工具调用无干预,Terminal-Bench 2.0 82.7%(暂定)。「自治时长」这一新指标的标志性数据点。",
+      "url": "https://blogs.nvidia.com/blog/openai-codex-gpt-5-5-ai-agents/",
+      "tags": ["industry", "coding-agent", "long-horizon", "2026"], "confidence": "secondary"
+    },
+    {
+      "title": "Microsoft Scout(常开个人智能体)",
+      "org": "Microsoft", "year": "2026-06", "category": "product", "track": "industry",
+      "summary": "微软发布 Scout——常开个人智能体(含「带电脑操作的研究员」能力),经 Frontier 实验发布,可导航公开/受限/交互网页代为执行任务。信号:agent 产品从对话走向持久自治。",
+      "url": "https://www.microsoft.com/en-us/microsoft-365/blog/2026/06/02/introducing-microsoft-scout-your-always-on-personal-agent/",
+      "tags": ["industry", "computer-use", "personal-agent", "2026"], "confidence": "secondary"
+    },
+    {
+      "title": "HCAPO(Hindsight 信用分配,长程 agent)",
+      "org": "research", "year": "2026-06", "category": "algorithm", "track": "academic",
+      "innovation": "首次把 hindsight credit assignment 引入 LLM agent 训练",
+      "summary": "用 hindsight relabeling 做信用分配,直击长程稀疏延迟奖励:WebShop 较 GRPO +7.7%、ALFWorld +13.8%(暂定)。与 turn-level / 过程监督互补的新 CA 角度。",
+      "url": "https://arxiv.org/abs/2603.08754",
+      "tags": ["academic", "credit-assignment", "long-horizon", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "OpenClaw-RL(从对话反馈做全异步 RL)",
+      "org": "Gen-Verse", "year": "2026-02", "category": "framework", "track": "industry",
+      "summary": "完全异步 RL 框架:把日常对话反馈转成训练信号来训练个性化 agent,支持大规模环境并行。不同于 verl/SkyRL 的可验证环境路线——从自然反馈学。",
+      "url": "https://github.com/Gen-Verse/OpenClaw-RL",
+      "tags": ["industry", "async-rl", "framework", "2026"], "confidence": "confirmed"
+    },
+    {
+      "title": "TokenDance(多智能体集体 KV 缓存共享)",
+      "org": "research", "year": "2026-06", "category": "infrastructure", "track": "academic",
+      "innovation": "All-Gather 集体 KV 复用 + Diff-Aware 块稀疏存储",
+      "summary": "面向多智能体并发服务的 KV 共享:KV Collector 一次集体操作完成整轮复用,Diff-Aware Storage 把兄弟缓存编码为块稀疏 diff(压 11–17×),并发 agent 数较带前缀缓存的 vLLM ×2.7(暂定)。",
+      "url": "https://arxiv.org/abs/2604.03143",
+      "tags": ["academic", "KV-cache", "multi-agent", "serving"], "confidence": "confirmed"
+    },
+    {
       "title": "ScaleSWE(大规模真实 PR 挖掘 + 轨迹蒸馏)",
       "org": "AweAI-Team (RUC)", "year": "2026-02", "category": "framework", "track": "academic",
       "innovation": "6M PR→10万实例 + 合成 F2P + DeepSeek 蒸馏 SFT",
