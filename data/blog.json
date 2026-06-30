@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-18-prime-rl-vs-skyrl",
+      "title": "Dispatch 18 · prime-rl vs SkyRL-Agent:两个开源异步 agentic RL 框架怎么选",
+      "subtitle": "都开源 Apache-2.0、都打 rollout 70%+长尾瓶颈,但层次不同:prime-rl(Prime Intellect)是全栈全解耦异步 trainer(Trainer/Inference/Orchestrator 三组件 + AIPO off-policy + FP8 vLLM,押注 1000+ GPU/1T MoE/去中心化,复现 INTELLECT-3.1);SkyRL-Agent(arXiv 2511.16108)是后端无关的 agent 层(叠在 SkyRL-train/VeRL/Tinker 上,异步 dispatcher 1.55× + AST 工具配方,SA-SWE-32B 24.4%→39.4% Verified、成本 >2× 降)。互补可组合,以及对昇腾 RL 栈的镜鉴。",
+      "date": "2026-06-29",
+      "tags": ["RL-frameworks", "async-RL", "prime-rl", "SkyRL", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-18-prime-rl-vs-skyrl.md"
+    },
+    {
       "id": "dispatch-17-denovoswe",
       "title": "Dispatch 17 · 详解 DeNovoSWE:从零生成整个代码仓库的长程环境",
       "subtitle": "AweAI-Team(ScaleSWE 后续,arXiv 2606.10728):把代码 agent 从「修局部 bug」推到 doc2repo「从文档规格从零造整个仓库」。分而治之 + critic-repair 逆向合成规格 → 4818 实例 + 单测/Docker;34k 轨迹难度感知过滤到 11k SFT。BeyondSWE-Doc2Repo:Qwen3-30B 5.8%→47.2%、Qwen3.5-35B→50%,逼近 DeepSeek-V3.2 的 54.99%。明确 for SFT & RL,自带 RLVR 环境;500 轮/256k 长 rollout 对昇腾意味着什么。",
