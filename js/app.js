@@ -15,6 +15,11 @@ const activeFilters = {}; // key -> Set of active tags
 let searchTerm = "";
 let agenticTrends = []; // {title, body} blurbs for the Agentic RL section
 
+/* defaults for dynamic <title> / meta description (restored on the blog index) */
+const DEFAULT_TITLE = document.title;
+const metaDesc = document.querySelector('meta[name="description"]');
+const DEFAULT_DESC = metaDesc ? metaDesc.content : "";
+
 /* ---------- data loading ---------- */
 async function loadJSON(url) {
   try {
@@ -52,6 +57,7 @@ async function init() {
   wireTimeline();
   wireBlog();
   wireMermaidLightbox();
+  wireTabsScrollHint();
   if (window.wireArch) wireArch();
   setLastUpdated();
 }
@@ -124,17 +130,34 @@ async function wireBlog() {
     return;
   }
 
+  // expose posts + matcher so the global search (updateTabCounts) can count blog hits
+  window.__blogPosts = posts;
+  function blogMatches(p) {
+    return !searchTerm || (p.title + " " + (p.subtitle || "") + " " + (p.tags || []).join(" ")).toLowerCase().includes(searchTerm);
+  }
+  window.__blogMatches = blogMatches;
+
   function showIndex() {
     post.hidden = true; idx.hidden = false;
     if (head) head.hidden = false;
+    document.title = DEFAULT_TITLE;
+    if (metaDesc) metaDesc.content = DEFAULT_DESC;
     if (!posts.length) { idx.innerHTML = `<div class="empty">No posts yet.</div>`; return; }
-    idx.innerHTML = posts.map((p) => `<a class="blog-card" href="#blog/${escapeAttr(p.id)}">
+    const visible = posts.filter(blogMatches);
+    if (!visible.length) {
+      idx.innerHTML = '<div class="empty">没有匹配 "' + escapeHtml(searchTerm) + '" 的 Dispatch。</div>';
+      return;
+    }
+    idx.innerHTML = visible.map((p) => `<a class="blog-card" href="#blog/${escapeAttr(p.id)}">
       <div class="blog-card-date">${escapeHtml(p.date || "")}</div>
       <h3>${escapeHtml(p.title)}</h3>
       <p>${escapeHtml(p.subtitle || "")}</p>
       <div class="blog-card-tags">${(p.tags || []).map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
     </a>`).join("");
   }
+
+  // re-render the blog index with the current search term (only when the index is visible)
+  window.__refreshBlogIndex = () => { if (post.hidden) showIndex(); };
 
   async function openPost(id) {
     const p = posts.find((x) => x.id === id);
@@ -164,6 +187,8 @@ async function wireBlog() {
         + `<a class="blog-back foot" href="#blog">← 所有 Dispatch</a>`;
       buildBlogLayout(post);
       renderMermaidIn(post);
+      document.title = p.title + " · NPU Frontier Dispatch";
+      if (metaDesc) metaDesc.content = (p.subtitle || "").slice(0, 200);
     } catch (e) {
       post.innerHTML = `<a class="blog-back" href="#blog">← 返回</a><div class="empty">Couldn't load post (${escapeHtml(String(e.message || e))}).</div>`;
     }
@@ -690,6 +715,7 @@ function activateTab(name, push) {
     t.classList.toggle("active", on);
     t.setAttribute("aria-selected", on ? "true" : "false");
     t.tabIndex = on ? 0 : -1;
+    if (on) { try { t.scrollIntoView({ inline: "nearest", block: "nearest" }); } catch (e) {} }
   });
   document.querySelectorAll(".panel").forEach((p) => {
     const on = p === panel;
@@ -734,6 +760,31 @@ function wireTabs() {
   });
 }
 
+/* mobile: fade hints on the .tabs strip when it can scroll left/right (CSS draws the fades) */
+function wireTabsScrollHint() {
+  const tabs = document.querySelector(".tabs");
+  if (!tabs) return;
+  const upd = () => {
+    const canL = tabs.scrollLeft > 4;
+    const canR = tabs.scrollLeft + tabs.clientWidth < tabs.scrollWidth - 4;
+    tabs.classList.toggle("fade-l", canL);
+    tabs.classList.toggle("fade-r", canR);
+  };
+  let ticking = false;
+  tabs.addEventListener("scroll", () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; upd(); });
+  }, { passive: true });
+  window.addEventListener("resize", upd);
+  upd();
+  // bring the active tab into view on load (only when the strip actually overflows)
+  if (tabs.scrollWidth > tabs.clientWidth) {
+    const active = tabs.querySelector(".tab.active");
+    if (active) { try { active.scrollIntoView({ inline: "center", block: "nearest" }); } catch (e) {} }
+  }
+}
+
 function updateTabCounts() {
   ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach((key) => {
     const tab = document.querySelector(`.tab[data-tab="${key === "live" ? "live" : key}"]`);
@@ -745,6 +796,19 @@ function updateTabCounts() {
     sup.textContent = n;
     sup.classList.toggle("zero", n === 0);
   });
+  // blog tab badge — counts matching Dispatch posts
+  const blogTab = document.querySelector('.tab[data-tab="blog"]');
+  if (blogTab) {
+    let sup = blogTab.querySelector(".tab-count");
+    if (!searchTerm) { if (sup) sup.remove(); return; }
+    const n = window.__blogMatches
+      ? (window.__blogPosts || []).filter(window.__blogMatches).length
+      : (window.__blogPosts || []).filter((p) =>
+          (p.title + " " + (p.subtitle || "") + " " + (p.tags || []).join(" ")).toLowerCase().includes(searchTerm)).length;
+    if (!sup) { sup = document.createElement("sup"); sup.className = "tab-count"; blogTab.appendChild(sup); }
+    sup.textContent = n;
+    sup.classList.toggle("zero", n === 0);
+  }
 }
 
 function wireSearch() {
@@ -752,12 +816,16 @@ function wireSearch() {
   box.addEventListener("input", () => {
     searchTerm = box.value.trim().toLowerCase();
     ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach(renderPanel);
+    window.__refreshBlogIndex && window.__refreshBlogIndex();
     updateTabCounts();
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "/" && document.activeElement !== box) { e.preventDefault(); box.focus(); }
     if (e.key === "Escape" && document.activeElement === box && box.value) {
-      box.value = ""; searchTerm = ""; ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach(renderPanel); updateTabCounts();
+      box.value = ""; searchTerm = "";
+      ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach(renderPanel);
+      window.__refreshBlogIndex && window.__refreshBlogIndex();
+      updateTabCounts();
     }
   });
 }

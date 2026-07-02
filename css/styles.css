@@ -135,6 +135,23 @@ code { background: var(--bg-3); padding: 1px 6px; border-radius: 6px; font-size:
 .tab:hover { color: var(--text); background: var(--bg-2); }
 .tab.active { color: var(--bg); background: var(--accent); font-weight: 600; }
 
+/* tabs horizontal-scroll affordance: hide the scrollbar and fade the
+   clipped edge instead (js/app.js toggles .fade-l/.fade-r on .tabs) */
+.tabs { scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs.fade-r {
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 36px), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 36px), transparent 100%);
+}
+.tabs.fade-l {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 36px, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 36px, #000 100%);
+}
+.tabs.fade-l.fade-r {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
+}
+
 /* Panels */
 main { padding: 28px; max-width: 1280px; margin: 0 auto; }
 .panel { display: none; animation: fade .25s ease; }
@@ -565,3 +582,5 @@ table.cmp td.cmp-none { color: var(--bad-fg); }
   #search { width: 180px; }
   .tabs { top: 64px; }
 }
+
+/* v20260629B: tabs scroll fade + share/meta round */
