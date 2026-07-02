@@ -51,6 +51,7 @@ async function init() {
   wireCompare();
   wireTimeline();
   wireBlog();
+  wireMermaidLightbox();
   if (window.wireArch) wireArch();
   setLastUpdated();
 }
@@ -63,6 +64,7 @@ function wireTheme() {
     if (t === "dark") root.setAttribute("data-theme", "dark");
     else root.removeAttribute("data-theme");
     if (btn) { btn.textContent = t === "dark" ? "☀️" : "🌙"; btn.title = t === "dark" ? "切换到浅色" : "切换到深色"; }
+    window.__reRenderMermaid && window.__reRenderMermaid(); // theme-aware diagrams (no-op when none rendered)
   };
   let cur;
   try { cur = localStorage.getItem("theme") || "light"; } catch (e) { cur = "light"; }
@@ -78,12 +80,33 @@ function wireTheme() {
 function renderMermaidIn(scope, tries) {
   const nodes = scope.querySelectorAll(".mermaid:not([data-processed])");
   if (!nodes.length) return;
-  if (!window.mermaid) {            // CDN module not ready yet — retry briefly
-    if ((tries || 0) < 25) setTimeout(() => renderMermaidIn(scope, (tries || 0) + 1), 200);
+  nodes.forEach((n) => { if (!n.dataset.src) n.dataset.src = n.textContent; }); // keep the diagram source for re-render / fallback
+  if (!window.mermaid) {            // vendor module not ready yet — retry briefly
+    if ((tries || 0) < 25) { setTimeout(() => renderMermaidIn(scope, (tries || 0) + 1), 200); return; }
+    // gave up — show the source instead of a blank block
+    nodes.forEach((n) => {
+      n.setAttribute("data-processed", "fallback");
+      n.classList.add("mermaid-failed");
+      n.innerHTML = '<details class="mermaid-fallback"><summary>⚠️ 图渲染引擎未加载 — 点开查看图源码</summary><pre>'
+        + escapeHtml(n.dataset.src || "") + "</pre></details>";
+    });
     return;
   }
   try { window.mermaid.run({ nodes }); } catch (e) { console.warn("mermaid", e); }
 }
+
+/* B. re-render all mermaid diagrams after a theme switch (called from wireTheme) */
+window.__reRenderMermaid = function () {
+  if (window.__initMermaid) window.__initMermaid();
+  document.querySelectorAll(".mermaid[data-processed]").forEach((n) => {
+    if (!n.dataset.src) return;
+    n.removeAttribute("data-processed");
+    n.classList.remove("mermaid-failed");
+    n.textContent = n.dataset.src;
+  });
+  const post = document.getElementById("blog-post");
+  if (post && !post.hidden) renderMermaidIn(post);
+};
 
 /* ---------- blog / dispatch (markdown posts, unipat-style index) ---------- */
 async function wireBlog() {
@@ -123,9 +146,23 @@ async function wireBlog() {
     try {
       const res = await fetch(p.file, { cache: "no-cache" });
       if (!res.ok) throw new Error(res.status);
-      post.innerHTML = `<a class="blog-back" href="#blog">← 所有 Dispatch</a>`
-        + `<div class="prose blog-prose">${renderMarkdown(await res.text())}</div>`
+      const md = await res.text();
+      // estimated read time: CJK chars @380/min + latin words @220/min
+      const cjk = (md.match(/[\u4e00-\u9fff]/g) || []).length;
+      const words = (md.match(/[A-Za-z0-9]+/g) || []).length;
+      const mins = Math.max(1, Math.round(cjk / 380 + words / 220));
+      // prev/next: posts are sorted newest-first, so i-1 = newer, i+1 = older
+      const i = posts.findIndex((x) => x.id === id);
+      const newer = posts[i - 1], older = posts[i + 1];
+      const postNav = '<div class="post-nav">'
+        + (newer ? '<a class="prev" href="#blog/' + escapeAttr(newer.id) + '"><span class="pn-label">← 更新一篇</span><span class="pn-title">' + escapeHtml(newer.title) + "</span></a>" : "<span></span>")
+        + (older ? '<a class="next" href="#blog/' + escapeAttr(older.id) + '"><span class="pn-label">更早一篇 →</span><span class="pn-title">' + escapeHtml(older.title) + "</span></a>" : "<span></span>")
+        + "</div>";
+      post.innerHTML = '<div class="blog-topline"><a class="blog-back" href="#blog">← 所有 Dispatch</a><span class="read-time">约 ' + mins + " 分钟读完</span></div>"
+        + `<div class="prose blog-prose">${renderMarkdown(md)}</div>`
+        + postNav
         + `<a class="blog-back foot" href="#blog">← 所有 Dispatch</a>`;
+      buildBlogLayout(post);
       renderMermaidIn(post);
     } catch (e) {
       post.innerHTML = `<a class="blog-back" href="#blog">← 返回</a><div class="empty">Couldn't load post (${escapeHtml(String(e.message || e))}).</div>`;
@@ -145,8 +182,99 @@ async function wireBlog() {
     if (parts[1]) openPost(parts[1]); else showIndex();
   }
   window.addEventListener("hashchange", route);
+  wireTocSpy();
   showIndex();
   route();
+}
+
+/* wrap the rendered post in a grid layout and, when long enough, add a table of contents.
+   TOC links must NOT touch location.hash (it drives tab/blog routing) — no href, scrollIntoView only. */
+function buildBlogLayout(post) {
+  const prose = post.querySelector(".blog-prose");
+  if (!prose) return;
+  const layout = document.createElement("div");
+  layout.className = "blog-layout";
+  const article = document.createElement("div");
+  article.className = "blog-article";
+  prose.parentNode.insertBefore(layout, prose);
+  article.appendChild(prose);
+  layout.appendChild(article);
+
+  const heads = prose.querySelectorAll("h2, h3");
+  heads.forEach((h, i) => { h.id = "sec-" + i; });
+  if (heads.length < 3) return; // too short for a TOC — keep the layout only
+
+  const toc = document.createElement("nav");
+  toc.className = "blog-toc";
+  toc.setAttribute("aria-label", "目录");
+  toc.innerHTML = '<div class="toc-title">目录</div>' + [...heads].map((h, i) => {
+    let t = h.textContent.trim();
+    if (t.length > 44) t = t.slice(0, 44) + "…";
+    return '<a class="toc-link' + (h.tagName === "H3" ? " toc-h3" : "") + '" data-target="sec-' + i + '">' + escapeHtml(t) + "</a>";
+  }).join("");
+  toc.addEventListener("click", (e) => {
+    const a = e.target.closest(".toc-link");
+    if (!a) return;
+    e.preventDefault();
+    const el = document.getElementById(a.dataset.target);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  layout.appendChild(toc);
+}
+
+/* highlight the TOC entry for the section currently in view (rAF-throttled, wired once) */
+let tocSpyWired = false;
+function wireTocSpy() {
+  if (tocSpyWired) return;
+  tocSpyWired = true;
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      const post = document.getElementById("blog-post");
+      if (!post || post.hidden) return;
+      const heads = post.querySelectorAll('[id^="sec-"]');
+      if (!heads.length) return;
+      let cur = null;
+      heads.forEach((h) => { if (h.getBoundingClientRect().top <= 150) cur = h; });
+      post.querySelectorAll(".toc-link").forEach((a) => {
+        a.classList.toggle("active", !!cur && a.dataset.target === cur.id);
+      });
+    });
+  }, { passive: true });
+}
+
+/* click a rendered mermaid diagram → full-screen lightbox; click anywhere / Escape closes */
+function wireMermaidLightbox() {
+  document.addEventListener("click", (e) => {
+    const open = document.getElementById("mermaid-lightbox");
+    if (open) { open.remove(); return; } // any click while open closes it
+    const node = e.target.closest('.blog-prose .mermaid[data-processed]:not(.mermaid-failed)');
+    if (!node) return;
+    const svg = node.querySelector("svg");
+    if (!svg) return;
+    const lb = document.createElement("div");
+    lb.id = "mermaid-lightbox";
+    const inner = document.createElement("div");
+    inner.className = "lb-inner";
+    const clone = svg.cloneNode(true);
+    clone.removeAttribute("width");
+    clone.removeAttribute("height"); // let CSS control sizing
+    inner.appendChild(clone);
+    const close = document.createElement("button");
+    close.className = "lb-close";
+    close.textContent = "✕";
+    lb.appendChild(inner);
+    lb.appendChild(close);
+    document.body.appendChild(lb);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const lb = document.getElementById("mermaid-lightbox");
+    if (lb) lb.remove();
+  });
 }
 
 /* ---------- timeline (aggregated from curated data) ---------- */
