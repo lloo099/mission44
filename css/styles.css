@@ -525,6 +525,9 @@ table.cmp td.cmp-none { color: var(--bad-fg); }
   #mermaid-lightbox svg { min-width: 0; }
 }
 
+/* mermaid engine still downloading — friendly placeholder instead of raw source */
+.blog-prose .mermaid.mermaid-waiting { color: var(--dim); font-size: 12.5px; padding: 26px 12px; white-space: normal; }
+
 /* mermaid render-failure fallback (details/summary with raw source) */
 .mermaid-failed { text-align: left; }
 .mermaid-fallback summary { cursor: pointer; color: var(--dim); font-size: 12.5px; padding: 4px 0; }

@@ -82,24 +82,55 @@ function wireTheme() {
   });
 }
 
-/* render any .mermaid diagrams inside a scope once mermaid.js is ready (it loads async) */
+/* render any .mermaid diagrams inside a scope once mermaid.js is ready (it loads async).
+   The vendor bundle is ~3.5MB: on slow networks it can take well over 5s, so we wait
+   patiently (with a visible "loading" placeholder), fall back only on real script failure
+   or a long timeout, and recover automatically via the 'mermaid-ready' event. */
+function mermaidFallback(nodes) {
+  nodes.forEach((n) => {
+    n.setAttribute("data-processed", "fallback");
+    n.classList.remove("mermaid-waiting");
+    n.classList.add("mermaid-failed");
+    n.innerHTML = '<details class="mermaid-fallback"><summary>⚠️ 图渲染引擎加载失败 — 点开查看图源码(刷新页面可重试)</summary><pre>'
+      + escapeHtml(n.dataset.src || "") + "</pre></details>";
+  });
+}
 function renderMermaidIn(scope, tries) {
   const nodes = scope.querySelectorAll(".mermaid:not([data-processed])");
   if (!nodes.length) return;
   nodes.forEach((n) => { if (!n.dataset.src) n.dataset.src = n.textContent; }); // keep the diagram source for re-render / fallback
-  if (!window.mermaid) {            // vendor module not ready yet — retry briefly
-    if ((tries || 0) < 25) { setTimeout(() => renderMermaidIn(scope, (tries || 0) + 1), 200); return; }
-    // gave up — show the source instead of a blank block
-    nodes.forEach((n) => {
-      n.setAttribute("data-processed", "fallback");
-      n.classList.add("mermaid-failed");
-      n.innerHTML = '<details class="mermaid-fallback"><summary>⚠️ 图渲染引擎未加载 — 点开查看图源码</summary><pre>'
-        + escapeHtml(n.dataset.src || "") + "</pre></details>";
+  if (!window.mermaid) {
+    const t = tries || 0;
+    if (window.__mermaidFailed) { mermaidFallback(nodes); return; }   // script 404/failed — no point waiting
+    if (t === 3) nodes.forEach((n) => {                                // after ~1s, swap raw source for a friendly placeholder
+      n.classList.add("mermaid-waiting");
+      n.textContent = "⏳ 图渲染引擎加载中…(约 1MB,首次访问或网络较慢时需几秒)";
     });
+    if (t < 120) { setTimeout(() => renderMermaidIn(scope, t + 1), 300); return; }  // wait up to ~36s
+    mermaidFallback(nodes);                                            // long timeout — degrade, recoverable via mermaid-ready
     return;
   }
+  nodes.forEach((n) => {                                               // restore source if we showed the waiting placeholder
+    if (n.classList.contains("mermaid-waiting")) { n.classList.remove("mermaid-waiting"); n.textContent = n.dataset.src; }
+  });
   try { window.mermaid.run({ nodes }); } catch (e) { console.warn("mermaid", e); }
 }
+
+/* when the (slow) vendor script finally arrives, revive placeholders AND any fallback blocks */
+document.addEventListener("mermaid-ready", () => {
+  document.querySelectorAll('.mermaid[data-processed="fallback"], .mermaid.mermaid-waiting').forEach((n) => {
+    if (!n.dataset.src) return;
+    n.removeAttribute("data-processed");
+    n.classList.remove("mermaid-failed", "mermaid-waiting");
+    n.textContent = n.dataset.src;
+  });
+  const post = document.getElementById("blog-post");
+  if (post && !post.hidden) renderMermaidIn(post);
+});
+document.addEventListener("mermaid-failed", () => {
+  document.querySelectorAll(".mermaid:not([data-processed])").forEach((n) => { if (!n.dataset.src) n.dataset.src = n.textContent; });
+  mermaidFallback(document.querySelectorAll(".mermaid:not([data-processed])"));
+});
 
 /* B. re-render all mermaid diagrams after a theme switch (called from wireTheme) */
 window.__reRenderMermaid = function () {
