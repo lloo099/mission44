@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-19-slime",
+      "title": "Dispatch 19 · 详解 slime:GLM 全家桶背后的 SGLang 原生 RL 框架",
+      "subtitle": "THUDM/Z.ai 开源(Apache-2.0,7.2k stars):三模块 + Data Buffer 中枢(Megatron 训练 ↔ Buffer ↔ SGLang rollout),--sglang- 参数直通的零封装税哲学,GLM-4.5→5.2 六代旗舰生产验证,fully_async + Multi-Task Rollout Orchestrator、PD 分离、Delta Weight Sync。生态位对比 verl/prime-rl/SkyRL-Agent,Miles 是其企业级下游。对昇腾:Buffer 中枢硬件无关,移植缺口精确圈定在训练/推理/权重同步三点。",
+      "date": "2026-06-29",
+      "tags": ["RL-frameworks", "slime", "SGLang", "GLM", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-19-slime.md"
+    },
+    {
       "id": "dispatch-18-prime-rl-vs-skyrl",
       "title": "Dispatch 18 · prime-rl vs SkyRL-Agent:两个开源异步 agentic RL 框架怎么选",
       "subtitle": "都开源 Apache-2.0、都打 rollout 70%+长尾瓶颈,但层次不同:prime-rl(Prime Intellect)是全栈全解耦异步 trainer(Trainer/Inference/Orchestrator 三组件 + AIPO off-policy + FP8 vLLM,押注 1000+ GPU/1T MoE/去中心化,复现 INTELLECT-3.1);SkyRL-Agent(arXiv 2511.16108)是后端无关的 agent 层(叠在 SkyRL-train/VeRL/Tinker 上,异步 dispatcher 1.55× + AST 工具配方,SA-SWE-32B 24.4%→39.4% Verified、成本 >2× 降)。互补可组合,以及对昇腾 RL 栈的镜鉴。",
