@@ -1,6 +1,43 @@
 {
-  "updated": "2026-06-25",
+  "updated": "2026-07-07",
   "items": [
+    {
+      "title": "LongCat-2.0(1.6T MoE,全训练周期在国产芯片超节点完成)",
+      "org": "美团 (Meituan)",
+      "year": "2026-06",
+      "category": "model-report",
+      "innovation": "首个公开确认全训练周期(含后训练)在中国国产芯片上完成的前沿级开源模型",
+      "analysis": "Innovation: 1.6 万亿总参数、每 token 激活约 48B 的 MoE,原生 1M 上下文,配套新的 LongCat 稀疏注意力;训练与推理全程运行在 5 万余张国产 AI ASIC 组成的超节点集群上(未官宣厂商,但使用华为 HCCL 通信库、架构特征接近昇腾 910C),6D 并行,预训练超 35 万亿 token。Performance: 自报 SWE-bench Pro 59.5,略超 GPT-5.5 的 58.6;发布前曾以 'Owl Alpha' 名义在 OpenRouter 匿名运行约两个月(数字为厂商/媒体口径)。对 RL-on-NPU 的意义: 这是 RL-on-NPU 可行性的最强实证案例——前沿级模型的完整训练闭环(含后训练/RL)在国产芯片上跑通,其稀疏注意力 + MoE 架构细节可直接对标昇腾适配,HCCL 使用细节值得深挖。",
+      "summary": "美团开源 LongCat-2.0:1.6T/A48B MoE、原生 1M 上下文、LongCat 稀疏注意力,全训练周期(35T+ token 预训练与后训练)在 5 万余张国产 AI ASIC 超节点上完成(HCCL 通信、疑似昇腾 910C)。自报 SWE-bench Pro 59.5 略超 GPT-5.5。",
+      "url": "https://www.scmp.com/tech/tech-trends/article/3358854/china-debuts-biggest-ai-model-trained-local-chips-meituan-releases-longcat-20",
+      "tags": [
+        "MoE",
+        "sparse-attention",
+        "domestic-chips",
+        "open-weights",
+        "2026",
+        "model"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "腾讯混元 Hy3(295B-A21B MoE,Apache 2.0,主打 Agent)",
+      "org": "腾讯 (Tencent)",
+      "year": "2026-07",
+      "category": "model-report",
+      "innovation": "半尺寸(295B)对打约 750B 级模型的新一代 Apache 2.0 开源 agentic MoE",
+      "analysis": "Innovation: 4 月预览版转正,MoE 架构 295B 总参 / 21B 激活、256K 上下文,完整版以 Apache 2.0 开源,主打 Agent 能力。Performance: 腾讯自报 Agent 任务解决率 90%(内部 WorkBuddy 评测从预览版 72% 提升,平均耗时降 34%),称关键基准超过 DeepSeek V4 Pro 与 Qwen 3.7 Max;定价 1 元/百万输入、4 元/百万输出,OpenRouter 免费至 7 月 21 日(全部为厂商自报)。对 RL-on-NPU 的意义: agent RL 后训练效果的重要新基线——以约 GLM-5.2 一半的规模对打,若属实说明 agentic 后训练配方仍有大幅提效空间;21B 激活 + Apache 2.0 也使其成为 NPU 上可负担的开源 agentic 底座候选(昇腾适配未公布)。",
+      "summary": "腾讯 7 月 6 日正式发布并开源混元 Hy3:295B/A21B MoE、256K 上下文、Apache 2.0,自报 Agent 任务解决率 90%、关键基准超 DeepSeek V4 Pro 与 Qwen 3.7 Max;定价 1 元/4 元每百万 token,已接入微信生态。基准数字为厂商自报。",
+      "url": "https://www.caixinglobal.com/2026-07-06/tencent-launches-upgraded-hunyuan-3-ai-model-with-free-agent-feature-102461489.html",
+      "tags": [
+        "MoE",
+        "open-weights",
+        "agentic",
+        "2026",
+        "model"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "DSpark (DeepSeek-V4 投机解码)",
       "org": "Peking University / DeepSeek-AI",

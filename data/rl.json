@@ -1,6 +1,77 @@
 {
-  "updated": "2026-06-25",
+  "updated": "2026-07-07",
   "items": [
+    {
+      "title": "AReaL v2.0.0(微服务化重构的异步 RL 训练系统)",
+      "org": "inclusionAI (Ant Group) / AReaL 团队",
+      "year": "2026-07",
+      "category": "framework",
+      "innovation": "训练/推理/agent/权重更新拆成四个独立微服务,areal CLI 统一编排",
+      "analysis": "Innovation: 把原本单体式的异步 RL 系统重构为训练、推理、agent、权重更新四个独立微服务,统一由 areal CLI 管理;新增基于 agent service 的端到端 agent 训练(Hermes + OpenClaw 示例)、CISPO loss(MiniMax-M1 同款)、Qwen3.5/3.6 MoE 训推支持、colocate 场景 CUDA IPC 权重传输、RolloutEngine 上的 on-policy 蒸馏。Performance: 20 位贡献者参与(11 位为新社区成员),社区化程度明显上升。对 RL-on-NPU 的意义: AReaL 有专门 ascend 分支,2.0 把权重更新独立成服务后,替换为 HCCL 传输后端(vLLM-Ascend v0.22.1rc1 已提供)即可打通 Ascend 上的异步训推流水线——这次架构重构直接决定后续 NPU 后端接入的形态。",
+      "summary": "AReaL 2.0 大版本:微服务化架构(训练/推理/agent/权重更新四服务)+ areal CLI 统一管理,新增端到端 agent 训练、CISPO loss、Qwen3.5/3.6 MoE 训推、CUDA IPC 权重传输与 on-policy 蒸馏。",
+      "url": "https://github.com/inclusionAI/AReaL/releases/tag/v2.0.0",
+      "tags": [
+        "framework",
+        "async-rl",
+        "microservices",
+        "agentic-rl",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Staleness–LR Scaling Law(异步 RLHF 的陈旧度-学习率联合标度律)",
+      "org": "arXiv 预印本(Chuan Wu、Linfeng Zhang、Weixun Wang 等)",
+      "year": "2026-07",
+      "category": "algorithm",
+      "innovation": "证明陈旧 rollout 带来 O(S·η) 每步梯度偏差,导出 staleness-学习率联合缩放律",
+      "analysis": "Innovation: 针对训推解耦的高吞吐异步 RLHF,把 behavior policy 显式写进 GRPO surrogate 目标,区分 learner 使用的 surrogate 梯度与真实总导数,证明陈旧 rollout 造成 O(S·η) 量级的每步梯度偏差(S 为最大 rollout 滞后步数,η 为学习率)。Performance: 由此导出可操作的联合缩放律——异步度越高,学习率应按比例缩小。对 RL-on-NPU 的意义: 异步/解耦是 Ascend 上绕开 sleep-mode 缺失的主要路线(AReaL/AsyncFlow),但 staleness 一直靠经验调参;这是首个定量指导 NPU 集群异步训练超参与滞后步数取舍的标度律,与 GAC、Stable Asynchrony 等稳定器互补。",
+      "summary": "首个'staleness–学习率'联合缩放律:把 behavior policy 显式写进 GRPO surrogate,证明陈旧 rollout 带来 O(S·η) 每步梯度偏差,异步度越高学习率应按比例缩小。",
+      "url": "https://arxiv.org/abs/2607.01083",
+      "tags": [
+        "async-rl",
+        "staleness",
+        "scaling-laws",
+        "GRPO",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Right in the Right Way(可验证奖励 + 人类示范判别器的混合奖励)",
+      "org": "arXiv 预印本",
+      "year": "2026-07",
+      "category": "algorithm",
+      "innovation": "对抗式判别器从人类示范学 learned reward,补足 RLVR 不可形式化维度",
+      "analysis": "Innovation: 提出 generator–discriminator 对抗框架,用区分人写与模型生成输出的判别器信号作为 learned reward,与可验证奖励组合,覆盖 RLVR 只优化可打分指标的盲区。Performance: bug 修复任务上保持 RLVR 同等准确率的同时显著降低补丁编辑距离,故事生成上提升胜率与多样性,并在 reward hacking 基准上几乎消除作弊行为。对 RL-on-NPU 的意义: RLVR 之后奖励设计的代表性新配方——'可验证 + 学习型人类分布'混合奖励对 RL 后训练算法选型有直接参考价值,且判别器是标准分类模型,移植到 NPU 训练栈的成本低。",
+      "summary": "对抗式 generator–discriminator 混合奖励:判别器从人类示范学到不可形式化维度的 learned reward,与 RLVR 组合,在保持准确率的同时降低补丁编辑距离并几乎消除 reward hacking。",
+      "url": "https://arxiv.org/abs/2607.01181",
+      "tags": [
+        "RLVR",
+        "reward-design",
+        "reward-hacking",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "TRL v1.7.0/1.7.1(AsyncGRPO 改进 + 非 NVLink 硬件修复)",
+      "org": "Hugging Face",
+      "year": "2026-07",
+      "category": "framework",
+      "innovation": "chunked_nll 默认 loss 降显存 ~30% + AsyncGRPO + 非 NVLink colocate 修复",
+      "analysis": "Innovation: v1.7.0 把 SFT 默认 loss 换成 chunked_nll(平均峰值显存约降 30%),新增 MoE 辅助损失、实验性 GMPO trainer、transformers 连续批处理集成与 AsyncGRPO 改进;v1.7.1 修复 GRPO + vLLM colocate + PEFT 在非 NVLink 硬件上的挂起问题。Performance: 显存降幅与 async 吞吐为官方 release note 口径。对 RL-on-NPU 的意义: 最大众化的 RL 库进入 async GRPO 路线,印证异步化已成默认方向;非 NVLink 互联下 colocate 挂起的修复对异构加速器(含 HCCS 互联的 Ascend)上跑 GRPO 有直接借鉴——TRL 本身也是 Ascend 上最易上手的 RL 入口(910B GRPO 已验证)。",
+      "summary": "TRL v1.7.0 引入 chunked_nll 默认 loss(峰值显存约降 30%)、MoE 辅助损失、实验性 GMPO trainer 与 AsyncGRPO 改进;v1.7.1 修复非 NVLink 硬件上 GRPO + vLLM colocate + PEFT 挂起。",
+      "url": "https://github.com/huggingface/trl/releases",
+      "tags": [
+        "framework",
+        "async-rl",
+        "GRPO",
+        "huggingface",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
     {
       "title": "Miles (RadixArk RL framework: FP8 + R3)",
       "org": "RadixArk",

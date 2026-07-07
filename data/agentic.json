@@ -1,6 +1,10 @@
 {
-  "updated": "2026-07-06",
+  "updated": "2026-07-07",
   "trends": [
+    {
+      "title": "长程自治量级跃升,评测与成本基线双双重置",
+      "body": "OSWorld 2.0 把 computer-use 评测推到人类中位 1.6 小时的真实工作流:Claude Opus 4.7 平均每任务 318 次工具调用(1.0 版仅 ~30 次),500 步预算下最强前沿智能体也只完成 20.6%——旧榜(OSWorld-Verified 83.5%)严重高估真实部署能力。与此同时厂商把 agentic 能力压进中低价位(Sonnet 5 $2/$10、GPT-5.6 Terra 自称同能力便宜 2 倍):单任务数百次工具调用 × 更低单价,意味着 RL 训练侧的 rollout 长度、沙箱环境需求和成本核算都要按新量级重排。"
+    },
     {
       "title": "环境(Environment)成为新的 scaling 轴",
       "body": "继模型规模、数据之后,「环境规模 + 自演化轮次」被工业界当成训练通用智能体的新扩展维度。Prime Intellect 把它做成基础设施(Environments Hub / verifiers / Prime Sandbox)。2026 环境赛道进入规模化融资(Deeptune 4300 万 / a16z、某 RL gym 估值 7.5 亿、实验室据称投入 > $1B)并走向标准化:Meta+HF 的 OpenEnv(Gymnasium 风)、General Reasoning 的 OpenReward / ORS(把 MCP 扩成奖励标准)。谁拥有环境,谁就掌握 agentic 能力的上游。"
@@ -27,6 +31,76 @@
     }
   ],
   "items": [
+    {
+      "title": "OSWorld 2.0(长程真实电脑使用基准:318 次工具调用/任务)",
+      "org": "XLang Lab (xlang-ai, HKU 等)",
+      "year": "2026-06",
+      "category": "benchmark",
+      "track": "academic",
+      "innovation": "108 个人类中位耗时 1.6 小时的真实工作流,把 computer-use 评测推进长程时代",
+      "summary": "OSWorld 团队发布 2.0:108 个长程真实电脑使用工作流,人类完成中位约 1.6 小时;Claude Opus 4.7(最大思考预算)平均每任务需 318 次工具调用(1.0 仅 ~30 次),500 步预算下最强前沿智能体仅完成 20.6%。论文指出 Opus 4.8 在 OSWorld-Verified 的 83.5% 高分严重高估真实部署能力,评测覆盖 Claude、GPT-5.5、Qwen 3.7-Plus、MiniMax M3、Kimi 2.6 等七个模型家族。单任务数百次工具调用意味着 agentic RL 的 rollout 长度与沙箱环境需求量级跃升。",
+      "url": "https://arxiv.org/abs/2606.29537",
+      "tags": [
+        "academic",
+        "computer-use",
+        "benchmark",
+        "long-horizon",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "OpenAI GPT-5.6 预览(Sol/Terra/Luna,限量灰度)",
+      "org": "OpenAI",
+      "year": "2026-06",
+      "category": "product",
+      "track": "industry",
+      "innovation": "三档定价拆分 + 首现政府介入的安全审查限量发布模式",
+      "summary": "GPT-5.6 三档:旗舰 Sol、低价 Terra(称与 GPT-5.5 相当但便宜 2 倍)、最快最便宜的 Luna;预览期仅通过 API 和 Codex 向约 20 家受信任伙伴开放,并应美国政府要求先经安全审查再逐步放开。OpenAI 自称 Sol 在 Terminal-Bench 2.1 创下新 SOTA,agentic 编码能力提升。前沿 agentic coding 标杆再移(数字为厂商自报)。",
+      "url": "https://openai.com/index/previewing-gpt-5-6-sol/",
+      "tags": [
+        "industry",
+        "coding-agent",
+        "frontier-model",
+        "2026"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "Anthropic Claude Sonnet 5(低成本运行智能体的主力模型)",
+      "org": "Anthropic",
+      "year": "2026-06",
+      "category": "product",
+      "track": "industry",
+      "innovation": "把此前需更大更贵模型才有的自主水平压进 $2/$10 中档价位",
+      "summary": "6 月 30 日发布,定位'最 agentic 的 Sonnet':可自主规划、使用浏览器/终端等工具。定价 $2/$10 每百万 token(优惠至 2026-08-31,之后 $3/$15),成为 claude.ai 免费/Pro 默认模型,上线 Claude Code、API、Bedrock、Vertex AI。直接改变跑长程 agent rollout 的成本基线,对自建 RL 数据管线的成本对标有参考价值(能力口径为厂商自报)。",
+      "url": "https://www.anthropic.com/news/claude-sonnet-5",
+      "tags": [
+        "industry",
+        "coding-agent",
+        "pricing",
+        "2026"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "Cognition Devin Security Swarm(多智能体并行挖洞 + 沙箱运行时验证)",
+      "org": "Cognition",
+      "year": "2026-07",
+      "category": "product",
+      "track": "industry",
+      "innovation": "agentic map-reduce + 隔离沙箱运行时复现确认可利用性",
+      "summary": "并行智能体跨文件推理找业务逻辑缺陷与鉴权绕过,每个发现在隔离沙箱中运行时复现以确认可利用性,再由 Devin 写补丁开 PR;自报 50 个真实漏洞基准找到 36 个,单发现成本低 30%。'并行多智能体 + 沙箱运行时验证'的产品化范式落地——运行时可利用性验证本质是可验证奖励信号,是 agentic RL 奖励设计的现成模板。",
+      "url": "https://www.prnewswire.com/news-releases/cognition-launches-devin-security-swarm-to-tackle-the-vulnerability-backlog-302814800.html",
+      "tags": [
+        "industry",
+        "multi-agent",
+        "security",
+        "verifiable-rewards",
+        "2026"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "OpenAI Codex(GPT-5.5,1000+ 连续工具调用)",
       "org": "OpenAI",
