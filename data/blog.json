@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-23-agentic-rl-problem-map",
+      "title": "Dispatch 23 · Agentic RL 系统难题地图:大家都在解决什么",
+      "subtitle": "综述式收拢(4 路问题域调研 + 事实核查):rollout 效率(长尾/异步/dispatcher)、训练稳定性(四种崩法分类学与防御)、环境与奖励工程(沙箱成本主导、verifier 天花板、环境赛道资本化)、训推一致(三层解法×异构放大)。已收敛的标准答案 vs 开放战场(粒度自适应信用分配、开放域 verifier、异构一致性),玩家收敛矩阵,以及对昇腾'根治层缺位、短期靠监控+算法补偿'的判断。",
+      "date": "2026-07-07",
+      "tags": ["agentic-RL", "systems", "problem-map", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-23-agentic-rl-problem-map.md"
+    },
+    {
       "id": "dispatch-22-deepswe-rllm",
       "title": "Dispatch 22 · 详解 DeepSWE 与 rLLM:纯 RL 编码智能体的开源全家桶",
       "subtitle": "Agentica×Together:Qwen3-32B 纯 RL 零 SFT(R2E-Gym 4500 任务,64 H100×6 天),GRPO++ 稳定化逐项拆解(compact filtering/去归一化/entropy-free);三个分数分开读——Pass@1 42.2 / Pass@16 71 / 混合 TTS 59(verifier 挑选换 17 分)。rLLM 框架解剖:Episode⊃Trajectory⊃Step 三层抽象 + Model Gateway 捕 logprob + verl/tinker/fireworks 可插拔后端。撞名警示(datacurve DeepSWE=考卷)与对昇腾的接口意义。",
