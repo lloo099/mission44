@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-07",
+  "updated": "2026-07-13",
   "trends": [
     {
       "title": "长程自治量级跃升,评测与成本基线双双重置",
@@ -1065,13 +1065,13 @@
       "auto": true
     },
     {
-      "title": "Tandem Reinforcement Learning with Verifiable Rewards",
-      "org": "Difan Jiao +3",
-      "year": "2026-06",
+      "title": "Semantic Pareto-DQN: A Multi-Objective Reinforcement Learning Framework for Financial Anomaly Detection",
+      "org": "Cláudio Lúcio do Val Lopes +1",
+      "year": "2026-07",
       "category": "algorithm",
       "track": "academic",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) has significantly improved the reasoning capability of large language models, reaching expert or even superhuman performance in domains such as competition math. However, whether weaker agents and humans can actually harness t…",
-      "url": "http://arxiv.org/abs/2606.28166v1",
+      "summary": "Financial anomaly detection suffers from extreme class imbalance, causing traditional single-objective algorithms to exhibit ``fraud collapse'', defaulting to the majority class and failing to balance anomaly interdiction with customer friction. To overcome this without distortiv…",
+      "url": "http://arxiv.org/abs/2607.09641v1",
       "tags": [
         "academic",
         "agentic-rl",
@@ -1081,13 +1081,13 @@
       "auto": true
     },
     {
-      "title": "Verifiable Geometry Problem Solving: Solver-Driven Autoformalization and Theorem Proposing",
-      "org": "Can Li +3",
-      "year": "2026-06",
+      "title": "Action-Factored Multi-Agent Reinforcement Learning for Scalable Quantum Device Tuning",
+      "org": "Edwin De Nicolo +4",
+      "year": "2026-07",
       "category": "algorithm",
       "track": "academic",
-      "summary": "Geometry Problem Solving have increasingly adopt the neuro-symbolic paradigm, combining neural intuition with symbolic rigor. However, current frameworks suffer from severe bottlenecks in two core stages: autoformalization, which treats multimodal translation as a static task dec…",
-      "url": "http://arxiv.org/abs/2606.27926v1",
+      "summary": "Cooperative multi-agent reinforcement learning is well suited to problems with large parameter spaces and exploitable local structure, such as the tuning of electrostatically-defined quantum-dot arrays. However, if parameter cross-talk is strong, a non-stationary environment from…",
+      "url": "http://arxiv.org/abs/2607.09422v1",
       "tags": [
         "academic",
         "agentic-rl",
@@ -1097,13 +1097,13 @@
       "auto": true
     },
     {
-      "title": "ATOD: Annealed Turn-aware On-policy Distillation for Multi-turn Autonomous Agents",
-      "org": "Qitai Tan +3",
-      "year": "2026-06",
+      "title": "Mach-Mind-4-Flash Technical Report",
+      "org": " Foundation Model Team",
+      "year": "2026-07",
       "category": "algorithm",
       "track": "academic",
-      "summary": "Training small language-model agents for long-horizon interactive tasks requires both fast imitation and reward-driven improvement. On-policy distillation (OPD) provides dense teacher guidance and typically improves rapidly in the early stage, but its gains saturate once the stud…",
-      "url": "http://arxiv.org/abs/2606.27814v1",
+      "summary": "We present Mach-Mind-4-Flash, a 35B-parameter Mixture-of-Experts (MoE) agentic model with 3B activated parameters. Through post-training optimization alone without scaling pre-training compute, the model achieves performance on par with or surpassing that of 100B-parameter-class …",
+      "url": "http://arxiv.org/abs/2607.09375v1",
       "tags": [
         "academic",
         "agentic-rl",
