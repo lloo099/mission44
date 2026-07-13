@@ -1,6 +1,107 @@
 {
-  "updated": "2026-06-16",
+  "updated": "2026-07-07",
   "items": [
+    {
+      "title": "LongCat-2.0(1.6T MoE,全训练周期在国产芯片超节点完成)",
+      "org": "美团 (Meituan)",
+      "year": "2026-06",
+      "category": "model-report",
+      "innovation": "首个公开确认全训练周期(含后训练)在中国国产芯片上完成的前沿级开源模型",
+      "analysis": "Innovation: 1.6 万亿总参数、每 token 激活约 48B 的 MoE,原生 1M 上下文,配套新的 LongCat 稀疏注意力;训练与推理全程运行在 5 万余张国产 AI ASIC 组成的超节点集群上(未官宣厂商,但使用华为 HCCL 通信库、架构特征接近昇腾 910C),6D 并行,预训练超 35 万亿 token。Performance: 自报 SWE-bench Pro 59.5,略超 GPT-5.5 的 58.6;发布前曾以 'Owl Alpha' 名义在 OpenRouter 匿名运行约两个月(数字为厂商/媒体口径)。对 RL-on-NPU 的意义: 这是 RL-on-NPU 可行性的最强实证案例——前沿级模型的完整训练闭环(含后训练/RL)在国产芯片上跑通,其稀疏注意力 + MoE 架构细节可直接对标昇腾适配,HCCL 使用细节值得深挖。",
+      "summary": "美团开源 LongCat-2.0:1.6T/A48B MoE、原生 1M 上下文、LongCat 稀疏注意力,全训练周期(35T+ token 预训练与后训练)在 5 万余张国产 AI ASIC 超节点上完成(HCCL 通信、疑似昇腾 910C)。自报 SWE-bench Pro 59.5 略超 GPT-5.5。",
+      "url": "https://www.scmp.com/tech/tech-trends/article/3358854/china-debuts-biggest-ai-model-trained-local-chips-meituan-releases-longcat-20",
+      "tags": [
+        "MoE",
+        "sparse-attention",
+        "domestic-chips",
+        "open-weights",
+        "2026",
+        "model"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "腾讯混元 Hy3(295B-A21B MoE,Apache 2.0,主打 Agent)",
+      "org": "腾讯 (Tencent)",
+      "year": "2026-07",
+      "category": "model-report",
+      "innovation": "半尺寸(295B)对打约 750B 级模型的新一代 Apache 2.0 开源 agentic MoE",
+      "analysis": "Innovation: 4 月预览版转正,MoE 架构 295B 总参 / 21B 激活、256K 上下文,完整版以 Apache 2.0 开源,主打 Agent 能力。Performance: 腾讯自报 Agent 任务解决率 90%(内部 WorkBuddy 评测从预览版 72% 提升,平均耗时降 34%),称关键基准超过 DeepSeek V4 Pro 与 Qwen 3.7 Max;定价 1 元/百万输入、4 元/百万输出,OpenRouter 免费至 7 月 21 日(全部为厂商自报)。对 RL-on-NPU 的意义: agent RL 后训练效果的重要新基线——以约 GLM-5.2 一半的规模对打,若属实说明 agentic 后训练配方仍有大幅提效空间;21B 激活 + Apache 2.0 也使其成为 NPU 上可负担的开源 agentic 底座候选(昇腾适配未公布)。",
+      "summary": "腾讯 7 月 6 日正式发布并开源混元 Hy3:295B/A21B MoE、256K 上下文、Apache 2.0,自报 Agent 任务解决率 90%、关键基准超 DeepSeek V4 Pro 与 Qwen 3.7 Max;定价 1 元/4 元每百万 token,已接入微信生态。基准数字为厂商自报。",
+      "url": "https://www.caixinglobal.com/2026-07-06/tencent-launches-upgraded-hunyuan-3-ai-model-with-free-agent-feature-102461489.html",
+      "tags": [
+        "MoE",
+        "open-weights",
+        "agentic",
+        "2026",
+        "model"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "DSpark (DeepSeek-V4 投机解码)",
+      "org": "Peking University / DeepSeek-AI",
+      "year": "2026-06",
+      "category": "inference",
+      "innovation": "半自回归 drafter + 置信度调度(load-aware)验证",
+      "analysis": "Innovation: 两点——(1) 半自回归架构:在并行 draft backbone 上加轻量串行输出 head 注入 token 间依赖,缓解并行 drafter 的后缀衰减,且逐 token 概率仍是精确 softmax(可做精确验证,区别于 CRF-NAT/CTC-drafter);(2) 置信度调度验证:confidence head 估 prefix 存活概率 + 引擎吞吐画像,为每请求动态裁剪验证长度,避免在高拒绝风险 token 上浪费 batch。Performance: 离线 accepted length 超 Eagle3 ~+30% / DFlash ~+18%;线上 DeepSeek-V4 vs MTP-1,单用户 +60–85%(Flash)/+57–78%(Pro)at matched throughput。Fit for RL-on-NPU: rollout 是 decode-heavy,投机解码直接加速 rollout(与 FP8 rollout、稀疏注意力正交);DeepSeek-V4 已在 vLLM-Ascend 做 MTP 投机解码,DSpark 是升级路径,但 NPU 上要保逐 token 概率一致(align-probe)。",
+      "summary": "北大 + DeepSeek-AI 的投机解码框架:半自回归 drafter(治后缀衰减、保精确验证)+ 置信度调度的 load-aware 验证。部署在 DeepSeek-V4 线上,相对 MTP-1 单用户生成 +60–85%(Flash)/+57–78%(Pro)。开源为全栈 DeepSpec(含 DSpark/DFlash/Eagle3 三算法、训练/评测/数据脚本)。数字为论文口径,provisional。",
+      "url": "https://github.com/deepseek-ai/DeepSpec",
+      "tags": [
+        "speculative-decoding",
+        "inference",
+        "DeepSeek-V4",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "DFlash (块扩散投机解码草稿)",
+      "org": "Z Lab, UC San Diego", "year": "2026-06", "category": "inference",
+      "innovation": "块扩散草稿模型一次前向并行出整块草稿 token",
+      "summary": "用块扩散(block-diffusion)草稿取代自回归草稿循环,打破 EAGLE-3「草稿仍串行」的 ~2–3× 天花板:Qwen3-8B 平均 4.86× 无损加速,Blackwell 批量吞吐 ~15×;已进 SGLang,NVIDIA/Google 复现。是 DSpark(Dispatch 15)对照的并行 drafter。数字 provisional。",
+      "url": "https://github.com/z-lab/dflash",
+      "tags": ["speculative-decoding", "inference", "diffusion", "2026"],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "JetSpec (因果并行树草稿)",
+      "org": "Hao AI Lab, UC San Diego", "year": "2026-06", "category": "inference",
+      "innovation": "因果并行草稿头单次前向预测多个树节点 + 块级因果注意力保分支一致",
+      "summary": "调和「自回归草稿付深度代价 vs 块扩散草稿分支不一致」的两难:单次前向预测多个树节点、块级因果注意力保分支条件一致;MATH-500 端到端最高 9.64× 加速。与 DFlash 同期(UCSD 邻校)。provisional。",
+      "url": "https://arxiv.org/abs/2606.18394",
+      "tags": ["speculative-decoding", "inference", "tree-drafting", "2026"],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "SGLang Spec V2 (默认投机解码引擎)",
+      "org": "LMSYS / SGLang", "year": "2026-06", "category": "inference",
+      "innovation": "overlap scheduling 隐藏 CPU 开销 + 统一 EAGLE/MTP/DFlash 树草稿",
+      "summary": "SGLang 把 Spec V2 设为默认推测解码路径:overlap scheduling 隐藏 per-step CPU 开销,统一支持 EAGLE/MTP/DFlash 的 topk>1 树草稿,覆盖 triton/FA3/MLA/aiter 后端。是让新 drafter 生产可用的服务底座。",
+      "url": "https://www.lmsys.org/blog/2026-06-15-next-generation-speculative-decoding-dflash-v2/",
+      "tags": ["speculative-decoding", "serving", "SGLang", "2026"],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "MiMo-V2.5-Pro (Xiaomi)",
+      "org": "Xiaomi",
+      "year": "2026-04",
+      "category": "model-report",
+      "innovation": "1.02T MoE with SWA+Global hybrid attention (6:1), strong agentic coding",
+      "analysis": "Innovation: a 1.02T / 42B-active MoE on a hybrid-attention backbone that interleaves sliding-window attention (128-token window) with global attention at a 6:1 ratio, cutting KV-cache ~7x on long context while holding quality; paired with the MiMo Code agentic harness. Performance: vendor-reported #1 open-source on GDPVal-AA / ClawEval, and MiMo Code + V2.5-Pro beats Claude Code + Sonnet 4.6 on SWE-bench Verified (82 vs 79), SWE-bench Pro (62 vs 55), Terminal-Bench 2 (73 vs 69) — provisional and harness-coupled. Fit for RL-on-NPU: SWA-heavy hybrid attention is decode-cheap and the ~7x KV cut directly eases rollout memory on memory-bound NPUs; MIT license makes it a viable open RL base — but it is not yet on vLLM-Ascend.",
+      "summary": "Released Apr 28 2026 (MIT open). MiMo-V2.5-Pro: 1.02T total / 42B active MoE, 1M context, hybrid attention interleaving a 128-token sliding-window attention with global attention at 6:1 (~7x KV-cache reduction). Standard MiMo-V2.5: 310B / 15B active, ~48T-token pretrain. Strong agentic coding via the MiMo Code harness (vendor benchmarks beat Claude Code + Sonnet 4.6). All numbers vendor/media — provisional.",
+      "ascend": "none",
+      "ascendNote": "Not yet listed on vLLM-Ascend; no Ascend port reported.",
+      "url": "https://mimo.mi.com/docs/en-US/news/v2.5-open-sourced",
+      "tags": [
+        "MoE",
+        "sliding-window",
+        "long-context",
+        "2026",
+        "model"
+      ],
+      "confidence": "secondary"
+    },
     {
       "title": "HISA: Hierarchical Indexing for Sparse Attention",
       "org": "research",
@@ -15,7 +116,8 @@
         "kv-cache",
         "long-context",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeek-V4 (V4-Pro / V4-Flash)",
@@ -33,7 +135,8 @@
         "long-context",
         "2026",
         "model"
-      ]
+      ],
+      "confidence": "self-reported"
     },
     {
       "title": "GLM-5.2",
@@ -42,7 +145,7 @@
       "category": "model-report",
       "innovation": "Open-weight (MIT) frontier model, 1M context, coding-first",
       "analysis": "Innovation: an MIT-licensed, fully open-weight frontier model with a 1M-token window, tuned coding-first and shipped on a fast cadence (GLM-5 → 5.2 in months) as a deliberate open answer to export controls. Performance: reported competitive with closed models on multi-step reasoning and code generation — numbers are largely vendor/media-sourced pending independent evals. Fit for RL-on-NPU: GLM-5 is already supported on vLLM-Ascend (W8A8C8 quant), so 5.2 is likely a near-term target; its permissive license makes it an attractive base model for open RL post-training experiments on Ascend.",
-      "summary": "Launched Jun 13 2026; MIT open weights on Hugging Face (zai-org/GLM-5.2). ~753B MoE / ~40B active, new IndexShare sparse attention, usable 1M context (5× over 5.1's ~200K), 131K output, 28.5T-token pretrain, dual High/Max reasoning. Media/vendor benchmarks: SWE-bench Pro 62.1 (> GPT-5.5 ~58.6), FrontierSWE 74.4, Terminal-Bench 2.1 81.0, AIME 2026 99.2, GPQA 91.2; weak on agentic Tool-Decathlon. API $1.40/$4.40 per 1M (~1/6 of GPT-5.5). Note: SWE-bench Verified/LiveCodeBench/Aider not published. All provisional. Full writeup in Blog → Dispatch 06.",
+      "summary": "Launched Jun 13 2026; MIT open weights on Hugging Face (zai-org/GLM-5.2). ~753B MoE / ~40B active, DSA-style sparse attention with IndexShare (the sparse-attention indexer is reused across each group of 4 layers instead of recomputed per layer), usable 1M context (5× over 5.1's ~200K), 131K output, 28.5T-token pretrain, dual High/Max reasoning. Media/vendor benchmarks: SWE-bench Pro 62.1 (> GPT-5.5 ~58.6), FrontierSWE 74.4, Terminal-Bench 2.1 81.0, AIME 2026 99.2, GPQA 91.2; weak on agentic Tool-Decathlon. API $1.40/$4.40 per 1M (~1/6 of GPT-5.5). Note: SWE-bench Verified/LiveCodeBench/Aider not published. All provisional. Full writeup in Blog → Dispatch 06.",
       "ascend": "partial",
       "ascendNote": "GLM-5 is supported on vLLM-Ascend (perf optimizations + W8A8C8 quant); GLM-5.2 not yet listed by name.",
       "url": "https://huggingface.co/zai-org/GLM-5.2",
@@ -61,7 +164,7 @@
       "category": "attention",
       "innovation": "New sparse attention for 1M context + native multimodal/agentic",
       "analysis": "Innovation: MSA (MiniMax Sparse Attention) — a blockwise sparse attention on GQA where a lightweight index branch scores KV blocks and selects a per-group Top-k, so exact attention runs over only the selected blocks. Performance: on a 109B multimodal model it matches dense GQA quality while cutting per-token attention compute ~28.4x at 1M context (~14.2x prefill / ~7.6x decode speedup on H800, per the paper). Fit for RL-on-NPU: the large decode-side speedup is exactly what helps RL rollouts on memory-bound NPUs; MiniMax-family quant (W8A8/QuaRot) exists on vLLM-Ascend though M3 isn't listed by name yet — a strong candidate once support lands.",
-      "summary": "Released Jun 2026. MSA (MiniMax Sparse Attention) is a blockwise sparse attention on GQA: a lightweight index branch scores KV blocks and picks a per-group Top-k, then exact block-sparse attention runs over only those blocks. On a 109B multimodal model it matches GQA while cutting per-token attention compute ~28.4x at 1M context (~14.2x prefill / ~7.6x decode speedup on H800). Open-weight, native multimodal, strong agentic coding.",
+      "summary": "Released Jun 2026. MSA (MiniMax Sparse Attention) is a blockwise sparse attention on GQA: a lightweight index branch scores KV blocks and picks a per-group Top-k, then exact block-sparse attention runs over only those blocks. On a 109B multimodal model it matches GQA while cutting per-token attention compute ~28.4x at 1M context (~14.2x prefill / ~7.6x decode speedup on H800). Open-weight, native multimodal, strong agentic coding. (Shipped MiniMax-M3 is reportedly ~428B total / ~23B active; the MSA paper's experiments were on a 109B model.)",
       "ascend": "partial",
       "ascendNote": "MiniMax family has W8A8/QuaRot on vLLM-Ascend (M2.x); M3 not yet listed by name.",
       "url": "https://arxiv.org/abs/2606.13392",
@@ -86,7 +189,8 @@
         "long-context",
         "inference",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "RedKnot: Head-Aware KV Reuse",
@@ -101,7 +205,8 @@
         "long-context",
         "serving",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeek-V3.2 + DeepSeek Sparse Attention (DSA)",
@@ -117,7 +222,8 @@
         "sparse-attention",
         "long-context",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeekMoE",
@@ -130,7 +236,8 @@
       "tags": [
         "MoE",
         "expert-specialization"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Auxiliary-Loss-Free Load Balancing",
@@ -143,7 +250,8 @@
       "tags": [
         "MoE",
         "load-balancing"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Mixtral of Experts",
@@ -156,7 +264,8 @@
       "tags": [
         "MoE",
         "open-weights"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Qwen3 (MoE design)",
@@ -169,7 +278,8 @@
       "tags": [
         "MoE",
         "open-weights"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Drop-Upcycling",
@@ -183,7 +293,8 @@
         "MoE",
         "upcycling",
         "efficiency"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Scaling Laws for Optimal MoE Sparsity",
@@ -196,7 +307,8 @@
       "tags": [
         "MoE",
         "scaling-laws"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Multi-head Latent Attention (DeepSeek-V2)",
@@ -211,7 +323,8 @@
         "MLA",
         "kv-cache"
       ],
-      "analysis": "Innovation: compresses keys/values into a low-rank latent shared across heads, shrinking the KV cache ~93% while preserving quality, with decoupled RoPE to stay rotary-compatible. Performance: enables much longer context and cheaper inference at frontier scale (DeepSeek-V2/V3). Fit for RL-on-NPU: a smaller KV cache directly cuts rollout memory — meaningful on 64GB 910B where the missing sleep-mode already squeezes generation memory."
+      "analysis": "Innovation: compresses keys/values into a low-rank latent shared across heads, shrinking the KV cache ~93% while preserving quality, with decoupled RoPE to stay rotary-compatible. Performance: enables much longer context and cheaper inference at frontier scale (DeepSeek-V2/V3). Fit for RL-on-NPU: a smaller KV cache directly cuts rollout memory — meaningful on 64GB 910B where the missing sleep-mode already squeezes generation memory.",
+      "confidence": "confirmed"
     },
     {
       "title": "Grouped-Query Attention (GQA)",
@@ -225,7 +338,8 @@
         "attention",
         "kv-cache",
         "foundational"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Sliding Window Attention (Mistral 7B)",
@@ -239,7 +353,8 @@
         "attention",
         "kv-cache",
         "efficiency"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "FlashAttention-3",
@@ -253,7 +368,8 @@
         "attention",
         "kernels",
         "fp8"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Mamba-2 / SSM-Attention Duality",
@@ -267,7 +383,8 @@
         "ssm",
         "linear-attention",
         "efficiency"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Jamba (Transformer-Mamba hybrid)",
@@ -281,7 +398,8 @@
         "ssm",
         "hybrid",
         "long-context"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Native Sparse Attention (NSA)",
@@ -296,7 +414,8 @@
         "sparse",
         "long-context"
       ],
-      "analysis": "Innovation: a trainable, hardware-aligned hierarchical sparse attention (compressed + selected + sliding branches) where the sparsity is learned end-to-end rather than bolted on. Performance: matches full-attention quality with large long-context speedups, trained sparse from the start. Fit for RL-on-NPU: cheaper long-context attention lowers rollout cost on memory-bound NPUs, and the same DeepSeek lineage (DSA in V3.2) is what 910B inference paths are adapting."
+      "analysis": "Innovation: a trainable, hardware-aligned hierarchical sparse attention (compressed + selected + sliding branches) where the sparsity is learned end-to-end rather than bolted on. Performance: matches full-attention quality with large long-context speedups, trained sparse from the start. Fit for RL-on-NPU: cheaper long-context attention lowers rollout cost on memory-bound NPUs, and the same DeepSeek lineage (DSA in V3.2) is what 910B inference paths are adapting.",
+      "confidence": "confirmed"
     },
     {
       "title": "MoBA (Mixture of Block Attention)",
@@ -310,7 +429,8 @@
         "attention",
         "sparse",
         "long-context"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Position Interpolation (PI)",
@@ -324,7 +444,8 @@
         "long-context",
         "rope",
         "foundational"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "YaRN",
@@ -337,7 +458,8 @@
       "tags": [
         "long-context",
         "rope"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Ring Attention",
@@ -351,7 +473,8 @@
         "long-context",
         "distributed",
         "exact"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "LongRoPE",
@@ -365,7 +488,8 @@
         "long-context",
         "rope",
         "search"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Gemini 1.5 (1M+ context)",
@@ -379,7 +503,8 @@
         "long-context",
         "multimodal",
         "MoE"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ChunkKV",
@@ -393,7 +518,8 @@
         "long-context",
         "kv-cache",
         "compression"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeek-V3 FP8 Training",
@@ -408,7 +534,8 @@
         "mixed-precision",
         "MoE"
       ],
-      "analysis": "Innovation: the first validated FP8 training at frontier (671B-MoE) scale — fine-grained per-tile/per-block scaling, selective high-precision accumulation, and careful outlier handling. Performance: matched BF16 quality at large compute/memory savings, proving FP8 pretraining is production-viable. Fit for RL-on-NPU: directly motivates FP8 RL on Ascend now that the 950 series adds native FP8 — while raising the precision-alignment stakes that align-probe is built to measure."
+      "analysis": "Innovation: the first validated FP8 training at frontier (671B-MoE) scale — fine-grained per-tile/per-block scaling, selective high-precision accumulation, and careful outlier handling. Performance: matched BF16 quality at large compute/memory savings, proving FP8 pretraining is production-viable. Fit for RL-on-NPU: directly motivates FP8 RL on Ascend now that the 950 series adds native FP8 — while raising the precision-alignment stakes that align-probe is built to measure.",
+      "confidence": "confirmed"
     },
     {
       "title": "FP4 Training Framework",
@@ -421,7 +548,8 @@
       "tags": [
         "fp4",
         "low-precision"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "NVFP4 Pretraining",
@@ -435,7 +563,8 @@
         "fp4",
         "low-precision",
         "blackwell"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "AWQ (Activation-aware Weight Quantization)",
@@ -449,7 +578,8 @@
         "quantization",
         "ptq",
         "inference"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "muP / muTransfer (Tensor Programs V)",
@@ -463,7 +593,8 @@
         "hyperparameters",
         "scaling",
         "stability"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Compute-Optimal QAT",
@@ -477,7 +608,8 @@
         "quantization",
         "qat",
         "scaling-laws"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeek-V3 Technical Report",
@@ -491,7 +623,10 @@
         "model-report",
         "MoE",
         "fp8"
-      ]
+      ],
+      "confidence": "confirmed",
+      "ascend": "ready",
+      "ascendNote": "DeepSeek V3.x supported on vLLM-Ascend (910B)."
     },
     {
       "title": "Kimi K2 (MuonClip)",
@@ -506,7 +641,8 @@
         "MoE",
         "optimizer",
         "stability"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "MiniMax-01 (Lightning Attention)",
@@ -521,7 +657,8 @@
         "linear-attention",
         "MoE",
         "long-context"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Gemma 3",
@@ -535,7 +672,8 @@
         "model-report",
         "small-model",
         "kv-cache"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Llama 4 Herd (Scout / Maverick)",
@@ -550,7 +688,8 @@
         "MoE",
         "multimodal",
         "long-context"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "OLMo 2",
@@ -564,7 +703,8 @@
         "model-report",
         "open-science",
         "stability"
-      ]
+      ],
+      "confidence": "confirmed"
     }
   ]
 }

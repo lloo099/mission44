@@ -4,29 +4,12 @@ Only files that have an "items" list are item-validated (compare/curves skipped)
 import glob, json, sys
 
 OK_CONF = {"confirmed", "secondary", "self-reported", "确证", "二手", "自报", None}
-CURVE_REQUIRED = {"name", "device", "metrics"}
-CURVE_META_HINTS = {"model", "dataset", "framework", "hardware", "precision", "seed", "runType"}
 errs = []
 for f in sorted(glob.glob("data/*.json")):
     try:
         d = json.load(open(f, encoding="utf-8"))
     except Exception as e:
         errs.append(f"{f}: invalid JSON: {e}"); continue
-    if f.endswith("curves.json"):
-        exps = d.get("experiments", []) if isinstance(d, dict) else []
-        if not isinstance(exps, list):
-            errs.append(f"{f}: 'experiments' is not a list"); continue
-        for i, it in enumerate(exps):
-            if not isinstance(it, dict):
-                errs.append(f"{f}[{i}]: experiment is not an object"); continue
-            missing = sorted(k for k in CURVE_REQUIRED if k not in it)
-            if missing:
-                errs.append(f"{f}[{i}] ({it.get('name','?')}): missing {', '.join(missing)}")
-            if not any(k in it for k in CURVE_META_HINTS):
-                errs.append(f"{f}[{i}] ({it.get('name','?')}): add run metadata such as model/dataset/hardware/seed")
-            if not isinstance(it.get("metrics", {}), dict):
-                errs.append(f"{f}[{i}] ({it.get('name','?')}): metrics is not an object")
-        continue
     items = d.get("items") if isinstance(d, dict) else d
     if items is None:
         continue  # compare.json / curves.json etc. — not item lists
@@ -42,6 +25,33 @@ for f in sorted(glob.glob("data/*.json")):
             errs.append(f"{f}[{i}] ({it.get('title','?')[:30]}): bad url {u!r}")
         if it.get("confidence") not in OK_CONF:
             errs.append(f"{f}[{i}] ({it.get('title','?')[:30]}): bad confidence {it.get('confidence')!r}")
+
+# ---- curves.json: validate experiment metadata (provenance) ----
+CURVE_META_KEYS = ("model", "dataset", "hardware", "framework", "precision", "seed")
+import os
+if os.path.exists("data/curves.json"):
+    try:
+        cv = json.load(open("data/curves.json", encoding="utf-8"))
+    except Exception as e:
+        errs.append(f"data/curves.json: invalid JSON: {e}"); cv = None
+    if isinstance(cv, dict):
+        exps = cv.get("experiments")
+        if not isinstance(exps, list) or not exps:
+            errs.append("data/curves.json: 'experiments' missing or empty")
+        else:
+            for i, e in enumerate(exps):
+                tag = f"data/curves.json[{i}] ({e.get('name','?')}·{e.get('device','?')})"
+                if not e.get("name") or not e.get("device"):
+                    errs.append(f"{tag}: missing name/device")
+                if not isinstance(e.get("metrics"), dict) or not e.get("metrics"):
+                    errs.append(f"{tag}: missing metrics")
+                meta = e.get("meta")
+                if not isinstance(meta, dict):
+                    errs.append(f"{tag}: missing meta block (model/dataset/hardware/framework/precision/seed)")
+                else:
+                    missing = [k for k in CURVE_META_KEYS if meta.get(k) in (None, "")]
+                    if missing:
+                        errs.append(f"{tag}: meta missing {missing}")
 
 print(f"[validate] checked {len(glob.glob('data/*.json'))} files")
 if errs:

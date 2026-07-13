@@ -1,22 +1,10 @@
 {
-  "updated": "2026-06-16T02:56:29.267002Z",
-  "provenance": {
-    "kind": "synthetic-demo",
-    "generator": "ascend-rl-bench/tools/logs_to_dashboard.py --synthetic",
-    "purpose": "Demonstrates the dashboard schema and expected GPU-vs-NPU comparison shape. Replace with parsed training logs before citing results."
-  },
+  "updated": "2026-06-24T10:00:51.283641Z",
+  "synthetic": true,
   "experiments": [
     {
       "name": "qwen0.5b_gsm8k_grpo",
       "device": "gpu",
-      "model": "Qwen2.5-0.5B-style synthetic run",
-      "dataset": "GSM8K synthetic",
-      "framework": "verl-compatible log schema",
-      "hardware": "Synthetic GPU baseline",
-      "precision": "simulated BF16",
-      "seed": 1,
-      "runType": "synthetic-demo",
-      "notes": "Generated demo curve; use a real train.log export for any benchmark claim.",
       "metrics": {
         "reward_mean": [
           [
@@ -362,19 +350,20 @@
             196.8
           ]
         ]
+      },
+      "meta": {
+        "model": "Qwen2.5-0.5B-Instruct",
+        "dataset": "GSM8K",
+        "hardware": "1\u00d7 NVIDIA A100 80GB",
+        "framework": "verl + vLLM",
+        "precision": "bf16",
+        "seed": 1,
+        "synthetic": true
       }
     },
     {
       "name": "qwen0.5b_gsm8k_grpo",
       "device": "npu",
-      "model": "Qwen2.5-0.5B-style synthetic run",
-      "dataset": "GSM8K synthetic",
-      "framework": "verl-compatible log schema",
-      "hardware": "Synthetic Ascend 910B-class NPU",
-      "precision": "simulated BF16",
-      "seed": 2,
-      "runType": "synthetic-demo",
-      "notes": "Generated with a small synthetic drift versus the GPU baseline to exercise alignment visualization.",
       "metrics": {
         "reward_mean": [
           [
@@ -720,6 +709,15 @@
             202.7
           ]
         ]
+      },
+      "meta": {
+        "model": "Qwen2.5-0.5B-Instruct",
+        "dataset": "GSM8K",
+        "hardware": "1\u00d7 Ascend 910B 64GB",
+        "framework": "MindSpeed-RL + vLLM-Ascend",
+        "precision": "bf16",
+        "seed": 2,
+        "synthetic": true
       }
     }
   ]

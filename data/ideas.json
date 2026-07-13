@@ -8,15 +8,20 @@
       "difficulty": 2,
       "novelty": 3,
       "why": "Everyone porting RL to Ascend hits accuracy drift (DAPO reward MAE ~3.7–4.3% vs GRPO ~0.3–3.3%) and nobody has a clean cross-platform baseline. High value, modest compute, and a great first project that builds deep familiarity with the whole stack.",
-      "minimumExperiment": "Run the same Qwen2.5-0.5B GRPO GSM8K job once on GPU and once on Ascend, exporting reward/KL/memory curves.",
-      "successMetric": "Dashboard shows throughput, peak memory, final accuracy, and reward-curve delta with enough metadata to reproduce the run.",
       "steps": [
         "Get verl running on a single Atlas 800T A2 node (8x 910B) with vLLM-Ascend",
         "Run GRPO on Qwen2.5-0.5B/7B on GSM8K/MATH; log throughput, MFU, peak HBM",
         "Mirror the exact run on an NVIDIA node; diff reward curves and final accuracy",
         "Bisect divergence to operators (npu_fusion_attention, RNG, accumulation) and publish a porting/accuracy checklist"
       ],
-      "tags": ["accessible", "benchmark", "verl", "good-first-project"]
+      "tags": [
+        "accessible",
+        "benchmark",
+        "verl",
+        "good-first-project"
+      ],
+      "minimumExperiment": "Run GRPO on Qwen2.5-0.5B / GSM8K for 200 steps on one Atlas 800T A2 (910B) node and one A100 node; log reward curve + peak HBM.",
+      "successMetric": "Cross-platform reward-curve MAE quantified (<5%) with a reproducible throughput / MFU / peak-HBM table for ≥1 model."
     },
     {
       "title": "Sleep-Mode / Colocated Hybrid Engine for RL on Ascend",
@@ -25,15 +30,20 @@
       "difficulty": 5,
       "novelty": 5,
       "why": "Identified across the research as the single biggest RL-specific blocker on Ascend — its absence caps per-node model size and forces disaggregated setups. Solving it is a genuine systems contribution that the whole open ecosystem (verl, OpenRLHF) needs.",
-      "minimumExperiment": "Prototype phase-by-phase memory release/reload for a tiny actor + rollout pair on one 910B-class node.",
-      "successMetric": "A colocated RL step completes with lower peak HBM than the baseline and no measurable output drift on fixed prompts.",
       "steps": [
         "Profile NPU memory during a colocated GRPO step; quantify what sleep mode would free",
         "Study vLLM's CUDA sleep-mode implementation and map it to CANN/torch_npu memory APIs",
         "Prototype KV/weight offload-reload between rollout and training phases on Ascend",
         "Upstream to vLLM-Ascend and validate a 7B→32B colocated GRPO run on one node"
       ],
-      "tags": ["systems", "hard", "high-impact", "infrastructure"]
+      "tags": [
+        "systems",
+        "hard",
+        "high-impact",
+        "infrastructure"
+      ],
+      "minimumExperiment": "Profile NPU memory across one colocated GRPO step on a 7B model and prototype KV/weight offload-reload between rollout and train phases.",
+      "successMetric": "Colocated 7B GRPO runs on a single node with ≥30% lower peak HBM vs no offload, at no accuracy loss."
     },
     {
       "title": "Asynchronous Off-Policy RL Tuned for NPU Constraints",
@@ -42,15 +52,20 @@
       "difficulty": 4,
       "novelty": 4,
       "why": "Async RL sidesteps the exact bottleneck Ascend suffers from, and AReaL already ships a stable 'ascend' branch to build on. Off-policy replay (ExGRPO) also improves sample efficiency — doubly valuable when per-chip throughput trails GPUs.",
-      "minimumExperiment": "Reproduce a small async rollout/train loop on Ascend, then add one replay buffer policy and compare against synchronous GRPO.",
-      "successMetric": "Wall-clock reward improvement per NPU-hour beats synchronous GRPO without widening final accuracy variance beyond a set threshold.",
       "steps": [
         "Reproduce AReaL's async pipeline on Ascend using its ascend branch + SGLang rollout",
         "Add prioritized experience replay (ExGRPO-style) keyed on rollout correctness/entropy",
         "Measure staleness tolerance and speedup vs synchronous verl-Ascend",
         "Characterize the accuracy/throughput Pareto frontier under fixed NPU memory"
       ],
-      "tags": ["async-rl", "off-policy", "efficiency", "AReaL"]
+      "tags": [
+        "async-rl",
+        "off-policy",
+        "efficiency",
+        "AReaL"
+      ],
+      "minimumExperiment": "Reproduce the AReaL async pipeline on Ascend (ascend branch + SGLang rollout) for a 1.5–7B GRPO run.",
+      "successMetric": "Throughput speedup vs synchronous verl-Ascend at equal final accuracy, with a documented staleness tolerance."
     },
     {
       "title": "FP8 RL Training on Ascend",
@@ -59,15 +74,20 @@
       "difficulty": 5,
       "novelty": 5,
       "why": "FP8 is the most direct lever against the NPU memory wall, but FP8 *RL* (with its rollout + multiple model copies) is barely explored anywhere, let alone on Ascend. Pairs naturally with prime-rl's FP8 RL direction on GPU.",
-      "minimumExperiment": "Use a 0.5B-1.5B model to compare BF16 GRPO against FP8 rollout or FP8 policy forward on one math dataset.",
-      "successMetric": "At least 25% peak-memory reduction with reward and entropy curves staying within an agreed tolerance of BF16.",
       "steps": [
         "Confirm Ascend FP8 GEMM support and numerical behavior for forward/backward",
         "Apply fine-grained tile/block scaling to the policy model in a GRPO run",
         "Handle the stability landmines (entropy collapse + FP8 noise interaction)",
         "Compare convergence and memory vs BF16 GRPO on Ascend"
       ],
-      "tags": ["fp8", "low-precision", "memory", "research"]
+      "tags": [
+        "fp8",
+        "low-precision",
+        "memory",
+        "research"
+      ],
+      "minimumExperiment": "Confirm Ascend FP8 GEMM forward/backward numerics, then run one FP8-policy GRPO step on Qwen2.5-0.5B.",
+      "successMetric": "FP8 GRPO matches BF16 reward within 1–2% at ≥30% memory reduction, stable over 200 steps."
     },
     {
       "title": "Single-Node R1-Zero Reproduction Cookbook on Ascend",
@@ -76,15 +96,20 @@
       "difficulty": 2,
       "novelty": 2,
       "why": "R1-Zero recipes exist on Ascend but are scattered and brittle; a polished, reproducible cookbook has outsized community impact and is very achievable. Leverages the 1-shot/spurious-rewards findings to keep data and compute tiny.",
-      "minimumExperiment": "Ship one command that prepares data, runs a short GRPO job, evaluates GSM8K, and exports curves to this dashboard.",
-      "successMetric": "A fresh machine can reproduce the run from README steps and match the published curve envelope.",
       "steps": [
         "Pick Qwen2.5-Math-1.5B and a verifiable math reward (GSM8K/MATH)",
         "Run GRPO via verl-Ascend or TRL-Ascend; capture the emergent long-CoT transition",
         "Test data-efficiency (1-shot RLVR) and document every pitfall + fix",
         "Release a one-command repo + write-up with reward curves and ablations"
       ],
-      "tags": ["accessible", "reproduction", "education", "good-first-project"]
+      "tags": [
+        "accessible",
+        "reproduction",
+        "education",
+        "good-first-project"
+      ],
+      "minimumExperiment": "Run GRPO on Qwen2.5-Math-1.5B / GSM8K via verl-Ascend on one A2 node and capture the long-CoT transition.",
+      "successMetric": "A one-command repo lets a fresh user reproduce the emergent-reasoning reward curve on a single node."
     },
     {
       "title": "Entropy-Collapse Mitigation in verl-Ascend",
@@ -93,15 +118,20 @@
       "difficulty": 3,
       "novelty": 4,
       "why": "Entropy collapse caps RL reasoning gains, and the interaction between Ascend's precision differences and exploration dynamics is genuinely unstudied. A focused, publishable research contribution on top of a known fix.",
-      "minimumExperiment": "Trigger entropy collapse in one baseline GRPO run, then rerun with Clip-Cov or KL-Cov enabled on the same setup.",
-      "successMetric": "Entropy remains healthier for longer while final reward/accuracy improves or holds steady against baseline.",
       "steps": [
         "Reproduce entropy collapse on a GRPO reasoning run on Ascend",
         "Implement Clip-Cov/KL-Cov token-level interventions",
         "Compare entropy/accuracy trajectories Ascend vs GPU to isolate hardware effects",
         "Report whether NPU accumulation noise accelerates or masks collapse"
       ],
-      "tags": ["exploration", "stability", "research", "verl"]
+      "tags": [
+        "exploration",
+        "stability",
+        "research",
+        "verl"
+      ],
+      "minimumExperiment": "Reproduce entropy collapse on a GRPO reasoning run on Ascend, then add Clip-Cov / KL-Cov token-level interventions.",
+      "successMetric": "Mitigation keeps entropy above the collapsed baseline and improves final accuracy; Ascend-vs-GPU dynamics isolated."
     },
     {
       "title": "Memory-Lean Long-Context RL via MLA + KV Compression on NPU",
@@ -110,15 +140,20 @@
       "difficulty": 4,
       "novelty": 4,
       "why": "Long reasoning chains explode the KV cache, and the 910B's weak memory bandwidth (~36% of H100) makes this acute. MLA (~93% KV reduction) + ChunkKV directly target the bottleneck that limits reasoning-RL context length on Ascend.",
-      "minimumExperiment": "Measure KV-cache memory and max rollout length before/after one compression strategy on an MLA-family model.",
-      "successMetric": "Longer context or larger batch fits in HBM with less than a small, reported accuracy drop.",
       "steps": [
         "Quantify KV-cache memory across a long-CoT GRPO rollout on Ascend",
         "Use an MLA-based model (DeepSeek-family) and add ChunkKV-style compression to rollouts",
         "Measure max trainable context length and throughput gains",
         "Check reasoning accuracy is preserved vs uncompressed baselines"
       ],
-      "tags": ["long-context", "MLA", "kv-cache", "memory"]
+      "tags": [
+        "long-context",
+        "MLA",
+        "kv-cache",
+        "memory"
+      ],
+      "minimumExperiment": "Measure KV-cache memory across a long-CoT GRPO rollout on Ascend using an MLA model + ChunkKV-style compression.",
+      "successMetric": "Max trainable context length increased ≥2× at equal reasoning accuracy vs the uncompressed baseline."
     },
     {
       "title": "Auto-Porting / Operator-Coverage Tool for RL Kernels on Ascend",
@@ -127,15 +162,20 @@
       "difficulty": 5,
       "novelty": 4,
       "why": "Only ~65% of PyTorch ops auto-convert and FlashAttention has no Ascend equivalent, so kernel work is the durable moat. A tool that systematizes this for RL workloads helps every team and is a strong systems/compiler contribution.",
-      "minimumExperiment": "Trace one verl GRPO step and emit an operator coverage report that ranks unsupported or fallback-heavy ops.",
-      "successMetric": "Report identifies the top bottleneck operators and links each one to an Ascend kernel, fallback, or implementation task.",
       "steps": [
         "Trace a verl GRPO step and enumerate ops with no/slow Ascend support",
         "Prioritize the RL-critical kernels (fused attention, top-k/sampling, logprob gather)",
         "Write or optimize Ascend C kernels for the top offenders; benchmark vs fallback",
         "Package as a profiler + coverage report integrated with torch_npu"
       ],
-      "tags": ["kernels", "compiler", "systems", "hard"]
+      "tags": [
+        "kernels",
+        "compiler",
+        "systems",
+        "hard"
+      ],
+      "minimumExperiment": "Trace one verl GRPO step on Ascend and emit a coverage report of unsupported/slow ops on the RL-critical path.",
+      "successMetric": "Coverage report plus ≥1 hand-written Ascend C kernel for a top offender, benchmarked vs the fallback."
     }
   ]
 }

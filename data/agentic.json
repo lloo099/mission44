@@ -1,0 +1,1116 @@
+{
+  "updated": "2026-07-07",
+  "trends": [
+    {
+      "title": "长程自治量级跃升,评测与成本基线双双重置",
+      "body": "OSWorld 2.0 把 computer-use 评测推到人类中位 1.6 小时的真实工作流:Claude Opus 4.7 平均每任务 318 次工具调用(1.0 版仅 ~30 次),500 步预算下最强前沿智能体也只完成 20.6%——旧榜(OSWorld-Verified 83.5%)严重高估真实部署能力。与此同时厂商把 agentic 能力压进中低价位(Sonnet 5 $2/$10、GPT-5.6 Terra 自称同能力便宜 2 倍):单任务数百次工具调用 × 更低单价,意味着 RL 训练侧的 rollout 长度、沙箱环境需求和成本核算都要按新量级重排。"
+    },
+    {
+      "title": "环境(Environment)成为新的 scaling 轴",
+      "body": "继模型规模、数据之后,「环境规模 + 自演化轮次」被工业界当成训练通用智能体的新扩展维度。Prime Intellect 把它做成基础设施(Environments Hub / verifiers / Prime Sandbox)。2026 环境赛道进入规模化融资(Deeptune 4300 万 / a16z、某 RL gym 估值 7.5 亿、实验室据称投入 > $1B)并走向标准化:Meta+HF 的 OpenEnv(Gymnasium 风)、General Reasoning 的 OpenReward / ORS(把 MCP 扩成奖励标准)。谁拥有环境,谁就掌握 agentic 能力的上游。"
+    },
+    {
+      "title": "长程工具智能体:从「手艺」走向「配方」",
+      "body": "《Demystifying RL for Long-Horizon Tool-Using Agents》把设计空间拆成 5 轴(奖励塑形 / 模型规模 / 数据配比 / 算法 / 环境稳定性),并给出可复用结论:奖励与算法是 scale-dependent——小模型靠分阶段奖励 + 强探索,大模型用简单稠密奖励即可收敛;约 1K 条平衡难度样本是性价比甜点。Agentic RL 正在从玄学变成菜谱。"
+    },
+    {
+      "title": "信用分配走向 step / group 级",
+      "body": "跨 10–100+ 回合,episode 级奖励几乎没信息——信用分配(CA)是长程 agentic RL 的核心瓶颈。新算法把功过分配做细:G2PO(组-图策略优化)、GiGPO(分层、步级 CA)、turn 级方法层出。CA 的粒度选择正成为 agentic RL 的关键设计旋钮。"
+    },
+    {
+      "title": "垂直定制 > 通用模型",
+      "body": "工业界共识在变:赢家不用现成通用模型,而是用 RFT/RL 后训练把模型深度定制到自家工作流(Cursor Composer One)。编码代理已成前沿实验室标配——「自有快模型 + 并行子代理 CLI」(xAI Grok Build 用真实 PR 做 RL、OpenAI Codex、Cognition),竞争转向延迟/并行/长程可靠;RL 甚至开始共同优化「脚手架」本身(DeepReinforce Ornith 自学 scaffold)。RL 后训练正从「刷榜」变成「产品差异化」的护城河。"
+    },
+    {
+      "title": "Computer-use / GUI 智能体起飞",
+      "body": "RL 把「会用电脑」变成可训练能力:Anthropic Sonnet 4.6 在 OSWorld-Verified 72.5%(16 个月前仅 14.9%);Zhipu ComputerRL、ByteDance UI-TARS-2/Seed2.1 在数千并行虚拟桌面做在线 RL。瓶颈正从环境成本转向「任务生成 + 奖励验证器」(VeriEnv 克隆网站做确定性验证、ZeroGUI 用 VLM 自动出题)。但 ByteDance Workflow-GYM 显示:最强模型在长程专业软件任务通过率仅 ~30%,天花板明显。"
+    },
+    {
+      "title": "并行 / 多智能体 + 标准化基础设施",
+      "body": "Moonshot 的 PARL(Parallel Agent RL)训练模型把复杂任务分解并并行(Kimi Claw 的 Agent Swarm);async RL 系统聚焦 trainer↔generator 吞吐匹配。生态侧,Linux 基金会的 Agentic AI Foundation 统一 MCP(2026-03 破 9700 万安装)/ AGENTS.md / goose——协议与基础设施开始收敛。"
+    }
+  ],
+  "items": [
+    {
+      "title": "OSWorld 2.0(长程真实电脑使用基准:318 次工具调用/任务)",
+      "org": "XLang Lab (xlang-ai, HKU 等)",
+      "year": "2026-06",
+      "category": "benchmark",
+      "track": "academic",
+      "innovation": "108 个人类中位耗时 1.6 小时的真实工作流,把 computer-use 评测推进长程时代",
+      "summary": "OSWorld 团队发布 2.0:108 个长程真实电脑使用工作流,人类完成中位约 1.6 小时;Claude Opus 4.7(最大思考预算)平均每任务需 318 次工具调用(1.0 仅 ~30 次),500 步预算下最强前沿智能体仅完成 20.6%。论文指出 Opus 4.8 在 OSWorld-Verified 的 83.5% 高分严重高估真实部署能力,评测覆盖 Claude、GPT-5.5、Qwen 3.7-Plus、MiniMax M3、Kimi 2.6 等七个模型家族。单任务数百次工具调用意味着 agentic RL 的 rollout 长度与沙箱环境需求量级跃升。",
+      "url": "https://arxiv.org/abs/2606.29537",
+      "tags": [
+        "academic",
+        "computer-use",
+        "benchmark",
+        "long-horizon",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "OpenAI GPT-5.6 预览(Sol/Terra/Luna,限量灰度)",
+      "org": "OpenAI",
+      "year": "2026-06",
+      "category": "product",
+      "track": "industry",
+      "innovation": "三档定价拆分 + 首现政府介入的安全审查限量发布模式",
+      "summary": "GPT-5.6 三档:旗舰 Sol、低价 Terra(称与 GPT-5.5 相当但便宜 2 倍)、最快最便宜的 Luna;预览期仅通过 API 和 Codex 向约 20 家受信任伙伴开放,并应美国政府要求先经安全审查再逐步放开。OpenAI 自称 Sol 在 Terminal-Bench 2.1 创下新 SOTA,agentic 编码能力提升。前沿 agentic coding 标杆再移(数字为厂商自报)。",
+      "url": "https://openai.com/index/previewing-gpt-5-6-sol/",
+      "tags": [
+        "industry",
+        "coding-agent",
+        "frontier-model",
+        "2026"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "Anthropic Claude Sonnet 5(低成本运行智能体的主力模型)",
+      "org": "Anthropic",
+      "year": "2026-06",
+      "category": "product",
+      "track": "industry",
+      "innovation": "把此前需更大更贵模型才有的自主水平压进 $2/$10 中档价位",
+      "summary": "6 月 30 日发布,定位'最 agentic 的 Sonnet':可自主规划、使用浏览器/终端等工具。定价 $2/$10 每百万 token(优惠至 2026-08-31,之后 $3/$15),成为 claude.ai 免费/Pro 默认模型,上线 Claude Code、API、Bedrock、Vertex AI。直接改变跑长程 agent rollout 的成本基线,对自建 RL 数据管线的成本对标有参考价值(能力口径为厂商自报)。",
+      "url": "https://www.anthropic.com/news/claude-sonnet-5",
+      "tags": [
+        "industry",
+        "coding-agent",
+        "pricing",
+        "2026"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "Cognition Devin Security Swarm(多智能体并行挖洞 + 沙箱运行时验证)",
+      "org": "Cognition",
+      "year": "2026-07",
+      "category": "product",
+      "track": "industry",
+      "innovation": "agentic map-reduce + 隔离沙箱运行时复现确认可利用性",
+      "summary": "并行智能体跨文件推理找业务逻辑缺陷与鉴权绕过,每个发现在隔离沙箱中运行时复现以确认可利用性,再由 Devin 写补丁开 PR;自报 50 个真实漏洞基准找到 36 个,单发现成本低 30%。'并行多智能体 + 沙箱运行时验证'的产品化范式落地——运行时可利用性验证本质是可验证奖励信号,是 agentic RL 奖励设计的现成模板。",
+      "url": "https://www.prnewswire.com/news-releases/cognition-launches-devin-security-swarm-to-tackle-the-vulnerability-backlog-302814800.html",
+      "tags": [
+        "industry",
+        "multi-agent",
+        "security",
+        "verifiable-rewards",
+        "2026"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "OpenAI Codex(GPT-5.5,1000+ 连续工具调用)",
+      "org": "OpenAI",
+      "year": "2026-06",
+      "category": "product",
+      "track": "industry",
+      "innovation": "真实工程任务连续 1000+ 次工具调用无人工干预",
+      "summary": "Codex 升级 GPT-5.5、跑在 NVIDIA GB200 NVL72 上,演示真实软件任务连续 1000+ 工具调用无干预,Terminal-Bench 2.0 82.7%(暂定)。「自治时长」这一新指标的标志性数据点。",
+      "url": "https://blogs.nvidia.com/blog/openai-codex-gpt-5-5-ai-agents/",
+      "tags": [
+        "industry",
+        "coding-agent",
+        "long-horizon",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Microsoft Scout(常开个人智能体)",
+      "org": "Microsoft",
+      "year": "2026-06",
+      "category": "product",
+      "track": "industry",
+      "summary": "微软发布 Scout——常开个人智能体(含「带电脑操作的研究员」能力),经 Frontier 实验发布,可导航公开/受限/交互网页代为执行任务。信号:agent 产品从对话走向持久自治。",
+      "url": "https://www.microsoft.com/en-us/microsoft-365/blog/2026/06/02/introducing-microsoft-scout-your-always-on-personal-agent/",
+      "tags": [
+        "industry",
+        "computer-use",
+        "personal-agent",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "HCAPO(Hindsight 信用分配,长程 agent)",
+      "org": "research",
+      "year": "2026-06",
+      "category": "algorithm",
+      "track": "academic",
+      "innovation": "首次把 hindsight credit assignment 引入 LLM agent 训练",
+      "summary": "用 hindsight relabeling 做信用分配,直击长程稀疏延迟奖励:WebShop 较 GRPO +7.7%、ALFWorld +13.8%(暂定)。与 turn-level / 过程监督互补的新 CA 角度。",
+      "url": "https://arxiv.org/abs/2603.08754",
+      "tags": [
+        "academic",
+        "credit-assignment",
+        "long-horizon",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "OpenClaw-RL(从对话反馈做全异步 RL)",
+      "org": "Gen-Verse",
+      "year": "2026-02",
+      "category": "framework",
+      "track": "industry",
+      "summary": "完全异步 RL 框架:把日常对话反馈转成训练信号来训练个性化 agent,支持大规模环境并行。不同于 verl/SkyRL 的可验证环境路线——从自然反馈学。",
+      "url": "https://github.com/Gen-Verse/OpenClaw-RL",
+      "tags": [
+        "industry",
+        "async-rl",
+        "framework",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "TokenDance(多智能体集体 KV 缓存共享)",
+      "org": "research",
+      "year": "2026-06",
+      "category": "infrastructure",
+      "track": "academic",
+      "innovation": "All-Gather 集体 KV 复用 + Diff-Aware 块稀疏存储",
+      "summary": "面向多智能体并发服务的 KV 共享:KV Collector 一次集体操作完成整轮复用,Diff-Aware Storage 把兄弟缓存编码为块稀疏 diff(压 11–17×),并发 agent 数较带前缀缓存的 vLLM ×2.7(暂定)。",
+      "url": "https://arxiv.org/abs/2604.03143",
+      "tags": [
+        "academic",
+        "KV-cache",
+        "multi-agent",
+        "serving"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "ScaleSWE(大规模真实 PR 挖掘 + 轨迹蒸馏)",
+      "org": "AweAI-Team (RUC)",
+      "year": "2026-02",
+      "category": "framework",
+      "track": "academic",
+      "innovation": "6M PR→10万实例 + 合成 F2P + DeepSeek 蒸馏 SFT",
+      "summary": "论文《Immersion in the GitHub Universe》(arXiv 2602.09892)。真实 PR 大规模挖掘(23k 仓库/6M PR→10万实例,MEGAFLOW+阿里云沙箱出可验证镜像)+ unit-test-creator 合成 F2P + DeepSeek-V3.2 蒸馏 71k 轨迹;SFT Qwen3-30B-A3B → SWE-bench Verified 64%(SFT-only,暂定)。与 Scale AI 无关(同名)。",
+      "url": "https://github.com/AweAI-Team/ScaleSWE",
+      "tags": [
+        "academic",
+        "SWE",
+        "data",
+        "distillation"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "DeNovoSWE(doc2repo 长程数据,for SFT & RL)",
+      "org": "AweAI-Team (RUC)",
+      "year": "2026-06",
+      "category": "framework",
+      "track": "academic",
+      "innovation": "从自然语言 spec 从零生成整个仓库(长程,可 RL)",
+      "summary": "ScaleSWE 的后续(arXiv 2606.10728):任务从「修 PR bug」转为 doc2repo——仅给 spec 从零造仓库。明确为长程 SFT & RL 环境(支持 rollout),4818 实例、DeepSeek-v4-Pro-High 蒸馏;Qwen3.5-35B-A3B → ~50% BeyondSWE-Doc2Repo(暂定)。是 ScaleSWE 走向 RL 的桥。",
+      "url": "https://github.com/AweAI-Team/DeNovoSWE",
+      "tags": [
+        "academic",
+        "SWE",
+        "long-horizon",
+        "RL-env"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "AweAgent(ScaleSWE 的执行/训练框架)",
+      "org": "AweAI-Team (RUC)",
+      "year": "2026-03",
+      "category": "framework",
+      "track": "academic",
+      "innovation": "统一 build/eval/train 的执行核 + 产 token 级 rollout(loss-mask)",
+      "summary": "Apache-2.0 的 agent 执行框架(TaskRunner/AgentContext/AgentLoop/Scaffolds):Scale-SWE 跑在 search_swe scaffold + ACI 工具 + 反泄漏 bash blocklist;训练模式下 tool 观测 loss_mask=0、产 token 级轨迹+logprobs——即 71k 蒸馏轨迹的产出机制。",
+      "url": "https://github.com/AweAI-Team/AweAgent",
+      "tags": [
+        "academic",
+        "SWE",
+        "scaffold",
+        "framework"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "SWE-bench(+Verified/Live/家族,评测事实标准)",
+      "org": "Princeton",
+      "year": "2023-10",
+      "category": "benchmark",
+      "track": "academic",
+      "innovation": "(repo + issue → 过隐藏 F2P/P2P 测试的 patch)的任务格式",
+      "summary": "SWE agent 生态的评测基石:给定真实仓库 buggy commit + issue,要求产出能让原本失败测试通过(F2P)、不退化(P2P)的 patch。Verified(500,人工校验)是事实标准但已饱和+污染;Live(post-cutoff)抗污染。详解见 Blog → Dispatch 12。",
+      "url": "https://www.swebench.com",
+      "tags": [
+        "academic",
+        "SWE",
+        "benchmark",
+        "eval"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "SWE-bench Pro / SWE Atlas(Scale SEAL 抗污染评测)",
+      "org": "Scale AI",
+      "year": "2026",
+      "category": "benchmark",
+      "track": "industry",
+      "innovation": "含私有/copyleft 仓库抗污染 + 扩到全工程闭环",
+      "summary": "Scale AI(SEAL)的 SWE 评测体系:SWE-bench Pro(1865 实例、含私有/copyleft 抗污染)与后续 SWE Atlas(扩展到 Codebase Q&A / 写测试 / 重构)。前沿模型已转向用它取代饱和的 Verified。(注:与 AweAI 的 ScaleSWE 同名但无关。)",
+      "url": "https://scale.com/blog/swe-bench-pro",
+      "tags": [
+        "industry",
+        "SWE",
+        "benchmark",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "SWE-agent(ACI 脚手架)",
+      "org": "Princeton",
+      "year": "2024-05",
+      "category": "framework",
+      "track": "academic",
+      "innovation": "Agent-Computer Interface:为 LM 设计的工具集 + 编辑前 lint",
+      "summary": "证明「接口设计而非模型本身」能撬动 10–30 分:LM 友好的工具/ACI + ReAct 循环。scaffold 三大模式之一,是 SWE agent 的奠基工作。",
+      "url": "https://arxiv.org/abs/2405.15793",
+      "tags": [
+        "academic",
+        "SWE",
+        "scaffold",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "SWE-smith(任意 repo → 5 万可验证任务工厂)",
+      "org": "Princeton / SWE-bench team",
+      "year": "2025-04",
+      "category": "framework",
+      "track": "academic",
+      "innovation": "四种造 bug 策略 + 「一 repo 一执行环境」做规模化",
+      "summary": "把任意 Python repo 自动变成任务工厂(LM Rewrite / AST 改写 / PR Mirroring / Combine),只保留能把通过测试翻成失败的 patch 验证;产出 ~5 万任务 + 2.6 万 trajectory。可验证 SWE 任务规模化的关键。",
+      "url": "https://github.com/SWE-bench/SWE-smith",
+      "tags": [
+        "academic",
+        "SWE",
+        "data",
+        "environments"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "SWE-Gym(首个训练用真实 SWE 环境)",
+      "org": "research",
+      "year": "2024-12",
+      "category": "framework",
+      "track": "academic",
+      "summary": "首个为「训练」而非评测建的环境:2438 个真实任务/11 repo,带可执行 runtime + 单元测试奖励,还训 verifier 做 best-of-n。RL-for-SWE 的常用起点。",
+      "url": "https://arxiv.org/abs/2412.21139",
+      "tags": [
+        "academic",
+        "SWE",
+        "data",
+        "RL-env"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "DeepSWE(Qwen3-32B 纯 RL 开源复现)",
+      "org": "Together / Agentica",
+      "year": "2025-07",
+      "category": "algorithm",
+      "track": "industry",
+      "innovation": "rLLM + R2E-Gym + GRPO++ 的端到端开源 RL 栈",
+      "summary": "从 Qwen3-32B 纯 RL 训上去的完整开源复现(GRPO++:clip-higher、无 KL、长度归一化),42.2% Pass@1(暂定)。搭 SWE agentic RL 的「最省力起点」参考栈。",
+      "url": "https://www.together.ai/blog/deepswe",
+      "tags": [
+        "industry",
+        "SWE",
+        "RL",
+        "open-source"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Meta SWE-RL(相似度规则奖励)",
+      "org": "Meta",
+      "year": "2025-02",
+      "category": "algorithm",
+      "track": "academic",
+      "innovation": "用与 ground-truth patch 的序列相似度做奖励,绕开大规模执行",
+      "summary": "不跑测试,而用与正确 patch 的序列相似度当 reward——免去为每个任务搭执行环境的成本,是 RL-for-SWE 奖励设计的另一条路线。",
+      "url": "https://arxiv.org/abs/2502.18449",
+      "tags": [
+        "academic",
+        "SWE",
+        "RL",
+        "reward-design"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "xAI · Grok Build (grok-code-fast-1)",
+      "org": "xAI",
+      "year": "2026-05",
+      "category": "product",
+      "track": "industry",
+      "innovation": "终端式编码代理 + 用真实 PR 做 RL 后训练的自有快模型",
+      "summary": "xAI 的终端编码代理 Grok Build,模型 grok-code-fast-1 用真实 PR 做 RL 后训练,SWE-bench Verified 70.8%。第三家前沿实验室下场做「自有快模型 + 并行子代理 CLI」。",
+      "url": "https://x.ai/news/grok-code-fast-1",
+      "tags": [
+        "industry",
+        "coding-agent",
+        "RL-posttrain",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Google · Deep Research Max (Gemini 3.1 Pro)",
+      "org": "Google DeepMind",
+      "year": "2026-04",
+      "category": "product",
+      "track": "industry",
+      "innovation": "可接任意工具/私域的长程自主深研代理",
+      "summary": "基于 Gemini 3.1 Pro 的自主深研代理,BrowseComp 85.9%(较 Gemini 3 Pro +~25 分),支持 MCP 工具。深研从「网页搜索器」升级为长程自主代理,靠 test-time compute 迭代检索。",
+      "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/next-generation-gemini-deep-research/",
+      "tags": [
+        "industry",
+        "deep-research",
+        "tool-use",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Moonshot · Kimi Work(本地桌面代理,K2.6)",
+      "org": "Moonshot AI",
+      "year": "2026-06",
+      "category": "product",
+      "track": "industry",
+      "innovation": "本地优先 + 复用真实登录态 + 300 子代理蜂群",
+      "summary": "基于 K2.6 的本地桌面代理:经 WebBridge 用真实登录态驱动浏览器,可调度多达 300 个子代理。代理从云端转向「本地优先 + 复用会话/cookie」(厂商口径)。",
+      "url": "https://www.marktechpost.com/2026/06/12/moonshot-ai-launches-kimi-work-a-local-desktop-agent-reportedly-running-on-kimi-k2-6-with-a-300-sub-agent-agent-swarm/",
+      "tags": [
+        "industry",
+        "computer-use",
+        "multi-agent",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "DeepReinforce · Ornith-1.0(自学 RL 脚手架)",
+      "org": "DeepReinforce",
+      "year": "2026-06",
+      "category": "algorithm",
+      "track": "industry",
+      "innovation": "RL 同时优化解题 rollout 与驱动它的 scaffold 本身",
+      "summary": "开源编码模型族(9B/35B/397B):RL 不只学解题策略,还共同优化「脚手架」本身。397B SWE-bench Verified 82.4% / Pro 62.2%(厂商自报)。自改进 agentic RL 范式。",
+      "url": "https://www.marktechpost.com/2026/06/25/deepreinforce-releases-ornith-1-0-an-open-source-coding-model-family-that-learns-its-own-rl-scaffolds/",
+      "tags": [
+        "industry",
+        "coding-agent",
+        "self-improving",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "ByteDance · Workflow-GYM(长程专业电脑使用基准)",
+      "org": "ByteDance Seed",
+      "year": "2026-06",
+      "category": "trend",
+      "track": "industry",
+      "innovation": "把 computer-use 评测推向 FreeCAD 等专业软件长程工作流",
+      "summary": "长程专业领域电脑使用基准:最强模型(Gemini-3.1-pro)平均通过率仅 30.67%,暴露当前 GUI 代理在真实专业工作流上的天花板。",
+      "url": "https://arxiv.org/abs/2606.11042",
+      "tags": [
+        "industry",
+        "computer-use",
+        "benchmark",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "OpenEnv(Meta + Hugging Face 智能体环境标准)",
+      "org": "Meta PyTorch + Hugging Face",
+      "year": "2025-10",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "Gymnasium 风格、可共享、可插入训练栈的环境标准",
+      "summary": "Meta 与 HF 联合推出 Gymnasium 风格的智能体环境标准与共享 Hub,可插入 TorchForge/verl/TRL 训练循环。把「环境」做成开放标准与生态层。",
+      "url": "https://huggingface.co/blog/openenv",
+      "tags": [
+        "industry",
+        "environments",
+        "standards",
+        "infrastructure"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "OpenReward / Open Reward Standard(ORS)",
+      "org": "General Reasoning",
+      "year": "2026-03",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "把可验证奖励环境变成托管 API + 把 MCP 扩成奖励标准",
+      "summary": "用一个 API 提供 330+ RL 环境、450 万任务,并把 MCP 扩展为奖励标准(ORS),直接对接 Tinker/Slime 等训练栈。环境=「托管端点 + 课程/奖励原语」。",
+      "url": "https://www.gr.inc/releases/introducing-openreward",
+      "tags": [
+        "industry",
+        "environments",
+        "RLVR",
+        "standards"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "OpenTinker(RL-as-a-Service)",
+      "org": "open-tinker",
+      "year": "2026-01",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "把 agentic RL 拆成算法/执行/环境三层的可组合服务",
+      "summary": "把智能体 RL 拆为算法、执行、环境交互三层的「RL 即服务」基础设施——从单体 pipeline 转向解耦/服务化。",
+      "url": "https://github.com/open-tinker/OpenTinker",
+      "tags": [
+        "industry",
+        "RL-as-a-service",
+        "async-rl",
+        "infrastructure"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "OpenRLHF v0.10.x(全异步多轮 agent 训练)",
+      "org": "OpenRLHF",
+      "year": "2026-06",
+      "category": "framework",
+      "track": "industry",
+      "innovation": "partial rollout(vLLM 暂停/恢复)+ 重要性采样校正",
+      "summary": "主流开源 RLHF 框架新增 partial rollout 与 off-policy 重要性采样校正的全异步多轮 agent 训练——「部分 rollout + off-policy 修正」成为标配,异步 RL 走向生产成熟。",
+      "url": "https://github.com/openrlhf/openrlhf",
+      "tags": [
+        "industry",
+        "async-rl",
+        "framework",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "AgileRL / Arena(企业 RLOps 平台,$7.5M)",
+      "org": "AgileRL",
+      "year": "2026-01",
+      "category": "product",
+      "track": "industry",
+      "summary": "获 750 万美元种子轮,Arena 平台号称把企业 RL 端到端流程提速约 10×(被 IBM、空客等采用)。专门面向企业的「RLOps」工具层(媒体口径)。",
+      "url": "https://www.hpcwire.com/aiwire/2026/01/07/agilerl-emerges-with-7-5m-to-help-companies-speed-up-reinforcement-learning-by-10x/",
+      "tags": [
+        "industry",
+        "RLOps",
+        "enterprise",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Mechanize(编码 RL 环境供应商)",
+      "org": "Mechanize",
+      "year": "2026",
+      "category": "product",
+      "track": "industry",
+      "summary": "主打与模型能力直接挂钩的高保真编码 RL 环境,已与 Anthropic 合作。头部实验室(传闻未来一年投入 > $1B)把 RL 环境采购规模化,催生专精供应商(媒体口径)。",
+      "url": "https://www.mechanize.work/",
+      "tags": [
+        "industry",
+        "environments",
+        "coding",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Deeptune($43M A 轮,a16z 领投「训练 gym」)",
+      "org": "Deeptune",
+      "year": "2026-03",
+      "category": "product",
+      "track": "industry",
+      "summary": "a16z 领投 4300 万美元 A 轮,构建模拟职场工作流的 RL 训练环境。头部 VC 押注「职业角色级」高保真 RL 环境,环境赛道进入规模化融资(媒体口径)。",
+      "url": "https://fortune.com/2026/03/19/andreessen-horowitz-ai-startups-deeptune-series-a/",
+      "tags": [
+        "industry",
+        "environments",
+        "funding",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Epoch AI · RL 环境现状 FAQ",
+      "org": "Epoch AI",
+      "year": "2026",
+      "category": "trend",
+      "track": "industry",
+      "summary": "访谈 18 位从业者梳理 RL 环境现状:实验室称将投入 > $10 亿,重心从数学转向真实任务;量化了支出与质量瓶颈。权威机构对环境市场的体系化盘点。",
+      "url": "https://epoch.ai/gradient-updates/state-of-rl-envs",
+      "tags": [
+        "industry",
+        "environments",
+        "analysis",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "GraphGPO(图结构 step 级信用分配)",
+      "org": "NTU / Alibaba",
+      "year": "2026-05",
+      "category": "algorithm",
+      "track": "academic",
+      "innovation": "把所有 rollout 聚合成状态转移图,按到目标的距离分配优势",
+      "summary": "Beyond Trajectory-Level Attribution:用群体图结构做 step 级信用分配,能挖出失败轨迹里被埋没的有价值步骤,替代昂贵的树采样过程奖励。",
+      "url": "https://arxiv.org/abs/2605.26684",
+      "tags": [
+        "academic",
+        "credit-assignment",
+        "multi-turn",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "T²PO(不确定性引导探索,稳定多轮 RL)",
+      "org": "Amazon Science",
+      "year": "2026-05",
+      "category": "algorithm",
+      "track": "academic",
+      "innovation": "token/turn 级不确定性控制探索,重采样低信息轮次",
+      "summary": "把多轮 agentic RL 的「训练崩溃」归因于低信息探索,用 token 级与 turn 级不确定性触发思考干预并重采样(ICML 2026 Spotlight)。",
+      "url": "https://arxiv.org/abs/2605.02178",
+      "tags": [
+        "academic",
+        "stability",
+        "exploration",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "CM2(检查清单奖励,多轮多步工具使用)",
+      "org": "research",
+      "year": "2026-02",
+      "category": "algorithm",
+      "track": "academic",
+      "innovation": "用检查清单二元标准替代可验证奖励",
+      "summary": "针对无可验证奖励的真实多轮工具任务:稀疏赋奖 + 密集评判稳定训练。8B 模型在 τ²-Bench/BFCL-V4/ToolSandbox 显著提升。奖励工程向「无 verifiable」任务延伸。",
+      "url": "https://arxiv.org/abs/2602.12268",
+      "tags": [
+        "academic",
+        "reward-design",
+        "tool-use",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "VeriEnv(克隆网站做可验证奖励的 Web Agent 训练)",
+      "org": "Georgia Tech",
+      "year": "2026-03",
+      "category": "algorithm",
+      "track": "academic",
+      "innovation": "LLM 即环境创建者:把真实网站克隆成可程序化验证的合成环境",
+      "summary": "让模型把真实网站克隆成可执行、可程序化验证奖励的合成环境训练 Web Agent——自动生成确定性奖励,摆脱启发式/LLM 裁判与不安全的真实交互。",
+      "url": "https://arxiv.org/abs/2603.10505",
+      "tags": [
+        "academic",
+        "environments",
+        "web-agent",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "ComputerRL(千桌面在线 RL 的电脑使用代理)",
+      "org": "Zhipu AI",
+      "year": "2025-08",
+      "category": "algorithm",
+      "track": "academic",
+      "innovation": "API-GUI 范式 + 数千并行虚拟桌面在线 RL + Entropulse 抗熵崩",
+      "summary": "把在线 RL 扩到上千并行桌面环境,AutoGLM-OS-9B 在 OSWorld 达 48.9%,用 Entropulse 解决长训练熵崩塌(ICLR 2026)。",
+      "url": "https://arxiv.org/abs/2508.14040",
+      "tags": [
+        "academic",
+        "computer-use",
+        "online-rl",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Prime Intellect · Environments Hub",
+      "org": "Prime Intellect",
+      "year": "2026",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "「RL 环境的 GitHub」——开放、社区化的环境平台",
+      "summary": "一个开放、社区驱动的 RL 环境中心:私测期已有 30+ 研究者/公司贡献环境,目标把「环境规模」做成训练通用智能体的新 scaling 轴。配套 verifiers 框架、Prime Sandbox、NeMo Gym 集成。",
+      "url": "https://www.primeintellect.ai/blog/environments",
+      "tags": [
+        "industry",
+        "environments",
+        "infrastructure",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "PRIME-RL(大规模异步 agentic RL)",
+      "org": "Prime Intellect",
+      "year": "2026",
+      "category": "framework",
+      "track": "industry",
+      "innovation": "训练-推理分离 + 陈旧策略步语义,跑 verifiers 环境",
+      "summary": "Prime Intellect 的开源 agentic RL 训练框架:大规模异步、trainer-inference 分离、stale-policy 步语义,原生支持 verifiers 环境与 2500+ 开源环境。面向「为自家任务定制模型」的 RFT 工作流。",
+      "url": "https://github.com/PrimeIntellect-ai/prime-rl",
+      "tags": [
+        "industry",
+        "async-rl",
+        "framework",
+        "environments"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "verifiers(RL 环境 + 评测库)",
+      "org": "Prime Intellect",
+      "year": "2026",
+      "category": "framework",
+      "track": "industry",
+      "summary": "构建可验证奖励(RLVR)环境与评测的开源库——用代码执行/校验产生「不可作弊」的客观奖励,是 Environments Hub 的底层标准接口。",
+      "url": "https://github.com/PrimeIntellect-ai/verifiers",
+      "tags": [
+        "industry",
+        "RLVR",
+        "environments",
+        "evals"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Cursor · Composer One(IDE 专属 agentic 编码模型)",
+      "org": "Cursor",
+      "year": "2026",
+      "category": "product",
+      "track": "industry",
+      "innovation": "用 RFT 把模型深度定制到自家 IDE 工作流",
+      "summary": "Cursor 为其 IDE 专门后训练的 agentic 编码模型——「垂直定制 > 通用模型」的标志性案例:赢家用 post-training/RFT 把模型贴合具体工作流,而非用现成通用模型。",
+      "url": "https://cursor.com",
+      "tags": [
+        "industry",
+        "coding-agent",
+        "RFT",
+        "product"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Moonshot · PARL / Kimi Claw Agent Swarm",
+      "org": "Moonshot AI",
+      "year": "2026",
+      "category": "algorithm",
+      "track": "industry",
+      "innovation": "Parallel Agent RL:训练模型分解并并行复杂任务",
+      "summary": "Moonshot 的 Kimi Claw 主打 Agent Swarm,背后是新 RL 技术 PARL(Parallel Agent Reinforcement Learning)——训练模型把复杂任务拆解并并行执行。多智能体/并行是 agentic RL 的工业化方向之一(媒体口径)。",
+      "url": "https://press.airstreet.com/p/state-of-ai-may-2026",
+      "tags": [
+        "industry",
+        "multi-agent",
+        "parallel",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Anthropic · Sonnet 4.6 computer use + 2026 Agentic Coding Trends",
+      "org": "Anthropic",
+      "year": "2026",
+      "category": "product",
+      "track": "industry",
+      "innovation": "RL 训练的 computer use:OSWorld-Verified 72.5%",
+      "summary": "Sonnet 4.6 在编码、computer use、长上下文、agent 规划上全面升级,OSWorld-Verified 达 72.5%(computer use 16 个月前刚出时仅 14.9%)。配套《2026 Agentic Coding Trends Report》是工业界 agentic 编码的风向标。",
+      "url": "https://resources.anthropic.com/hubfs/2026%20Agentic%20Coding%20Trends%20Report.pdf",
+      "tags": [
+        "industry",
+        "computer-use",
+        "coding-agent",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "NVIDIA · 用 RL 训练科学智能体(NeMo Gym)",
+      "org": "NVIDIA",
+      "year": "2026",
+      "category": "infrastructure",
+      "track": "industry",
+      "summary": "NVIDIA 技术博客给出用 RLVR 训练科学智能体的配方:让模型设计/运行实验、评估结果、朝科学指标优化;NeMo Gym 提供环境与工具集成。工业级 agentic RL 基础设施的一极。",
+      "url": "https://developer.nvidia.com/blog/how-to-train-scientific-agents-with-reinforcement-learning/",
+      "tags": [
+        "industry",
+        "RLVR",
+        "environments",
+        "science"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Agentic AI Foundation(Linux 基金会)· MCP / AGENTS.md / goose",
+      "org": "Linux Foundation",
+      "year": "2025-12",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "协议与基础设施收敛:MCP 破 9700 万安装",
+      "summary": "2025-12 成立,锚定 Anthropic 的 MCP、OpenAI 的 AGENTS.md、Block 的 goose。MCP 在 2026-03 破 9700 万安装。agentic 生态从「各做各的」走向「共享协议 + 标准环境/工具接口」——RL 训练的环境标准化由此受益。",
+      "url": "https://modelcontextprotocol.io",
+      "tags": [
+        "industry",
+        "standards",
+        "MCP",
+        "infrastructure"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "RL Systems: Mind the Gap(trainer↔generator 吞吐匹配)",
+      "org": "SemiAnalysis",
+      "year": "2026",
+      "category": "trend",
+      "track": "industry",
+      "summary": "行业分析:agentic RL 的工程焦点正落到「训练器与生成器吞吐匹配」——长 rollout 让 generator(推理)成为瓶颈,如何让二者不互相等待是异步 RL 系统的核心命题。直接呼应本看板的 rollout 瓶颈主线(Dispatch 02)。",
+      "url": "https://newsletter.semianalysis.com/p/rl-systems-mind-the-gap-matching",
+      "tags": [
+        "industry",
+        "systems",
+        "async-rl",
+        "analysis"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Demystifying RL for Long-Horizon Tool-Using Agents(配方)",
+      "org": "research",
+      "year": "2026-03",
+      "category": "algorithm",
+      "track": "academic",
+      "innovation": "把 agentic RL 设计空间拆成 5 轴并给出可复用结论",
+      "summary": "系统性「配方」:沿奖励塑形 / 模型规模 / 数据配比 / 算法 / 环境稳定性 5 轴拆解长程工具 RL。关键发现:奖励与算法 scale-dependent(小模型分阶段奖励+强探索,大模型简单稠密奖励即收敛);~1K 平衡难度样本是甜点。",
+      "url": "https://arxiv.org/abs/2603.21972",
+      "tags": [
+        "academic",
+        "tool-use",
+        "long-horizon",
+        "recipe",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "G2PO(Group-Graph Policy Optimization)",
+      "org": "research",
+      "year": "2026-06",
+      "category": "algorithm",
+      "track": "academic",
+      "innovation": "面向多回合 agentic 任务的组-图策略优化",
+      "summary": "为多轮 agentic 任务量身的组-图策略优化算法,改进跨回合的信用分配(2026-06 新出)。代表了 CA 走向 group/step 级的研究前沿。",
+      "url": "https://arxiv.org/abs/2606.22995",
+      "tags": [
+        "academic",
+        "credit-assignment",
+        "multi-turn",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "AgentGym-RL(长程决策的多轮 RL 训练)",
+      "org": "research",
+      "year": "2025-09",
+      "category": "framework",
+      "track": "academic",
+      "summary": "为长程决策训练 LLM 智能体的多轮 RL 框架 + 环境套件——把多样环境统一起来做多轮 RL,是「环境 + 训练」一体化的学术代表。",
+      "url": "https://arxiv.org/abs/2509.08755",
+      "tags": [
+        "academic",
+        "environments",
+        "multi-turn",
+        "long-horizon"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "SWIRL(移动 GUI 控制的交错 RL)",
+      "org": "research",
+      "year": "2025-08",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "面向移动 GUI 控制的分阶段交错 RL 工作流(Staged Workflow for Interleaved RL)。computer-use/GUI 智能体的学术侧推进。",
+      "url": "https://arxiv.org/abs/2508.20018",
+      "tags": [
+        "academic",
+        "computer-use",
+        "GUI",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "RL for Long-Horizon Multi-Turn Search Agents",
+      "org": "research",
+      "year": "2025-10",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "为长程多轮搜索智能体设计 RL——把检索/工具往返做成可训练的多轮决策,是 tool-integrated RL 的典型任务。",
+      "url": "https://arxiv.org/abs/2510.24126",
+      "tags": [
+        "academic",
+        "search-agent",
+        "tool-use",
+        "multi-turn"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Polar:Agentic RL on Any Harness at Scale",
+      "org": "research",
+      "year": "2026-05",
+      "category": "framework",
+      "track": "academic",
+      "summary": "让 agentic RL 与具体 harness 解耦、可规模化的训练方案——解决「换个 agent 脚手架就要重写训练」的痛点,偏系统/基础设施。",
+      "url": "https://arxiv.org/abs/2605.24220",
+      "tags": [
+        "academic",
+        "systems",
+        "harness",
+        "scale"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "A Taxonomy of RL Environments for LLM Agents",
+      "org": "community",
+      "year": "2026-03",
+      "category": "trend",
+      "track": "academic",
+      "summary": "对 LLM 智能体的 RL 环境做分类梳理——随着「环境即 scaling 轴」,如何描述/比较/选择环境本身成为一个研究问题。配合 Environments Hub 看更完整。",
+      "url": "https://leehanchung.github.io/blogs/2026/03/21/rl-environments-for-llm-agents/",
+      "tags": [
+        "academic",
+        "environments",
+        "taxonomy",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Seek to Segment: Active Perception for Panoramic Referring Segmentation",
+      "org": "Song Tang +4",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Existing referring segmentation models passively process static images captured from fixed perspectives, limiting their applicability in Embodied AI, where agents must perform active perception in the continuous 360$^\\circ$ environments. To bridge this gap, we introduce a novel t…",
+      "url": "http://arxiv.org/abs/2607.02497v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Full Bayesian Reinforcement Learning via LF-IBIS",
+      "org": "Stefano Masini +2",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Reinforcement Learning (RL) is a sequential decision-making framework in which an agent learns optimal policies through interaction with an environment by maximizing cumulative rewards. Among RL methods, Bayesian Reinforcement Learning (BRL) addresses common practical challenges …",
+      "url": "http://arxiv.org/abs/2607.01741v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Mean Field Reinforcement Learning",
+      "org": "René Carmona +1",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "This monograph provides an introduction to mean field reinforcement learning through the lens of Markov decision processes arising from large-population stochastic control with mean field interactions and common noise. Starting from the connection between multi-agent reinforcemen…",
+      "url": "http://arxiv.org/abs/2607.01525v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "FaithMed: Training LLMs For Faithful Evidence-Based Medical Reasoning",
+      "org": "Zhiyun Zhang +3",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Faithful reasoning is essential in medicine, where clinical decisions require transparent justification grounded in reliable evidence. Current medical LLMs either lack active access to evidence or use retrieved evidence without supervising how it should be appraised and applied d…",
+      "url": "http://arxiv.org/abs/2607.01440v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "The Rollout Infrastructure Tax in Coding-Agent Reinforcement Learning",
+      "org": "Daniel Thi Graviet +4",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Coding-agent reinforcement learning treats execution infrastructure as a background implementation detail, despite relying on large numbers of interactive software rollouts. This is a missed opportunity: measuring infrastructure overhead can reveal practical efficiency gains for …",
+      "url": "http://arxiv.org/abs/2607.01415v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Simulation Based Reward Function Validation for Multi-Agent On Orbit Inspection",
+      "org": "Patrick Quinn +3",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "A proposed method for the control of groups of inspection spacecraft is Multi-Agent Reinforcement Learning (MARL). While MARL has already been employed for this purpose in previous work, the reward functions used focus on reaching a finite set of predetermined inspection points a…",
+      "url": "http://arxiv.org/abs/2607.01367v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Is One Layer Enough? Training A Single Transformer Layer Can Match Full-Parameter RL Training",
+      "org": "Zijian Zhang +6",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Reinforcement learning (RL) has become a central component of post-training large language models (LLMs), yet little is understood about how RL adaptation is distributed across transformer layers. Existing approaches typically update all model parameters uniformly, implicitly ass…",
+      "url": "http://arxiv.org/abs/2607.01232v2",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Next-Generation Agentic Reinforcement Learning Systems Enable Self-Evolving Agents",
+      "org": "Ran Yan +23",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "LLM agents are rapidly being deployed in production, including coding assistants, customer-support chatbots, and scientific research assistants, yet they remain fundamentally static in enterprise deployment. The LLM weights, system prompts, tool repertoires, and in-context harnes…",
+      "url": "http://arxiv.org/abs/2607.01120v2",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "VLM-AR3L: Vision-Language Models for Absolute and Relative Rewards in Reinforcement Learning",
+      "org": "Kuan-Chen Chen +3",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Designing effective reward functions remains a major challenge in reinforcement learning (RL), particularly in open-ended environments where task goals are abstract and difficult to quantify. In this work, we present VLM-AR3L, a framework that leverages Vision-Language Models (VL…",
+      "url": "http://arxiv.org/abs/2607.00483v2",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Tandem Reinforcement Learning with Verifiable Rewards",
+      "org": "Difan Jiao +3",
+      "year": "2026-06",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Reinforcement learning with verifiable rewards (RLVR) has significantly improved the reasoning capability of large language models, reaching expert or even superhuman performance in domains such as competition math. However, whether weaker agents and humans can actually harness t…",
+      "url": "http://arxiv.org/abs/2606.28166v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Verifiable Geometry Problem Solving: Solver-Driven Autoformalization and Theorem Proposing",
+      "org": "Can Li +3",
+      "year": "2026-06",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Geometry Problem Solving have increasingly adopt the neuro-symbolic paradigm, combining neural intuition with symbolic rigor. However, current frameworks suffer from severe bottlenecks in two core stages: autoformalization, which treats multimodal translation as a static task dec…",
+      "url": "http://arxiv.org/abs/2606.27926v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "ATOD: Annealed Turn-aware On-policy Distillation for Multi-turn Autonomous Agents",
+      "org": "Qitai Tan +3",
+      "year": "2026-06",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Training small language-model agents for long-horizon interactive tasks requires both fast imitation and reward-driven improvement. On-policy distillation (OPD) provides dense teacher guidance and typically improves rapidly in the early stage, but its gains saturate once the stud…",
+      "url": "http://arxiv.org/abs/2606.27814v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    }
+  ]
+}

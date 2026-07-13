@@ -1,6 +1,76 @@
 {
-  "updated": "2026-06-16",
+  "updated": "2026-07-07",
   "items": [
+    {
+      "title": "vLLM-Ascend v0.22.1rc1(HCCL 权重传输后端打通 RL 流水线)",
+      "org": "vLLM-Ascend (vLLM project / 昇腾社区)",
+      "year": "2026-06",
+      "category": "software-stack",
+      "innovation": "基于 HCCL 的权重传输后端,RL 训推权重同步摆脱 CUDA/NCCL 依赖",
+      "analysis": "Innovation: 对齐上游 vLLM v0.22.1,新增基于 HCCL 的权重传输后端,使 RL 训练-推理流水线的权重同步不再依赖 CUDA/NCCL;Mooncake connector 支持 DeepSeek V4 混合 KV cache 的 PD 分离,扩展 Ascend 950 W8A8/W4A8 动态量化,新增 Kimi 2.6、GLM-5.2 支持。Performance: split_qkv_tp_rmsnorm_rope 算子在 MiniMax-M2.5 W8A8 prefill 负载上约 5 倍 kernel 加速;已知问题为 MiniMax 2.7 双节点高负载可能挂起。对 RL-on-NPU 的意义: HCCL 原生权重同步是 RL-on-Ascend 的关键基础设施补齐——rollout 引擎与训练器之间的权重更新链路彻底去 NCCL 化,与 AReaL 2.0 独立出的权重更新服务恰好互补,直接服务本看板核心主线。",
+      "summary": "v0.22.1rc1(6-30):新增 HCCL 权重传输后端打通 RL 训推权重同步、Mooncake connector 支持 V4 混合 KV cache PD 分离、Ascend 950 W8A8/W4A8 动态量化扩展、Kimi 2.6 / GLM-5.2 支持,以及 MiniMax-M2.5 prefill ~5x kernel 加速。",
+      "url": "https://github.com/vllm-project/vllm-ascend/releases/tag/v0.22.1rc1",
+      "tags": [
+        "vllm-ascend",
+        "HCCL",
+        "weight-sync",
+        "rl-on-ascend",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "openPangu-2.0-Flash 开源(昇腾原生 MoE + 训练算子/后训练代码分批放出)",
+      "org": "华为 (ascend-tribe / GitCode)",
+      "year": "2026-06",
+      "category": "training-framework",
+      "innovation": "昇腾原生模型首次连同训练算子与后训练代码体系开源",
+      "analysis": "Innovation: 6 月 30 日起华为在 GitCode ascend-tribe 分批开源 openPangu 2.0 七大组件,首发 openPangu-2.0-Flash——稀疏 MoE(报道口径 92B 总参/6B 激活,另有 9.2B/0.6B 说法,以 GitCode 仓库为准)、512K 上下文,本次打包放出模型权重、基础推理代码与训推算子;开源范围还包括预训练代码与后训练(post-training)代码,505B/A18B 的 Pro 版权重定于 7 月开源。Performance: 华为自报昇腾单卡吞吐约为业界主流开源模型 2 倍(self-reported)。对 RL-on-NPU 的意义: 这是 RL-on-Ascend 工具链最直接的一手参考栈——昇腾上的后训练(RL/对齐)代码与训练算子首次成体系开源,openPangu 全系完全在昇腾 910B 上训练,可直接对照研究 NPU 上的 RL 实现细节。",
+      "summary": "华为正式开源 openPangu-2.0-Flash(稀疏 MoE、512K 上下文、昇腾原生),权重+推理代码+训推算子同步上线 GitCode;openPangu 2.0 七大组件(含预训练与后训练代码)分批开源,Pro 版(505B/A18B)7 月放出。参数规格各媒体口径不一,需以仓库为准。",
+      "url": "https://news.qq.com/rain/a/20260630A054V900",
+      "tags": [
+        "openPangu",
+        "910B",
+        "post-training",
+        "open-source",
+        "2026"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "Atlas 950 SuperPod 出海韩国(4Q26,单集群 8192 卡)",
+      "org": "TrendForce(转述韩媒)",
+      "year": "2026-07",
+      "category": "hardware",
+      "innovation": "昇腾集群首次成规模出海,从国产替代走向 NVIDIA 替代出口",
+      "analysis": "What it is: TrendForce 援引韩媒报道,华为计划 2026 年四季度将昇腾 950 系列与 Atlas 950 SuperPod 引入韩国,单套部署最多 8192 颗 Ascend 950 加速器,宣称推理性能约为 NVIDIA H20 的 3 倍、成本约 1/4(转述数字,需谨慎);已与 Hansol PNS、SK Shieldus 签总代协议,推进技术培训、定价与本地化营销。Why it matters: 昇腾生态首次成规模出口,意味着 950 系列供给面与软件栈成熟度将接受海外客户检验。对 RL-on-NPU 的意义: 8192 卡 SuperPod 若如期落地,是大规模训推分离 RL(独立 rollout/train 资源池)在 Ascend 上的目标织物,也扩大了昇腾工具链的用户与反馈基数。",
+      "summary": "华为拟 4Q26 在韩国推出昇腾 950 芯片与 Atlas 950 SuperPod(单集群最多 8192 颗 950),宣称推理性能约 H20 的 3 倍、成本约 1/4(转述);已签 Hansol PNS、SK Shieldus 总代。昇腾从国产替代走向出口的标志性信号。",
+      "url": "https://www.trendforce.com/news/2026/07/02/news-huawei-reportedly-plans-4q26-korea-launch-of-ascend-ai-chips-and-atlas-950-superpod-as-nvidia-alternative/",
+      "tags": [
+        "950",
+        "supernode",
+        "export",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "寒武纪市值破万亿(思元 690 训练适配加速)",
+      "org": "寒武纪 / 新浪财经",
+      "year": "2026-07",
+      "category": "hardware",
+      "innovation": "昇腾之外最强国产 NPU 玩家的资本与大厂采购信号",
+      "analysis": "What it is: 寒武纪 A 股市值首破 1 万亿元;背景是 2026 年以来字节、阿里、腾讯、百度等加大国产 AI 芯片采购并批量部署于大模型训练与 AIGC,其新旗舰思元 690 双 die 封装、FP16 算力超 700 TFLOPS、196GB HBM3(厂商此前公布数字),训练侧已支持 DeepSeek V3/V3.1、Qwen3 系列等 MoE 模型。Why it matters: 国产芯片训练生态整体升温,DeepSeek-V4 发布时寒武纪亦提供 Day-0 支持。对 RL-on-NPU 的意义: 看板国产 NPU 竞争格局的重要坐标——若思元 690 的训练侧 MoE 支持继续完善,RL-on-国产芯片将不再是昇腾单极,跨 NPU 后端抽象(HCCL 之外)会成为 RL 框架的新命题。",
+      "summary": "寒武纪 A 股市值首破 1 万亿元:字节、阿里、腾讯、百度加大国产 AI 芯片采购,思元 690(双 die、FP16 >700 TFLOPS、196GB HBM3)训练侧已支持 DeepSeek V3/V3.1、Qwen3 等 MoE 模型。国产 NPU 训练生态升温的资本面信号。",
+      "url": "https://finance.sina.com.cn/roll/2026-07-01/doc-iniffyth6354498.shtml",
+      "tags": [
+        "cambricon",
+        "domestic-npu",
+        "training",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
     {
       "title": "AscendCraft (auto Ascend kernel gen)",
       "org": "research",
@@ -14,7 +84,8 @@
         "kernel",
         "codegen",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "KVComp: sparse attention for vLLM-Ascend",
@@ -30,7 +101,8 @@
         "sparse-attention",
         "kv-cache",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "xMSDA (deformable attention on Ascend)",
@@ -44,7 +116,8 @@
         "kernel",
         "attention",
         "ascend"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Ascend 950PR / 950DT",
@@ -60,7 +133,8 @@
         "FP8",
         "2026",
         "roadmap"
-      ]
+      ],
+      "confidence": "secondary"
     },
     {
       "title": "Atlas 950 SuperPoD (8,192× 950DT)",
@@ -76,7 +150,8 @@
         "supernode",
         "2026",
         "roadmap"
-      ]
+      ],
+      "confidence": "secondary"
     },
     {
       "title": "vLLM-Ascend v0.18.0 (latest stable)",
@@ -90,7 +165,8 @@
         "vllm-ascend",
         "rollout",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "vLLM-Ascend model support: V4 / GLM-5 / Qwen3.5 / MiniMax (2026)",
@@ -105,7 +181,8 @@
         "model-support",
         "910B",
         "2026"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Ascend 910B",
@@ -120,7 +197,8 @@
         "Atlas A2",
         "specs"
       ],
-      "analysis": "What it is: the mainstream domestic training NPU (~256–280 TFLOPS BF16, 64GB HBM2e, 8/node in Atlas 800T A2), roughly A100-class in practice. Why it matters: it's the most available Ascend part and the hardware nearly all current RL-on-Ascend stacks (verl, MindSpeed-RL, vLLM-Ascend) validate against. Fit for RL-on-NPU: 64GB/NPU plus the missing sleep-mode make memory the binding constraint for GRPO — start with 0.5B–7B models and budget rollout/train memory carefully."
+      "analysis": "What it is: the mainstream domestic training NPU (~256–280 TFLOPS BF16, 64GB HBM2e, 8/node in Atlas 800T A2), roughly A100-class in practice. Why it matters: it's the most available Ascend part and the hardware nearly all current RL-on-Ascend stacks (verl, MindSpeed-RL, vLLM-Ascend) validate against. Fit for RL-on-NPU: 64GB/NPU plus the missing sleep-mode make memory the binding constraint for GRPO — start with 0.5B–7B models and budget rollout/train memory carefully.",
+      "confidence": "confirmed"
     },
     {
       "title": "Ascend 910C",
@@ -134,7 +212,8 @@
         "910C",
         "flagship",
         "specs"
-      ]
+      ],
+      "confidence": "secondary"
     },
     {
       "title": "CloudMatrix 384 (CM384)",
@@ -148,7 +227,8 @@
         "supernode",
         "scale-up",
         "CM384"
-      ]
+      ],
+      "confidence": "secondary"
     },
     {
       "title": "Atlas 800T A2 / A3 servers",
@@ -162,7 +242,8 @@
         "Atlas",
         "server",
         "platform"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Huawei vs NVIDIA: scale vs efficiency",
@@ -176,7 +257,8 @@
         "comparison",
         "H100",
         "strategy"
-      ]
+      ],
+      "confidence": "secondary"
     },
     {
       "title": "CANN (Compute Architecture for Neural Networks)",
@@ -190,7 +272,8 @@
         "CANN",
         "sdk",
         "HCCL"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "AscendCL (ACL) / pyACL",
@@ -204,7 +287,8 @@
         "AscendCL",
         "runtime",
         "api"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Ascend C (kernel language)",
@@ -218,7 +302,8 @@
         "Ascend C",
         "kernels",
         "operators"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Relationship to CUDA",
@@ -232,7 +317,8 @@
         "porting",
         "cuda",
         "compatibility"
-      ]
+      ],
+      "confidence": "secondary"
     },
     {
       "title": "MindSpore",
@@ -246,7 +332,8 @@
         "MindSpore",
         "native",
         "framework"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "torch_npu (PyTorch on Ascend)",
@@ -260,7 +347,8 @@
         "torch_npu",
         "pytorch",
         "foundation"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "MindSpeed-LLM (formerly ModelLink)",
@@ -274,7 +362,8 @@
         "MindSpeed",
         "megatron",
         "pretraining"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "MindSpeed (acceleration library)",
@@ -288,7 +377,8 @@
         "MindSpeed",
         "parallelism",
         "kernels"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "MindFormers (MindSpore Transformers)",
@@ -302,7 +392,8 @@
         "MindFormers",
         "mindspore",
         "suite"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Torchtune on Ascend",
@@ -316,7 +407,8 @@
         "torchtune",
         "finetuning",
         "upstream"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "LLaMA-Factory on Ascend",
@@ -330,7 +422,8 @@
         "finetuning",
         "accessible",
         "torch_npu"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "vLLM-Ascend",
@@ -344,7 +437,8 @@
         "vLLM",
         "inference",
         "rollout-engine"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "MindIE",
@@ -358,7 +452,8 @@
         "MindIE",
         "inference",
         "production"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "SGLang on Ascend",
@@ -372,7 +467,8 @@
         "SGLang",
         "inference",
         "rollout-engine"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "MindSpeed-RL",
@@ -388,7 +484,8 @@
         "native",
         "large-scale"
       ],
-      "analysis": "Innovation: Huawei's native distributed RL post-training stack for Ascend clusters, implementing GRPO-family algorithms with Ascend-native parallelism and kernels. Performance: demonstrated RL up to DeepSeek-R1-MoE-671B on a 384-NPU superpod — the strongest large-scale RL-on-Ascend evidence to date. Fit for RL-on-NPU: it's the first-party reference for what works at scale on Ascend; pair it with verl-on-Ascend as the two stacks any NPU RL benchmark should compare."
+      "analysis": "Innovation: Huawei's native distributed RL post-training stack for Ascend clusters, implementing GRPO-family algorithms with Ascend-native parallelism and kernels. Performance: demonstrated RL up to DeepSeek-R1-MoE-671B on a 384-NPU superpod — the strongest large-scale RL-on-Ascend evidence to date. Fit for RL-on-NPU: it's the first-party reference for what works at scale on Ascend; pair it with verl-on-Ascend as the two stacks any NPU RL benchmark should compare.",
+      "confidence": "confirmed"
     },
     {
       "title": "verl on Ascend NPU",
@@ -402,7 +499,8 @@
         "verl",
         "GRPO",
         "open-framework"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "AReaL (ascend branch)",
@@ -416,7 +514,8 @@
         "AReaL",
         "async-rl",
         "open-framework"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "ROLL on Ascend",
@@ -430,7 +529,8 @@
         "ROLL",
         "ray",
         "open-framework"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "TRL on Ascend",
@@ -444,7 +544,8 @@
         "TRL",
         "GRPO",
         "accessible"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "DeepSeek-R1-Zero reproduction on Ascend",
@@ -458,7 +559,8 @@
         "R1-Zero",
         "reproduction",
         "GRPO"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "AsyncFlow",
@@ -472,7 +574,8 @@
         "async-rl",
         "research",
         "throughput"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Operator / kernel coverage gaps",
@@ -486,7 +589,8 @@
         "porting",
         "operators",
         "flash-attention"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "No upstream flash-attn / FA3 gated",
@@ -500,7 +604,8 @@
         "porting",
         "attention",
         "feature-gap"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Performance / MFU shortfall",
@@ -514,7 +619,8 @@
         "performance",
         "MFU",
         "bandwidth"
-      ]
+      ],
+      "confidence": "confirmed"
     },
     {
       "title": "Numerical precision / accuracy drift",
@@ -529,7 +635,8 @@
         "convergence",
         "alignment"
       ],
-      "analysis": "What it is: loss/curve divergence on Ascend vs GPU from operator-semantic differences and mixed-precision accumulation order (fused attention, reductions, RNG). Why it matters: it can silently degrade RL convergence or final accuracy even when throughput looks fine — and it's hard to attribute. Implication: this is exactly what the align-probe tool targets — fix the rollout, compare training-forward logits/KL/advantages step-by-step, and attribute drift to a specific op; turning this into a reproducible diagnostic is a core contribution of the plan."
+      "analysis": "What it is: loss/curve divergence on Ascend vs GPU from operator-semantic differences and mixed-precision accumulation order (fused attention, reductions, RNG). Why it matters: it can silently degrade RL convergence or final accuracy even when throughput looks fine — and it's hard to attribute. Implication: this is exactly what the align-probe tool targets — fix the rollout, compare training-forward logits/KL/advantages step-by-step, and attribute drift to a specific op; turning this into a reproducible diagnostic is a core contribution of the plan.",
+      "confidence": "confirmed"
     },
     {
       "title": "Missing vLLM sleep mode / hybrid engine",
@@ -544,7 +651,8 @@
         "memory",
         "hybrid-engine"
       ],
-      "analysis": "What it is: on CUDA vLLM, 'sleep mode' frees rollout-engine memory between phases so the trainer can reuse it (colocated hybrid engine); vLLM-Ascend lacks this. Why it matters: it's the single biggest RL-specific blocker on Ascend — without it you must offload or time-slice rollout vs train, costing throughput and memory headroom. Implication: it's why async/disaggregated RL (AReaL, AsyncFlow) and aggressive offloading are the pragmatic paths on 910B today; closing this gap is a concrete high-impact systems project."
+      "analysis": "What it is: on CUDA vLLM, 'sleep mode' frees rollout-engine memory between phases so the trainer can reuse it (colocated hybrid engine); vLLM-Ascend lacks this. Why it matters: it's the single biggest RL-specific blocker on Ascend — without it you must offload or time-slice rollout vs train, costing throughput and memory headroom. Implication: it's why async/disaggregated RL (AReaL, AsyncFlow) and aggressive offloading are the pragmatic paths on 910B today; closing this gap is a concrete high-impact systems project.",
+      "confidence": "confirmed"
     },
     {
       "title": "Ecosystem maturity & tooling",
@@ -558,7 +666,8 @@
         "ecosystem",
         "tooling",
         "maturity"
-      ]
+      ],
+      "confidence": "secondary"
     }
   ]
 }

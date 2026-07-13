@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-23",
+  "updated": "2026-06-25",
   "doc": "docs/2026-frontier-models.md",
   "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far.",
   "models": {
@@ -19,11 +19,12 @@
     "list": [
       {
         "id": "swe", "label": "SWE-bench Verified", "unit": "%",
-        "note": "open frontier (80% band) ~ties closed-prev-tier; Claude Fable/Mythos 5 still ahead.",
+        "note": "open frontier (80% band) ~ties closed-prev-tier; Claude Fable/Mythos 5 still ahead. MiMo-V2.5-Pro 82 is vendor/harness-reported (MiMo Code) — provisional.",
         "items": [
           {"model": "Claude Mythos 5", "score": 95.5, "open": false},
           {"model": "Claude Fable 5", "score": 95.0, "open": false},
           {"model": "Claude Opus 4.8", "score": 88.6, "open": false},
+          {"model": "MiMo-V2.5-Pro", "score": 82.0, "open": true},
           {"model": "DeepSeek-V4-Pro", "score": 80.6, "open": true},
           {"model": "MiniMax-M3", "score": 80.5, "open": true},
           {"model": "Qwen3.7 Max", "score": 80.4, "open": true},
@@ -41,6 +42,7 @@
         "items": [
           {"model": "Claude Fable 5", "score": 80.3, "open": false},
           {"model": "GLM-5.2", "score": 62.1, "open": true},
+          {"model": "MiMo-V2.5-Pro", "score": 62.0, "open": true},
           {"model": "MiniMax-M3", "score": 59.0, "open": true},
           {"model": "GLM-5.1", "score": 58.4, "open": true}
         ]

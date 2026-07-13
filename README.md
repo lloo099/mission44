@@ -10,19 +10,6 @@ three fast-moving areas, so you can pick a concrete project to work on:
 Plus a synthesized **Project Ideas** section with impact / difficulty / novelty ratings,
 and a **Live Papers** feed pulled from arXiv.
 
-## What changed in this upgraded version
-
-- **Data Quality Ledger** on the Overview page summarizes source coverage, confidence labels,
-  Ascend-readiness notes, and analysis coverage.
-- Each card now shows a compact **source provenance line** (source type + snapshot/verified date)
-  so provisional model claims are easier to separate from confirmed entries.
-- Tabs use proper `tablist` / `tab` / `tabpanel` semantics; inactive panels are hidden from
-  screen readers and automated checks.
-- Training curves now carry explicit experiment metadata (`model`, `dataset`, `hardware`,
-  `framework`, `precision`, `seed`, `runType`) so demo curves cannot be mistaken for a benchmark.
-- Project ideas include a **minimum experiment** and **success signal** field to turn directions
-  into executable first experiments.
-
 ## Quick start
 
 It's plain HTML/CSS/JS — no build step.
@@ -58,49 +45,6 @@ Any card (in `modeling.json`, `feed_pinned.json`, etc.) may carry an `"ascend"` 
 a badge and a filter chip: `"ready"` ✅, `"partial"` ⚠️, or `"none"` ❌. Add an optional
 `"ascendNote"` for the hover tooltip.
 
-### Source confidence fields
-
-For fast-moving model and hardware entries, prefer adding:
-
-```json
-{
-  "confidence": "confirmed",
-  "verified": "2026-06-24",
-  "sourceType": "official report",
-  "url": "https://..."
-}
-```
-
-Allowed confidence values are `confirmed`, `secondary`, and `self-reported` (Chinese aliases
-`确证`, `二手`, `自报` are also supported). If `verified` is omitted, the dashboard falls back to
-the parent data file's `updated` date.
-
-## Training curve provenance
-
-Training curves live in `data/curves.json` and should include run metadata for each experiment.
-Generate demo curves:
-
-```bash
-python3 ascend-rl-bench/tools/logs_to_dashboard.py --synthetic
-```
-
-Parse a real run:
-
-```bash
-python3 ascend-rl-bench/tools/logs_to_dashboard.py \
-  --log ascend-rl-bench/logs/qwen0.5b_gsm8k_grpo-gpu/train.log \
-  --name qwen0.5b_gsm8k_grpo \
-  --device gpu \
-  --model Qwen2.5-0.5B \
-  --dataset GSM8K \
-  --hardware "8x H100" \
-  --framework "verl@<commit>" \
-  --precision bf16 \
-  --seed 1
-```
-
-The dashboard displays this metadata above the chart; CI warns when curve experiments omit it.
-
 ## Project layout
 
 ```
@@ -112,11 +56,9 @@ data/
   ascend.json         # Ascend/NPU entries (curated)
   modeling.json       # LLM modeling entries (curated)
   ideas.json          # project ideas (synthesized)
-  curves.json         # training curves + run metadata
   feed_pinned.json    # Live Papers — curated highlights (edit this)
   feed.json           # Live Papers — generated: pinned + fresh arXiv (do not hand-edit)
 scripts/fetch_arxiv.py
-scripts/validate_data.py
 .github/workflows/refresh-feed.yml   # daily auto-refresh of feed.json
 ```
 
@@ -142,19 +84,113 @@ Each curated `data/*.json` file has the shape:
 }
 ```
 
-`ideas.json` entries additionally use `pitch`, `impact`/`difficulty`/`novelty` (0–5),
-`why`, `minimumExperiment`, `successMetric`, and a `steps` array.
+Optional per-item fields the dashboard understands:
+
+- `confidence` — one of `confirmed` / `secondary` / `self-reported` (rendered as a 确证/二手/自报 badge).
+- `ascend` — `ready` / `partial` / `none` (Ascend-readiness badge) with optional `ascendNote`.
+- `analysis` — a deeper write-up (marked ★ analyzed; counts toward the ledger).
+- `source` / `verified` — provenance shown on each card as `source: arXiv · verified 2026-06-23`.
+  If `source` is omitted it is inferred from the URL host; if `verified` is omitted the file's
+  top-level `updated` date is used.
+
+`ideas.json` entries additionally use `pitch`, `impact`/`difficulty`/`novelty` (0–5), `why`,
+a `steps` array, and — to keep ideas executable — **`minimumExperiment`** (the smallest run that
+tests the thesis) and **`successMetric`** (how you know it worked).
 
 To add an entry, append an object to the relevant `items` array — the dashboard picks up
 new `category`/`tags` values automatically as filter chips.
 
-## Local checks
+## Data quality & provenance
+
+The **Overview → Data Quality Ledger** summarizes the catalog (RL · Ascend · Modeling) on four
+axes (hover any cell for its definition):
+
+- **Primary sources** — % whose source host is primary/official (arXiv · HuggingFace · GitHub ·
+  official docs/vendor pages) rather than media/aggregator.
+- **Confidence labelled** — % carrying a credibility label, with the `confirmed / secondary /
+  self-reported` breakdown. (Labels are auto-assigned by source type: primary host → confirmed,
+  media → secondary, a 2026 vendor model-report → self-reported.)
+- **Ascend readiness** — % of **model cards** (not algorithm/framework papers) with an explicit
+  `ready / partial / none` Ascend call.
+- **Deep analysis** — % with a ▸ analysis paragraph beyond the one-line summary.
+
+Every card also shows a `source: … · verified …` line so the provenance of each claim is visible
+inline. Benchmark numbers for unreleased/early models are labelled **provisional**.
+
+### Training-curve provenance
+
+`data/curves.json` carries a top-level `synthetic` flag and a per-experiment `meta` block
+(`model`, `dataset`, `hardware`, `framework`, `precision`, `seed`, `synthetic`). The **Training
+Curves** tab renders this as an experiment-metadata panel with a clear **synthetic-demo vs
+real-logs** banner. Generate curves with:
 
 ```bash
-for f in js/*.js; do node --check "$f"; done
-python3 -m py_compile scripts/*.py ascend-rl-bench/tools/logs_to_dashboard.py
-python3 scripts/validate_data.py
+# synthetic demo (no run needed) — clearly flagged as synthetic in the UI
+python3 ascend-rl-bench/tools/logs_to_dashboard.py --synthetic
+
+# real run — record full provenance
+python3 ascend-rl-bench/tools/logs_to_dashboard.py \
+  --log logs/run/train.log --name qwen0.5b_gsm8k_grpo --device npu \
+  --model Qwen2.5-0.5B-Instruct --dataset GSM8K \
+  --hardware "1× Ascend 910B 64GB" --framework "MindSpeed-RL + vLLM-Ascend" \
+  --precision bf16 --seed 42
 ```
+
+## Local validation
+
+Before committing, run the same checks CI runs:
+
+```bash
+node --check js/*.js                         # JS syntax
+python3 -m py_compile scripts/*.py           # Python syntax
+python3 scripts/validate_data.py             # data + curve-metadata schema
+git diff --check                             # whitespace/conflict markers
+```
+
+`validate_data.py` checks item titles/URLs/confidence values **and** that every
+`curves.json` experiment carries a complete `meta` block — so missing curve provenance fails CI.
+Accessibility: tabs use a standard `tablist`/`tab`/`tabpanel` pattern (arrow-key navigation,
+`aria-selected`), and inactive panels are truly `hidden` so screen readers and automation don't
+read offscreen content.
+
+## Updating the Agentic RL section
+
+The **Agentic RL** tab is driven by `data/agentic.json` and is meant to be refreshed
+periodically (industry-first, plus academia). The file has two arrays:
+
+```jsonc
+{
+  "updated": "2026-06-25",
+  "trends": [
+    { "title": "短标题", "body": "一段趋势分析" }   // 4–6 条,渲染成顶部 Trends 块
+  ],
+  "items": [
+    {
+      "title": "…", "org": "…", "year": "2026-06",
+      "category": "infrastructure | framework | algorithm | product | trend",
+      "track": "industry" | "academic",              // 决定卡片上的 工业界/学术 徽标
+      "innovation": "可选一句话亮点",
+      "summary": "2–3 句",
+      "url": "https://…",                             // 一手优先(arXiv/官方/GitHub)
+      "tags": ["industry"|"academic", "…"],          // 把 track 也放进 tags 以便筛选
+      "confidence": "confirmed | secondary | self-reported"
+    }
+  ]
+}
+```
+
+Refresh playbook (every ~1–2 weeks, or when something notable ships):
+
+1. **Academic candidates auto-surface** in the **Live Papers** tab — `scripts/fetch_arxiv.py`
+   already scans `agentic-rl` queries daily. Skim there for new arXiv work.
+2. **Industry**: check frontier labs/startups (Prime Intellect, Cursor, Moonshot, Anthropic,
+   NVIDIA, etc.) and infra news; prefer official/primary URLs.
+3. Add/curate `trends` (the analysis) and `items`; bump `"updated"`.
+4. Validate and bump the asset cache version, then commit:
+   ```bash
+   python3 scripts/validate_data.py && node --check js/*.js
+   # bump ?v=… in index.html so browsers reload
+   ```
 
 ## Notes
 

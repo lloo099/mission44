@@ -4,13 +4,21 @@ const DATA_SOURCES = {
   rl: "data/rl.json",
   ascend: "data/ascend.json",
   modeling: "data/modeling.json",
+  agentic: "data/agentic.json",
   ideas: "data/ideas.json",
   live: "data/feed.json",
 };
 
 const store = {}; // key -> array of entries
+const storeUpdated = {}; // key -> ISO date string (from each file's "updated")
 const activeFilters = {}; // key -> Set of active tags
 let searchTerm = "";
+let agenticTrends = []; // {title, body} blurbs for the Agentic RL section
+
+/* defaults for dynamic <title> / meta description (restored on the blog index) */
+const DEFAULT_TITLE = document.title;
+const metaDesc = document.querySelector('meta[name="description"]');
+const DEFAULT_DESC = metaDesc ? metaDesc.content : "";
 
 /* ---------- data loading ---------- */
 async function loadJSON(url) {
@@ -30,13 +38,16 @@ async function init() {
   keys.forEach((k, i) => {
     const payload = results[i];
     store[k] = (payload && payload.items) ? payload.items : (Array.isArray(payload) ? payload : []);
-    store[k + "_meta"] = payload && !Array.isArray(payload) ? payload : {};
+    storeUpdated[k] = (payload && payload.updated) ? String(payload.updated).slice(0, 10) : "";
+    if (k === "agentic" && payload) agenticTrends = payload.trends || [];
     activeFilters[k] = new Set();
   });
 
   wireTheme();
   buildStats();
-  ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel);
+  buildLedger();
+  renderAgenticTrends();
+  ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach(renderPanel);
   buildFilterbars();
   wireTabs();
   wireSearch();
@@ -45,6 +56,8 @@ async function init() {
   wireCompare();
   wireTimeline();
   wireBlog();
+  wireMermaidLightbox();
+  wireTabsScrollHint();
   if (window.wireArch) wireArch();
   setLastUpdated();
 }
@@ -57,6 +70,7 @@ function wireTheme() {
     if (t === "dark") root.setAttribute("data-theme", "dark");
     else root.removeAttribute("data-theme");
     if (btn) { btn.textContent = t === "dark" ? "☀️" : "🌙"; btn.title = t === "dark" ? "切换到浅色" : "切换到深色"; }
+    window.__reRenderMermaid && window.__reRenderMermaid(); // theme-aware diagrams (no-op when none rendered)
   };
   let cur;
   try { cur = localStorage.getItem("theme") || "light"; } catch (e) { cur = "light"; }
@@ -68,11 +82,75 @@ function wireTheme() {
   });
 }
 
+/* render any .mermaid diagrams inside a scope once mermaid.js is ready (it loads async).
+   The vendor bundle is ~3.5MB: on slow networks it can take well over 5s, so we wait
+   patiently (with a visible "loading" placeholder), fall back only on real script failure
+   or a long timeout, and recover automatically via the 'mermaid-ready' event. */
+function mermaidFallback(nodes) {
+  nodes.forEach((n) => {
+    n.setAttribute("data-processed", "fallback");
+    n.classList.remove("mermaid-waiting");
+    n.classList.add("mermaid-failed");
+    n.innerHTML = '<details class="mermaid-fallback"><summary>⚠️ 图渲染引擎加载失败 — 点开查看图源码(刷新页面可重试)</summary><pre>'
+      + escapeHtml(n.dataset.src || "") + "</pre></details>";
+  });
+}
+function renderMermaidIn(scope, tries) {
+  const nodes = scope.querySelectorAll(".mermaid:not([data-processed])");
+  if (!nodes.length) return;
+  nodes.forEach((n) => { if (!n.dataset.src) n.dataset.src = n.textContent; }); // keep the diagram source for re-render / fallback
+  if (!window.mermaid) {
+    const t = tries || 0;
+    if (window.__mermaidFailed) { mermaidFallback(nodes); return; }   // script 404/failed — no point waiting
+    if (t === 3) nodes.forEach((n) => {                                // after ~1s, swap raw source for a friendly placeholder
+      n.classList.add("mermaid-waiting");
+      n.textContent = "⏳ 图渲染引擎加载中…(约 1MB,首次访问或网络较慢时需几秒)";
+    });
+    if (t < 120) { setTimeout(() => renderMermaidIn(scope, t + 1), 300); return; }  // wait up to ~36s
+    mermaidFallback(nodes);                                            // long timeout — degrade, recoverable via mermaid-ready
+    return;
+  }
+  nodes.forEach((n) => {                                               // restore source if we showed the waiting placeholder
+    if (n.classList.contains("mermaid-waiting")) { n.classList.remove("mermaid-waiting"); n.textContent = n.dataset.src; }
+  });
+  try { window.mermaid.run({ nodes }); } catch (e) { console.warn("mermaid", e); }
+}
+
+/* when the (slow) vendor script finally arrives, revive placeholders AND any fallback blocks */
+document.addEventListener("mermaid-ready", () => {
+  document.querySelectorAll('.mermaid[data-processed="fallback"], .mermaid.mermaid-waiting').forEach((n) => {
+    if (!n.dataset.src) return;
+    n.removeAttribute("data-processed");
+    n.classList.remove("mermaid-failed", "mermaid-waiting");
+    n.textContent = n.dataset.src;
+  });
+  const post = document.getElementById("blog-post");
+  if (post && !post.hidden) renderMermaidIn(post);
+});
+document.addEventListener("mermaid-failed", () => {
+  document.querySelectorAll(".mermaid:not([data-processed])").forEach((n) => { if (!n.dataset.src) n.dataset.src = n.textContent; });
+  mermaidFallback(document.querySelectorAll(".mermaid:not([data-processed])"));
+});
+
+/* B. re-render all mermaid diagrams after a theme switch (called from wireTheme) */
+window.__reRenderMermaid = function () {
+  if (window.__initMermaid) window.__initMermaid();
+  document.querySelectorAll(".mermaid[data-processed]").forEach((n) => {
+    if (!n.dataset.src) return;
+    n.removeAttribute("data-processed");
+    n.classList.remove("mermaid-failed");
+    n.textContent = n.dataset.src;
+  });
+  const post = document.getElementById("blog-post");
+  if (post && !post.hidden) renderMermaidIn(post);
+};
+
 /* ---------- blog / dispatch (markdown posts, unipat-style index) ---------- */
 async function wireBlog() {
   const idx = document.getElementById("blog-index");
   const post = document.getElementById("blog-post");
   if (!idx || !post) return;
+  const head = document.querySelector("#blog .panel-head"); // section intro — hidden while reading a post
   let posts = [];
   try {
     const res = await fetch("data/blog.json", { cache: "no-cache" });
@@ -83,10 +161,25 @@ async function wireBlog() {
     return;
   }
 
+  // expose posts + matcher so the global search (updateTabCounts) can count blog hits
+  window.__blogPosts = posts;
+  function blogMatches(p) {
+    return !searchTerm || (p.title + " " + (p.subtitle || "") + " " + (p.tags || []).join(" ")).toLowerCase().includes(searchTerm);
+  }
+  window.__blogMatches = blogMatches;
+
   function showIndex() {
     post.hidden = true; idx.hidden = false;
+    if (head) head.hidden = false;
+    document.title = DEFAULT_TITLE;
+    if (metaDesc) metaDesc.content = DEFAULT_DESC;
     if (!posts.length) { idx.innerHTML = `<div class="empty">No posts yet.</div>`; return; }
-    idx.innerHTML = posts.map((p) => `<a class="blog-card" href="#blog/${escapeAttr(p.id)}">
+    const visible = posts.filter(blogMatches);
+    if (!visible.length) {
+      idx.innerHTML = '<div class="empty">没有匹配 "' + escapeHtml(searchTerm) + '" 的 Dispatch。</div>';
+      return;
+    }
+    idx.innerHTML = visible.map((p) => `<a class="blog-card" href="#blog/${escapeAttr(p.id)}">
       <div class="blog-card-date">${escapeHtml(p.date || "")}</div>
       <h3>${escapeHtml(p.title)}</h3>
       <p>${escapeHtml(p.subtitle || "")}</p>
@@ -94,21 +187,49 @@ async function wireBlog() {
     </a>`).join("");
   }
 
+  // re-render the blog index with the current search term (only when the index is visible)
+  window.__refreshBlogIndex = () => { if (post.hidden) showIndex(); };
+
   async function openPost(id) {
     const p = posts.find((x) => x.id === id);
     if (!p) { showIndex(); return; }
     idx.hidden = true; post.hidden = false;
+    if (head) head.hidden = true;
+    toTop();                       // jump up immediately, before the async fetch
     post.innerHTML = `<div class="empty">Loading…</div>`;
     try {
       const res = await fetch(p.file, { cache: "no-cache" });
       if (!res.ok) throw new Error(res.status);
-      post.innerHTML = `<a class="blog-back" href="#blog">← 所有 Dispatch</a>`
-        + `<div class="prose blog-prose">${renderMarkdown(await res.text())}</div>`
+      const md = await res.text();
+      // estimated read time: CJK chars @380/min + latin words @220/min
+      const cjk = (md.match(/[\u4e00-\u9fff]/g) || []).length;
+      const words = (md.match(/[A-Za-z0-9]+/g) || []).length;
+      const mins = Math.max(1, Math.round(cjk / 380 + words / 220));
+      // prev/next: posts are sorted newest-first, so i-1 = newer, i+1 = older
+      const i = posts.findIndex((x) => x.id === id);
+      const newer = posts[i - 1], older = posts[i + 1];
+      const postNav = '<div class="post-nav">'
+        + (newer ? '<a class="prev" href="#blog/' + escapeAttr(newer.id) + '"><span class="pn-label">← 更新一篇</span><span class="pn-title">' + escapeHtml(newer.title) + "</span></a>" : "<span></span>")
+        + (older ? '<a class="next" href="#blog/' + escapeAttr(older.id) + '"><span class="pn-label">更早一篇 →</span><span class="pn-title">' + escapeHtml(older.title) + "</span></a>" : "<span></span>")
+        + "</div>";
+      post.innerHTML = '<div class="blog-topline"><a class="blog-back" href="#blog">← 所有 Dispatch</a><span class="read-time">约 ' + mins + " 分钟读完</span></div>"
+        + `<div class="prose blog-prose">${renderMarkdown(md)}</div>`
+        + postNav
         + `<a class="blog-back foot" href="#blog">← 所有 Dispatch</a>`;
+      buildBlogLayout(post);
+      renderMermaidIn(post);
+      document.title = p.title + " · NPU Frontier Dispatch";
+      if (metaDesc) metaDesc.content = (p.subtitle || "").slice(0, 200);
     } catch (e) {
       post.innerHTML = `<a class="blog-back" href="#blog">← 返回</a><div class="empty">Couldn't load post (${escapeHtml(String(e.message || e))}).</div>`;
     }
-    window.scrollTo(0, 0);
+    toTop();                       // after content renders
+    requestAnimationFrame(toTop);  // and once more after layout settles
+  }
+  function toTop() {
+    try { window.scrollTo(0, 0); } catch (e) {}
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
   }
 
   function route() {
@@ -117,15 +238,106 @@ async function wireBlog() {
     if (parts[1]) openPost(parts[1]); else showIndex();
   }
   window.addEventListener("hashchange", route);
+  wireTocSpy();
   showIndex();
   route();
+}
+
+/* wrap the rendered post in a grid layout and, when long enough, add a table of contents.
+   TOC links must NOT touch location.hash (it drives tab/blog routing) — no href, scrollIntoView only. */
+function buildBlogLayout(post) {
+  const prose = post.querySelector(".blog-prose");
+  if (!prose) return;
+  const layout = document.createElement("div");
+  layout.className = "blog-layout";
+  const article = document.createElement("div");
+  article.className = "blog-article";
+  prose.parentNode.insertBefore(layout, prose);
+  article.appendChild(prose);
+  layout.appendChild(article);
+
+  const heads = prose.querySelectorAll("h2, h3");
+  heads.forEach((h, i) => { h.id = "sec-" + i; });
+  if (heads.length < 3) return; // too short for a TOC — keep the layout only
+
+  const toc = document.createElement("nav");
+  toc.className = "blog-toc";
+  toc.setAttribute("aria-label", "目录");
+  toc.innerHTML = '<div class="toc-title">目录</div>' + [...heads].map((h, i) => {
+    let t = h.textContent.trim();
+    if (t.length > 44) t = t.slice(0, 44) + "…";
+    return '<a class="toc-link' + (h.tagName === "H3" ? " toc-h3" : "") + '" data-target="sec-' + i + '">' + escapeHtml(t) + "</a>";
+  }).join("");
+  toc.addEventListener("click", (e) => {
+    const a = e.target.closest(".toc-link");
+    if (!a) return;
+    e.preventDefault();
+    const el = document.getElementById(a.dataset.target);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  layout.appendChild(toc);
+}
+
+/* highlight the TOC entry for the section currently in view (rAF-throttled, wired once) */
+let tocSpyWired = false;
+function wireTocSpy() {
+  if (tocSpyWired) return;
+  tocSpyWired = true;
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      const post = document.getElementById("blog-post");
+      if (!post || post.hidden) return;
+      const heads = post.querySelectorAll('[id^="sec-"]');
+      if (!heads.length) return;
+      let cur = null;
+      heads.forEach((h) => { if (h.getBoundingClientRect().top <= 150) cur = h; });
+      post.querySelectorAll(".toc-link").forEach((a) => {
+        a.classList.toggle("active", !!cur && a.dataset.target === cur.id);
+      });
+    });
+  }, { passive: true });
+}
+
+/* click a rendered mermaid diagram → full-screen lightbox; click anywhere / Escape closes */
+function wireMermaidLightbox() {
+  document.addEventListener("click", (e) => {
+    const open = document.getElementById("mermaid-lightbox");
+    if (open) { open.remove(); return; } // any click while open closes it
+    const node = e.target.closest('.blog-prose .mermaid[data-processed]:not(.mermaid-failed)');
+    if (!node) return;
+    const svg = node.querySelector("svg");
+    if (!svg) return;
+    const lb = document.createElement("div");
+    lb.id = "mermaid-lightbox";
+    const inner = document.createElement("div");
+    inner.className = "lb-inner";
+    const clone = svg.cloneNode(true);
+    clone.removeAttribute("width");
+    clone.removeAttribute("height"); // let CSS control sizing
+    inner.appendChild(clone);
+    const close = document.createElement("button");
+    close.className = "lb-close";
+    close.textContent = "✕";
+    lb.appendChild(inner);
+    lb.appendChild(close);
+    document.body.appendChild(lb);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const lb = document.getElementById("mermaid-lightbox");
+    if (lb) lb.remove();
+  });
 }
 
 /* ---------- timeline (aggregated from curated data) ---------- */
 function wireTimeline() {
   const el = document.getElementById("timeline-body");
   if (!el) return;
-  const DOMAINS = { rl: "RL", ascend: "Ascend", modeling: "Modeling" };
+  const DOMAINS = { rl: "RL", agentic: "Agentic", ascend: "Ascend", modeling: "Modeling" };
   const rows = [];
   Object.keys(DOMAINS).forEach((key) => {
     (store[key] || []).forEach((e) => {
@@ -176,6 +388,22 @@ function renderMarkdown(md) {
   while (i < lines.length) {
     let l = lines[i];
     if (!l.trim()) { i++; continue; }
+
+    // fenced code block ``` … ```  (```mermaid → rendered diagram; else monospace block)
+    if (/^```/.test(l)) {
+      const lang = l.replace(/^```/, "").trim().toLowerCase();
+      const buf = [];
+      i++;
+      while (i < lines.length && !/^```/.test(lines[i])) { buf.push(lines[i]); i++; }
+      i++; // skip closing fence
+      const code = buf.join("\n");
+      if (lang === "mermaid") {
+        out.push(`<div class="mermaid">${code.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</div>`);
+      } else {
+        out.push(`<pre class="codeblock"><code>${escapeHtml(code)}</code></pre>`);
+      }
+      continue;
+    }
 
     // heading
     let m = l.match(/^(#{1,6})\s+(.*)$/);
@@ -240,53 +468,92 @@ function buildStats() {
     { num: store.rl.length, lbl: "RL papers & frameworks" },
     { num: store.ascend.length, lbl: "Ascend / NPU entries" },
     { num: store.modeling.length, lbl: "Modeling advances" },
+    { num: store.agentic.length, lbl: "Agentic RL entries" },
     { num: store.ideas.length, lbl: "Project ideas" },
   ];
   grid.innerHTML = stats
     .map((s) => `<div class="stat"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`)
     .join("");
-  buildTrustPanel();
 }
 
-function buildTrustPanel() {
-  const el = document.getElementById("trust-panel");
+/* ---------- Data Quality Ledger (Overview) ---------- */
+const PRIMARY_HOSTS = new Set([
+  "arxiv.org", "github.com", "gitee.com", "huggingface.co", "hiascend.com", "docs.vllm.ai",
+  "mindspore.cn", "pytorch.org", "docs.sglang.ai", "qwenlm.github.io", "ai.meta.com",
+  "openai.com", "x.ai", "mimo.mi.com", "mimo.xiaomi.com", "seed.bytedance.com", "deepseek.com",
+]);
+function hostOf(u) { const m = String(u || "").match(/^https?:\/\/([^/]+)/i); return m ? m[1].replace(/^www\./, "") : ""; }
+function isPrimarySource(e) { const h = hostOf(e.url); return PRIMARY_HOSTS.has(h) || h.endsWith(".edu") || h.endsWith(".edu.cn"); }
+
+function buildLedger() {
+  const el = document.getElementById("data-ledger");
   if (!el) return;
-  const keys = ["rl", "ascend", "modeling", "live"];
-  const rows = keys.flatMap((key) => (store[key] || []).map((entry) => ({ key, entry })));
-  const total = rows.length || 1;
-  const sourced = rows.filter(({ entry }) => entry.url).length;
-  const confidence = rows.filter(({ entry }) => entry.confidence).length;
-  const ascend = rows.filter(({ entry }) => entry.ascend).length;
-  const analyzed = rows.filter(({ entry }) => entry.analysis || (window.hasSavedAnalysis && window.hasSavedAnalysis(entry))).length;
-  const updated = keys
-    .map((key) => store[key + "_meta"] && store[key + "_meta"].updated)
-    .filter(Boolean)
-    .sort()
-    .reverse()[0];
-  const pct = (n) => Math.round((n / total) * 100);
-  const items = [
-    ["Source links", `${sourced}/${rows.length}`, `${pct(sourced)}% cards point to a primary or tracking URL.`],
-    ["Confidence labels", `${confidence}/${rows.length}`, "Use confirmed / secondary / self-reported before citing."],
-    ["Ascend status", `${ascend}/${rows.length}`, "Cards with ready / partial / none portability notes."],
-    ["Analyst notes", `${analyzed}/${rows.length}`, "Hand-written or saved analysis attached to cards."],
+  const KEYS = ["rl", "ascend", "modeling"];
+  const all = KEYS.flatMap((k) => (store[k] || []));
+  const n = all.length || 1;
+  const cnt = (f) => all.filter(f).length;
+  const prim = cnt(isPrimarySource);
+  const labelled = cnt((e) => e.confidence);
+  const confirmedN = cnt((e) => ["confirmed", "确证"].includes(e.confidence));
+  const secN = cnt((e) => ["secondary", "二手"].includes(e.confidence));
+  const selfN = cnt((e) => ["self-reported", "自报"].includes(e.confidence));
+  const models = all.filter((e) => ["model", "model-report"].includes(e.category));
+  const md = models.length || 1;
+  const mAsc = models.filter((e) => e.ascend).length;
+  const aReady = models.filter((e) => e.ascend === "ready").length;
+  const aPartial = models.filter((e) => e.ascend === "partial").length;
+  const aNone = models.filter((e) => e.ascend === "none").length;
+  const analysis = cnt((e) => e.analysis);
+
+  const rows = [
+    { lbl: "Primary sources", c: prim, d: n, hint: `${n - prim} 来自媒体/二手`,
+      tip: "信源来自一手/官方渠道(arXiv · HuggingFace · GitHub · 官方文档/厂商页)的占比。越高 = 越可溯源。" },
+    { lbl: "Confidence labelled", c: labelled, d: n, hint: `确证 ${confirmedN} · 二手 ${secN} · 自报 ${selfN}`,
+      tip: "已标注信源可信度(确证 confirmed / 二手 secondary / 自报 self-reported)的条目占比。" },
+    { lbl: "Ascend readiness", c: mAsc, d: md, hint: `就绪 ${aReady} · 部分 ${aPartial} · 无 ${aNone} · 共 ${models.length} 张模型卡`,
+      tip: "在『模型卡』里已给出昇腾就绪度判断(就绪/部分/无)的占比。只对模型类条目计——算法/框架论文不适用。" },
+    { lbl: "Deep analysis", c: analysis, d: n, hint: `${analysis}/${n} 带 ▸ 深析`,
+      tip: "带 ▸ 深度分析段落(创新 / 性能 / 对昇腾意义)的条目占比,而非仅一句话摘要。" },
   ];
-  el.innerHTML = `<div class="trust-head">
-      <div>
-        <h3>Data Quality Ledger</h3>
-        <p>Every card now exposes its source type and snapshot date. Treat live model metrics as provisional unless the badge says confirmed.</p>
-      </div>
-      <span class="trust-date">Latest snapshot ${escapeHtml(updated || "unknown")}</span>
+  const bar = (p) => `<span class="ledger-bar"><span style="width:${p}%"></span></span>`;
+  el.innerHTML = `
+    <div class="ledger-head">
+      <h3>Data Quality Ledger</h3>
+      <span class="dim">${all.length} curated entries (RL · Ascend · Modeling) · 悬停看含义</span>
     </div>
-    <div class="trust-grid">${items.map(([label, value, note]) => `<div class="trust-item">
-      <div class="trust-val">${escapeHtml(value)}</div>
-      <div class="trust-label">${escapeHtml(label)}</div>
-      <p>${escapeHtml(note)}</p>
-    </div>`).join("")}</div>
-    <div class="trust-legend">
-      <span class="conf conf">确证</span><span>primary/official or directly checked</span>
-      <span class="conf sec">二手</span><span>media/community sourced</span>
-      <span class="conf self">自报</span><span>vendor or model-card claim</span>
+    <div class="ledger-grid">
+      ${rows.map((r) => {
+        const p = Math.round((r.c / r.d) * 100);
+        return `<div class="ledger-cell" title="${escapeAttr(r.tip)}">
+          <div class="ledger-top"><span>${escapeHtml(r.lbl)}</span><span class="ledger-pct">${p}%</span></div>
+          ${bar(p)}
+          <div class="ledger-hint dim">${r.c}/${r.d} · ${escapeHtml(r.hint)}</div>
+        </div>`;
+      }).join("")}
     </div>`;
+}
+
+/* ---------- Agentic RL trends block ---------- */
+function renderAgenticTrends() {
+  const el = document.getElementById("agentic-trends");
+  if (!el) return;
+  if (!agenticTrends.length) { el.innerHTML = ""; return; }
+  el.innerHTML = `<div class="trend-head"><h3>本期趋势 · Trends</h3>
+      <span class="dim">工业界为主,兼顾学术 · ${storeUpdated.agentic || ""}</span></div>
+    <div class="trend-grid">${agenticTrends.map((t, i) => `<div class="trend-card">
+      <div class="trend-num">${String(i + 1).padStart(2, "0")}</div>
+      <h4>${escapeHtml(t.title)}</h4>
+      <p>${escapeHtml(t.body)}</p>
+    </div>`).join("")}</div>`;
+}
+
+/* industry / academic track badge */
+function trackBadge(track) {
+  if (!track) return "";
+  const map = { industry: ["工业界", "ind"], academic: ["学术", "acad"] };
+  const m = map[track];
+  if (!m) return "";
+  return `<span class="track ${m[1]}" title="来源:${m[0]}">${m[0]}</span>`;
 }
 
 /* ---------- filters ---------- */
@@ -357,16 +624,38 @@ function renderPanel(key) {
   container.innerHTML = count + items.map((e) => cardHTML(e, key)).join("");
 }
 
+/* derive a human source label from an explicit field or the URL host */
+function inferSource(e) {
+  if (e.source) return e.source;
+  const u = e.url || "";
+  const m = u.match(/^https?:\/\/([^/]+)/i);
+  if (!m) return "";
+  const host = m[1].replace(/^www\./, "");
+  const MAP = {
+    "arxiv.org": "arXiv", "huggingface.co": "Hugging Face", "github.com": "GitHub",
+    "docs.vllm.ai": "vLLM docs", "seed.bytedance.com": "ByteDance Seed",
+    "trendforce.com": "TrendForce", "tomshardware.com": "Tom's Hardware",
+    "techpowerup.com": "TechPowerUp", "llm-stats.com": "llm-stats",
+  };
+  return MAP[host] || host;
+}
+function provenanceLine(e, key) {
+  const src = inferSource(e);
+  if (!src) return "";
+  const verified = e.verified || storeUpdated[key] || "";
+  return `<div class="provenance" title="数据来源与最近校验日期">source: ${escapeHtml(src)}${verified ? ` · verified ${escapeHtml(verified)}` : ""}</div>`;
+}
+
 function cardHTML(e, key) {
   const meta = [e.org, e.year].filter(Boolean).join(" · ");
   const tags = (e.tags || []).map((t) => `<span class="t">${escapeHtml(t)}</span>`).join("");
-  const slim = JSON.stringify({ title: e.title, org: e.org, year: e.year, category: e.category, innovation: e.innovation, summary: e.summary, url: e.url, tags: e.tags, analysis: e.analysis, confidence: e.confidence, ascend: e.ascend });
+  const slim = JSON.stringify({ title: e.title, org: e.org, year: e.year, category: e.category, innovation: e.innovation, summary: e.summary, url: e.url, tags: e.tags, analysis: e.analysis });
   const analyzed = !!e.analysis || (window.hasSavedAnalysis && window.hasSavedAnalysis(e));
   return `<article class="card">
-    <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}<span class="card-badges">${confBadge(e)}${ascendBadge(e)}</span></div>
+    <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}<span class="card-badges">${trackBadge(e.track)}${confBadge(e)}${ascendBadge(e)}</span></div>
     <h3>${hl(e.title || "Untitled")}</h3>
     ${meta ? `<div class="meta">${escapeHtml(meta)}</div>` : ""}
-    ${sourceMetaHTML(e, key)}
+    ${provenanceLine(e, key)}
     ${e.innovation ? `<div class="innov">▸ ${hl(e.innovation)}</div>` : ""}
     ${e.summary ? `<p class="summary">${hl(e.summary)}</p>` : ""}
     <div class="tags">${tags}</div>
@@ -378,33 +667,6 @@ function cardHTML(e, key) {
       </span>
     </div>
   </article>`;
-}
-
-function sourceMetaHTML(e, key) {
-  const meta = store[key + "_meta"] || {};
-  const verified = e.verified || e.lastVerified || e.checked || meta.updated;
-  const pieces = [];
-  if (e.url) pieces.push(sourceKind(e.url));
-  if (verified) pieces.push(`verified ${String(verified).slice(0, 10)}`);
-  if (e.sourceType) pieces.push(e.sourceType);
-  if (!pieces.length) return "";
-  return `<div class="source-line" title="Source provenance for this snapshot">${pieces.map((p) => `<span>${escapeHtml(p)}</span>`).join("")}</div>`;
-}
-
-function sourceKind(url) {
-  try {
-    const u = new URL(url, location.href);
-    const host = u.hostname.replace(/^www\./, "");
-    if (host === "arxiv.org") return "source: arXiv";
-    if (host === "github.com" || host === "gitee.com" || host === "gitcode.com") return `source: ${host.split(".")[0]}`;
-    if (host.includes("huggingface.co")) return "source: Hugging Face";
-    if (host.includes("hiascend.com")) return "source: Ascend docs";
-    if (host.includes("docs.vllm.ai")) return "source: docs";
-    if (u.pathname.startsWith("/mission44/docs/") || u.pathname.startsWith("/docs/")) return "source: local note";
-    return `source: ${host}`;
-  } catch (_) {
-    return String(url).startsWith("docs/") ? "source: local note" : "source: linked";
-  }
 }
 
 // highlight the active search term inside escaped text
@@ -458,8 +720,6 @@ function ideaHTML(e) {
   const bar = (cls, v) => `<div class="rating">${cls[0].toUpperCase() + cls.slice(1)}: ${v}/5
     <div class="bar ${cls}"><span style="width:${(v / 5) * 100}%"></span></div></div>`;
   const steps = (e.steps || []).map((s) => `<li>${escapeHtml(s)}</li>`).join("");
-  const mvp = e.minimumExperiment || e.mvp;
-  const success = e.successMetric || e.acceptanceCriteria;
   return `<article class="idea">
     <h3>${escapeHtml(e.title)}</h3>
     <p class="pitch">${escapeHtml(e.pitch || "")}</p>
@@ -469,10 +729,8 @@ function ideaHTML(e) {
       ${bar("novelty", e.novelty ?? 0)}
     </div>
     ${e.why ? `<div class="why"><strong>Why now:</strong> ${escapeHtml(e.why)}</div>` : ""}
-    ${mvp || success ? `<div class="idea-proof">
-      ${mvp ? `<div><strong>Minimum experiment</strong><span>${escapeHtml(mvp)}</span></div>` : ""}
-      ${success ? `<div><strong>Success signal</strong><span>${escapeHtml(success)}</span></div>` : ""}
-    </div>` : ""}
+    ${e.minimumExperiment ? `<div class="why"><strong>Minimum experiment:</strong> ${escapeHtml(e.minimumExperiment)}</div>` : ""}
+    ${e.successMetric ? `<div class="why"><strong>Success metric:</strong> ${escapeHtml(e.successMetric)}</div>` : ""}
     ${steps ? `<div class="why"><strong>First steps:</strong><ul>${steps}</ul></div>` : ""}
     ${(e.tags || []).length ? `<div class="tags">${(e.tags || []).map((t) => `<span class="t">${escapeHtml(t)}</span>`).join("")}</div>` : ""}
   </article>`;
@@ -484,37 +742,42 @@ function activateTab(name, push) {
   const panel = document.getElementById(name);
   if (!tab || !panel) return;
   document.querySelectorAll(".tab").forEach((t) => {
-    const isActive = t === tab;
-    t.classList.toggle("active", isActive);
-    t.setAttribute("aria-selected", isActive ? "true" : "false");
-    t.tabIndex = isActive ? 0 : -1;
+    const on = t === tab;
+    t.classList.toggle("active", on);
+    t.setAttribute("aria-selected", on ? "true" : "false");
+    t.tabIndex = on ? 0 : -1;
+    if (on) { try { t.scrollIntoView({ inline: "nearest", block: "nearest" }); } catch (e) {} }
   });
   document.querySelectorAll(".panel").forEach((p) => {
-    const isActive = p === panel;
-    p.classList.toggle("active", isActive);
-    p.hidden = !isActive;
+    const on = p === panel;
+    p.classList.toggle("active", on);
+    if (on) p.removeAttribute("hidden"); else p.setAttribute("hidden", "");
   });
-  tab.classList.add("active");
-  panel.classList.add("active");
-  panel.hidden = false;
   if (push && location.hash.slice(1) !== name) history.replaceState(null, "", "#" + name);
 }
 
 function wireTabs() {
-  document.querySelectorAll(".tab").forEach((tab) => {
+  const tabs = [...document.querySelectorAll(".tab")];
+  tabs.forEach((tab) => {
     tab.addEventListener("click", () => activateTab(tab.dataset.tab, true));
-    tab.addEventListener("keydown", (e) => {
-      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
-      e.preventDefault();
-      const tabs = [...document.querySelectorAll(".tab")];
-      const i = tabs.indexOf(tab);
-      const next = e.key === "Home" ? tabs[0]
-        : e.key === "End" ? tabs[tabs.length - 1]
-        : tabs[(i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
-      next.focus();
-      activateTab(next.dataset.tab, true);
-    });
   });
+  // standard tablist keyboard interaction: ←/→/Home/End move focus + activate
+  const tablist = document.getElementById("tabs");
+  if (tablist) {
+    tablist.addEventListener("keydown", (e) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+      const cur = tabs.indexOf(document.activeElement);
+      if (cur < 0) return;
+      e.preventDefault();
+      let next = cur;
+      if (e.key === "ArrowRight") next = (cur + 1) % tabs.length;
+      else if (e.key === "ArrowLeft") next = (cur - 1 + tabs.length) % tabs.length;
+      else if (e.key === "Home") next = 0;
+      else if (e.key === "End") next = tabs.length - 1;
+      tabs[next].focus();
+      activateTab(tabs[next].dataset.tab, true);
+    });
+  }
   // deep-link: open the tab named in the URL hash, and react to back/forward
   const fromHash = () => { const h = location.hash.slice(1).split("/")[0]; if (h && document.getElementById(h)) activateTab(h, false); };
   window.addEventListener("hashchange", fromHash);
@@ -524,13 +787,37 @@ function wireTabs() {
     if (!/^[1-9]$/.test(e.key)) return;
     const el = document.activeElement;
     if (el && /INPUT|TEXTAREA|SELECT/.test(el.tagName)) return;
-    const tabs = [...document.querySelectorAll(".tab")];
     if (tabs[+e.key - 1]) tabs[+e.key - 1].click();
   });
 }
 
+/* mobile: fade hints on the .tabs strip when it can scroll left/right (CSS draws the fades) */
+function wireTabsScrollHint() {
+  const tabs = document.querySelector(".tabs");
+  if (!tabs) return;
+  const upd = () => {
+    const canL = tabs.scrollLeft > 4;
+    const canR = tabs.scrollLeft + tabs.clientWidth < tabs.scrollWidth - 4;
+    tabs.classList.toggle("fade-l", canL);
+    tabs.classList.toggle("fade-r", canR);
+  };
+  let ticking = false;
+  tabs.addEventListener("scroll", () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; upd(); });
+  }, { passive: true });
+  window.addEventListener("resize", upd);
+  upd();
+  // bring the active tab into view on load (only when the strip actually overflows)
+  if (tabs.scrollWidth > tabs.clientWidth) {
+    const active = tabs.querySelector(".tab.active");
+    if (active) { try { active.scrollIntoView({ inline: "center", block: "nearest" }); } catch (e) {} }
+  }
+}
+
 function updateTabCounts() {
-  ["rl", "ascend", "modeling", "ideas", "live"].forEach((key) => {
+  ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach((key) => {
     const tab = document.querySelector(`.tab[data-tab="${key === "live" ? "live" : key}"]`);
     if (!tab) return;
     let sup = tab.querySelector(".tab-count");
@@ -540,19 +827,36 @@ function updateTabCounts() {
     sup.textContent = n;
     sup.classList.toggle("zero", n === 0);
   });
+  // blog tab badge — counts matching Dispatch posts
+  const blogTab = document.querySelector('.tab[data-tab="blog"]');
+  if (blogTab) {
+    let sup = blogTab.querySelector(".tab-count");
+    if (!searchTerm) { if (sup) sup.remove(); return; }
+    const n = window.__blogMatches
+      ? (window.__blogPosts || []).filter(window.__blogMatches).length
+      : (window.__blogPosts || []).filter((p) =>
+          (p.title + " " + (p.subtitle || "") + " " + (p.tags || []).join(" ")).toLowerCase().includes(searchTerm)).length;
+    if (!sup) { sup = document.createElement("sup"); sup.className = "tab-count"; blogTab.appendChild(sup); }
+    sup.textContent = n;
+    sup.classList.toggle("zero", n === 0);
+  }
 }
 
 function wireSearch() {
   const box = document.getElementById("search");
   box.addEventListener("input", () => {
     searchTerm = box.value.trim().toLowerCase();
-    ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel);
+    ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach(renderPanel);
+    window.__refreshBlogIndex && window.__refreshBlogIndex();
     updateTabCounts();
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "/" && document.activeElement !== box) { e.preventDefault(); box.focus(); }
     if (e.key === "Escape" && document.activeElement === box && box.value) {
-      box.value = ""; searchTerm = ""; ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel); updateTabCounts();
+      box.value = ""; searchTerm = "";
+      ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach(renderPanel);
+      window.__refreshBlogIndex && window.__refreshBlogIndex();
+      updateTabCounts();
     }
   });
 }
@@ -574,10 +878,8 @@ function wireLive() {
       const items = payload && (payload.items || (Array.isArray(payload) ? payload : null));
       if (items) {
         store.live = items;
-        store.live_meta = payload && !Array.isArray(payload) ? payload : {};
         renderPanel("live");
         buildFilterbars();
-        buildTrustPanel();
         const upd = payload.updated ? ` · updated ${String(payload.updated).slice(0, 10)}` : "";
         status.textContent = `Loaded ${items.length} entries${upd}.`;
       } else {
@@ -590,10 +892,8 @@ function wireLive() {
     const fresh = await tryArxivLive();
     if (fresh && fresh.length) {
       store.live = fresh;
-      store.live_meta = { updated: new Date().toISOString(), source: "browser-arxiv-attempt" };
       renderPanel("live");
       buildFilterbars();
-      buildTrustPanel();
       status.textContent = `Fetched ${fresh.length} live entries.`;
     } else {
       status.textContent = "Live in-browser fetch blocked (CORS). Use scripts/fetch_arxiv.py to refresh data/feed.json instead.";
@@ -716,6 +1016,7 @@ async function wireCurves() {
     return;
   }
   curvesData = payload;
+  renderCurveMeta(payload);
   const metrics = [];
   payload.experiments.forEach((e) =>
     Object.keys(e.metrics || {}).forEach((m) => { if (!metrics.includes(m)) metrics.push(m); }));
@@ -723,10 +1024,31 @@ async function wireCurves() {
   sel.addEventListener("change", () => renderCurve(sel.value));
   if (status) {
     const upd = payload.updated ? ` · updated ${String(payload.updated).slice(0, 10)}` : "";
-    const kind = payload.provenance && payload.provenance.kind ? ` · ${payload.provenance.kind}` : "";
-    status.textContent = `${payload.experiments.length} run(s)${upd}${kind}`;
+    status.textContent = `${payload.experiments.length} run(s)${upd}`;
   }
   if (metrics.length) renderCurve(metrics[0]);
+}
+
+/* Experiment metadata panel — makes provenance of the curves explicit */
+function renderCurveMeta(payload) {
+  const el = document.getElementById("curve-meta");
+  if (!el) return;
+  const exps = payload.experiments || [];
+  const isSynthetic = payload.synthetic || exps.some((e) => e.meta && e.meta.synthetic);
+  const COLS = [
+    ["model", "Model"], ["dataset", "Dataset"], ["hardware", "Hardware"],
+    ["framework", "Framework"], ["precision", "Precision"], ["seed", "Seed"],
+  ];
+  const banner = isSynthetic
+    ? `<div class="curve-synth">⚠ Synthetic demo data — illustrative shapes, not measured results. Replace via <code>logs_to_dashboard.py --log train.log</code>.</div>`
+    : `<div class="curve-synth real">✓ Parsed from real training logs.</div>`;
+  const head = `<tr><th>Run</th>${COLS.map(([, l]) => `<th>${escapeHtml(l)}</th>`).join("")}</tr>`;
+  const rows = exps.map((e) => {
+    const m = e.meta || {};
+    const cells = COLS.map(([k]) => `<td>${m[k] !== undefined && m[k] !== "" ? escapeHtml(String(m[k])) : "—"}</td>`).join("");
+    return `<tr><td class="rowhead">${escapeHtml(e.name)} · ${escapeHtml(e.device || "")}</td>${cells}</tr>`;
+  }).join("");
+  el.innerHTML = `${banner}<div class="cmp-scroll"><table class="cmp">${head}${rows}</table></div>`;
 }
 
 function renderCurve(metric) {
@@ -736,51 +1058,16 @@ function renderCurve(metric) {
   const series = [];
   curvesData.experiments.forEach((e, i) => {
     const pts = (e.metrics || {})[metric];
-    if (pts && pts.length) series.push({ label: `${e.name} · ${e.device}`, color: curveColor(e.device, i), points: pts, meta: e });
+    if (pts && pts.length) series.push({ label: `${e.name} · ${e.device}`, color: curveColor(e.device, i), points: pts });
   });
   if (!series.length) {
     chart.innerHTML = `<div class="empty">No data for ${escapeHtml(metric)}.</div>`;
     legend.innerHTML = "";
-    renderCurveMeta(metric, []);
     return;
   }
   chart.innerHTML = svgLineChart(series, metricLabel(metric));
   legend.innerHTML = series.map((s) =>
     `<span class="lg"><span class="sw" style="background:${s.color}"></span>${escapeHtml(s.label)}</span>`).join("");
-  renderCurveMeta(metric, series);
-}
-
-function renderCurveMeta(metric, series) {
-  const el = document.getElementById("curve-meta");
-  if (!el) return;
-  if (!series.length) { el.innerHTML = ""; return; }
-  const prov = curvesData.provenance || {};
-  const provenance = [
-    prov.kind,
-    prov.generator,
-    curvesData.updated ? `updated ${String(curvesData.updated).slice(0, 10)}` : "",
-  ].filter(Boolean).join(" · ");
-  const rows = series.map((s) => {
-    const e = s.meta || {};
-    const fields = [
-      ["hardware", e.hardware],
-      ["framework", e.framework],
-      ["model", e.model],
-      ["dataset", e.dataset],
-      ["precision", e.precision],
-      ["seed", e.seed],
-      ["commit", e.commit],
-    ].filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== "");
-    return `<div class="curve-run">
-      <div class="curve-run-title"><span class="sw" style="background:${s.color}"></span>${escapeHtml(s.label)}</div>
-      <div class="curve-run-fields">${fields.map(([k, v]) => `<span><strong>${escapeHtml(k)}</strong> ${escapeHtml(v)}</span>`).join("") || `<span class="dim">No run metadata yet</span>`}</div>
-      ${e.notes ? `<p>${escapeHtml(e.notes)}</p>` : ""}
-    </div>`;
-  }).join("");
-  el.innerHTML = `<div class="curve-meta-head">
-      <strong>${escapeHtml(metricLabel(metric))} provenance</strong>
-      ${provenance ? `<span>${escapeHtml(provenance)}</span>` : ""}
-    </div>${rows}`;
 }
 
 function svgLineChart(series, title) {
@@ -818,13 +1105,13 @@ function svgLineChart(series, title) {
 
 /* ---------- utils ---------- */
 function setLastUpdated() {
-  const stamp = ["rl", "ascend", "modeling", "ideas", "live"]
-    .map((k) => store[k + "_meta"] && store[k + "_meta"].updated)
-    .filter(Boolean)
-    .sort()
-    .reverse()[0];
+  let stamp = null;
+  for (const k of ["rl", "ascend", "modeling"]) {
+    const p = store[k + "_meta"];
+    if (p && p.updated) stamp = p.updated;
+  }
   document.getElementById("last-updated").textContent =
-    `Curated content snapshot${stamp ? ` · latest ${String(stamp).slice(0, 10)}` : ""} · refresh Live Papers for the newest arXiv entries.`;
+    "Curated content snapshot · refresh Live Papers for the newest arXiv entries.";
 }
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -832,6 +1119,6 @@ function escapeHtml(s) {
 function escapeAttr(s) { return escapeHtml(s); }
 
 // re-render all card panels (used by analyst.js after saving an analysis)
-window.refreshDashboard = () => ["rl", "ascend", "modeling", "ideas", "live"].forEach(renderPanel);
+window.refreshDashboard = () => ["rl", "ascend", "modeling", "live"].forEach(renderPanel);
 
 init();
