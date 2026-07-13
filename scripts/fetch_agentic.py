@@ -15,6 +15,7 @@ No third-party deps (stdlib only). Run weekly via .github/workflows/refresh-agen
 import datetime as dt
 import json
 import os
+import re
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -28,8 +29,21 @@ MAX_PER_QUERY = 8
 
 QUERIES = {
     "agentic-rl": '(abs:agentic OR abs:"LLM agent" OR abs:"tool use" OR abs:"multi-turn") AND abs:"reinforcement learning"',
-    "long-horizon-rl": '(abs:"credit assignment" OR abs:"long-horizon" OR abs:"long horizon") AND abs:"reinforcement learning" AND (abs:agent OR abs:LLM)',
+    "long-horizon-rl": '(abs:"credit assignment" OR abs:"long-horizon" OR abs:"long horizon") AND abs:"reinforcement learning" AND (abs:"large language model" OR abs:LLM)',
 }
+
+AGENTIC_TERMS = (
+    "language model", "llm", "agentic", "tool use", "tool-use", "tool calling",
+    "multi-turn", "web agent", "software agent", "computer-use agent",
+)
+
+
+def relevant(title, summary):
+    text = f"{title} {summary[:360]}".lower()
+    return any(
+        re.search(r"\bllms?\b", text) if term == "llm" else term in text
+        for term in AGENTIC_TERMS
+    )
 
 
 def fetch(query, n):
@@ -53,7 +67,7 @@ def parse(xml_bytes, bucket):
         org = authors[0] if authors else "research"
         if len(authors) > 1:
             org += f" +{len(authors) - 1}"
-        if not (title and link):
+        if not (title and link and relevant(title, summary)):
             continue
         out.append({
             "title": title,
@@ -94,7 +108,8 @@ def main():
     # gather candidates: keep existing auto items + newly fetched, dedup by url
     pool, seen = [], set()
     for it in items:
-        if it.get("auto") and it.get("url") and it["url"] not in seen and it["url"] not in skip:
+        if (it.get("auto") and it.get("url") and relevant(it.get("title", ""), it.get("summary", ""))
+                and it["url"] not in seen and it["url"] not in skip):
             pool.append(it); seen.add(it["url"])
     for bucket, q in QUERIES.items():
         try:

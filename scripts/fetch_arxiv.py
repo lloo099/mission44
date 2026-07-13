@@ -15,6 +15,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import sys
 import urllib.parse
 import urllib.request
@@ -37,6 +38,37 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "data", "feed.json")
 PINNED = os.path.join(HERE, "..", "data", "feed_pinned.json")
 NS = {"a": "http://www.w3.org/2005/Atom"}
+
+BUCKET_TERMS = {
+    "rl-llm": ("language model", "rlhf", "rlvr", "llm", "post-training", "reasoning model"),
+    "reasoning-rl": ("language model", "rlvr", "verifiable reward", "reasoning model", "post-training"),
+    "agentic-rl": ("language model", "llm", "agentic", "tool use", "tool-use", "tool calling", "multi-turn", "web agent", "software agent"),
+    "ascend-npu": ("ascend", "cann", "mindspore", "da vinci", "huawei npu", "910b"),
+    "sparse-attention": ("sparse attention", "kv cache", "kv-cache", "long context", "long-context"),
+    "fp8-lowprec": ("fp8", "mxfp4", "fp4", "low-precision", "low precision"),
+}
+
+
+def has_term(text: str, term: str) -> bool:
+    if term == "llm":
+        return bool(re.search(r"\bllms?\b", text))
+    if term == "ascend":
+        return bool(re.search(r"\bascend\b", text))
+    return term in text
+
+
+def relevant(bucket: str, title: str, summary: str) -> bool:
+    """Reject broad arXiv boolean matches that do not fit the dashboard domain."""
+    text = f"{title} {summary[:360]}".lower()
+    if bucket == "efficient-llm":
+        efficient = ("mixture of experts", "mixture-of-experts", "quantization", "quantized", "moe")
+        model = ("language model", "llm", "transformer")
+        return any(has_term(text, t) for t in efficient) and any(has_term(text, t) for t in model)
+    if bucket == "fp8-lowprec":
+        precision = ("fp8", "mxfp4", "fp4", "low-precision", "low precision")
+        model = ("language model", "llm", "transformer", "model training")
+        return any(has_term(text, t) for t in precision) and any(has_term(text, t) for t in model)
+    return any(has_term(text, term) for term in BUCKET_TERMS.get(bucket, ()))
 
 
 def load_pinned():
@@ -87,6 +119,8 @@ def parse(xml_bytes: bytes, bucket: str):
         published = (e.findtext("a:published", default="", namespaces=NS) or "")[:10]
         link = e.findtext("a:id", default="", namespaces=NS) or ""
         authors = [a.findtext("a:name", default="", namespaces=NS) for a in e.findall("a:author", NS)]
+        if not relevant(bucket, title, summary):
+            continue
         org = authors[0] if authors else ""
         if len(authors) > 1:
             org += f" +{len(authors) - 1}"

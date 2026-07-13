@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate data/*.json for the dashboard. Run in CI to block broken commits.
 Only files that have an "items" list are item-validated (compare/curves skipped)."""
-import glob, json, sys
+import glob, hashlib, json, sys
 
 OK_CONF = {"confirmed", "secondary", "self-reported", "确证", "二手", "自报", None}
 errs = []
@@ -52,6 +52,52 @@ if os.path.exists("data/curves.json"):
                     missing = [k for k in CURVE_META_KEYS if meta.get(k) in (None, "")]
                     if missing:
                         errs.append(f"{tag}: meta missing {missing}")
+
+        published = cv.get("publishedEvidence", [])
+        if not isinstance(published, list):
+            errs.append("data/curves.json: 'publishedEvidence' is not a list")
+        else:
+            required = (
+                "id", "name", "kind", "status", "reported", "verified", "model",
+                "algorithm", "hardware", "framework", "sourceTitle", "sourceUrl",
+                "sourceType", "rawSamples", "caveat", "charts",
+            )
+            for i, run in enumerate(published):
+                tag = f"data/curves.json.publishedEvidence[{i}]"
+                if not isinstance(run, dict):
+                    errs.append(f"{tag}: not an object"); continue
+                missing = [k for k in required if k not in run or run.get(k) in (None, "")]
+                if missing:
+                    errs.append(f"{tag}: missing {missing}")
+                if run.get("status") != "real-published":
+                    errs.append(f"{tag}: status must be 'real-published'")
+                if not isinstance(run.get("rawSamples"), bool):
+                    errs.append(f"{tag}: rawSamples must be boolean")
+                source_url = run.get("sourceUrl", "")
+                if not isinstance(source_url, str) or not source_url.startswith("https://"):
+                    errs.append(f"{tag}: sourceUrl must be https")
+                charts = run.get("charts")
+                if not isinstance(charts, list) or not charts:
+                    errs.append(f"{tag}: charts missing or empty")
+                    continue
+                for j, chart in enumerate(charts):
+                    ctag = f"{tag}.charts[{j}]"
+                    if not isinstance(chart, dict) or not chart.get("metric") or not chart.get("asset"):
+                        errs.append(f"{ctag}: missing metric/asset"); continue
+                    asset = chart["asset"]
+                    if not isinstance(asset, str) or not asset.startswith("assets/curves/"):
+                        errs.append(f"{ctag}: asset must live under assets/curves/")
+                    elif not os.path.exists(asset):
+                        errs.append(f"{ctag}: asset not found: {asset}")
+                    else:
+                        expected_hash = chart.get("sha256", "")
+                        with open(asset, "rb") as f:
+                            actual_hash = hashlib.sha256(f.read()).hexdigest()
+                        if expected_hash != actual_hash:
+                            errs.append(f"{ctag}: sha256 mismatch")
+                    original = chart.get("originalUrl", "")
+                    if not isinstance(original, str) or not original.startswith("https://"):
+                        errs.append(f"{ctag}: originalUrl must be https")
 
 print(f"[validate] checked {len(glob.glob('data/*.json'))} files")
 if errs:

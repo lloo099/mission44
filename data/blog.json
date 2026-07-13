@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-29",
+  "updated": "2026-07-13",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
@@ -20,10 +20,10 @@
     },
     {
       "id": "dispatch-21-longcat-2",
-      "title": "Dispatch 21 · 详解 LongCat-2.0:国产芯片全周期训练闭环的最强实证",
-      "subtitle": "美团 1.6T/A48B MoE(与 V4-Pro 同档)、原生 1M 上下文、LSA 稀疏注意力;主张预训练(35T+ token)与后训练全程在 5 万余张国产 ASIC 超节点完成(HCCL,疑似 910C 未官宣)。6D 并行拆解、证据天平分级(权重可验/闭环待验/芯片推测)、SWE Pro 59.5 的口径警示;与 openPangu 精确互补——一个给规模实证、一个给代码参考。",
+      "title": "Dispatch 21 · 详解 LongCat-2.0:国产芯片前沿训练闭环的官方实证",
+      "subtitle": "官方来源校正版:1.6T/A48B MoE、原生 1M 上下文,LSA 的 SI/CLI/HI 三类索引优化、135B 5-gram Embedding 与 3-step MTP。预训练使用 5 万余片国产 AI ASIC,系统含 6D 并行、512+ 路 CP、Muon 和确定性算子;后训练披露 MOPD 多教师在线蒸馏。芯片厂商/型号与 RL 算法未公开,不再把 HCCL、910C 或 RL-on-Ascend 当成已确认事实。",
       "date": "2026-07-07",
-      "tags": ["LongCat-2.0", "domestic-chips", "MoE", "RL-on-NPU"],
+      "tags": ["LongCat-2.0", "domestic-chips", "MoE", "post-training"],
       "file": "docs/blog/dispatch-21-longcat-2.md"
     },
     {

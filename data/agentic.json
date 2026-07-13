@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-07",
+  "updated": "2026-07-13",
   "trends": [
     {
       "title": "长程自治量级跃升,评测与成本基线双双重置",
@@ -921,54 +921,6 @@
       "confidence": "confirmed"
     },
     {
-      "title": "Seek to Segment: Active Perception for Panoramic Referring Segmentation",
-      "org": "Song Tang +4",
-      "year": "2026-07",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Existing referring segmentation models passively process static images captured from fixed perspectives, limiting their applicability in Embodied AI, where agents must perform active perception in the continuous 360$^\\circ$ environments. To bridge this gap, we introduce a novel t…",
-      "url": "http://arxiv.org/abs/2607.02497v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "Full Bayesian Reinforcement Learning via LF-IBIS",
-      "org": "Stefano Masini +2",
-      "year": "2026-07",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Reinforcement Learning (RL) is a sequential decision-making framework in which an agent learns optimal policies through interaction with an environment by maximizing cumulative rewards. Among RL methods, Bayesian Reinforcement Learning (BRL) addresses common practical challenges …",
-      "url": "http://arxiv.org/abs/2607.01741v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "Mean Field Reinforcement Learning",
-      "org": "René Carmona +1",
-      "year": "2026-07",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "This monograph provides an introduction to mean field reinforcement learning through the lens of Markov decision processes arising from large-population stochastic control with mean field interactions and common noise. Starting from the connection between multi-agent reinforcemen…",
-      "url": "http://arxiv.org/abs/2607.01525v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
       "title": "FaithMed: Training LLMs For Faithful Evidence-Based Medical Reasoning",
       "org": "Zhiyun Zhang +3",
       "year": "2026-07",
@@ -976,38 +928,6 @@
       "track": "academic",
       "summary": "Faithful reasoning is essential in medicine, where clinical decisions require transparent justification grounded in reliable evidence. Current medical LLMs either lack active access to evidence or use retrieved evidence without supervising how it should be appraised and applied d…",
       "url": "http://arxiv.org/abs/2607.01440v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "The Rollout Infrastructure Tax in Coding-Agent Reinforcement Learning",
-      "org": "Daniel Thi Graviet +4",
-      "year": "2026-07",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Coding-agent reinforcement learning treats execution infrastructure as a background implementation detail, despite relying on large numbers of interactive software rollouts. This is a missed opportunity: measuring infrastructure overhead can reveal practical efficiency gains for …",
-      "url": "http://arxiv.org/abs/2607.01415v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "Simulation Based Reward Function Validation for Multi-Agent On Orbit Inspection",
-      "org": "Patrick Quinn +3",
-      "year": "2026-07",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "A proposed method for the control of groups of inspection spacecraft is Multi-Agent Reinforcement Learning (MARL). While MARL has already been employed for this purpose in previous work, the reward functions used focus on reaching a finite set of predetermined inspection points a…",
-      "url": "http://arxiv.org/abs/2607.01367v1",
       "tags": [
         "academic",
         "agentic-rl",
@@ -1065,13 +985,13 @@
       "auto": true
     },
     {
-      "title": "Tandem Reinforcement Learning with Verifiable Rewards",
-      "org": "Difan Jiao +3",
-      "year": "2026-06",
+      "title": "Mach-Mind-4-Flash Technical Report",
+      "org": " Foundation Model Team",
+      "year": "2026-07",
       "category": "algorithm",
       "track": "academic",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) has significantly improved the reasoning capability of large language models, reaching expert or even superhuman performance in domains such as competition math. However, whether weaker agents and humans can actually harness t…",
-      "url": "http://arxiv.org/abs/2606.28166v1",
+      "summary": "We present Mach-Mind-4-Flash, a 35B-parameter Mixture-of-Experts (MoE) agentic model with 3B activated parameters. Through post-training optimization alone without scaling pre-training compute, the model achieves performance on par with or surpassing that of 100B-parameter-class …",
+      "url": "http://arxiv.org/abs/2607.09375v1",
       "tags": [
         "academic",
         "agentic-rl",
@@ -1081,33 +1001,113 @@
       "auto": true
     },
     {
-      "title": "Verifiable Geometry Problem Solving: Solver-Driven Autoformalization and Theorem Proposing",
-      "org": "Can Li +3",
-      "year": "2026-06",
+      "title": "When Implausible Tokens Get Reinforced: Tail-Aware Credit Calibration for LLM Reinforcement Learning",
+      "org": "Xiuyi Lou +6",
+      "year": "2026-07",
       "category": "algorithm",
       "track": "academic",
-      "summary": "Geometry Problem Solving have increasingly adopt the neuro-symbolic paradigm, combining neural intuition with symbolic rigor. However, current frameworks suffer from severe bottlenecks in two core stages: autoformalization, which treats multimodal translation as a static task dec…",
-      "url": "http://arxiv.org/abs/2606.27926v1",
+      "summary": "Reinforcement learning (RL) has achieved remarkable success in enhancing the reasoning capabilities of large language models (LLMs). However, widely used critic-free RL methods rely on uniform credit assignment, broadcasting the same advantage to all tokens regardless of their di…",
+      "url": "http://arxiv.org/abs/2607.07976v1",
       "tags": [
         "academic",
         "agentic-rl",
-        "agentic-rl"
+        "long-horizon-rl"
       ],
       "confidence": "confirmed",
       "auto": true
     },
     {
-      "title": "ATOD: Annealed Turn-aware On-policy Distillation for Multi-turn Autonomous Agents",
-      "org": "Qitai Tan +3",
-      "year": "2026-06",
+      "title": "Single-Rollout Asynchronous Optimization for Agentic Reinforcement Learning",
+      "org": "Zhenyu Hou +3",
+      "year": "2026-07",
       "category": "algorithm",
       "track": "academic",
-      "summary": "Training small language-model agents for long-horizon interactive tasks requires both fast imitation and reward-driven improvement. On-policy distillation (OPD) provides dense teacher guidance and typically improves rapidly in the early stage, but its gains saturate once the stud…",
-      "url": "http://arxiv.org/abs/2606.27814v1",
+      "summary": "Reinforcement learning (RL) is becoming increasingly important for post-training large language models (LLMs). Previous RL pipelines for LLMs were mostly synchronous and batch-interleaved, which is inefficient for long-horizon agentic tasks. Recently, asynchronous RL has emerged …",
+      "url": "http://arxiv.org/abs/2607.07508v1",
       "tags": [
         "academic",
         "agentic-rl",
-        "agentic-rl"
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Information Gain-based Rollout Policy Optimization: An Adaptive Tree-Structured Rollout Approach for Multi-Turn LLM Agents",
+      "org": "Yijun Zhang +8",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Reinforcement learning has become a promising paradigm for improving large language model (LLM) agents on long-horizon search tasks, where the agent must make a sequence of intermediate decisions before receiving a final outcome. However, existing methods still face a key limitat…",
+      "url": "http://arxiv.org/abs/2607.06223v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "CurateEvo: Data-Curation Evolving for Agentic Post-Training",
+      "org": "Dingzirui Wang +4",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Large language model (LLM) agents require post-training methods that can improve long-horizon decision making from environment feedback. However, existing agentic post-training pipelines often treat data curation as a fixed preprocessing step, focusing mainly on data augmentation…",
+      "url": "http://arxiv.org/abs/2607.06140v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "CompactionRL: Reinforcement Learning with Context Compaction for Long-Horizon Agents",
+      "org": "Yujiang Li +4",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Long-horizon agentic LLMs are increasingly limited by finite context windows, as extended interaction trajectories can exceed the maximum context length before a task is completed. Context compaction offers a natural solution by summarizing previous interaction states and continu…",
+      "url": "http://arxiv.org/abs/2607.05378v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "TimeThink: Reasoning with Time for Video LLMs",
+      "org": "Handong Li +10",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Video reasoning requires models to identify and verify temporally localized evidence within long video sequences. Recent Video Large Language Models (Video-LLMs) have shown promising reasoning abilities when aligned with reinforcement learning, yet existing approaches typically r…",
+      "url": "http://arxiv.org/abs/2607.05089v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "STAPO: Selective Trajectory-Aware Policy Optimization for LLM Agent Training",
+      "org": "Qiuyi Qi +10",
+      "year": "2026-07",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Reinforcement Learning (RL) is the dominant paradigm for training Large Language Model (LLM) agents on long-horizon tasks. However, sparse and delayed rewards often lead to trajectory neglect, in which agents lose focus on the task goal and interaction history at intermediate ste…",
+      "url": "http://arxiv.org/abs/2607.04963v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
       ],
       "confidence": "confirmed",
       "auto": true

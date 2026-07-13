@@ -339,6 +339,30 @@ table.cmp td.cmp-none { color: var(--bad-fg); }
 .curve-legend .lg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--dim); }
 .curve-legend .sw { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
 #curve-metric { padding: 4px 8px; }
+.curve-evidence { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--line); }
+.curve-evidence-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.curve-evidence-head h3 { margin: 0; font-size: 16px; color: var(--accent); }
+.curve-evidence-head span { font-size: 11.5px; color: var(--dim); }
+.curve-evidence-run { padding: 16px 0 4px; }
+.curve-evidence-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
+.curve-evidence-title h4 { margin: 5px 0 0; font-size: 15px; }
+.curve-evidence-title a { color: var(--accent); font-size: 12px; white-space: nowrap; }
+.evidence-badge { display: inline-block; color: var(--ok-fg); background: var(--ok-bg); border: 1px solid var(--ok-bd); border-radius: 5px; padding: 2px 7px; font-size: 10px; font-weight: 800; }
+.curve-evidence-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 18px; margin: 0 0 14px; }
+.curve-evidence-facts div { min-width: 0; }
+.curve-evidence-facts dt { color: var(--dim); font-size: 10px; text-transform: uppercase; }
+.curve-evidence-facts dd { margin: 2px 0 0; color: var(--text-soft); font-size: 12px; overflow-wrap: anywhere; }
+.curve-evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.curve-evidence-grid figure { margin: 0; min-width: 0; }
+.curve-evidence-grid a { display: block; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.curve-evidence-grid img { display: block; width: 100%; height: auto; aspect-ratio: 824 / 516; object-fit: contain; }
+.curve-evidence-grid figcaption { margin-top: 6px; color: var(--dim); font-size: 11.5px; }
+.curve-evidence-caveat { margin: 12px 0 6px; color: var(--text-soft); font-size: 12px; line-height: 1.55; }
+@media (max-width: 720px) {
+  .curve-evidence-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .curve-evidence-grid { grid-template-columns: 1fr; }
+  .curve-evidence-title { align-items: flex-start; flex-direction: column; }
+}
 
 /* NPU architecture animation */
 .arch-wrap { display: flex; flex-direction: column; gap: 12px; }

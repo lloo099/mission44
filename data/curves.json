@@ -1,6 +1,42 @@
 {
-  "updated": "2026-06-24T10:00:51.283641Z",
+  "updated": "2026-07-13T06:58:33Z",
   "synthetic": true,
+  "publishedEvidence": [
+    {
+      "id": "verl-2552-ascend-910b-grpo-oom",
+      "name": "DeepSeek-R1-Distill-Qwen-1.5B GRPO",
+      "kind": "hardware-telemetry",
+      "status": "real-published",
+      "reported": "2025-07-15",
+      "verified": "2026-07-13",
+      "model": "DeepSeek-R1-Distill-Qwen-1.5B",
+      "algorithm": "GRPO",
+      "dataset": "verifiable-coding-problems-python-only",
+      "hardware": "8 x Ascend 910B",
+      "framework": "verl + vLLM-Ascend",
+      "precision": "not reported",
+      "stack": "CANN 8.1.RC1; torch-npu 2.5.1; vLLM/vLLM-Ascend 0.7.3; Ray 2.46.0",
+      "sourceTitle": "verl issue #2552: OOM when training a 1.5B model on 8*Ascend 910b",
+      "sourceUrl": "https://github.com/verl-project/verl/issues/2552",
+      "sourceType": "primary user-reported run",
+      "rawSamples": false,
+      "caveat": "The source publishes monitor charts and the full launch configuration, but not point-level telemetry. This was an OOM investigation rather than a completed convergence run, so the charts are shown as hardware evidence and are not mixed into reward/KL comparisons.",
+      "charts": [
+        {
+          "metric": "NPU memory and memory utilization",
+          "asset": "assets/curves/verl-910b-grpo-memory.png",
+          "sha256": "fad4b1e2a0b3fe13093b56a2b4542f81b2edd221a32acacab37e4b38b09bf41d",
+          "originalUrl": "https://github.com/user-attachments/assets/2701bb26-1262-480d-8f47-811fb805dc2a"
+        },
+        {
+          "metric": "NPU utilization",
+          "asset": "assets/curves/verl-910b-grpo-utilization.png",
+          "sha256": "694399c19b72c6b487b38b929aeab4e551dc844b46d01bb472d734b4e6571e32",
+          "originalUrl": "https://github.com/user-attachments/assets/2eb8ccef-33f1-498f-9027-2eb436c3feb2"
+        }
+      ]
+    }
+  ],
   "experiments": [
     {
       "name": "qwen0.5b_gsm8k_grpo",

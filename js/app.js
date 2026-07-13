@@ -1017,6 +1017,7 @@ async function wireCurves() {
   }
   curvesData = payload;
   renderCurveMeta(payload);
+  renderPublishedCurves(payload);
   const metrics = [];
   payload.experiments.forEach((e) =>
     Object.keys(e.metrics || {}).forEach((m) => { if (!metrics.includes(m)) metrics.push(m); }));
@@ -1024,7 +1025,9 @@ async function wireCurves() {
   sel.addEventListener("change", () => renderCurve(sel.value));
   if (status) {
     const upd = payload.updated ? ` · updated ${String(payload.updated).slice(0, 10)}` : "";
-    status.textContent = `${payload.experiments.length} run(s)${upd}`;
+    const published = (payload.publishedEvidence || []).length;
+    const real = published ? ` · ${published} published real run(s)` : "";
+    status.textContent = `${payload.experiments.length} interactive run(s)${real}${upd}`;
   }
   if (metrics.length) renderCurve(metrics[0]);
 }
@@ -1049,6 +1052,39 @@ function renderCurveMeta(payload) {
     return `<tr><td class="rowhead">${escapeHtml(e.name)} · ${escapeHtml(e.device || "")}</td>${cells}</tr>`;
   }).join("");
   el.innerHTML = `${banner}<div class="cmp-scroll"><table class="cmp">${head}${rows}</table></div>`;
+}
+
+function renderPublishedCurves(payload) {
+  const el = document.getElementById("curve-evidence");
+  if (!el) return;
+  const runs = payload.publishedEvidence || [];
+  if (!runs.length) {
+    el.innerHTML = "";
+    return;
+  }
+  const runHtml = runs.map((run) => {
+    const charts = (run.charts || []).map((chart) => `<figure>
+      <a href="${escapeAttr(chart.originalUrl || chart.asset)}" target="_blank" rel="noopener">
+        <img src="${escapeAttr(chart.asset)}" alt="${escapeAttr(chart.metric)} from ${escapeAttr(run.hardware)}" loading="lazy">
+      </a>
+      <figcaption>${escapeHtml(chart.metric)}</figcaption>
+    </figure>`).join("");
+    const facts = [
+      ["Model", run.model], ["Algorithm", run.algorithm], ["Workload", run.dataset],
+      ["Hardware", run.hardware], ["Stack", run.stack], ["Reported", run.reported],
+    ].map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value || "-")}</dd></div>`).join("");
+    return `<article class="curve-evidence-run">
+      <div class="curve-evidence-title">
+        <div><span class="evidence-badge">REAL 910B TELEMETRY</span><h4>${escapeHtml(run.name)}</h4></div>
+        <a href="${escapeAttr(run.sourceUrl)}" target="_blank" rel="noopener">Open primary source &#8599;</a>
+      </div>
+      <dl class="curve-evidence-facts">${facts}</dl>
+      <div class="curve-evidence-grid">${charts}</div>
+      <p class="curve-evidence-caveat"><strong>Scope:</strong> ${escapeHtml(run.caveat || "")}</p>
+      <p class="provenance">${escapeHtml(run.sourceType || "published run")} · verified ${escapeHtml(run.verified || "-")} · point-level samples ${run.rawSamples ? "available" : "not published"}</p>
+    </article>`;
+  }).join("");
+  el.innerHTML = `<div class="curve-evidence-head"><h3>Published 910B evidence</h3><span>Source-preserving snapshots; not digitized into synthetic points.</span></div>${runHtml}`;
 }
 
 function renderCurve(metric) {

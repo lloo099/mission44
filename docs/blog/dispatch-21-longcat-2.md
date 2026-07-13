@@ -1,177 +1,126 @@
-# Dispatch 21 · 详解 LongCat-2.0:国产芯片全周期训练闭环的最强实证
+# Dispatch 21 · 详解 LongCat-2.0:国产芯片前沿训练闭环的官方实证
 
-*2026-07-07 · NPU Frontier Dispatch · LongCat-2.0 / domestic-chips / MoE / RL-on-NPU*
+*2026-07-07 · 2026-07-13 官方来源校正 · NPU Frontier Dispatch · LongCat-2.0 / domestic-chips / MoE / post-training*
 
-> **TL;DR** — 美团开源 **LongCat-2.0**:1.6T 总参/激活约 48B 的 MoE(与 DeepSeek V4-Pro 同档同稀疏度)、原生 1M 上下文、新的 LongCat Sparse Attention(LSA,机制细节待技术报告)。核心主张:**预训练(35T+ token,含数千亿 1M 长度)与后训练全程在 5 万余张中国国产 AI ASIC 超节点上完成**——首个非 NVIDIA、非 TPU 全周期前沿模型(厂商主张;用华为 HCCL,疑似昇腾 910C 但未官宣)。系统亮点是 **6D 并行**(tensor/context/expert/data/pipeline/embedding)。证据分级:权重与推理=可验(Owl Alpha 匿名跑了两个月);训练闭环=方向可信、细节待验(训练代码未放、无第三方复现);芯片型号=推测。若主张成立,本看板综述"国产训练少有公开实证"的判断需要改写——与 openPangu(Dispatch 20)恰好互补:一个给规模实证、一个给代码参考。数字均 self-reported/provisional。
+> **TL;DR** — 美团官方发布的 **LongCat-2.0** 是 1.6T 总参、每 token 激活约 48B 的 MoE,原生 1M 上下文。它不只给出“5 万卡国产芯片训练”的结论,还公开了 LSA 的 SI/CLI/HI 三种索引优化、135B 5-gram Embedding、6D 并行、Muon、512 路以上 context parallel、确定性算子和 MOPD 多教师在线蒸馏。官方明确:完整训练与大规模部署都构建在国产 AI ASIC 超节点上,预训练使用超过 5 万片芯片。但官方**没有披露芯片厂商/型号,也没有披露 PPO/GRPO、reward、rollout 或 policy update**。因此它是“前沿规模国产芯片预训练 + 后训练 + 部署”的强厂商实证,不是已经公开验证的 RL-on-Ascend 证据。所有性能与系统增益仍属 self-reported/provisional。
 
-应上周动态扫描(LongCat-2.0 卡片)的深挖要求。承接本看板 Dispatch 03(SuperPoD)、05(V4-Pro)、09(EP 门槛)、12(SWE Pro 口径)、13(四坑)、20(openPangu)、架构综述 §5/§10。
+这次校正以 [LongCat-2.0 官方发布页](https://longcat.ai/blog/longcat-2.0/) 为主来源。此前媒体口径中的 HCCL、昇腾 910C、35T+ 总训练 token 和“后训练即 RL”均不再作为官方确认事实。
 
 ---
 
 ## 1 · 一句话为什么重要
 
-本看板需要先修正自己的一条既有判断。架构综述 §10 的信源纪律第 4 条写过一句 framing:**"国产芯片做推理是真的,做训练更难且少有公开实证。"** 这句话在过去一年基本成立——国产加速器上跑推理服务的案例不少,但"从零开始把一个前沿规模模型完整训出来"的公开实证几乎为零。LongCat-2.0 如果主张成立,就是这条判断迄今最强的反例:
+本看板曾用“国产芯片做推理是真的,做训练更难且少有公开实证”概括行业状态。LongCat-2.0 让这句话需要加上一个重要例外:
 
-- **前沿规模**:1.6T 总参数、约 48B 激活的 MoE,与 DeepSeek V4-Pro(1.6T/49B,Dispatch 05)同档;
-- **全周期**:美团主张 from scratch 预训练 + 后训练(含 RL)全程完成,不是"预训练在 NVIDIA 上、微调搬到国产卡上"的半闭环;
-- **规模化基础设施**:5 万余张中国国产 AI ASIC,组成多个超节点集群。
-
-```mermaid
-flowchart LR
-    subgraph DATA ["数据侧"]
-        D1["预训练语料超 35T token"]
-        D2["其中数千亿 token<br>在约 1M 上下文长度下训练"]
-    end
-    subgraph HW ["算力侧——5 万余张中国国产 AI ASIC 超节点集群"]
-        H1["华为 HCCL 通信库"]
-        H2["疑似昇腾 910C——推测,厂商未官宣"]
-        H3["单超节点集群 8192 卡上限<br>5 万卡应为多超节点组网——推断"]
-        H1 -. "强烈暗示" .-> H2
-    end
-    subgraph TRAIN ["训练全程均在国产集群完成"]
-        T1["预训练 from scratch"]
-        T2["后训练"]
-        T1 --> T2
-    end
-    OUT["开源权重 LongCat-2.0<br>1.6T 总参、每 token 激活约 48B MoE<br>原生 1M 上下文 + LSA 稀疏注意力"]
-    CLAIM["首个非 NVIDIA、非 Google-TPU<br>全周期前沿模型——厂商主张"]
-    D1 --> TRAIN
-    D2 --> TRAIN
-    HW --> TRAIN
-    TRAIN --> OUT
-    OUT -. "定性" .-> CLAIM
-```
-
-厂商称这是**首个非 NVIDIA、非 Google-TPU 的全周期前沿模型**(注意:这是厂商主张,第 4 节给出分级可信度)。即便打折扣,这也把"国产芯片能不能训前沿模型"的讨论从思想实验拉进了有开源权重可查验的现实。诚实地说:如果证据链继续坐实,综述 §10 那条判断需要改写。
-
-## 2 · 模型本体:1.6T/A48B + LSA + 1M
-
-**参数与稀疏度定位。** LongCat-2.0 为 1.6T 总参数、激活约 48B 的 MoE,激活比约 3%(以下模型参数均为厂商自报/provisional)。放进同档坐标系:
-
-| 模型 | 总参 | 激活 | 激活比 |
-|---|---|---|---|
-| LongCat-2.0 | 1.6T | ~48B | ~3% |
-| DeepSeek V4-Pro(Dispatch 05) | 1.6T | 49B | ~3% |
-| GLM-5.2(Dispatch 06) | 753B | 40B | ~5.3% |
-
-可以看到 LongCat-2.0 与 V4-Pro 在总参和稀疏度上几乎完全同档——这大概率不是巧合,而是当前一线团队对"推理成本 vs 容量"权衡收敛到的同一个甜点区。相比前代 LongCat-Flash(560B 总参/动态激活约 27B,零计算专家 + PID 控制器 + ScMoE,综述 §5),这一代总参扩了近 3 倍,且从"动态激活数"的花活回到了更接近主流的固定稀疏 MoE 形态(是否保留零计算专家等机制,待技术报告确认)。
+- **前沿规模**:1.6T 总参数、约 48B 激活的 MoE;
+- **完整链路**:官方称 full training run 与 large-scale deployment 均构建在国产 AI ASIC 超节点上;
+- **集群规模**:预训练使用超过 5 万片国产算力芯片,后训练的 MOPD 能力融合运行在数万卡集群;
+- **系统细节**:公开到并行维度、确定性算子、显存管理、长上下文训练、推理解耦和故障恢复,不是只给一张发布会数字图。
 
 ```mermaid
 flowchart LR
-    F["LongCat-Flash——前代<br>560B 总参、动态激活约 27B<br>零计算专家 + PID 控制器 + ScMoE<br>见本看板综述第 5 节"]
-    L2["LongCat-2.0<br>1.6T 总参、激活约 48B<br>LSA 稀疏注意力、原生 1M 上下文"]
-    F -->|"总参规模约 3 倍"| L2
-    subgraph SA ["同期稀疏注意力谱系"]
-        S1["MSA——MiniMax"]
-        S2["DSA——GLM、DeepSeek"]
-        S3["SWA——MiMo"]
-        S4["LSA——LongCat<br>智能选择关键信息降计算<br>机制细节待技术报告"]
-    end
-    L2 -. "谱系定位" .-> S4
+    DATA["1M 长上下文数据<br>数千亿 token"] --> PRE["预训练<br>超过 5 万片国产 AI ASIC"]
+    PRE --> POST["后训练<br>MOPD 多教师在线蒸馏"]
+    POST --> MODEL["LongCat-2.0<br>1.6T 总参 / 约 48B 激活"]
+    MODEL --> SERVE["国产集群部署<br>PD 分离 + KVP + EP128"]
+    NOTE["厂商/型号未披露<br>RL 算法未披露"] -. "证据边界" .-> POST
 ```
 
-**LSA:目前只有定性口径。** LongCat Sparse Attention 在媒体口径中仅被描述为"智能选择关键信息"——这是一句几乎没有信息量的话。它可能是 top-k 稀疏注意力、可能是分块检索式、也可能是可学习的 token 选择,但在技术报告放出前,**任何压缩比、top-k 值、块大小的数字都是编造**,本文不给。唯一确定的是:它是原生 1M 上下文能落地的机制前提之一。
+这仍不是一份可复现训练报告:训练代码、完整数据配方、MFU、故障率与第三方复现均未公开。更准确的结论是:官方给出了高具体度的存在性证据,但尚未给出公共复现路径。
 
-**1M 是原生的,不是外推的。** 预训练总量超 35T token,其中**数千亿 token 是在约 1M 上下文长度下训练的**(自报)。这个细节值得展开:市面上很多"长上下文"模型是短序列训练 + RoPE 缩放外推,长文能力靠位置编码技巧撑;而在 1M 长度上真金白银烧数千亿 token,意味着注意力模式、长程依赖是训出来的而非插值出来的。代价也直观——1M 长度下即便有稀疏注意力,单条序列的激活显存和通信量都是天文数字,这直接引出下一节的 context 并行需求。
+## 2 · 模型本体:LSA + 5-gram + 3-step MTP
 
-## 3 · 系统:5 万卡超节点 + HCCL + 6D 并行
+**参数与稀疏度。** LongCat-2.0 为 1.6T 总参数、每 token 激活约 48B,激活比约 3%。相比前代 LongCat-Flash 的 560B/动态约 27B,总参数扩大近 3 倍;ScMoE 和零计算专家仍出现在官方系统说明中,但发布页没有给出完整专家数与路由配置。
 
-**HCCL 是事实上的昇腾指纹。** 美团没有官宣芯片型号,但明确使用华为 HCCL 通信库。HCCL 之于昇腾,如同 NCCL 之于 NVIDIA——它不跑在别家硬件上。因此"底层是昇腾、疑似 910C"是合理推测(**推测,非官宣**)。这里与上周动态形成呼应:vLLM-Ascend v0.22.1rc1 刚打通 HCCL 权重传输后端,把 RL 训推之间的权重同步从 NCCL 依赖中解放出来。LongCat-2.0 主张后训练(含 RL)也在同一套国产栈上完成——如果为真,说明美团内部早就解决了 vLLM-Ascend 上周才在开源侧补上的这块拼图。
+**LSA 已不再是“机制待确认”。** 官方把 LongCat Sparse Attention 描述为从 DeepSeek Sparse Attention 演进而来,核心问题是 DSA Lightning Indexer 的不连续索引访问与二次方评分开销。LSA 给出三项可独立开关的优化:
+
+1. **Streaming-aware Indexing (SI)**:把硬件对齐的连续访问与动态随机选择结合,将部分碎片化 HBM 访问变成可合并的顺序读取;
+2. **Cross-Layer Indexing (CLI)**:利用相邻层重要 token 分布的一致性,通过训练期跨层蒸馏让一次索引结果被多个连续注意力层复用;
+3. **Hierarchical Indexing (HI)**:先做 block 级近似召回,再在候选中做细粒度 token 选择;在 LongCat-2.0 中作为 training-free 插件,仅对部分超长上下文任务启用。
+
+LSA 还被扩展到 **3-step MTP**:Target 模型每两个连续层共享一次索引,三个 Draft step 则共用 Step 1 的索引结果。这一点很关键,因为它把稀疏索引成本与投机解码放进同一套系统设计里。
 
 ```mermaid
-flowchart TB
-    M["LongCat-2.0 训练系统<br>6D 并行"]
-    subgraph DIM ["六个并行维度"]
-        TP["Tensor 并行<br>切分单层权重矩阵到多卡"]
-        CP["Context 并行<br>切分超长序列,支撑 1M 上下文训练"]
-        EP["Expert 并行<br>把 MoE 专家分布到不同设备"]
-        DP["Data 并行<br>切分训练数据批次"]
-        PP["Pipeline 并行<br>按层切成流水级"]
-        EM["Embedding 并行<br>切分 embedding 部件"]
-    end
-    M --> TP
-    M --> CP
-    M --> EP
-    M --> DP
-    M --> PP
-    M --> EM
-    N1["旁注:Expert 并行是 MoE<br>正确训练的门槛能力"]
-    N2["为新 embedding 部件设计<br>细节待技术报告"]
-    EP -. "关键" .-> N1
-    EM -. "存疑点" .-> N2
+flowchart LR
+    DSA["DSA Lightning Indexer"] --> SI["SI<br>连续访问 + 动态选择"]
+    DSA --> CLI["CLI<br>跨层复用索引"]
+    DSA --> HI["HI<br>block 粗召回 + token 精选"]
+    SI --> LSA["LongCat Sparse Attention"]
+    CLI --> LSA
+    HI --> LSA
+    LSA --> MTP["3-step MTP<br>Draft steps 共享索引"]
 ```
 
-**6D 并行逐维拆解。** 官方口径为 tensor / context / expert / data / pipeline / embedding 六维并行:
+**N-gram Embedding。** 模型继承 LongCat-Flash-Lite 的 N-gram Embedding,n-gram size 设为 5,包含 135B 参数,约占 1.6T 总参的 8.4%。官方解释是:标准 MoE 稀疏度已接近 97%,继续增加同量专家参数的边际收益较低;把参数放到与 MoE 正交的 N-gram 稀疏维度,还能降低大 batch decode 的显存 I/O。
 
-- **Tensor(TP)**:单层内切分,超节点内高带宽域是它的存活前提;
-- **Context(CP)**:1M 序列的刚需——单卡放不下一条序列的激活,必须沿序列维切分,配合 LSA 的稀疏模式做通信;
-- **Expert(EP)**:MoE 的命门。Dispatch 09 说过"只有 Megatron 系能正确做 EP"——正确的 EP 意味着 all-to-all 路由、专家负载均衡、与 TP/PP 的正交组合都要在通信库层面做对。**如果国产栈(HCCL 之上)真把 1.6T MoE 的 EP 做正确了,这本身就是比模型分数更重要的系统成果**;
-- **Data(DP)**:5 万卡规模的最外层扩展维;
-- **Pipeline(PP)**:1.6T 参数跨节点分层的必然选择;
-- **Embedding**:第六维是新东西,官方称为新的 embedding 部件设计的专用并行维度,机制细节待技术报告——不做猜测。
+**1M 是训练出来的。** 官方称预训练覆盖数千亿 token 的 1M-context 数据,并使用 512 路以上 all-gather context parallel。这里能确认的是长上下文训练量级;此前媒体提到的 35T+ 总预训练 token 不在本次官方发布页中,保留为 secondary/provisional,不再混入官方口径。
 
-**5 万卡 = 多超节点组网(推断)。** 参照 Dispatch 03:Atlas 950 SuperPoD 单集群规模为 8192 卡。5 万余卡意味着至少 6-7 个超节点级集群互联(**推断,组网拓扑未公开**)。这把难度从"超节点内高带宽域调度"升级到"跨超节点的层级化通信"——DP/PP 跨域、TP/EP 尽量域内,是教科书式的切法,但在昇腾组网上做到 5 万卡尺度,此前没有任何公开先例。
+## 3 · 训练系统:5 万卡、6D 并行与确定性
 
-## 4 · 证据与质疑:该信多少
+官方称预训练在超过 5 万片国产算力芯片上完成,系统优化相对朴素实现把训练吞吐提升 **超过 35%**。关键路径包括:
 
-```mermaid
-flowchart TB
-    subgraph LEFT ["左盘——支持证据"]
-        L1["确实使用华为 HCCL 通信库"]
-        L2["发布前以 Owl Alpha 名义<br>在 OpenRouter 匿名运行约两个月"]
-        L3["开源权重可下载、可查验"]
-        L4["自报 SWE-bench Pro 59.5<br>略超 GPT-5.5 的 58.6"]
-    end
-    subgraph RIGHT ["右盘——存疑之处"]
-        R1["训练代码未同步放出<br>BigGo 报道追问 Where is the code"]
-        R2["芯片厂商未官宣<br>昇腾 910C 仅为推测"]
-        R3["无第三方复现"]
-        R4["全部成绩数字均为自报"]
-    end
-    C["中间结论:方向重大、细节待验"]
-    LEFT -->|"加分"| C
-    RIGHT -->|"减分"| C
-```
+- **6D 并行**:TP / CP / EP / DP / PP 之外增加 EMBP,专门并行 135B N-gram Embedding;
+- **物理超节点**:每个超节点最多 48 台机器,节点内全互联高带宽、节点间使用 RoCE;官方自报超节点相对同规模实现额外提升约 30% 预训练吞吐;
+- **显存管理**:ZeRO-1、选择性重计算、分配器层 OOM 自动卸载,并把 padding token 路由到零计算专家;
+- **Muon**:围绕 TP、DP 状态去冗余和对称矩阵乘核做国产芯片专项优化;
+- **长上下文**:512 路以上 context parallel,LSA top-k 索引与 KV all-gather 重叠,ScMoE 通信与并行分支计算重叠;
+- **确定性与可靠性**:自研 Embedding/FA/LSA/MoE 确定性算子,规约使用二叉树分段累加,部分计算密集算子加入比特翻转检测,链路故障识别、切流和恢复无需人工介入。
 
-**支持面:** ① **Owl Alpha 匿名运行两个月**——发布前该模型以 "Owl Alpha" 名义在 OpenRouter 匿名服务约两个月,承接真实生产流量,排除了"发布会 demo 模型"的可能,推理侧的稳定性和质量经过了盲测环境检验;② **权重开源**——1.6T 权重可下载,架构、参数量、激活比任何人可验;③ **技术细节的具体性**——HCCL、6D 并行、embedding 并行这类细节具体到"编不出来"的程度,造假通常给模糊大词,不会给可被内行证伪的具体指纹。
+这些细节大幅提高了系统主张的可评估性,但不能反推出具体芯片。官方只写 **AI ASIC / 国产算力芯片**,没有出现 Ascend、910B/910C 或 HCCL。芯片品牌与型号必须继续标记为 unknown。
 
-**质疑面:** ① BigGo 的 **"Where's the code?"**——训练代码与完整技术细节未同步放出,全周期训练闭环这一核心主张目前完全依赖厂商自述;② **芯片未官宣**,5 万卡的具体构成、故障率、MFU 等关键工程数字一概没有;③ **无第三方复现**,所有 benchmark 均为自报。
+## 4 · 推理系统:从长上下文到 PD 分离
 
-**SWE-bench Pro 59.5 的口径警示。** 自报 59.5、略超 GPT-5.5 的 58.6——但按 Dispatch 12 的教训处理:标准化 harness 下 GPT-5.4 得 59.1,而厂商自报的 Opus 成绩曾达 69.2,**自报分数与标准化分数不可直接比较**,scaffold、重试次数、超时设置都能造出几个点的差距。59.5 这个数字在第三方以统一 harness 复现之前,只能视为"大致在第一梯队"的弱信号。
+推理侧同样围绕低显存容量、有限 HBM 带宽和互联带宽设计:
 
-**分级结论:**
+- Attention 使用 absorb 模式,让 indexer 与 MLA prolog 并行,并以 KVP 把 KV cache 切到多卡;
+- ScMoE 利用加速器的显式控核能力分配 dense 与 MoE 流,让两个分支完整并行;
+- 通过 super kernel 降低启动开销,利用较大 L2 cache 预取权重;
+- 采用 prefill-decode 分离:prefill 使用多节点 CPP + SP,decode 使用 KVP + EP128;
+- 芯片内置 200 Gbps 网卡承担 layer-wise 的 PD 节点 KV-cache 传输,主机 RDMA 构建 KV-cache store;
+- EPLB 的统计与分布计算异步化,并兼容 constrained decoding、multi-step scheduling 与 MTP。
 
-| 主张 | 可信度 |
+对 RL rollout 而言,KVP、PD 分离、MTP 和异步 EPLB 都是直接相关的推理基础设施信号;但它们仍是部署架构,不是训练算法或实验曲线。
+
+## 5 · 后训练:确认了什么,没有确认什么
+
+官方披露的是 **MOPD 多教师在线蒸馏**。教师被分成三组:
+
+- Agent 能力专家:代码、办公、检索、复杂工具调用、多轮 API 参数解析与防循环;
+- 推理能力专家:数学、STEM、多跳知识推理和按难度自适应计算;
+- 交互体验专家:指令遵循、事实性幻觉抑制与安全边界。
+
+三组能力最终在数万卡国产集群上融合。这足以支持“国产芯片后训练已在前沿规模跑通”的厂商主张,但**不足以支持“RL-on-NPU 已公开验证”**。发布页没有给出:
+
+- PPO、GRPO 或其他 policy optimization 算法;
+- reward model、verifier 或 advantage 计算;
+- rollout engine、采样规模、轨迹调度或 policy/logprob 一致性;
+- reward、KL、entropy、loss 等训练曲线。
+
+所以 LongCat-2.0 与本站的真实 910B 曲线应当分开理解:前者是大规模国产 AI ASIC 训练/部署的官方系统案例;后者是明确标注 Ascend 910B 的公开硬件遥测证据。两者互补,不能相互替代。
+
+## 6 · 证据分级
+
+| 主张 | 当前结论 |
 |---|---|
-| 权重真实存在、推理能力属实 | **可验**(权重开源 + OpenRouter 两个月生产流量) |
-| 全周期国产芯片训练闭环 | **方向可信、细节待验**(技术指纹具体,但无代码、无第三方) |
-| 芯片为昇腾 910C | **推测**(HCCL 指纹强,型号未官宣) |
-| SWE-bench Pro 59.5 超 GPT-5.5 | **存疑**(自报 vs 标准化口径不可比) |
+| 1.6T/A48B、LSA、135B 5-gram、3-step MTP | **官方自报,细节明确** |
+| 超过 5 万片国产 AI ASIC 完成预训练 | **官方自报,无第三方复现** |
+| 完整训练与部署构建在国产 AI ASIC 超节点 | **官方自报,系统细节较充分** |
+| MOPD 多教师在线蒸馏运行在数万卡国产集群 | **官方自报,算法配方未开源** |
+| 芯片是昇腾 910C / 使用 HCCL | **未由官方页面确认** |
+| 已完成 PPO/GRPO 等 RL-on-Ascend | **证据不足** |
+| 官方 benchmark 优于闭源模型 | **内部 harness 自测,待统一第三方复现** |
 
-## 5 · 对 RL-on-NPU 主线的意义
+## 7 · 下一步看什么
 
-Dispatch 13 总结过 RL-on-NPU 的四个坑:无 sleep-mode(训推显存无法优雅让渡)、训推 logprob 不一致、长 rollout 的调度与容错、代码执行沙箱。这四个坑此前是"国产栈做 RL 后训练"的公认拦路虎。
+1. 训练代码、模型配置与完整技术报告是否发布;
+2. 芯片厂商、型号、精度格式、MFU、故障率与能效是否披露;
+3. SI/CLI/HI 的 top-k、块大小、索引开销与 1M-context 消融;
+4. MOPD 是否包含强化学习阶段,若包含则看 rollout、reward、KL 和训练稳定性;
+5. 第三方统一 harness 下的代码、Agent 与长上下文复现;
+6. 公开 Ascend/其他国产加速器推理或微调适配是否落地。
 
-LongCat-2.0 的主张若成立,意味着**这四个坑在 5 万卡尺度上已经被完整解决过一遍**——1.6T MoE 的 RL 后训练绕不开其中任何一个。但解法没有开源,我们只知道"有人趟过去了",不知道怎么趟的。
-
-这就与同期的 Dispatch 20(openPangu)形成精确互补:
-
-- **openPangu**:昇腾后训练代码**开源可读**,但模型小,不回答"这套代码撑不撑得起前沿规模";
-- **LongCat-2.0**:给出**前沿规模的实证**(若成立),但代码黑箱,不回答"具体怎么做"。
-
-一个给规模实证、一个给代码参考,合起来才接近完整答案。更重要的是问题性质的转变:在此之前,"国产芯片能不能做前沿模型全周期训练"是一个**能不能**的问题;LongCat-2.0 之后(在其主张成立的前提下),它变成了一个**怎么做**的问题——存在性证明已给出,剩下的是工程知识的扩散速度。这对整个国产训练生态是质变级的心理与路线信号。
-
-## 6 · 下一步看什么
-
-1. **技术报告与训练代码是否放出**——这是把"方向可信"升级为"可验"的唯一路径,尤其关注 MFU、故障恢复、跨超节点通信的真实数字;
-2. **LSA 机制细节**——稀疏模式是静态还是可学习、与 CP 如何配合、1M 长度下的实际计算量;
-3. **SWE-bench Pro 第三方标准化复现**——按 Dispatch 12 口径,只认统一 harness 下的数字;
-4. **芯片型号官方确认**——910C 与否、超节点具体形态、5 万卡的组网拓扑;
-5. **与 openPangu 栈的交叉验证**——若社区能用 openPangu 的开源后训练代码在昇腾上复现 LongCat-2.0 权重的 RL 微调,四坑解法就完成了从"内部实证"到"公共知识"的闭环;
-6. **embedding 并行的定义**——第六维并行到底并行了什么,是这次系统设计里最陌生的一块,待报告揭晓。
-
-一句话收束:权重是真的,推理是真的,训练闭环大概率方向为真但细节欠账——欠的这笔账,决定了 LongCat-2.0 是国产训练生态的里程碑,还是仅仅一座无法复制的孤峰。
+一句话收束:LongCat-2.0 已经把“国产芯片能否支撑前沿规模完整训练”从抽象讨论推进到一份细节丰富的官方系统案例;但在训练代码、芯片身份和 RL 配方公开前,它仍是高价值的厂商实证,还不是可复现的 RL-on-NPU 基准。
 
 ---
 
-*来源:SCMP、MarkTechPost、BigGo 等媒体报道与 LongCat 官方发布页;本看板 Dispatch 03/05/06/09/12/13/20 与架构综述 §5/§10。全文厂商数字均 provisional/self-reported:训练闭环主张无第三方复现,芯片型号为推测,SWE-bench Pro 为自报口径,以技术报告与训练代码放出后为准。*
+*主来源:[Introducing LongCat-2.0](https://longcat.ai/blog/longcat-2.0/),2026-06-30。架构前序参考:[LongCat-Flash](https://arxiv.org/abs/2509.01322)、[LongCat-Flash-Lite](https://arxiv.org/abs/2601.21204)。全文厂商数字均 self-reported/provisional;芯片厂商/型号、RL 算法与第三方复现状态均按“未披露/待验证”处理。*
