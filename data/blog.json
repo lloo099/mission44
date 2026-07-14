@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-29",
+  "updated": "2026-07-07",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
@@ -7,7 +7,12 @@
       "title": "Dispatch 23 · Agentic RL 系统难题地图:大家都在解决什么",
       "subtitle": "综述式收拢(4 路问题域调研 + 事实核查):rollout 效率(长尾/异步/dispatcher)、训练稳定性(四种崩法分类学与防御)、环境与奖励工程(沙箱成本主导、verifier 天花板、环境赛道资本化)、训推一致(三层解法×异构放大)。已收敛的标准答案 vs 开放战场(粒度自适应信用分配、开放域 verifier、异构一致性),玩家收敛矩阵,以及对昇腾'根治层缺位、短期靠监控+算法补偿'的判断。",
       "date": "2026-07-07",
-      "tags": ["agentic-RL", "systems", "problem-map", "RL-on-NPU"],
+      "tags": [
+        "agentic-RL",
+        "systems",
+        "problem-map",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-23-agentic-rl-problem-map.md"
     },
     {
@@ -15,7 +20,13 @@
       "title": "Dispatch 22 · 详解 DeepSWE 与 rLLM:纯 RL 编码智能体的开源全家桶",
       "subtitle": "Agentica×Together:Qwen3-32B 纯 RL 零 SFT(R2E-Gym 4500 任务,64 H100×6 天),GRPO++ 稳定化逐项拆解(compact filtering/去归一化/entropy-free);三个分数分开读——Pass@1 42.2 / Pass@16 71 / 混合 TTS 59(verifier 挑选换 17 分)。rLLM 框架解剖:Episode⊃Trajectory⊃Step 三层抽象 + Model Gateway 捕 logprob + verl/tinker/fireworks 可插拔后端。撞名警示(datacurve DeepSWE=考卷)与对昇腾的接口意义。",
       "date": "2026-07-07",
-      "tags": ["DeepSWE", "rLLM", "pure-RL", "SWE-agents", "RL-on-NPU"],
+      "tags": [
+        "DeepSWE",
+        "rLLM",
+        "pure-RL",
+        "SWE-agents",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-22-deepswe-rllm.md"
     },
     {
@@ -23,7 +34,12 @@
       "title": "Dispatch 21 · 详解 LongCat-2.0:国产芯片全周期训练闭环的最强实证",
       "subtitle": "美团 1.6T/A48B MoE(与 V4-Pro 同档)、原生 1M 上下文、LSA 稀疏注意力;主张预训练(35T+ token)与后训练全程在 5 万余张国产 ASIC 超节点完成(HCCL,疑似 910C 未官宣)。6D 并行拆解、证据天平分级(权重可验/闭环待验/芯片推测)、SWE Pro 59.5 的口径警示;与 openPangu 精确互补——一个给规模实证、一个给代码参考。",
       "date": "2026-07-07",
-      "tags": ["LongCat-2.0", "domestic-chips", "MoE", "RL-on-NPU"],
+      "tags": [
+        "LongCat-2.0",
+        "domestic-chips",
+        "MoE",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-21-longcat-2.md"
     },
     {
@@ -31,7 +47,12 @@
       "title": "Dispatch 20 · 详解 openPangu 2.0 开源:昇腾上 RL/对齐的第一手参考栈",
       "subtitle": "华为 GitCode 分批开源七大组件:不只权重,还有推理代码、训推算子、预训练与后训练代码。Flash(92B/6B,512K,910B 原生训练)先行,Pro 505B/A18B 七月跟进。架构=MLA+DSA:SWA 1:2+4-stream mHC 的昇腾原生组合;后训练=统一 SFT→多专家 RL→on-policy 蒸馏,与 V4 OPD/MiMo MOPD 第三家收敛、首个昇腾实现。缺口对照:算子数值语义与 RL 工程选型可观察,FP8 一致/路由回放仍待验。许可非 Apache。",
       "date": "2026-07-07",
-      "tags": ["openPangu", "post-training", "Ascend", "RL-on-NPU"],
+      "tags": [
+        "openPangu",
+        "post-training",
+        "Ascend",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-20-openpangu.md"
     },
     {
@@ -39,7 +60,13 @@
       "title": "Dispatch 19 · 详解 slime:GLM 全家桶背后的 SGLang 原生 RL 框架",
       "subtitle": "THUDM/Z.ai 开源(Apache-2.0,7.2k stars):三模块 + Data Buffer 中枢(Megatron 训练 ↔ Buffer ↔ SGLang rollout),--sglang- 参数直通的零封装税哲学,GLM-4.5→5.2 六代旗舰生产验证,fully_async + Multi-Task Rollout Orchestrator、PD 分离、Delta Weight Sync。生态位对比 verl/prime-rl/SkyRL-Agent,Miles 是其企业级下游。对昇腾:Buffer 中枢硬件无关,移植缺口精确圈定在训练/推理/权重同步三点。",
       "date": "2026-06-29",
-      "tags": ["RL-frameworks", "slime", "SGLang", "GLM", "RL-on-NPU"],
+      "tags": [
+        "RL-frameworks",
+        "slime",
+        "SGLang",
+        "GLM",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-19-slime.md"
     },
     {
@@ -47,7 +74,13 @@
       "title": "Dispatch 18 · prime-rl vs SkyRL-Agent:两个开源异步 agentic RL 框架怎么选",
       "subtitle": "都开源 Apache-2.0、都打 rollout 70%+长尾瓶颈,但层次不同:prime-rl(Prime Intellect)是全栈全解耦异步 trainer(Trainer/Inference/Orchestrator 三组件 + AIPO off-policy + FP8 vLLM,押注 1000+ GPU/1T MoE/去中心化,复现 INTELLECT-3.1);SkyRL-Agent(arXiv 2511.16108)是后端无关的 agent 层(叠在 SkyRL-train/VeRL/Tinker 上,异步 dispatcher 1.55× + AST 工具配方,SA-SWE-32B 24.4%→39.4% Verified、成本 >2× 降)。互补可组合,以及对昇腾 RL 栈的镜鉴。",
       "date": "2026-06-29",
-      "tags": ["RL-frameworks", "async-RL", "prime-rl", "SkyRL", "RL-on-NPU"],
+      "tags": [
+        "RL-frameworks",
+        "async-RL",
+        "prime-rl",
+        "SkyRL",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-18-prime-rl-vs-skyrl.md"
     },
     {
@@ -55,7 +88,12 @@
       "title": "Dispatch 17 · 详解 DeNovoSWE:从零生成整个代码仓库的长程环境",
       "subtitle": "AweAI-Team(ScaleSWE 后续,arXiv 2606.10728):把代码 agent 从「修局部 bug」推到 doc2repo「从文档规格从零造整个仓库」。分而治之 + critic-repair 逆向合成规格 → 4818 实例 + 单测/Docker;34k 轨迹难度感知过滤到 11k SFT。BeyondSWE-Doc2Repo:Qwen3-30B 5.8%→47.2%、Qwen3.5-35B→50%,逼近 DeepSeek-V3.2 的 54.99%。明确 for SFT & RL,自带 RLVR 环境;500 轮/256k 长 rollout 对昇腾意味着什么。",
       "date": "2026-06-29",
-      "tags": ["SWE", "DeNovoSWE", "long-horizon", "RL-on-NPU"],
+      "tags": [
+        "SWE",
+        "DeNovoSWE",
+        "long-horizon",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-17-denovoswe.md"
     },
     {
@@ -63,7 +101,12 @@
       "title": "Dispatch 16 · DeepSeek-V4 的 Agent 是怎么开发的",
       "subtitle": "两阶段后训练:Stage1 独立培养 10+ 领域专家(含 agent/工具专家,SFT→GRPO 可验证奖励)→ Stage2 on-policy 蒸馏合并。工具机制(跨轮 reasoning + |DSML| XML tool-call + strict function calling)、agent 跑分、为何还没自家 harness、MTP→DSpark 服务、昇腾验证的 rollout 路径。",
       "date": "2026-06-26",
-      "tags": ["DeepSeek-V4", "agentic", "后训练", "RL-on-NPU"],
+      "tags": [
+        "DeepSeek-V4",
+        "agentic",
+        "后训练",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-16-deepseek-v4-agent.md"
     },
     {
@@ -71,7 +114,12 @@
       "title": "Dispatch 15 · 详解 DSpark:DeepSeek-V4 服务里的半自回归 + 置信度调度投机解码",
       "subtitle": "北大+DeepSeek 的投机解码新作:半自回归架构(并行 backbone+轻量串行 head 治后缀衰减,且保精确验证)+ 置信度调度验证(按 prefix 存活概率与负载动态定验证长度)。线上 DeepSeek-V4 vs MTP-1 单用户 +60–85%。以及它为什么直接加速 RL rollout。",
       "date": "2026-06-26",
-      "tags": ["推理加速", "投机解码", "DeepSeek-V4", "RL-on-NPU"],
+      "tags": [
+        "推理加速",
+        "投机解码",
+        "DeepSeek-V4",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-15-dspark.md"
     },
     {
@@ -79,7 +127,12 @@
       "title": "Dispatch 14 · 详解 ScaleSWE:把 GitHub 宇宙挖成 SWE 训练数据",
       "subtitle": "AweAI-Team(非 Scale AI)的 arXiv 2602.09892:6M PR→10万实例 + 合成 F2P + DeepSeek 蒸馏 71k 轨迹 → SFT Qwen3-30B-A3B 拿 64% Verified(SFT-only)。方法、AweAgent/DeNovoSWE 生态,以及 vs SWE-smith/SWE-Gym/R2E-Gym/DeepSWE 对比表。",
       "date": "2026-06-26",
-      "tags": ["SWE", "ScaleSWE", "训练数据", "RL-on-NPU"],
+      "tags": [
+        "SWE",
+        "ScaleSWE",
+        "训练数据",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-14-scaleswe.md"
     },
     {
@@ -87,7 +140,12 @@
       "title": "Dispatch 13 · 在昇腾上搭一个 SWE Agentic RL 最小原型:方案设计",
       "subtitle": "把 Dispatch 12 的 SWE-RL 配方落到单节点 8×910B:环境(R2E-Gym+沙箱)+ rollout(mini-swe-agent+vLLM-Ascend)+ MindSpeed-RL GRPO++ + 解耦异步。四个昇腾坑(无 sleep-mode/logprob 一致性/长 rollout/沙箱成本)+ M0–M3 里程碑。",
       "date": "2026-06-26",
-      "tags": ["方案设计", "SWE-RL", "Ascend", "RL-on-NPU"],
+      "tags": [
+        "方案设计",
+        "SWE-RL",
+        "Ascend",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-13-swe-rl-on-ascend.md"
     },
     {
@@ -95,7 +153,12 @@
       "title": "Dispatch 12 · SWE Agents + Agentic RL 上手指南",
       "subtitle": "多 agent 工作流产出:SWE-bench 家族 / ScaleSWE、scaffold 三大模式、SWE-smith 造可验证任务、RLVR 奖励与信用分配,以及怎么端到端搭一个 SWE 的 agentic RL 系统(参考栈 + 分步 + 坑)。",
       "date": "2026-06-26",
-      "tags": ["SWE-agents", "agentic-RL", "guide", "RL-on-NPU"],
+      "tags": [
+        "SWE-agents",
+        "agentic-RL",
+        "guide",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-12-swe-agents.md"
     },
     {
@@ -103,7 +166,12 @@
       "title": "Dispatch 11 · vLLM/Inferact vs SGLang/RadixArk:两家伯克利系推理公司的对决",
       "subtitle": "同源(Berkeley)、同台(推理)、同期(2026初)商业化。Inferact $800M(a16z+Lightspeed,vLLM 40万 GPU)vs RadixArk $400M(Accel,SGLang+Miles)。引擎、战略、投资视角与昇腾 rollout 引擎选型。",
       "date": "2026-06-25",
-      "tags": ["inference", "vLLM", "SGLang", "investment"],
+      "tags": [
+        "inference",
+        "vLLM",
+        "SGLang",
+        "investment"
+      ],
       "file": "docs/blog/dispatch-11-vllm-vs-sglang.md"
     },
     {
@@ -111,7 +179,12 @@
       "title": "Dispatch 10 · RadixAttention 详解:SGLang 怎么靠「前缀树」赢 KV 复用",
       "subtitle": "把 KV cache 组织成基数树,自动发现并复用共享前缀 + cache-aware 调度 + 优雅处理 fork。对比 PagedAttention,以及为什么 GRPO 组内共享前缀让它对 RL rollout 特别值钱。",
       "date": "2026-06-25",
-      "tags": ["inference", "SGLang", "KV-cache", "RL-on-NPU"],
+      "tags": [
+        "inference",
+        "SGLang",
+        "KV-cache",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-10-radixattention.md"
     },
     {
@@ -119,7 +192,12 @@
       "title": "Dispatch 09 · RadixArk / Miles:SGLang 团队的 RL 框架与投资视角",
       "subtitle": "SGLang 核心团队的商业化(~$400M,Accel 领投)。两条腿:推理 SGLang(RadixAttention)+ RL 训练 Miles(端到端 FP8 + Rollout Routing Replay 逐比特对齐 MoE 训推)。技术优势、同行对比、技术壁垒、投资视角,以及 R3 对昇腾 MoE RL 的启发。",
       "date": "2026-06-25",
-      "tags": ["infra", "SGLang", "Miles", "investment"],
+      "tags": [
+        "infra",
+        "SGLang",
+        "Miles",
+        "investment"
+      ],
       "file": "docs/blog/dispatch-09-radixark-miles.md"
     },
     {
@@ -127,7 +205,12 @@
       "title": "Dispatch 08 · Agentic RL 入门:从「会推理」到「会行动」",
       "subtitle": "把 LLM 从单轮 RLVR(一步 MDP)训成跨 10–100+ 回合的智能体(POMDP)。三大难题(信用分配 / 工具集成 / 长 rollout)、框架地图、环境奖励设计,以及为什么超长 agentic rollout 把昇腾显存痛点放大到极致。",
       "date": "2026-06-25",
-      "tags": ["agentic-RL", "tool-use", "credit-assignment", "RL-on-NPU"],
+      "tags": [
+        "agentic-RL",
+        "tool-use",
+        "credit-assignment",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-08-agentic-rl.md"
     },
     {
@@ -135,7 +218,12 @@
       "title": "Dispatch 07 · 详解 MiMo-V2.5-Pro:滑窗×全局 6:1 混合注意力 + MiMo Code",
       "subtitle": "小米 MIT 开源 1.02T/42B MoE。不走块稀疏,而是 SWA(128-窗)×全局 6:1 交替把 KV 砍 ~7×;配 MiMo Code agent harness,SWE-bench Verified 82 / Pro 62 压过 Claude Code。机制、读榜须知、对昇腾的意义。",
       "date": "2026-06-25",
-      "tags": ["model", "MiMo-V2.5", "hybrid-attention", "RL-on-NPU"],
+      "tags": [
+        "model",
+        "MiMo-V2.5",
+        "hybrid-attention",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-07-mimo-v2-5.md"
     },
     {
@@ -143,7 +231,12 @@
       "title": "Dispatch 06 · GLM-5.2 全面评测与技术分析",
       "subtitle": "智谱 MIT 开源旗舰:~753B MoE / 40B 激活 + IndexShare 稀疏注意力 + 可用 1M 上下文。编程 SWE-bench Pro 62.1 超 GPT-5.5、AIME'26 99.2、价格约 1/6——附完整评测表、短板与读榜须知、对昇腾的意义。",
       "date": "2026-06-23",
-      "tags": ["model", "GLM-5.2", "benchmarks", "RL-on-NPU"],
+      "tags": [
+        "model",
+        "GLM-5.2",
+        "benchmarks",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-06-glm-5-2.md"
     },
     {
@@ -151,7 +244,12 @@
       "title": "Dispatch 05 · 详解 DeepSeek-V4:混合注意力(CSA + HCA)与 1M 上下文",
       "subtitle": "逐层交替 CSA(KV 压 4× + 选块)与 HCA(KV 压 128× + 全看),叠加 mHC / Muon / MTP 和 FP4+FP8 混合精度。1M 上下文下 FLOPs 降到 V3.2 的 27%、KV 降到 10%。怎么训、和 MSA 怎么比、对昇腾意味着什么。",
       "date": "2026-06-23",
-      "tags": ["attention", "MoE", "DeepSeek-V4", "RL-on-NPU"],
+      "tags": [
+        "attention",
+        "MoE",
+        "DeepSeek-V4",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-05-deepseek-v4.md"
     },
     {
@@ -159,7 +257,12 @@
       "title": "Dispatch 04 · 详解 MiniMax MSA:真实 KV 上的块稀疏注意力",
       "subtitle": "在 GQA 主干上,用 Index 分支为每个 query 选 top-k 个 KV 块、Main 分支只在选中块上做精确注意力——每 query 固定看 2048 token,1M 上下文算力降 28.4×。怎么训、怎么和 DSA/MLA 比、对昇腾意味着什么。",
       "date": "2026-06-23",
-      "tags": ["attention", "sparse", "MiniMax M3", "RL-on-NPU"],
+      "tags": [
+        "attention",
+        "sparse",
+        "MiniMax M3",
+        "RL-on-NPU"
+      ],
       "file": "docs/blog/dispatch-04-minimax-msa.md"
     },
     {
@@ -167,7 +270,12 @@
       "title": "Dispatch 03 · 昇腾 950 硬件深读:自研 HBM、原生 FP8",
       "subtitle": "第一代自研 HBM + 原生 FP8/MXFP4 的 Ascend,拆成 PR(prefill)/ DT(decode/训练)两颗。三个改变恰好对上 RL 的显存争用、FP8 rollout 与解耦训练。",
       "date": "2026-06-23",
-      "tags": ["hardware", "Ascend 950", "FP8", "SuperPoD"],
+      "tags": [
+        "hardware",
+        "Ascend 950",
+        "FP8",
+        "SuperPoD"
+      ],
       "file": "docs/blog/dispatch-03-ascend-950.md"
     },
     {
@@ -175,7 +283,12 @@
       "title": "Dispatch 02 · Rollout 是 RL 的瓶颈:FP8 量化与异步稳定化",
       "subtitle": "Rollout 吃掉 RL 训练 70% 的时间。2026 H1 的两条主线——量化 rollout(FP8/INT8)与异步稳定化——恰好都压在昇腾的痛点上。",
       "date": "2026-06-23",
-      "tags": ["RL-systems", "FP8", "async-RL", "Ascend"],
+      "tags": [
+        "RL-systems",
+        "FP8",
+        "async-RL",
+        "Ascend"
+      ],
       "file": "docs/blog/dispatch-02-rollout-bottleneck.md"
     },
     {
@@ -183,7 +296,12 @@
       "title": "Dispatch 01 · Seed 2.1 与开源 1M 上下文浪潮",
       "subtitle": "ByteDance 闭源编码模型 Seed 2.1 Pro 抢先版登场;但 Ascend 的故事仍在开源权重一侧。把它放进对比,看清这意味着什么。",
       "date": "2026-06-23",
-      "tags": ["frontier", "Seed 2.1", "RL-on-NPU", "analysis"],
+      "tags": [
+        "frontier",
+        "Seed 2.1",
+        "RL-on-NPU",
+        "analysis"
+      ],
       "file": "docs/blog/dispatch-01-seed-2-1.md"
     },
     {
@@ -191,7 +309,12 @@
       "title": "技术综述 · 2026 H1 前沿开源大模型架构",
       "subtitle": "长篇综述:注意力(稀疏/压缩)、MoE、优化器、后训练、训推一致性的横向梳理——本看板的架构底稿。",
       "date": "2026-06-16",
-      "tags": ["survey", "architecture", "MoE", "attention"],
+      "tags": [
+        "survey",
+        "architecture",
+        "MoE",
+        "attention"
+      ],
       "file": "docs/2026-h1-architecture-survey.md"
     }
   ]
