@@ -1,0 +1,57 @@
+flowchart LR
+    subgraph SYS ["系统与综述"]
+        SUR["综述 · 2026 H1 架构"]
+        N02["D02 · rollout 瓶颈"]
+        N08["D08 · Agentic RL 入门"]
+        N10["D10 · RadixAttention"]
+        N11["D11 · vLLM vs SGLang"]
+        N23["D23 · 难题地图"]
+    end
+    subgraph MODEL ["模型与架构"]
+        N01["D01 · Seed 与开源 1M 浪潮"]
+        N04["D04 · MiniMax MSA"]
+        N05["D05 · DeepSeek-V4"]
+        N06["D06 · GLM-5.2"]
+        N07["D07 · MiMo-V2.5"]
+        N15["D15 · DSpark 投机解码"]
+        N16["D16 · V4 的 Agent"]
+        N21["D21 · LongCat-2.0"]
+    end
+    subgraph SWE ["SWE 与训练数据"]
+        N12["D12 · SWE Agents 上手"]
+        N14["D14 · ScaleSWE"]
+        N17["D17 · DeNovoSWE"]
+    end
+    subgraph FW ["RL 框架"]
+        N09["D09 · RadixArk Miles"]
+        N18["D18 · prime-rl vs SkyRL"]
+        N19["D19 · slime"]
+        N22["D22 · DeepSWE 与 rLLM"]
+        N24["D24 · MindSpeed-RL"]
+        N25["D25 · verl"]
+    end
+    subgraph NPU ["昇腾落地"]
+        N03["D03 · 昇腾 950"]
+        N13["D13 · 昇腾 SWE-RL 方案"]
+        N20["D20 · openPangu 开源"]
+    end
+
+    SUR -. "架构谱系底稿" .-> MODEL
+    N02 -. "rollout 与异步主线" .-> N18
+    N02 -. "四坑之源" .-> N13
+    N08 -. "信用分配与三难题" .-> N23
+    N10 --> N11
+    N11 -. "推理引擎选型" .-> N09
+    N05 --> N15
+    N05 --> N16
+    N06 -. "IndexShare 与 LSA 同源" .-> N21
+    N12 --> N13
+    N12 --> N14
+    N14 --> N17
+    N12 -. "阻力最小起点" .-> N22
+    N09 -. "slime 的下游" .-> N19
+    N19 -. "官方线与社区线" .-> N24
+    N24 -. "暂停后的接棒者" .-> N25
+    N03 --> N13
+    N20 -. "规模实证互补" .-> N21
+    N23 -. "问题域落到框架" .-> FW

@@ -186,8 +186,48 @@ async function wireBlog() {
   }
   window.__blogMatches = blogMatches;
 
+  // knowledge map: collapsible overview diagram + per-cluster jump chips, above the index.
+  // Diagram source lives in data/blog-map.mmd and renders through the shared mermaid pipeline
+  // (placeholder / fallback / theme re-render all come for free). Rendered lazily on first open.
+  const MAP_CLUSTERS = [
+    ["系统与综述", ["survey-2026-h1-architecture", "dispatch-02-rollout-bottleneck", "dispatch-08-agentic-rl", "dispatch-10-radixattention", "dispatch-11-vllm-vs-sglang", "dispatch-23-agentic-rl-problem-map"]],
+    ["模型与架构", ["dispatch-01-seed-2-1", "dispatch-04-minimax-msa", "dispatch-05-deepseek-v4", "dispatch-06-glm-5-2", "dispatch-07-mimo-v2-5", "dispatch-15-dspark", "dispatch-16-deepseek-v4-agent", "dispatch-21-longcat-2"]],
+    ["SWE 与训练数据", ["dispatch-12-swe-agents", "dispatch-14-scaleswe", "dispatch-17-denovoswe"]],
+    ["RL 框架", ["dispatch-09-radixark-miles", "dispatch-18-prime-rl-vs-skyrl", "dispatch-19-slime", "dispatch-22-deepswe-rllm", "dispatch-24-mindspeed-rl", "dispatch-25-verl"]],
+    ["昇腾落地", ["dispatch-03-ascend-950", "dispatch-13-swe-rl-on-ascend", "dispatch-20-openpangu"]],
+  ];
+  const mapEl = document.createElement("details");
+  mapEl.className = "blog-map";
+  const byId = {};
+  posts.forEach((p) => { byId[p.id] = p; });
+  const chipLabel = (id) => {
+    const m = id.match(/^dispatch-(\d+)/);
+    return m ? "D" + m[1] : "综述";
+  };
+  mapEl.innerHTML = '<summary>🗺️ 知识地图 — ' + posts.length + ' 篇的主题脉络与阅读路径</summary>'
+    + '<div class="blog-map-diagram"><div class="mermaid"></div></div>'
+    + '<div class="blog-map-chips">' + MAP_CLUSTERS.map(([name, ids]) =>
+      '<div class="map-cluster"><span class="map-cluster-name">' + escapeHtml(name) + "</span>"
+      + ids.filter((id) => byId[id]).map((id) =>
+        '<a class="map-chip" href="#blog/' + escapeAttr(id) + '" title="' + escapeAttr((byId[id] || {}).title || id) + '">' + chipLabel(id) + "</a>").join("")
+      + "</div>").join("") + "</div>";
+  idx.parentNode.insertBefore(mapEl, idx);
+  let mapLoaded = false;
+  mapEl.addEventListener("toggle", async () => {
+    if (!mapEl.open || mapLoaded) return;
+    mapLoaded = true;
+    try {
+      const res = await fetch("data/blog-map.mmd", { cache: "no-cache" });
+      if (!res.ok) throw new Error(res.status);
+      mapEl.querySelector(".mermaid").textContent = await res.text();
+      renderMermaidIn(mapEl);
+    } catch (e) {
+      mapEl.querySelector(".blog-map-diagram").innerHTML = '<div class="empty">地图加载失败。</div>';
+    }
+  });
+
   function showIndex() {
-    post.hidden = true; idx.hidden = false;
+    post.hidden = true; idx.hidden = false; mapEl.hidden = false;
     if (head) head.hidden = false;
     document.title = DEFAULT_TITLE;
     if (metaDesc) metaDesc.content = DEFAULT_DESC;
@@ -211,7 +251,7 @@ async function wireBlog() {
   async function openPost(id) {
     const p = posts.find((x) => x.id === id);
     if (!p) { showIndex(); return; }
-    idx.hidden = true; post.hidden = false;
+    idx.hidden = true; post.hidden = false; mapEl.hidden = true;
     if (head) head.hidden = true;
     toTop();                       // jump up immediately, before the async fetch
     post.innerHTML = `<div class="empty">Loading…</div>`;
