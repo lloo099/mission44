@@ -1,17 +1,17 @@
 {
-  "updated": "2026-06-25",
+  "updated": "2026-07-07",
   "doc": "docs/2026-frontier-models.md",
-  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far.",
+  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。",
   "models": {
-    "columns": ["", "DeepSeek-V4", "MiniMax-M3", "GLM-5.2", "DeepSeek-V3.2 (ref)"],
+    "columns": ["", "DeepSeek-V4", "MiniMax-M3", "GLM-5.2", "LongCat-2.0", "DeepSeek-V3.2 (ref)"],
     "rows": [
-      ["Released", "2026-04", "2026-06", "2026-06", "2025-12"],
-      ["Scale", "V4-Pro ~1.6T / 49B act", "109B (multimodal)", "open weights", "671B MoE"],
-      ["Context", "1M", "1M", "1M*", "128K"],
-      ["Attention", "CSA + HCA (hybrid)", "MSA (block-sparse on GQA)", "GLM-5 lineage", "DSA (token top-k on MLA)"],
-      ["License", "open weights", "open weights", "MIT", "open weights"],
-      ["~Output $/1M", "~$3.48 (Pro)", "~$1.20 (promo)", "—", "—"],
-      ["Ascend", "ready", "partial", "partial", "ready"]
+      ["Released", "2026-04", "2026-06", "2026-06", "2026-07", "2025-12"],
+      ["Scale", "V4-Pro ~1.6T / 49B act", "109B (multimodal)", "open weights", "1.6T / ~48B act", "671B MoE"],
+      ["Context", "1M", "1M", "1M*", "1M (native)", "128K"],
+      ["Attention", "CSA + HCA (hybrid)", "MSA (block-sparse on GQA)", "GLM-5 lineage", "LSA(细节待报告)", "DSA (token top-k on MLA)"],
+      ["License", "open weights", "open weights", "MIT", "open weights", "open weights"],
+      ["~Output $/1M", "~$3.48 (Pro)", "~$1.20 (promo)", "—", "—", "—"],
+      ["Ascend", "ready", "partial", "partial", "训练即国产芯片(HCCL,疑似 910C 未官宣,推测)", "ready"]
     ]
   },
   "metrics": {
@@ -43,6 +43,7 @@
           {"model": "Claude Fable 5", "score": 80.3, "open": false},
           {"model": "GLM-5.2", "score": 62.1, "open": true},
           {"model": "MiMo-V2.5-Pro", "score": 62.0, "open": true},
+          {"model": "LongCat-2.0 (self-reported)", "score": 59.5, "open": true},
           {"model": "MiniMax-M3", "score": 59.0, "open": true},
           {"model": "GLM-5.1", "score": 58.4, "open": true}
         ]
@@ -150,6 +151,7 @@
     "Decode-side sparse attention directly eases Ascend's no-sleep-mode rollout/train memory contention — quantify it in the benchmark.",
     "Custom attention (CSA/HCA/DSA/MSA) re-implemented on NPU raises numeric-drift risk — exactly what align-probe should diagnose.",
     "V4's validated FP8 training + Ascend 950 native FP8 make FP8 RL on Ascend a viable, high-novelty topic.",
-    "Seed 2.1 Pro (preview, Jun 19) is a strong closed coding/agent model (Code-Arena Frontend ~Opus 4.6) but it's API-only and not Ascend-portable — it sets the bar to chase, not a model to host on NPU. The Ascend story stays with the open-weight wave (DeepSeek-V4 / MiniMax-M3 / GLM-5.2)."
+    "Seed 2.1 Pro (preview, Jun 19) is a strong closed coding/agent model (Code-Arena Frontend ~Opus 4.6) but it's API-only and not Ascend-portable — it sets the bar to chase, not a model to host on NPU. The Ascend story stays with the open-weight wave (DeepSeek-V4 / MiniMax-M3 / GLM-5.2).",
+    "LongCat-2.0 把\"国产芯片全周期训练(含后训练/RL)\"从零实证变成方向可信——1.6T MoE 全程跑在 HCCL 国产超节点(疑似 910C,未官宣),细节待技术报告核验;与 openPangu 的开源训练代码互补(见 Dispatch 20/21)。"
   ]
 }

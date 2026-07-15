@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispatch 04 · 详解 MiniMax MSA:真实 KV 上的块稀疏注意力 · NPU Frontier Dispatch</title>
+  <meta name="description" content="在 GQA 主干上,用 Index 分支为每个 query 选 top-k 个 KV 块、Main 分支只在选中块上做精确注意力——每 query 固定看 2048 token,1M 上下文算力降 28.4×。怎么训、怎么和 DSA/MLA 比、对昇腾意味着什么。" />
+  <link rel="canonical" href="https://lloo099.github.io/mission44/p/dispatch-04-minimax-msa.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Dispatch 04 · 详解 MiniMax MSA:真实 KV 上的块稀疏注意力" />
+  <meta property="og:description" content="在 GQA 主干上,用 Index 分支为每个 query 选 top-k 个 KV 块、Main 分支只在选中块上做精确注意力——每 query 固定看 2048 token,1M 上下文算力降 28.4×。怎么训、怎么和 DSA/MLA 比、对昇腾意味着什么。" />
+  <meta property="og:url" content="https://lloo099.github.io/mission44/p/dispatch-04-minimax-msa.html" />
+  <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-04-minimax-msa.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-04-minimax-msa.png" />
+  <script>location.replace("https://lloo099.github.io/mission44/#blog/dispatch-04-minimax-msa");</script>
+  <meta http-equiv="refresh" content="0; url=https://lloo099.github.io/mission44/#blog/dispatch-04-minimax-msa" />
+  <style>body{font-family:system-ui,sans-serif;background:#0b0f17;color:#dfe7f5;max-width:720px;margin:80px auto;padding:0 20px;line-height:1.7}a{color:#6aa6ff}</style>
+</head>
+<body>
+  <h1>Dispatch 04 · 详解 MiniMax MSA:真实 KV 上的块稀疏注意力</h1>
+  <p><em>2026-06-23 · NPU Frontier Dispatch · attention / sparse / MiniMax M3 / RL-on-NPU</em></p>
+  <p>在 GQA 主干上,用 Index 分支为每个 query 选 top-k 个 KV 块、Main 分支只在选中块上做精确注意力——每 query 固定看 2048 token,1M 上下文算力降 28.4×。怎么训、怎么和 DSA/MLA 比、对昇腾意味着什么。</p>
+  <p><a href="https://lloo099.github.io/mission44/#blog/dispatch-04-minimax-msa">→ 阅读全文(RL-on-NPU Research Dashboard)</a></p>
+</body>
+</html>

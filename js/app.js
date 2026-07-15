@@ -58,8 +58,26 @@ async function init() {
   wireBlog();
   wireMermaidLightbox();
   wireTabsScrollHint();
+  wireShareButtons();
   if (window.wireArch) wireArch();
   setLastUpdated();
+}
+
+/* copy a per-post share link (static snapshot page in /p/ with its own og card).
+   Falls back to the SPA hash URL when running on a non-published origin. */
+function wireShareButtons() {
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".share-btn");
+    if (!btn) return;
+    const id = btn.dataset.share;
+    const onPages = location.hostname.endsWith("github.io");
+    const url = onPages
+      ? location.origin + location.pathname.replace(/index\.html$/, "").replace(/\/$/, "") + "/p/" + id + ".html"
+      : location.origin + location.pathname + "#blog/" + id;
+    const done = () => { const t = btn.textContent; btn.textContent = "✓ 已复制"; setTimeout(() => { btn.textContent = t; }, 1600); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done).catch(() => { window.prompt("复制链接:", url); });
+    else window.prompt("复制链接:", url);
+  });
 }
 
 /* ---------- light/dark theme toggle (default: light) ---------- */
@@ -212,7 +230,9 @@ async function wireBlog() {
         + (newer ? '<a class="prev" href="#blog/' + escapeAttr(newer.id) + '"><span class="pn-label">← 更新一篇</span><span class="pn-title">' + escapeHtml(newer.title) + "</span></a>" : "<span></span>")
         + (older ? '<a class="next" href="#blog/' + escapeAttr(older.id) + '"><span class="pn-label">更早一篇 →</span><span class="pn-title">' + escapeHtml(older.title) + "</span></a>" : "<span></span>")
         + "</div>";
-      post.innerHTML = '<div class="blog-topline"><a class="blog-back" href="#blog">← 所有 Dispatch</a><span class="read-time">约 ' + mins + " 分钟读完</span></div>"
+      post.innerHTML = '<div class="blog-topline"><a class="blog-back" href="#blog">← 所有 Dispatch</a>'
+        + '<span class="topline-right"><button class="share-btn" data-share="' + escapeAttr(p.id) + '" title="复制分享链接(带专属预览卡)">🔗 分享</button>'
+        + '<span class="read-time">约 ' + mins + " 分钟读完</span></span></div>"
         + `<div class="prose blog-prose">${renderMarkdown(md)}</div>`
         + postNav
         + `<a class="blog-back foot" href="#blog">← 所有 Dispatch</a>`;

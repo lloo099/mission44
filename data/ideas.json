@@ -1,13 +1,13 @@
 {
-  "updated": "2026-06-15",
+  "updated": "2026-07-07",
   "items": [
     {
       "title": "GRPO-on-Ascend Benchmark & Accuracy-Alignment Suite",
       "pitch": "Build a reproducible benchmark that runs GRPO/DAPO on identical models across Ascend (910B) and NVIDIA, reporting throughput, MFU, memory, and — critically — reward/loss-curve divergence. Turn the scattered numbers in verl discussion #900 into a living, automated dashboard.",
       "impact": 5,
       "difficulty": 2,
-      "novelty": 3,
-      "why": "Everyone porting RL to Ascend hits accuracy drift (DAPO reward MAE ~3.7–4.3% vs GRPO ~0.3–3.3%) and nobody has a clean cross-platform baseline. High value, modest compute, and a great first project that builds deep familiarity with the whole stack.",
+      "novelty": 2,
+      "why": "Everyone porting RL to Ascend hits accuracy drift (DAPO reward MAE ~3.7–4.3% vs GRPO ~0.3–3.3%) and nobody has a clean cross-platform baseline. Dispatch 23 显示训推一致在 GPU 侧已收敛出三层标准解法(监控/算法补偿/根治),问题本身不再新,但『异构(NPU vs GPU)一致性』被 D23 明确圈为空白——这个 benchmark 是那块空白的测量仪。novelty 因 GPU 侧进展下调,价值反而更聚焦:高价值、低算力、绝佳的全栈入门项目。",
       "steps": [
         "Get verl running on a single Atlas 800T A2 node (8x 910B) with vLLM-Ascend",
         "Run GRPO on Qwen2.5-0.5B/7B on GSM8K/MATH; log throughput, MFU, peak HBM",
@@ -29,7 +29,7 @@
       "impact": 5,
       "difficulty": 5,
       "novelty": 5,
-      "why": "Identified across the research as the single biggest RL-specific blocker on Ascend — its absence caps per-node model size and forces disaggregated setups. Solving it is a genuine systems contribution that the whole open ecosystem (verl, OpenRLHF) needs.",
+      "why": "Dispatch 13 把『无 sleep-mode』列为昇腾四大坑之首,至今仍是 colocated 路线的最后一块短板:vLLM-Ascend v0.22.1rc1 已用 HCCL 权重传输后端打通了相邻的训推权重同步环节,权重能流动了,但显存仍不能让渡。补上 sleep-mode 等价物后,昇腾的 colocated hybrid engine 才算闭环——这是 verl / OpenRLHF / slime 整个开源生态都需要的系统贡献。",
       "steps": [
         "Profile NPU memory during a colocated GRPO step; quantify what sleep mode would free",
         "Study vLLM's CUDA sleep-mode implementation and map it to CANN/torch_npu memory APIs",
@@ -47,13 +47,13 @@
     },
     {
       "title": "Asynchronous Off-Policy RL Tuned for NPU Constraints",
-      "pitch": "Adapt an async/off-policy recipe (AReaL-style decoupling + ExGRPO experience replay) specifically to Ascend, where the missing hybrid engine makes synchronous colocated RL inefficient.",
+      "pitch": "Adapt an async/off-policy recipe (AReaL-style decoupling + ExGRPO experience replay) specifically to Ascend, where the missing hybrid engine makes synchronous colocated RL inefficient. 地基已现:vLLM-Ascend v0.22.1rc1 的 HCCL 权重传输后端解决了『权重怎么送』,这条 idea 升级为在其上做『算法配方怎么调』——staleness 容忍度、优先回放与 NPU 内存约束的联合调优。",
       "impact": 4,
       "difficulty": 4,
-      "novelty": 4,
-      "why": "Async RL sidesteps the exact bottleneck Ascend suffers from, and AReaL already ships a stable 'ascend' branch to build on. Off-policy replay (ExGRPO) also improves sample efficiency — doubly valuable when per-chip throughput trails GPUs.",
+      "novelty": 3,
+      "why": "Async RL sidesteps the exact bottleneck Ascend suffers from。生态进展显著:Dispatch 18(prime-rl / SkyRL-Agent)、Dispatch 19(slime fully_async)和 Dispatch 23 的结论都表明异步解耦已收敛为行业标准答案,AReaL 2.0 还把权重更新拆成了独立微服务——novelty 相应下调。但『在 NPU 约束下的 off-policy 算法配方』(staleness × 优先回放 × 固定 HBM 的 Pareto 前沿)仍无人给出,且 HCCL 后端打通后此事第一次真正可做。",
       "steps": [
-        "Reproduce AReaL's async pipeline on Ascend using its ascend branch + SGLang rollout",
+        "Stand up AReaL 2.0's decoupled pipeline on Ascend, swapping its CUDA-IPC weight path for the vLLM-Ascend HCCL transfer backend",
         "Add prioritized experience replay (ExGRPO-style) keyed on rollout correctness/entropy",
         "Measure staleness tolerance and speedup vs synchronous verl-Ascend",
         "Characterize the accuracy/throughput Pareto frontier under fixed NPU memory"
@@ -64,7 +64,7 @@
         "efficiency",
         "AReaL"
       ],
-      "minimumExperiment": "Reproduce the AReaL async pipeline on Ascend (ascend branch + SGLang rollout) for a 1.5–7B GRPO run.",
+      "minimumExperiment": "Run AReaL's async pipeline on Ascend with the HCCL weight-transfer backend for a 1.5–7B GRPO run.",
       "successMetric": "Throughput speedup vs synchronous verl-Ascend at equal final accuracy, with a documented staleness tolerance."
     },
     {
@@ -72,10 +72,10 @@
       "pitch": "Bring DeepSeek-V3-style fine-grained FP8 (tile/block-wise scaling) into the RL loop on Ascend — not just pretraining — to halve memory for actor/critic and rollouts under tight HBM.",
       "impact": 4,
       "difficulty": 5,
-      "novelty": 5,
-      "why": "FP8 is the most direct lever against the NPU memory wall, but FP8 *RL* (with its rollout + multiple model copies) is barely explored anywhere, let alone on Ascend. Pairs naturally with prime-rl's FP8 RL direction on GPU.",
+      "novelty": 4,
+      "why": "FP8 is the most direct lever against the NPU memory wall。生态进展:GPU 侧 FP8 RL 已被 Miles 的端到端 FP8(Dispatch 09)和 prime-rl 的 FP8 vLLM rollout(Dispatch 18)证明可行,不再是无人区——novelty 略降。但昇腾侧恰好迎来窗口:Ascend 950 原生 FP8/MXFP4(Dispatch 03),vLLM-Ascend v0.22.1rc1 已扩展 950 的 W8A8/W4A8 动态量化。『FP8 RL on NPU』是把已验证的 GPU 配方抢先搬进新硬件原生支持里,时机敏感。",
       "steps": [
-        "Confirm Ascend FP8 GEMM support and numerical behavior for forward/backward",
+        "Confirm Ascend FP8 GEMM support and numerical behavior for forward/backward (910B fallback vs 950 native paths)",
         "Apply fine-grained tile/block scaling to the policy model in a GRPO run",
         "Handle the stability landmines (entropy collapse + FP8 noise interaction)",
         "Compare convergence and memory vs BF16 GRPO on Ascend"
@@ -95,11 +95,11 @@
       "impact": 4,
       "difficulty": 2,
       "novelty": 2,
-      "why": "R1-Zero recipes exist on Ascend but are scattered and brittle; a polished, reproducible cookbook has outsized community impact and is very achievable. Leverages the 1-shot/spurious-rewards findings to keep data and compute tiny.",
+      "why": "R1-Zero recipes exist on Ascend but are scattered and brittle; a polished, reproducible cookbook has outsized community impact and is very achievable。新弹药:openPangu 2.0 开源了昇腾第一手的后训练代码与训推算子(Dispatch 20),cookbook 里的踩坑指南可以直接对照官方实现校验,而不再全靠自己摸;Dispatch 13 的四坑清单则给了『pitfall 章节』的现成骨架。Leverages 1-shot/spurious-rewards findings to keep data and compute tiny.",
       "steps": [
         "Pick Qwen2.5-Math-1.5B and a verifiable math reward (GSM8K/MATH)",
         "Run GRPO via verl-Ascend or TRL-Ascend; capture the emergent long-CoT transition",
-        "Test data-efficiency (1-shot RLVR) and document every pitfall + fix",
+        "Cross-check each pitfall + fix against openPangu's open post-training code; test data-efficiency (1-shot RLVR)",
         "Release a one-command repo + write-up with reward curves and ablations"
       ],
       "tags": [
@@ -116,11 +116,11 @@
       "pitch": "Implement Clip-Cov / KL-Cov (the entropy-mechanism fixes) inside verl's Ascend path and study whether NPU numerical noise changes the entropy-collapse dynamics seen on GPUs.",
       "impact": 3,
       "difficulty": 3,
-      "novelty": 4,
-      "why": "Entropy collapse caps RL reasoning gains, and the interaction between Ascend's precision differences and exploration dynamics is genuinely unstudied. A focused, publishable research contribution on top of a known fix.",
+      "novelty": 3,
+      "why": "Entropy collapse caps RL reasoning gains。生态进展:Dispatch 22 的 DeepSWE/GRPO++ 用 compact filtering + entropy-free 训练在生产级跑通了另一条防崩路线,Dispatch 23 更给出四种崩法的分类学与已收敛防御——『防熵崩』本身不再新,novelty 下调。仍然独有的部分是硬件问题:昇腾的精度差异(累加序、融合算子)如何与熵动力学交互,GPU 文献完全没有覆盖,是小而干净的可发表贡献。",
       "steps": [
         "Reproduce entropy collapse on a GRPO reasoning run on Ascend",
-        "Implement Clip-Cov/KL-Cov token-level interventions",
+        "Implement Clip-Cov/KL-Cov token-level interventions; compare against a GRPO++-style entropy-free baseline",
         "Compare entropy/accuracy trajectories Ascend vs GPU to isolate hardware effects",
         "Report whether NPU accumulation noise accelerates or masks collapse"
       ],
@@ -134,15 +134,15 @@
       "successMetric": "Mitigation keeps entropy above the collapsed baseline and improves final accuracy; Ascend-vs-GPU dynamics isolated."
     },
     {
-      "title": "Memory-Lean Long-Context RL via MLA + KV Compression on NPU",
-      "pitch": "Combine Multi-head Latent Attention and chunk-wise KV compression to make long-CoT RL feasible on memory-constrained NPUs, where the KV cache dominates rollout memory.",
+      "title": "Memory-Lean Long-Context RL via Hybrid-Sparse Attention + KV Compression on NPU",
+      "pitch": "Combine hybrid/sparse attention (MLA, DSA:SWA, SWA×全局) with chunk-wise KV compression to make long-CoT and agentic RL feasible on memory-constrained NPUs, where the KV cache dominates rollout memory. 地基已现:openPangu Flash 就是 910B 原生训练的 MLA+DSA:SWA 1:2 / 512K 模型——idea 升级为『在它之上做长上下文 RL』,而非自己攒模型。",
       "impact": 4,
       "difficulty": 4,
-      "novelty": 4,
-      "why": "Long reasoning chains explode the KV cache, and the 910B's weak memory bandwidth (~36% of H100) makes this acute. MLA (~93% KV reduction) + ChunkKV directly target the bottleneck that limits reasoning-RL context length on Ascend.",
+      "novelty": 3,
+      "why": "Long reasoning chains explode the KV cache, and the 910B's weak memory bandwidth (~36% of H100) makes this acute。生态进展:混合/稀疏注意力已成开源主流(MiMo 的 SWA 6:1、DeepSeek-V4 CSA+HCA、openPangu DSA:SWA,Dispatch 04/05/07/20),novelty 相应下调;但『用这些架构在 NPU 上跑长上下文 RL 并量化 KV 压缩对 reasoning 的影响』仍是空白,且 Dispatch 17 的 500 轮/256k doc2repo 负载给了最尖锐的需求场景。",
       "steps": [
         "Quantify KV-cache memory across a long-CoT GRPO rollout on Ascend",
-        "Use an MLA-based model (DeepSeek-family) and add ChunkKV-style compression to rollouts",
+        "Use openPangu Flash 6B (MLA+DSA:SWA, 910B-native) as the base and add ChunkKV-style compression to rollouts",
         "Measure max trainable context length and throughput gains",
         "Check reasoning accuracy is preserved vs uncompressed baselines"
       ],
@@ -152,7 +152,7 @@
         "kv-cache",
         "memory"
       ],
-      "minimumExperiment": "Measure KV-cache memory across a long-CoT GRPO rollout on Ascend using an MLA model + ChunkKV-style compression.",
+      "minimumExperiment": "Measure KV-cache memory across a long-CoT GRPO rollout on Ascend using openPangu Flash 6B + ChunkKV-style compression.",
       "successMetric": "Max trainable context length increased ≥2× at equal reasoning accuracy vs the uncompressed baseline."
     },
     {
@@ -160,11 +160,11 @@
       "pitch": "Target the operator-coverage gap directly: build tooling that detects unsupported PyTorch ops in an RL training graph and either maps them to Ascend C kernels or flags fallbacks, focused on the RL-critical path (attention, sampling, logprob).",
       "impact": 5,
       "difficulty": 5,
-      "novelty": 4,
-      "why": "Only ~65% of PyTorch ops auto-convert and FlashAttention has no Ascend equivalent, so kernel work is the durable moat. A tool that systematizes this for RL workloads helps every team and is a strong systems/compiler contribution.",
+      "novelty": 3,
+      "why": "Only ~65% of PyTorch ops auto-convert, so kernel work is the durable moat。生态进展:openPangu 2.0 开源了昇腾训推算子(Dispatch 20),RL 关键路径上第一次有了官方参考实现可对照——覆盖缺口被部分填补,novelty 下调;工具的定位也随之升级:不再是从零猜实现,而是『扫描 RL 训练图 → 命中 openPangu/CANN 已有算子就映射,缺口才写 Ascend C』。A profiler + coverage report integrated with torch_npu helps every team.",
       "steps": [
         "Trace a verl GRPO step and enumerate ops with no/slow Ascend support",
-        "Prioritize the RL-critical kernels (fused attention, top-k/sampling, logprob gather)",
+        "Cross-reference the gap list against openPangu's released operators; map hits, prioritize true misses (fused attention, top-k/sampling, logprob gather)",
         "Write or optimize Ascend C kernels for the top offenders; benchmark vs fallback",
         "Package as a profiler + coverage report integrated with torch_npu"
       ],
@@ -176,6 +176,170 @@
       ],
       "minimumExperiment": "Trace one verl GRPO step on Ascend and emit a coverage report of unsupported/slow ops on the RL-critical path.",
       "successMetric": "Coverage report plus ≥1 hand-written Ascend C kernel for a top offender, benchmarked vs the fallback."
+    },
+    {
+      "title": "MindSpeed/Ascend Training Backend for rLLM",
+      "pitch": "给 rLLM(Agentica 的 agentic RL 框架)写第一个昇腾训练后端:它的 Episode⊃Trajectory⊃Step 三层抽象 + Model Gateway(捕 logprob)+ verl/tinker/fireworks 可插拔后端架构已经就位,唯独缺一个 MindSpeed-RL/Ascend 实现。写完它,DeepSWE 全套纯 RL 编码智能体配方就能原样落到 NPU。",
+      "impact": 5,
+      "difficulty": 3,
+      "novelty": 3,
+      "why": "Dispatch 22 拆解了 rLLM 的后端架构并明确指出其接口对昇腾的意义:可插拔后端意味着接入成本是『写一个 backend』而非『改整个框架』——缺的只是有人写。回报极高:一次接入即获得 DeepSWE/GRPO++ 的全部稳定化配方(compact filtering、去归一化、entropy-free),且 Model Gateway 的 logprob 捕获点正是 Dispatch 13 训推一致坑的天然监控探针。难度中等,因为 verl 后端可作模板。",
+      "steps": [
+        "Read rLLM's verl backend as the reference implementation; enumerate the backend interface surface (train step, weight sync, logprob capture)",
+        "Implement the interface against MindSpeed-RL + vLLM-Ascend, wiring weight sync through the HCCL transfer backend",
+        "Reproduce a scaled-down DeepSWE run (Qwen3-8B on an R2E-Gym subset) on one 8×910B node",
+        "Compare reward curves vs the GPU verl backend; upstream the backend + a porting note to rLLM"
+      ],
+      "tags": [
+        "rLLM",
+        "framework",
+        "MindSpeed",
+        "high-impact",
+        "agentic-RL"
+      ],
+      "minimumExperiment": "Implement the minimal rLLM backend interface over MindSpeed-RL and run one GRPO++ training step on Ascend with logprob capture verified.",
+      "successMetric": "A DeepSWE-style small-model run trains end-to-end on 8×910B through rLLM, with reward curve within noise of the GPU verl backend."
+    },
+    {
+      "title": "HCCL Weight Transfer × AReaL 2.0 Weight-Update Service: 昇腾异步权重同步链路端到端打通",
+      "pitch": "把上周两块拼图拼上:vLLM-Ascend v0.22.1rc1 的 HCCL 权重传输后端(训推权重同步摆脱 NCCL)× AReaL 2.0 把权重更新拆成独立微服务(当前走 CUDA IPC)。目标是昇腾上第一条生产形态的异步 RL 权重同步链路:训练服务 → HCCL → rollout 引擎,零 CUDA 依赖,带延迟/带宽/staleness 完整测量。",
+      "impact": 4,
+      "difficulty": 3,
+      "novelty": 4,
+      "why": "这是典型的『地基刚好凑齐』时刻:两个组件各自上周刚发布/刚打通,还没有人把它们接在一起。Dispatch 19 把 slime 的移植缺口精确圈定在训练/推理/权重同步三点,Dispatch 23 把异步 rollout 列为已收敛的标准答案——权重同步是昇腾落后于该标准答案的最后一环,打通它同时解锁 AReaL、slime、prime-rl 式架构在 NPU 上的落地。窗口期短,先做先得。",
+      "steps": [
+        "Benchmark the raw HCCL weight-transfer backend: latency/bandwidth for 7B and 32B weight pushes between NPU pods",
+        "Swap AReaL 2.0's weight-update microservice transport from CUDA IPC to the HCCL backend behind its service interface",
+        "Run an async GRPO loop (1.5–7B) with live weight updates; measure update latency vs rollout staleness",
+        "Publish the integration + numbers as an AReaL PR and a reference architecture note for slime/prime-rl-style stacks"
+      ],
+      "tags": [
+        "weight-sync",
+        "HCCL",
+        "AReaL",
+        "async-rl",
+        "infrastructure"
+      ],
+      "minimumExperiment": "Push 7B weights from a MindSpeed training process to a vLLM-Ascend rollout worker via the HCCL backend and verify the rollout serves the new weights.",
+      "successMetric": "End-to-end async GRPO run on Ascend with in-loop weight updates; update latency and staleness quantified, zero CUDA/NCCL dependency."
+    },
+    {
+      "title": "openPangu 后训练代码 × LongCat 规模主张的交叉验证",
+      "pitch": "两份互补证据的交叉实验:openPangu 2.0 给了昇腾后训练的第一手代码(Dispatch 20),LongCat-2.0 给了国产芯片全周期训练闭环的规模主张但代码闭源(Dispatch 21)。用 openPangu 的开源后训练栈在 8×910B 上复现小规模 RL,逐项验证 Dispatch 13 四坑(sleep-mode 缺位/logprob 一致性/长 rollout/沙箱成本)的官方解法是否真的成立、能否外推。",
+      "impact": 4,
+      "difficulty": 3,
+      "novelty": 3,
+      "why": "Dispatch 21 的证据天平明确标注 LongCat『闭环待验』——社区目前只能选择信或不信。openPangu 的代码让『验』第一次可操作:它的统一 SFT→多专家 RL→on-policy 蒸馏管线(与 DeepSeek-V4 OPD / MiMo MOPD 第三家收敛,Dispatch 16/20)在小规模上跑通与否、四坑在官方代码里是怎么绕的,直接决定社区对国产芯片 RL 闭环主张的置信度。独立复现类工作 novelty 中等,但证据价值高。",
+      "steps": [
+        "Stand up openPangu's post-training code on one 8×910B node with the Flash 6B model",
+        "Run the 统一 SFT → 专家 RL 管线 on a verifiable-reward domain (math); document how the code handles each of the four D13 pits",
+        "Attempt the on-policy distillation stage at small scale; record what breaks vs what the paper claims",
+        "Publish a reproduction report grading each LongCat-adjacent claim: verified / partially verified / unverifiable at small scale"
+      ],
+      "tags": [
+        "reproduction",
+        "openPangu",
+        "LongCat",
+        "evidence",
+        "accessible"
+      ],
+      "minimumExperiment": "Run openPangu's expert-RL stage on Flash 6B / GSM8K for 100 steps on one node and document how its code addresses the D13 four pits.",
+      "successMetric": "A public reproduction report with per-claim verdicts and a working small-scale run of the openPangu post-training pipeline on 910B."
+    },
+    {
+      "title": "align-probe: 基于 openPangu 训推算子的逐算子数值对齐工具",
+      "pitch": "落地 Dispatch 13 悬置的 logprob 一致性坑:做一个逐算子数值对齐探针,以 openPangu 开源的昇腾训推算子为参考实现,对 RL 关键路径(fused attention、logprob gather、sampling、accumulation)逐算子比对训练侧 vs 推理侧 vs GPU 参考的数值语义,自动定位训推分歧的算子级根因。",
+      "impact": 5,
+      "difficulty": 4,
+      "novelty": 4,
+      "why": "训推不一致是 RL-on-NPU 最阴险的坑:症状在 reward 曲线上,根因在算子里,目前只能靠人肉 bisect。Dispatch 20 指出 openPangu 开源后『算子数值语义第一次可观察』——这正是造对齐工具缺的那块参考基准;Dispatch 23 则把训推一致的根治层判定为昇腾缺位、短期靠监控+算法补偿——align-probe 就是那个监控层的具象化。与 GRPO benchmark idea 互补:那个量化宏观漂移,这个定位微观根因。",
+      "steps": [
+        "Define the probe interface: capture per-op inputs/outputs on both training (MindSpeed) and inference (vLLM-Ascend) sides for the same token batch",
+        "Use openPangu's released 训推算子 as the reference semantics; build ULP-error / logprob-delta reports per operator",
+        "Validate on a known divergence case (npu_fusion_attention vs eager attention) to prove root-cause localization",
+        "Integrate as a pre-flight check for verl/MindSpeed-RL runs and publish the top-N divergent-operator table for 910B"
+      ],
+      "tags": [
+        "numerics",
+        "tooling",
+        "openPangu",
+        "train-infer-consistency",
+        "systems"
+      ],
+      "minimumExperiment": "Capture and diff per-operator logprob deltas between MindSpeed training and vLLM-Ascend inference for one Qwen2.5-0.5B forward pass.",
+      "successMetric": "The probe localizes at least one real train-infer divergence to a specific operator, confirmed by a fix or workaround that shrinks logprob MAE."
+    },
+    {
+      "title": "DSA:SWA 配比消融:openPangu 1:2 vs MiMo 6:1 的长上下文对照实验",
+      "pitch": "两家用相似原料给出悬殊配方:openPangu 选 DSA:SWA 1:2(Dispatch 20),MiMo-V2.5 选 SWA×全局 6:1(Dispatch 07)。做一个受控消融:同一小模型骨架、同一数据,在昇腾上扫配比(1:2 / 3:1 / 6:1),测长上下文能力、KV 内存、910B 上的实际吞吐三条曲线,回答『混合注意力配比是 taste 还是 trade-off』。",
+      "impact": 3,
+      "difficulty": 2,
+      "novelty": 4,
+      "why": "配比差 12 倍却都声称有效,说明设计空间没被系统探索过——这是典型的『大厂没空做、学界没硬件做』的空白,而且天然适合昇腾:配比直接决定 KV 内存与带宽压力,910B 的弱内存带宽(~36% of H100)会把配比差异放大成可测的吞吐差异,结论对 NPU 上的长上下文 RL 选型(接 Dispatch 17 的 256k 负载)有直接指导价值。小模型即可出结论,算力门槛低。",
+      "steps": [
+        "Build a ~1B hybrid-attention skeleton with a configurable sparse:SWA interleave ratio",
+        "Pretrain-lite (or continue-pretrain) each ratio variant on identical long-context data on 8×910B",
+        "Evaluate needle-in-haystack / RULER-style long-context scores, KV memory, and rollout throughput per ratio",
+        "Publish the three-curve trade-off chart and a recommendation for NPU long-context RL configs"
+      ],
+      "tags": [
+        "attention",
+        "ablation",
+        "long-context",
+        "accessible",
+        "research"
+      ],
+      "minimumExperiment": "Continue-pretrain two ~1B variants (1:2 and 6:1) on identical long-context data and compare RULER-style scores + KV memory on one 910B node.",
+      "successMetric": "A ratio-vs-capability/memory/throughput trade-off curve with ≥3 points, sufficient to justify or refute either published ratio."
+    },
+    {
+      "title": "doc2repo 长程 RL on Ascend:DeNovoSWE 环境极端负载压测",
+      "pitch": "把 RL-on-NPU 推到最深的水域:用 DeNovoSWE(4818 个 doc2repo 实例,自带单测/Docker 的 RLVR 环境,Dispatch 17)在昇腾上跑长程 agentic RL,直面 500 轮交互/256k 上下文的极端 rollout 负载——这是对 Dispatch 13 四坑中『长 rollout』与『沙箱成本』两坑的同时压测,也是昇腾显存痛点的最大化暴露。",
+      "impact": 4,
+      "difficulty": 5,
+      "novelty": 5,
+      "why": "Dispatch 17 明确指出 DeNovoSWE 是 for SFT & RL 且自带 RLVR 环境,但没有任何人(GPU 侧也没有)公开跑通过它的 RL 一侧——在昇腾上做等于同时开两个先例。Dispatch 08/23 都判断超长 agentic rollout 会把 NPU 显存与异步调度痛点放大到极致:这既是风险也是价值,压测产出的失效模式清单(KV 爆点、dispatcher 长尾、沙箱吞吐墙)会成为后续所有昇腾 agentic RL 工作的地图。难度最高,建议叠在 rLLM 后端与 HCCL 链路两个 idea 之上做。",
+      "steps": [
+        "Stand up the DeNovoSWE eval harness + Docker sandboxes beside an 8×910B node; measure sandbox throughput ceiling first",
+        "SFT a Qwen3-8B-class model on the released 11k trajectories as the RL warm start",
+        "Run GRPO++ with compact filtering on a 50-instance subset, capping at 128 turns / 64k to establish a stable baseline",
+        "Progressively raise turns/context toward 500/256k; log the failure frontier (HBM, staleness, sandbox cost) at each step",
+        "Publish the failure-mode map + the largest stable config as the Ascend long-horizon RL reference point"
+      ],
+      "tags": [
+        "long-horizon",
+        "DeNovoSWE",
+        "agentic-RL",
+        "stress-test",
+        "hard"
+      ],
+      "minimumExperiment": "Run GRPO++ on 50 DeNovoSWE instances at 128 turns / 64k context on one 8×910B node without divergence.",
+      "successMetric": "A published failure-frontier map (turns × context × HBM) plus one stable long-horizon RL run exceeding 200 turns on Ascend."
+    },
+    {
+      "title": "异构训推一致性基准:NPU 侧 R3 / 统一 FP8 等价物",
+      "pitch": "首创 Dispatch 23 圈定的空白:GPU 侧训推一致已有三层解法(监控 / 算法补偿 / 根治,根治层如 Miles 的 Rollout Routing Replay 逐比特对齐与统一 FP8),但全部假设同构硬件。做第一个『异构训推一致性』基准 + NPU 侧根治层原型:定义 MoE 路由回放与统一低精度在 CANN/HCCL 语义下的等价物,量化『NPU 训练 × NPU 推理』与『NPU 训练 × GPU 推理』两种组合的一致性上限。",
+      "impact": 5,
+      "difficulty": 4,
+      "novelty": 5,
+      "why": "Dispatch 23 的结论原文:训推一致的根治层在昇腾缺位,异构一致性是明确的开放战场;Dispatch 09 拆解过 R3 的逐比特对齐机制并点出其对昇腾 MoE RL 的启发,Dispatch 20 提示 openPangu 的 FP8 一致/路由回放仍待验——三条线索都指向同一个无人区。这是列表里唯一同时具备『定义新问题(基准)』和『给出新机制(NPU 等价物)』的 idea,学术与工程价值都拉满;依赖 align-probe 级别的数值基础设施,适合作为其后继。",
+      "steps": [
+        "Formalize the consistency metrics (per-token logprob MAE, MoE routing-decision flip rate, reward drift) into a runnable benchmark harness",
+        "Baseline the two heterogeneous combos (NPU-train×NPU-infer, NPU-train×GPU-infer) on a small MoE with GRPO",
+        "Prototype an R3 equivalent on Ascend: record routing decisions at rollout, replay them exactly in the MindSpeed training forward",
+        "Prototype unified low-precision (FP8-path parity between vLLM-Ascend rollout and training GEMMs) on 950-class hardware",
+        "Release the benchmark + both prototypes; report how far each closes the heterogeneous consistency gap"
+      ],
+      "tags": [
+        "train-infer-consistency",
+        "MoE",
+        "benchmark",
+        "R3",
+        "research",
+        "high-impact"
+      ],
+      "minimumExperiment": "Measure routing-decision flip rate and logprob MAE between vLLM-Ascend rollout and MindSpeed training forward on a small MoE for one GRPO batch.",
+      "successMetric": "A public heterogeneous-consistency benchmark plus an NPU-side routing-replay prototype that measurably reduces flip rate toward zero."
     }
   ]
 }

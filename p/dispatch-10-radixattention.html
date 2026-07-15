@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispatch 10 · RadixAttention 详解:SGLang 怎么靠「前缀树」赢 KV 复用 · NPU Frontier Dispatch</title>
+  <meta name="description" content="把 KV cache 组织成基数树,自动发现并复用共享前缀 + cache-aware 调度 + 优雅处理 fork。对比 PagedAttention,以及为什么 GRPO 组内共享前缀让它对 RL rollout 特别值钱。" />
+  <link rel="canonical" href="https://lloo099.github.io/mission44/p/dispatch-10-radixattention.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Dispatch 10 · RadixAttention 详解:SGLang 怎么靠「前缀树」赢 KV 复用" />
+  <meta property="og:description" content="把 KV cache 组织成基数树,自动发现并复用共享前缀 + cache-aware 调度 + 优雅处理 fork。对比 PagedAttention,以及为什么 GRPO 组内共享前缀让它对 RL rollout 特别值钱。" />
+  <meta property="og:url" content="https://lloo099.github.io/mission44/p/dispatch-10-radixattention.html" />
+  <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-10-radixattention.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-10-radixattention.png" />
+  <script>location.replace("https://lloo099.github.io/mission44/#blog/dispatch-10-radixattention");</script>
+  <meta http-equiv="refresh" content="0; url=https://lloo099.github.io/mission44/#blog/dispatch-10-radixattention" />
+  <style>body{font-family:system-ui,sans-serif;background:#0b0f17;color:#dfe7f5;max-width:720px;margin:80px auto;padding:0 20px;line-height:1.7}a{color:#6aa6ff}</style>
+</head>
+<body>
+  <h1>Dispatch 10 · RadixAttention 详解:SGLang 怎么靠「前缀树」赢 KV 复用</h1>
+  <p><em>2026-06-25 · NPU Frontier Dispatch · inference / SGLang / KV-cache / RL-on-NPU</em></p>
+  <p>把 KV cache 组织成基数树,自动发现并复用共享前缀 + cache-aware 调度 + 优雅处理 fork。对比 PagedAttention,以及为什么 GRPO 组内共享前缀让它对 RL rollout 特别值钱。</p>
+  <p><a href="https://lloo099.github.io/mission44/#blog/dispatch-10-radixattention">→ 阅读全文(RL-on-NPU Research Dashboard)</a></p>
+</body>
+</html>

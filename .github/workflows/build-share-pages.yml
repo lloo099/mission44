@@ -1,0 +1,44 @@
+name: Build share pages
+
+# Regenerates per-post static snapshot pages (p/<id>.html) and sitemap.xml
+# whenever the blog index changes, so every new Dispatch immediately gets an
+# indexable, unfurl-friendly share URL. og images are rendered locally via
+# `node scripts/build-share-pages.mjs` (needs Chromium); in CI the script
+# degrades gracefully and only writes snapshots + sitemap.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/blog.json"
+      - "scripts/build-share-pages.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-share-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build snapshots + sitemap (og skipped without Chromium)
+        run: node scripts/build-share-pages.mjs
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add p/ sitemap.xml robots.txt
+          git diff --cached --quiet && echo "no changes" || git commit -m "chore: rebuild share snapshots + sitemap"
+          git push

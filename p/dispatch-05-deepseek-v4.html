@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispatch 05 · 详解 DeepSeek-V4:混合注意力(CSA + HCA)与 1M 上下文 · NPU Frontier Dispatch</title>
+  <meta name="description" content="逐层交替 CSA(KV 压 4× + 选块)与 HCA(KV 压 128× + 全看),叠加 mHC / Muon / MTP 和 FP4+FP8 混合精度。1M 上下文下 FLOPs 降到 V3.2 的 27%、KV 降到 10%。怎么训、和 MSA 怎么比、对昇腾意味着什么。" />
+  <link rel="canonical" href="https://lloo099.github.io/mission44/p/dispatch-05-deepseek-v4.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Dispatch 05 · 详解 DeepSeek-V4:混合注意力(CSA + HCA)与 1M 上下文" />
+  <meta property="og:description" content="逐层交替 CSA(KV 压 4× + 选块)与 HCA(KV 压 128× + 全看),叠加 mHC / Muon / MTP 和 FP4+FP8 混合精度。1M 上下文下 FLOPs 降到 V3.2 的 27%、KV 降到 10%。怎么训、和 MSA 怎么比、对昇腾意味着什么。" />
+  <meta property="og:url" content="https://lloo099.github.io/mission44/p/dispatch-05-deepseek-v4.html" />
+  <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-05-deepseek-v4.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-05-deepseek-v4.png" />
+  <script>location.replace("https://lloo099.github.io/mission44/#blog/dispatch-05-deepseek-v4");</script>
+  <meta http-equiv="refresh" content="0; url=https://lloo099.github.io/mission44/#blog/dispatch-05-deepseek-v4" />
+  <style>body{font-family:system-ui,sans-serif;background:#0b0f17;color:#dfe7f5;max-width:720px;margin:80px auto;padding:0 20px;line-height:1.7}a{color:#6aa6ff}</style>
+</head>
+<body>
+  <h1>Dispatch 05 · 详解 DeepSeek-V4:混合注意力(CSA + HCA)与 1M 上下文</h1>
+  <p><em>2026-06-23 · NPU Frontier Dispatch · attention / MoE / DeepSeek-V4 / RL-on-NPU</em></p>
+  <p>逐层交替 CSA(KV 压 4× + 选块)与 HCA(KV 压 128× + 全看),叠加 mHC / Muon / MTP 和 FP4+FP8 混合精度。1M 上下文下 FLOPs 降到 V3.2 的 27%、KV 降到 10%。怎么训、和 MSA 怎么比、对昇腾意味着什么。</p>
+  <p><a href="https://lloo099.github.io/mission44/#blog/dispatch-05-deepseek-v4">→ 阅读全文(RL-on-NPU Research Dashboard)</a></p>
+</body>
+</html>
