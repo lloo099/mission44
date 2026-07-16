@@ -1,7 +1,7 @@
 {
-  "updated": "2026-07-15T08:37:03.050611Z",
+  "updated": "2026-07-16T08:35:35.519055Z",
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 49,
+  "count": 50,
   "pinned": 25,
   "items": [
     {
@@ -332,6 +332,162 @@
       ]
     },
     {
+      "title": "SIVA-RL: Sensitivity-Invariance Visual Alignment for Multimodal Reinforcement Learning",
+      "org": "Cheng Tang +11",
+      "year": "2026-07-15",
+      "summary": "Reinforcement learning with verifiable rewards (RLVR) drives multimodal reasoning, but answer-level correctness does not guarantee that a vision-language model grounds its predictions in visual evidence. Existing visual-intervention methods contrast policy behavior on original and modified images, y…",
+      "url": "http://arxiv.org/abs/2607.13931v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Post-Training Shifts Confidence: A Three-Stage Analysis of How SFT, RL, and OPD Shape Pre-, Intra-, and Post-CoT Calibration",
+      "org": "Shuhao Li +5",
+      "year": "2026-07-15",
+      "summary": "Large language models have made strong reasoning gains through supervised fine-tuning, reinforcement learning, and on-policy distillation, yet these post-training methods are usually evaluated only by final-answer accuracy. We study how they reshape confidence during reasoning. We introduce a three-…",
+      "url": "http://arxiv.org/abs/2607.13753v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Consensus as Privileged Context for Label-Free Self-Distillation",
+      "org": "John Gkountouras +2",
+      "year": "2026-07-15",
+      "summary": "Sampling multiple solutions and returning the majority answer is among the most reliable ways to improve the reasoning accuracy of large language models without labels, and a growing family of methods converts this consensus signal into training supervision. However, existing approaches use consensu…",
+      "url": "http://arxiv.org/abs/2607.13643v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Where Should RL Post-Training Compute Go? Model Size, Search, Learning, and Feedback",
+      "org": "Patrick Wilhelm +1",
+      "year": "2026-07-15",
+      "summary": "Reinforcement Learning (RL) post-training is increasingly used to adapt foundation models for reasoning, planning, and feedback-driven robot-learning pipelines, but constrained post-training resources are often summarized by a single total FLOP budget. We study the fixed-budget decision problem behi…",
+      "url": "http://arxiv.org/abs/2607.13389v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "TRACE: Turn-level Reward Assignment via Credit Estimation for Long-Horizon Agents",
+      "org": "Leitian Tao +7",
+      "year": "2026-07-15",
+      "summary": "Multi-turn agents solve complex tasks through extended sequences of tool interactions before producing a final answer, making credit assignment a fundamental challenge during post-training. Outcome rewards provide reliable supervision for short-horizon reasoning, but become sparse and high-variance …",
+      "url": "http://arxiv.org/abs/2607.13988v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "ThinkBLOX: 3D Indoor Scene Generation with Progressive Reasoning",
+      "org": "Yuan Xiao +3",
+      "year": "2026-07-15",
+      "summary": "While traditional graphics methods often synthesize 3D indoor scenes autoregressively or hierarchically, recent vision-language model (VLM)-based generators predominantly adopt a one-shot paradigm where the full layout is planned at once. This one-shot approach often requires global re-optimization …",
+      "url": "http://arxiv.org/abs/2607.13539v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "SPyCE: Skill-Policy Co-evolution for Multimodal Agents",
+      "org": "Ru Zhang +1",
+      "year": "2026-07-15",
+      "summary": "Multimodal agents that think with images iteratively manipulate visual evidence and invoke tools across many steps. Existing reinforcement learning methods reduce trajectories to scalar rewards, forcing the policy to discover reusable tool-use patterns from scratch on every new task; memory-based al…",
+      "url": "http://arxiv.org/abs/2607.13854v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Learning Robust Execution in Robotic Manipulation with Agentic Reinforcement Learning",
+      "org": "Xiaopeng Zhang +4",
+      "year": "2026-07-15",
+      "summary": "Robotic manipulation poses fundamental challenges due to uncertainty, long-horizon execution, and compounding errors, which can easily destabilize execution and lead to task failure. Although recent vision-language-action (VLA) models exhibit strong generalization, they typically lack explicit mecha…",
+      "url": "http://arxiv.org/abs/2607.13818v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Exploratory, Communicative, and Deployable: Vision-Driven Embodied Agents for Open-World Mobile Manipulation",
+      "org": "Boyu Mi +12",
+      "year": "2026-07-15",
+      "summary": "Real-world deployment of embodied agents requires active exploration, visual grounding, and interactive intent disambiguation. However, existing frameworks often rely on privileged simulator states or assume complete instructions, bypassing realistic deployment challenges. To bridge this gap, we pre…",
+      "url": "http://arxiv.org/abs/2607.13653v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Kaleido: Algorithm-Hardware Co-Design for Video Diffusion Transformers by Exploiting Latent Space Correlations",
+      "org": "Wenxuan Miao +11",
+      "year": "2026-07-15",
+      "summary": "Video diffusion transformers (vDiTs) generate high quality video but introduce extremely high compute cost due to the long diffusion timesteps and self attention computation. As diffusion timesteps are reduced, the computation cost of self attention becomes the dominant bottleneck. Existing accelera…",
+      "url": "http://arxiv.org/abs/2607.13770v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "ExTernD: Expanded-Rank Ternary Decomposition Ternary LLM PTQ with Accuracy Approaching Any Quantization Level",
+      "org": "Chethan Reddy G. P",
+      "year": "2026-07-15",
+      "summary": "We introduce ExTernD (Expanded-rank Ternary Decomposition), a post-training factorization of each LLM weight matrix $A \\in \\mathbb{R}^{m \\times n}$ into $A \\approx B \\mathrm{diag}(D) C$ with ternary factors $B \\in \\{-1,0,+1\\}^{m \\times k}$, $C \\in \\{-1,0,+1\\}^{k \\times n}$ and a real scale vector $D…",
+      "url": "http://arxiv.org/abs/2607.13511v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Meta-Learning Preferences for Multilingual LLM Alignment",
+      "org": "Jiaying Lin +5",
+      "year": "2026-07-14",
+      "summary": "Unequal availability of human preference data across languages poses a significant challenge for aligning large language models in multilingual settings. To address the lack of sufficient data in low-resource language alignment, we propose a meta-learning framework for Reinforcement Learning from Hu…",
+      "url": "http://arxiv.org/abs/2607.13315v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
       "title": "Verifier-Based Reinforcement Fine-Tuning of Reasoning Models for Thermal Energy Storage Control",
       "org": "Takumi Shioda +2",
       "year": "2026-07-14",
@@ -367,32 +523,6 @@
       "tags": [
         "live",
         "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "TRACE: An Operational Reasoning Schema for Auditable Agentic Commitments",
-      "org": "Edward Y. Chang +1",
-      "year": "2026-07-14",
-      "summary": "This paper defines TRACE (Typed Reasoning And Commitment Evidence): a typed, versioned schema for recording reasoning traces, a reference procedure for writing records against it, and one operating discipline, no durable state change without a record. The paper argues in three layers that reasoning …",
-      "url": "http://arxiv.org/abs/2607.12480v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "Ring-Zero: Scaling Zero RL to a Trillion Parameters for Emergent Reasoning",
-      "org": "Xinyu Tang +15",
-      "year": "2026-07-14",
-      "summary": "Reinforcement learning with verifiable rewards without human-annotated data, often referred to as zero RL, has emerged as a powerful paradigm for eliciting chain-of-thought reasoning. However, due to computational constraints, existing studies are largely restricted to small models, leaving the trai…",
-      "url": "http://arxiv.org/abs/2607.12395v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
         "auto"
       ]
     },
@@ -462,67 +592,15 @@
       ]
     },
     {
-      "title": "Actor as Its Own Critic: Unifying Region Understanding and Localization via CycleGRPO",
-      "org": "Xin Zhang +4",
-      "year": "2026-07-13",
-      "summary": "This paper introduces Actor as Its Own Critic, a unified reinforcement learning framework, Cycle Group Relative Policy Optimization (CycleGRPO), that jointly optimizes region understanding and localization for Multimodal Large Language Models (MLLMs). Unlike existing separate pipelines, we leverage …",
-      "url": "http://arxiv.org/abs/2607.11581v1",
-      "category": "rl-llm",
+      "title": "WaterMoE: Expert-Routing-based Watermarking for High Fidelity and Efficiency",
+      "org": "Z Sun +3",
+      "year": "2026-07-14",
+      "summary": "Large language models (LLMs) have achieved remarkable success but raise growing concerns about content provenance and misuse, motivating the need for reliable watermarking techniques. However, these techniques have rarely been adopted in practice mainly for two reasons: i) severely degraded model pe…",
+      "url": "http://arxiv.org/abs/2607.13099v1",
+      "category": "efficient-llm",
       "tags": [
         "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "SCOPE-RL: Optimizing Reasoning Paths Before and After Success",
-      "org": "Xiaojian Liu +8",
-      "year": "2026-07-13",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) optimizes LLMs using sparse verifiable final-answer rewards. This sparse anchor reliably verifies whether a trajectory succeeds but provides no direct feedback on the reasoning path that produced it. Before success, prerequisite progress on hard …",
-      "url": "http://arxiv.org/abs/2607.11506v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "EasyOPD: An Easy-to-use On-Policy Distillation Framework for Large Language Models",
-      "org": "Jie Sun +9",
-      "year": "2026-07-13",
-      "summary": "Conventional language-model distillation often relies on fixed teacher-generated data, which may not cover the states encountered by an evolving student policy. On-policy distillation (OPD) instead collects teacher or evaluator supervision on student-generated rollouts. However, existing OPD methods…",
-      "url": "http://arxiv.org/abs/2607.11012v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "SCALECUA: Scaling Computer Use Agents with Verifiable Task Synthesis and Efficient Online RL",
-      "org": "Bowen Lv +9",
-      "year": "2026-07-13",
-      "summary": "Computer use agents (CUAs) are emerging as a powerful interface for automating complex digital workflows through visual perception and GUI execution. Online reinforcement learning with verifiable rewards (RLVR) has emerged as a key direction for scaling their capabilities. However, this paradigm is …",
-      "url": "http://arxiv.org/abs/2607.11185v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "When the Reward Suite Is Leaky: A Preregistered Causal Contrast of Natural Verifier False Positives in RLVR",
-      "org": "Chuyifei Zhang",
-      "year": "2026-07-13",
-      "summary": "The test suites used as RLVR rewards for code have natural false positives: per-task, persistent, asymmetric errors that accept the same wrong programs every time they appear, unlike the symmetric or resampled noise assumed by existing noise-robustness analyses. We run a preregistered two-arm causal…",
-      "url": "http://arxiv.org/abs/2607.11022v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
+        "efficient-llm",
         "auto"
       ]
     },
@@ -532,71 +610,6 @@
       "year": "2026-07-13",
       "summary": "Extending the context length of large language models (LLMs) is critical for many real-world applications, yet standard transformers remain constrained by quadratic compute and linear memory scaling. In this work, we investigate the Associative Recurrent Memory Transformer (ARMT) as a practical appr…",
       "url": "http://arxiv.org/abs/2607.11614v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "[AAFLOW+] Stateful Operator Abstraction with Zero-Copy Distributed KV Cache Orchestration for Multi-Agent Workflows",
-      "org": "Arup Kumar Sarker +7",
-      "year": "2026-07-13",
-      "summary": "Multi-agent LLM systems increasingly integrate retrieval, planning, and reasoning, but remain fundamentally text-centric, requiring agents to repeatedly recompute shared context through expensive prefill. Although single-request inference is known to be accelerated by KV-cache management, it is usua…",
-      "url": "http://arxiv.org/abs/2607.10987v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "HCRMap: Pressure-Aware Hot-Expert Residency Mapping for 3.5D MoE Chiplet Inference",
-      "org": "Yongqin Zhang",
-      "year": "2026-07-13",
-      "summary": "Mixture-of-Experts (MoE) large language models (LLM) activate only a small number of experts during inference, but token routing introduces persistent expert hotness skew: a small set of hot experts continuously receives most tokens, while the remaining experts are lightly loaded. On 3.5D multi-chip…",
-      "url": "http://arxiv.org/abs/2607.11586v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "SETA: Scaling Environments for Terminal Agents",
-      "org": "Qijia Shen +21",
-      "year": "2026-07-12",
-      "summary": "Large language models (LLMs) are rapidly shifting toward agents that solve tasks through diverse interfaces, including web and graphical user interfaces (GUIs). Among these, the terminal command line provides a text-based, general-purpose interface, covering tasks from system operations to data scie…",
-      "url": "http://arxiv.org/abs/2607.10891v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Predictive Divergence Masks for LLM RL",
-      "org": "Xiangxin Zhou +6",
-      "year": "2026-07-12",
-      "summary": "Reinforcement learning for large language models (LLMs) typically relies on trust-region masks to stabilize off-policy updates. The dominant PPO-style approach uses the sampled-token importance ratio for two criteria: a proximity criterion, which asks whether the policy has moved too far from the be…",
-      "url": "http://arxiv.org/abs/2607.10848v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "MemDecay: Region-Aware KV Cache Eviction for Efficient LLM Agent Inference",
-      "org": "Venkatesha Matam +1",
-      "year": "2026-07-12",
-      "summary": "Large language model (LLM) agents accumulate heterogeneous context, including system instructions, plans, user turns, retrieved documents, tool outputs, and intermediate reasoning, whose key-value (KV) cache can become a major memory bottleneck. Existing eviction policies generally apply the same at…",
-      "url": "http://arxiv.org/abs/2607.10582v1",
       "category": "sparse-attention",
       "tags": [
         "live",
