@@ -1,149 +1,493 @@
 {
-  "updated": "2026-07-07",
+  "updated": "2026-07-17",
   "doc": "docs/2026-frontier-models.md",
-  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。",
+  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。 Kimi K3 数字为发布日自报,权重与技术报告尚未放出。",
   "models": {
-    "columns": ["", "DeepSeek-V4", "MiniMax-M3", "GLM-5.2", "LongCat-2.0", "DeepSeek-V3.2 (ref)"],
+    "columns": [
+      "",
+      "DeepSeek-V4",
+      "MiniMax-M3",
+      "GLM-5.2",
+      "LongCat-2.0",
+      "Kimi K3",
+      "DeepSeek-V3.2 (ref)"
+    ],
     "rows": [
-      ["Released", "2026-04", "2026-06", "2026-06", "2026-07", "2025-12"],
-      ["Scale", "V4-Pro ~1.6T / 49B act", "109B (multimodal)", "open weights", "1.6T / ~48B act", "671B MoE"],
-      ["Context", "1M", "1M", "1M*", "1M (native)", "128K"],
-      ["Attention", "CSA + HCA (hybrid)", "MSA (block-sparse on GQA)", "GLM-5 lineage", "LSA(细节待报告)", "DSA (token top-k on MLA)"],
-      ["License", "open weights", "open weights", "MIT", "open weights", "open weights"],
-      ["~Output $/1M", "~$3.48 (Pro)", "~$1.20 (promo)", "—", "—", "—"],
-      ["Ascend", "ready", "partial", "partial", "训练即国产芯片(HCCL,疑似 910C 未官宣,推测)", "ready"]
+      [
+        "Released",
+        "2026-04",
+        "2026-06",
+        "2026-06",
+        "2026-07",
+        "2026-07",
+        "2025-12"
+      ],
+      [
+        "Scale",
+        "V4-Pro ~1.6T / 49B act",
+        "109B (multimodal)",
+        "open weights",
+        "1.6T / ~48B act",
+        "2.8T 总参 / 16-896 极稀疏 MoE",
+        "671B MoE"
+      ],
+      [
+        "Context",
+        "1M",
+        "1M",
+        "1M*",
+        "1M (native)",
+        "1M(原生)",
+        "128K"
+      ],
+      [
+        "Attention",
+        "CSA + HCA (hybrid)",
+        "MSA (block-sparse on GQA)",
+        "GLM-5 lineage",
+        "LSA(细节待报告)",
+        "KDA 线性 + Gated MLA + AttnRes",
+        "DSA (token top-k on MLA)"
+      ],
+      [
+        "License",
+        "open weights",
+        "open weights",
+        "MIT",
+        "open weights",
+        "权重承诺 07-27 前(开源,许可待公布)",
+        "open weights"
+      ],
+      [
+        "~Output $/1M",
+        "~$3.48 (Pro)",
+        "~$1.20 (promo)",
+        "—",
+        "—",
+        "$15",
+        "—"
+      ],
+      [
+        "Ascend",
+        "ready",
+        "partial",
+        "partial",
+        "训练即国产芯片(HCCL,疑似 910C 未官宣,推测)",
+        "未适配(权重未放;线性注意力算子 CANN 缺口,推测)",
+        "ready"
+      ]
     ]
   },
   "metrics": {
     "default": "swe",
     "list": [
       {
-        "id": "swe", "label": "SWE-bench Verified", "unit": "%",
+        "id": "swe",
+        "label": "SWE-bench Verified",
+        "unit": "%",
         "note": "open frontier (80% band) ~ties closed-prev-tier; Claude Fable/Mythos 5 still ahead. MiMo-V2.5-Pro 82 is vendor/harness-reported (MiMo Code) — provisional.",
         "items": [
-          {"model": "Claude Mythos 5", "score": 95.5, "open": false},
-          {"model": "Claude Fable 5", "score": 95.0, "open": false},
-          {"model": "Claude Opus 4.8", "score": 88.6, "open": false},
-          {"model": "MiMo-V2.5-Pro", "score": 82.0, "open": true},
-          {"model": "DeepSeek-V4-Pro", "score": 80.6, "open": true},
-          {"model": "MiniMax-M3", "score": 80.5, "open": true},
-          {"model": "Qwen3.7 Max", "score": 80.4, "open": true},
-          {"model": "Kimi K2.6", "score": 80.2, "open": true},
-          {"model": "DeepSeek-V4-Flash", "score": 79.0, "open": true},
-          {"model": "GLM-5", "score": 77.8, "open": true},
-          {"model": "Seed 2.0 Pro (closed)", "score": 76.5, "open": false},
-          {"model": "Qwen3.5 397B", "score": 76.2, "open": true},
-          {"model": "Llama3-SWE-RL-70B", "score": 41.0, "open": true}
+          {
+            "model": "Claude Mythos 5",
+            "score": 95.5,
+            "open": false
+          },
+          {
+            "model": "Claude Fable 5",
+            "score": 95,
+            "open": false
+          },
+          {
+            "model": "Claude Opus 4.8",
+            "score": 88.6,
+            "open": false
+          },
+          {
+            "model": "MiMo-V2.5-Pro",
+            "score": 82,
+            "open": true
+          },
+          {
+            "model": "DeepSeek-V4-Pro",
+            "score": 80.6,
+            "open": true
+          },
+          {
+            "model": "MiniMax-M3",
+            "score": 80.5,
+            "open": true
+          },
+          {
+            "model": "Qwen3.7 Max",
+            "score": 80.4,
+            "open": true
+          },
+          {
+            "model": "Kimi K2.6",
+            "score": 80.2,
+            "open": true
+          },
+          {
+            "model": "DeepSeek-V4-Flash",
+            "score": 79,
+            "open": true
+          },
+          {
+            "model": "GLM-5",
+            "score": 77.8,
+            "open": true
+          },
+          {
+            "model": "Seed 2.0 Pro (closed)",
+            "score": 76.5,
+            "open": false
+          },
+          {
+            "model": "Qwen3.5 397B",
+            "score": 76.2,
+            "open": true
+          },
+          {
+            "model": "Llama3-SWE-RL-70B",
+            "score": 41,
+            "open": true
+          }
         ]
       },
       {
-        "id": "swepro", "label": "SWE-bench Pro", "unit": "%",
+        "id": "swepro",
+        "label": "SWE-bench Pro",
+        "unit": "%",
         "note": "Harder agentic-coding variant (≠ Verified). GLM-5.2 (62.1) tops the open set, ahead of GPT-5.5 (~58.6); media/vendor-reported, partial coverage.",
         "items": [
-          {"model": "Claude Fable 5", "score": 80.3, "open": false},
-          {"model": "GLM-5.2", "score": 62.1, "open": true},
-          {"model": "MiMo-V2.5-Pro", "score": 62.0, "open": true},
-          {"model": "LongCat-2.0 (self-reported)", "score": 59.5, "open": true},
-          {"model": "MiniMax-M3", "score": 59.0, "open": true},
-          {"model": "GLM-5.1", "score": 58.4, "open": true}
+          {
+            "model": "Claude Fable 5",
+            "score": 80.3,
+            "open": false
+          },
+          {
+            "model": "GLM-5.2",
+            "score": 62.1,
+            "open": true
+          },
+          {
+            "model": "MiMo-V2.5-Pro",
+            "score": 62,
+            "open": true
+          },
+          {
+            "model": "LongCat-2.0 (self-reported)",
+            "score": 59.5,
+            "open": true
+          },
+          {
+            "model": "MiniMax-M3",
+            "score": 59,
+            "open": true
+          },
+          {
+            "model": "GLM-5.1",
+            "score": 58.4,
+            "open": true
+          }
         ]
       },
       {
-        "id": "aa", "label": "Artificial Analysis Index", "unit": "pts",
+        "id": "aa",
+        "label": "Artificial Analysis Index",
+        "unit": "pts",
         "note": "AA Intelligence Index v4.1 (points). Open-weight models clustered ~50–55.",
         "items": [
-          {"model": "MiniMax-M3", "score": 54.7, "open": true},
-          {"model": "Kimi K2.6", "score": 53.9, "open": true},
-          {"model": "Qwen3.7 Plus", "score": 53.3, "open": true},
-          {"model": "DeepSeek-V4-Pro", "score": 52.0, "open": true},
-          {"model": "GLM-5.1", "score": 51.4, "open": true},
-          {"model": "GLM-5", "score": 49.8, "open": true}
+          {
+            "model": "MiniMax-M3",
+            "score": 54.7,
+            "open": true
+          },
+          {
+            "model": "Kimi K2.6",
+            "score": 53.9,
+            "open": true
+          },
+          {
+            "model": "Qwen3.7 Plus",
+            "score": 53.3,
+            "open": true
+          },
+          {
+            "model": "DeepSeek-V4-Pro",
+            "score": 52,
+            "open": true
+          },
+          {
+            "model": "GLM-5.1",
+            "score": 51.4,
+            "open": true
+          },
+          {
+            "model": "GLM-5",
+            "score": 49.8,
+            "open": true
+          }
         ]
       },
       {
-        "id": "lcb", "label": "LiveCodeBench", "unit": "%",
+        "id": "lcb",
+        "label": "LiveCodeBench",
+        "unit": "%",
         "note": "Competitive programming. DeepSeek-V4 / Kimi lead; partial coverage.",
         "items": [
-          {"model": "DeepSeek-V4-Pro (Max)", "score": 93.5, "open": true},
-          {"model": "DeepSeek-V4-Flash (Max)", "score": 91.6, "open": true},
-          {"model": "Kimi K2.6", "score": 89.6, "open": true},
-          {"model": "GLM-4.7", "score": 84.9, "open": true}
+          {
+            "model": "DeepSeek-V4-Pro (Max)",
+            "score": 93.5,
+            "open": true
+          },
+          {
+            "model": "DeepSeek-V4-Flash (Max)",
+            "score": 91.6,
+            "open": true
+          },
+          {
+            "model": "Kimi K2.6",
+            "score": 89.6,
+            "open": true
+          },
+          {
+            "model": "GLM-4.7",
+            "score": 84.9,
+            "open": true
+          }
         ]
       },
       {
-        "id": "aime", "label": "AIME (math)", "unit": "%",
+        "id": "aime",
+        "label": "AIME (math)",
+        "unit": "%",
         "note": "Math. GLM line tops it; mixed 2025/2026 AIME, partial coverage. GLM-5.2 number is AIME 2026 (media/vendor).",
         "items": [
-          {"model": "GLM-5.2 (AIME'26)", "score": 99.2, "open": true},
-          {"model": "Seed 2.0 Pro (closed)", "score": 98.3, "open": false},
-          {"model": "GLM-5 (Reasoning)", "score": 98.0, "open": true},
-          {"model": "GLM-4.7", "score": 95.7, "open": true},
-          {"model": "GLM-5.1 (Reasoning)", "score": 95.3, "open": true},
-          {"model": "AM-Thinking-v1 (32B)", "score": 74.4, "open": true}
+          {
+            "model": "GLM-5.2 (AIME'26)",
+            "score": 99.2,
+            "open": true
+          },
+          {
+            "model": "Seed 2.0 Pro (closed)",
+            "score": 98.3,
+            "open": false
+          },
+          {
+            "model": "GLM-5 (Reasoning)",
+            "score": 98,
+            "open": true
+          },
+          {
+            "model": "GLM-4.7",
+            "score": 95.7,
+            "open": true
+          },
+          {
+            "model": "GLM-5.1 (Reasoning)",
+            "score": 95.3,
+            "open": true
+          },
+          {
+            "model": "AM-Thinking-v1 (32B)",
+            "score": 74.4,
+            "open": true
+          }
         ]
       },
       {
-        "id": "gpqa", "label": "GPQA Diamond", "unit": "%",
+        "id": "gpqa",
+        "label": "GPQA Diamond",
+        "unit": "%",
         "note": "Graduate-level science QA. Open models now cluster 88–94%.",
         "items": [
-          {"model": "GLM-5 (Reasoning)", "score": 94.0, "open": true},
-          {"model": "MiniMax-M3", "score": 92.7, "open": true},
-          {"model": "GLM-5.2", "score": 91.2, "open": true},
-          {"model": "Kimi K2.6", "score": 90.5, "open": true},
-          {"model": "DeepSeek-V4", "score": 90.1, "open": true},
-          {"model": "Seed 2.0 Pro (closed)", "score": 88.9, "open": false},
-          {"model": "Qwen3.5", "score": 88.4, "open": true}
+          {
+            "model": "GLM-5 (Reasoning)",
+            "score": 94,
+            "open": true
+          },
+          {
+            "model": "MiniMax-M3",
+            "score": 92.7,
+            "open": true
+          },
+          {
+            "model": "GLM-5.2",
+            "score": 91.2,
+            "open": true
+          },
+          {
+            "model": "Kimi K2.6",
+            "score": 90.5,
+            "open": true
+          },
+          {
+            "model": "DeepSeek-V4",
+            "score": 90.1,
+            "open": true
+          },
+          {
+            "model": "Seed 2.0 Pro (closed)",
+            "score": 88.9,
+            "open": false
+          },
+          {
+            "model": "Qwen3.5",
+            "score": 88.4,
+            "open": true
+          }
         ]
       },
       {
-        "id": "mmlu", "label": "MMLU-Pro", "unit": "%",
+        "id": "mmlu",
+        "label": "MMLU-Pro",
+        "unit": "%",
         "note": "Broad knowledge/reasoning. Qwen3.5 leads the reported open set.",
         "items": [
-          {"model": "Qwen3.5", "score": 87.8, "open": true},
-          {"model": "MiniMax-M3", "score": 84.2, "open": true},
-          {"model": "GLM-5.1", "score": 83.0, "open": true},
-          {"model": "Kimi K2.6", "score": 81.0, "open": true}
+          {
+            "model": "Qwen3.5",
+            "score": 87.8,
+            "open": true
+          },
+          {
+            "model": "MiniMax-M3",
+            "score": 84.2,
+            "open": true
+          },
+          {
+            "model": "GLM-5.1",
+            "score": 83,
+            "open": true
+          },
+          {
+            "model": "Kimi K2.6",
+            "score": 81,
+            "open": true
+          }
         ]
       },
       {
-        "id": "ctx", "label": "Context window", "unit": "tok", "neutral": true,
+        "id": "ctx",
+        "label": "Context window",
+        "unit": "tok",
+        "neutral": true,
         "note": "Max context (tokens). GLM-5.2 1M is vendor-stated; one source says 200K+.",
         "items": [
-          {"model": "DeepSeek-V4", "score": 1000000, "open": true},
-          {"model": "MiniMax-M3", "score": 1000000, "open": true},
-          {"model": "GLM-5.2", "score": 1000000, "open": true},
-          {"model": "Kimi K2.6", "score": 256000, "open": true},
-          {"model": "Qwen3.5", "score": 256000, "open": true},
-          {"model": "DeepSeek-V3.2", "score": 128000, "open": true}
+          {
+            "model": "DeepSeek-V4",
+            "score": 1000000,
+            "open": true
+          },
+          {
+            "model": "MiniMax-M3",
+            "score": 1000000,
+            "open": true
+          },
+          {
+            "model": "GLM-5.2",
+            "score": 1000000,
+            "open": true
+          },
+          {
+            "model": "Kimi K2.6",
+            "score": 256000,
+            "open": true
+          },
+          {
+            "model": "Qwen3.5",
+            "score": 256000,
+            "open": true
+          },
+          {
+            "model": "DeepSeek-V3.2",
+            "score": 128000,
+            "open": true
+          }
         ]
       },
       {
-        "id": "price", "label": "Output price", "unit": "$", "lowerBetter": true,
+        "id": "price",
+        "label": "Output price",
+        "unit": "$",
+        "lowerBetter": true,
         "note": "$/1M output tokens — lower is better. M3 promo pricing; sparse coverage. Seed is closed-API pricing.",
         "items": [
-          {"model": "GLM-5.2 (API)", "score": 4.40, "open": true},
-          {"model": "DeepSeek-V4-Pro", "score": 3.48, "open": true},
-          {"model": "Seed 2.0 Pro (closed)", "score": 2.37, "open": false},
-          {"model": "MiniMax-M3 (promo)", "score": 1.20, "open": true},
-          {"model": "DeepSeek-V4-Flash", "score": 0.87, "open": true}
+          {
+            "model": "GLM-5.2 (API)",
+            "score": 4.4,
+            "open": true
+          },
+          {
+            "model": "DeepSeek-V4-Pro",
+            "score": 3.48,
+            "open": true
+          },
+          {
+            "model": "Seed 2.0 Pro (closed)",
+            "score": 2.37,
+            "open": false
+          },
+          {
+            "model": "MiniMax-M3 (promo)",
+            "score": 1.2,
+            "open": true
+          },
+          {
+            "model": "DeepSeek-V4-Flash",
+            "score": 0.87,
+            "open": true
+          }
         ]
       },
       {
-        "id": "codearena", "label": "Code Arena · Frontend (Elo)", "unit": "Elo", "neutral": true,
+        "id": "codearena",
+        "label": "Code Arena · Frontend (Elo)",
+        "unit": "Elo",
+        "neutral": true,
         "note": "LMArena Code-Arena Frontend Elo. Seed 2.1 Pro Preview (Jun 19 2026) entered at 1539 — 8th globally, ~tied with Claude Opus 4.6; full Seed-2.1 benchmarks pending. Only a few public Elos here.",
         "items": [
-          {"model": "Seed 2.1 Pro (preview)", "score": 1539, "open": false}
+          {
+            "model": "Seed 2.1 Pro (preview)",
+            "score": 1539,
+            "open": false
+          }
         ]
       }
     ]
   },
   "attention": {
-    "columns": ["Scheme", "Base", "Mechanism", "Trade-off"],
+    "columns": [
+      "Scheme",
+      "Base",
+      "Mechanism",
+      "Trade-off"
+    ],
     "rows": [
-      ["DSA (V3.2)", "MLA", "lightning indexer → token-level top-k", "stable quality; heavy kernels"],
-      ["NSA (early)", "GQA", "3 branches (compress/select/slide) + gating", "highest ceiling; most complex"],
-      ["CSA + HCA (V4)", "—", "compress every m tokens' KV → top-k; layers alternate", "best long-ctx memory; costly port"],
-      ["MSA (M3)", "GQA", "block selection but attention on REAL KV", "pragmatic — reuses existing kernels, fast"]
+      [
+        "DSA (V3.2)",
+        "MLA",
+        "lightning indexer → token-level top-k",
+        "stable quality; heavy kernels"
+      ],
+      [
+        "NSA (early)",
+        "GQA",
+        "3 branches (compress/select/slide) + gating",
+        "highest ceiling; most complex"
+      ],
+      [
+        "CSA + HCA (V4)",
+        "—",
+        "compress every m tokens' KV → top-k; layers alternate",
+        "best long-ctx memory; costly port"
+      ],
+      [
+        "MSA (M3)",
+        "GQA",
+        "block selection but attention on REAL KV",
+        "pragmatic — reuses existing kernels, fast"
+      ]
     ]
   },
   "takeaways": [
@@ -152,6 +496,7 @@
     "Custom attention (CSA/HCA/DSA/MSA) re-implemented on NPU raises numeric-drift risk — exactly what align-probe should diagnose.",
     "V4's validated FP8 training + Ascend 950 native FP8 make FP8 RL on Ascend a viable, high-novelty topic.",
     "Seed 2.1 Pro (preview, Jun 19) is a strong closed coding/agent model (Code-Arena Frontend ~Opus 4.6) but it's API-only and not Ascend-portable — it sets the bar to chase, not a model to host on NPU. The Ascend story stays with the open-weight wave (DeepSeek-V4 / MiniMax-M3 / GLM-5.2).",
-    "LongCat-2.0 把\"国产芯片全周期训练(含后训练/RL)\"从零实证变成方向可信——1.6T MoE 全程跑在 HCCL 国产超节点(疑似 910C,未官宣),细节待技术报告核验;与 openPangu 的开源训练代码互补(见 Dispatch 20/21)。"
+    "LongCat-2.0 把\"国产芯片全周期训练(含后训练/RL)\"从零实证变成方向可信——1.6T MoE 全程跑在 HCCL 国产超节点(疑似 910C,未官宣),细节待技术报告核验;与 openPangu 的开源训练代码互补(见 Dispatch 20/21)。",
+    "Kimi K3 把线性注意力(KDA)第一次推上旗舰规模开源主张——与 MSA/DSA/LSA 的稀疏化全注意力路线正式分岔;全部数字自报、权重与技术报告未落地(provisional,见 Dispatch 24)。"
   ]
 }

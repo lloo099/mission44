@@ -1,6 +1,23 @@
 {
-  "updated": "2026-07-13",
+  "updated": "2026-07-17",
   "items": [
+    {
+      "title": "Kimi K3(2.8T 极稀疏 MoE,线性注意力 KDA 首登开源旗舰)",
+      "org": "月之暗面 (Moonshot AI)",
+      "year": "2026-07",
+      "category": "model-report",
+      "innovation": "首个把线性注意力(KDA)扶正到旗舰规模的开源模型主张:2.8T 总参、16/896 极稀疏路由(Stable LatentMoE)、AttnRes 跨深度选择性检索、原生 1M 上下文",
+      "analysis": "Official/provisional: 2026-07-16 发布,API 已可用(/5 每百万 token,对标 Sonnet 档),权重承诺 07-27 前放出、主张 3 万亿参数级首个开源。架构四组件:KDA(源自 Kimi Linear,arXiv 2510.26692——channel-wise 门控 delta rule + chunkwise 算法,3:1 混合配比、KV cache -75%、1M 解码至多 6×,论文主张短/长/RL scaling 三范式不输全注意力)+ AttnRes(跨深度选择性检索早层表征,机理待报告)+ Gated MLA + Stable LatentMoE(16/896 专家)。K3 自称 1M 上下文解码提速 6.3×。跑分全自报且为新基准体系(FrontierSWE 81.2、DeepSWE 67.5、Terminal-Bench 2.1 88.3 等),与旧 SWE-bench 不可跨表比。对 RL-on-NPU:KDA 的 KV 减省与解码提速直接打在 decode-bound rollout 痛点(Dispatch 02)上;线性注意力的 chunkwise 训练 vs recurrent 解码是新的训推一致风险面(推断)。技术报告未出,详见 Dispatch 24。",
+      "url": "https://www.kimi.com/blog/kimi-k3",
+      "tags": [
+        "Kimi-K3",
+        "KDA",
+        "linear-attention",
+        "MoE",
+        "1M-context"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "LongCat-2.0(1.6T MoE,全训练周期在国产芯片超节点完成)",
       "org": "美团 (Meituan)",
@@ -62,29 +79,50 @@
     },
     {
       "title": "DFlash (块扩散投机解码草稿)",
-      "org": "Z Lab, UC San Diego", "year": "2026-06", "category": "inference",
+      "org": "Z Lab, UC San Diego",
+      "year": "2026-06",
+      "category": "inference",
       "innovation": "块扩散草稿模型一次前向并行出整块草稿 token",
       "summary": "用块扩散(block-diffusion)草稿取代自回归草稿循环,打破 EAGLE-3「草稿仍串行」的 ~2–3× 天花板:Qwen3-8B 平均 4.86× 无损加速,Blackwell 批量吞吐 ~15×;已进 SGLang,NVIDIA/Google 复现。是 DSpark(Dispatch 15)对照的并行 drafter。数字 provisional。",
       "url": "https://github.com/z-lab/dflash",
-      "tags": ["speculative-decoding", "inference", "diffusion", "2026"],
+      "tags": [
+        "speculative-decoding",
+        "inference",
+        "diffusion",
+        "2026"
+      ],
       "confidence": "confirmed"
     },
     {
       "title": "JetSpec (因果并行树草稿)",
-      "org": "Hao AI Lab, UC San Diego", "year": "2026-06", "category": "inference",
+      "org": "Hao AI Lab, UC San Diego",
+      "year": "2026-06",
+      "category": "inference",
       "innovation": "因果并行草稿头单次前向预测多个树节点 + 块级因果注意力保分支一致",
       "summary": "调和「自回归草稿付深度代价 vs 块扩散草稿分支不一致」的两难:单次前向预测多个树节点、块级因果注意力保分支条件一致;MATH-500 端到端最高 9.64× 加速。与 DFlash 同期(UCSD 邻校)。provisional。",
       "url": "https://arxiv.org/abs/2606.18394",
-      "tags": ["speculative-decoding", "inference", "tree-drafting", "2026"],
+      "tags": [
+        "speculative-decoding",
+        "inference",
+        "tree-drafting",
+        "2026"
+      ],
       "confidence": "confirmed"
     },
     {
       "title": "SGLang Spec V2 (默认投机解码引擎)",
-      "org": "LMSYS / SGLang", "year": "2026-06", "category": "inference",
+      "org": "LMSYS / SGLang",
+      "year": "2026-06",
+      "category": "inference",
       "innovation": "overlap scheduling 隐藏 CPU 开销 + 统一 EAGLE/MTP/DFlash 树草稿",
       "summary": "SGLang 把 Spec V2 设为默认推测解码路径:overlap scheduling 隐藏 per-step CPU 开销,统一支持 EAGLE/MTP/DFlash 的 topk>1 树草稿,覆盖 triton/FA3/MLA/aiter 后端。是让新 drafter 生产可用的服务底座。",
       "url": "https://www.lmsys.org/blog/2026-06-15-next-generation-speculative-decoding-dflash-v2/",
-      "tags": ["speculative-decoding", "serving", "SGLang", "2026"],
+      "tags": [
+        "speculative-decoding",
+        "serving",
+        "SGLang",
+        "2026"
+      ],
       "confidence": "confirmed"
     },
     {

@@ -16,6 +16,7 @@ flowchart LR
         N15["D15 · DSpark 投机解码"]
         N16["D16 · V4 的 Agent"]
         N21["D21 · LongCat-2.0"]
+        N24["D24 · Kimi K3"]
     end
     subgraph SWE ["SWE 与训练数据"]
         N12["D12 · SWE Agents 上手"]
@@ -27,8 +28,6 @@ flowchart LR
         N18["D18 · prime-rl vs SkyRL"]
         N19["D19 · slime"]
         N22["D22 · DeepSWE 与 rLLM"]
-        N24["D24 · MindSpeed-RL"]
-        N25["D25 · verl"]
     end
     subgraph NPU ["昇腾落地"]
         N03["D03 · 昇腾 950"]
@@ -50,8 +49,7 @@ flowchart LR
     N14 --> N17
     N12 -. "阻力最小起点" .-> N22
     N09 -. "slime 的下游" .-> N19
-    N19 -. "官方线与社区线" .-> N24
-    N24 -. "暂停后的接棒者" .-> N25
+    N04 -. "注意力路线分岔" .-> N24
     N03 --> N13
     N20 -. "规模实证互补" .-> N21
     N23 -. "问题域落到框架" .-> FW

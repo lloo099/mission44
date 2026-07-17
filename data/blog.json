@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-24-kimi-k3",
+      "title": "Dispatch 24 · Kimi K3 首发解读:线性注意力第一次登上开源旗舰",
+      "subtitle": "月之暗面 2.8T 极稀疏 MoE(16/896 专家,Stable LatentMoE)、原生 1M 上下文、KDA+AttnRes+Gated MLA 四组件;KDA 谱系从 Kimi Linear(arXiv 2510.26692,channel-wise 门控 delta rule、3:1 混合、KV -75%、RL scaling 不输全注意力)到旗舰扶正,与 MSA/DSA+IndexShare/LSA 的'稀疏化全注意力'路线分岔。官方六项跑分全自报(FrontierSWE 81.2 等,新基准体系不可跨表比)、$3/$15 对标 Sonnet 档、权重承诺 07-27 前。技术报告未出——本篇为首发解读,附报告落地后核对清单。",
+      "date": "2026-07-17",
+      "tags": ["Kimi-K3", "KDA", "linear-attention", "MoE", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-24-kimi-k3.md"
+    },
+    {
       "id": "dispatch-23-agentic-rl-problem-map",
       "title": "Dispatch 23 · Agentic RL 系统难题地图:大家都在解决什么",
       "subtitle": "综述式收拢(4 路问题域调研 + 事实核查):rollout 效率(长尾/异步/dispatcher)、训练稳定性(四种崩法分类学与防御)、环境与奖励工程(沙箱成本主导、verifier 天花板、环境赛道资本化)、训推一致(三层解法×异构放大)。已收敛的标准答案 vs 开放战场(粒度自适应信用分配、开放域 verifier、异构一致性),玩家收敛矩阵,以及对昇腾'根治层缺位、短期靠监控+算法补偿'的判断。",
