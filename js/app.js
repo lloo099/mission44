@@ -190,7 +190,7 @@ async function wireBlog() {
   // Diagram source lives in data/blog-map.mmd and renders through the shared mermaid pipeline
   // (placeholder / fallback / theme re-render all come for free). Rendered lazily on first open.
   const MAP_CLUSTERS = [
-    ["系统与综述", ["survey-2026-h1-architecture", "dispatch-02-rollout-bottleneck", "dispatch-08-agentic-rl", "dispatch-10-radixattention", "dispatch-11-vllm-vs-sglang", "dispatch-23-agentic-rl-problem-map"]],
+    ["系统与综述", ["survey-2026-h1-architecture", "dispatch-02-rollout-bottleneck", "dispatch-08-agentic-rl", "dispatch-10-radixattention", "dispatch-11-vllm-vs-sglang", "dispatch-23-agentic-rl-problem-map", "dispatch-25-efficiency-aware-agent-rl"]],
     ["模型与架构", ["dispatch-01-seed-2-1", "dispatch-04-minimax-msa", "dispatch-05-deepseek-v4", "dispatch-06-glm-5-2", "dispatch-07-mimo-v2-5", "dispatch-15-dspark", "dispatch-16-deepseek-v4-agent", "dispatch-21-longcat-2", "dispatch-24-kimi-k3"]],
     ["SWE 与训练数据", ["dispatch-12-swe-agents", "dispatch-14-scaleswe", "dispatch-17-denovoswe"]],
     ["RL 框架", ["dispatch-09-radixark-miles", "dispatch-18-prime-rl-vs-skyrl", "dispatch-19-slime", "dispatch-22-deepswe-rllm"]],

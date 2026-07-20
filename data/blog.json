@@ -3,6 +3,14 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-25-efficiency-aware-agent-rl",
+      "title": "Dispatch 25 · 效率感知的在线 Agent RL:成熟范式里的研究缝隙",
+      "subtitle": "研究定位篇(4 路文献扫描 + 事实核查):直接回答'创新还是成熟'——SFT 冷启动+在线 RLVR 主干已是行业标配(整体主张=复现),但五个子缝隙收敛度各异;核心缝隙'效率感知 RL'深挖——长度奖励设计空间(绝对惩罚/组内相对/预算条件化)×hack 模式×防御(接 D22 compact filtering、D08 监控信号);最小可行系统配置(Qwen2.5-1.5B+verl GRPO+GSM8K,2-4 卡)与四步路线图(复现基线→注入变量→带困惑精读→迁移 agent 环境);效率奖励与 rollout 成本罕见同向(D02)——对 RL-on-NPU 的额外价值。",
+      "date": "2026-07-17",
+      "tags": ["efficiency-RL", "research-positioning", "GRPO", "RL-on-NPU"],
+      "file": "docs/blog/dispatch-25-efficiency-aware-agent-rl.md"
+    },
+    {
       "id": "dispatch-24-kimi-k3",
       "title": "Dispatch 24 · Kimi K3 首发解读:线性注意力第一次登上开源旗舰",
       "subtitle": "月之暗面 2.8T 极稀疏 MoE(16/896 专家,Stable LatentMoE)、原生 1M 上下文、KDA+AttnRes+Gated MLA 四组件;KDA 谱系从 Kimi Linear(arXiv 2510.26692,channel-wise 门控 delta rule、3:1 混合、KV -75%、RL scaling 不输全注意力)到旗舰扶正,与 MSA/DSA+IndexShare/LSA 的'稀疏化全注意力'路线分岔。官方六项跑分全自报(FrontierSWE 81.2 等,新基准体系不可跨表比)、$3/$15 对标 Sonnet 档、权重承诺 07-27 前。技术报告未出——本篇为首发解读,附报告落地后核对清单。",

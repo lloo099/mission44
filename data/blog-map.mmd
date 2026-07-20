@@ -6,6 +6,7 @@ flowchart LR
         N10["D10 · RadixAttention"]
         N11["D11 · vLLM vs SGLang"]
         N23["D23 · 难题地图"]
+        N25["D25 · 效率感知 RL 定位"]
     end
     subgraph MODEL ["模型与架构"]
         N01["D01 · Seed 与开源 1M 浪潮"]
@@ -39,6 +40,7 @@ flowchart LR
     N02 -. "rollout 与异步主线" .-> N18
     N02 -. "四坑之源" .-> N13
     N08 -. "信用分配与三难题" .-> N23
+    N23 -. "缝隙落到选题" .-> N25
     N10 --> N11
     N11 -. "推理引擎选型" .-> N09
     N05 --> N15

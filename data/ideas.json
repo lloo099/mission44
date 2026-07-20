@@ -1,6 +1,29 @@
 {
-  "updated": "2026-07-07",
+  "updated": "2026-07-17",
   "items": [
+    {
+      "title": "效率感知的在线 Agent RL:长度奖励设计与成功率-长度帕累托",
+      "pitch": "在 SFT 冷启动 + GRPO 在线 RL 的成熟管线上,系统研究\"不掉成功率压 token/步数\"的奖励设计:对比绝对长度惩罚、成功轨迹组内相对比较、预算条件化三种设计的帕累托曲线与 hack 模式,先在 GSM8K 验证、再迁移到多步 agent 环境(轨迹更长、奖励更稀疏,简洁性问题被放大)。",
+      "impact": 4,
+      "difficulty": 2,
+      "novelty": 4,
+      "why": "范式主干已成熟(整体主张=复现),但效率感知缝隙远未收敛,agent 场景尤其空(Dispatch 25 文献扫描)。研究目标与系统成本罕见同向:短轨迹直接省 rollout(D02 的 70%+ wall-clock),在 NPU 算力受限语境下双重收益。D22 的 compact filtering 与 D08 的\"reward 升+长度骤降\"监控信号是看板内的先行证据。工程门槛适中:2-4 张 A100/H100 或昇腾单节点即可全流程。",
+      "steps": [
+        "1-2 周:verl + GSM8K + Qwen2.5-1.5B 复现 SFT→GRPO 基线,指标对齐公开数字,摸熟 rollout/奖励/权重同步管线",
+        "2-4 周:注入长度奖励变量(绝对惩罚 vs 组内相对 vs 预算条件化),画成功率-长度帕累托,监控 reward 与长度双曲线防 hack",
+        "带着实验困惑精读:InstructGPT→R1→DeepSeekMath GRPO→efficient reasoning RL/overthinking 近作→AReaL",
+        "迁移到多步 agent 环境(tau-bench 或代码沙箱),验证结论保持性——简洁性被放大处往往有新东西",
+        "可选延伸:落到昇腾单节点(对照 Dispatch 13 方案),效率奖励与 rollout 成本联动做系统侧测量"
+      ],
+      "tags": [
+        "efficiency-RL",
+        "GRPO",
+        "reward-design",
+        "agentic-RL"
+      ],
+      "minimumExperiment": "单卡 80G:Qwen2.5-1.5B 在 GSM8K 上 SFT→GRPO 跑通,加组内相对长度项,与无长度项基线比较成功率与平均 token 数两条曲线",
+      "successMetric": "成功率持平(±1pt)前提下平均 token 降 30%+,且训练全程无 reward 升+长度骤降的 hack 信号;结论迁移到 agent 环境后保持方向一致"
+    },
     {
       "title": "GRPO-on-Ascend Benchmark & Accuracy-Alignment Suite",
       "pitch": "Build a reproducible benchmark that runs GRPO/DAPO on identical models across Ascend (910B) and NVIDIA, reporting throughput, MFU, memory, and — critically — reward/loss-curve divergence. Turn the scattered numbers in verl discussion #900 into a living, automated dashboard.",
