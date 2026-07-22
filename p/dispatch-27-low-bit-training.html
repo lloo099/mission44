@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispatch 27 · 低比特训练全景:从 FP8 预训练到 HiF8,昇腾的数值层答案 · NPU Frontier Dispatch</title>
+  <meta name="description" content="深度调研篇(5 路并行扫描,全来源带 arXiv/URL):预训练 FP8 已生产标配(V3 配方拆解)、NVFP4 收敛中(550B/20T 背书);'训练末段 QAT'成万亿 MoE 新默认;RL 侧训推一致裂成 IS 修正派 vs 数值对齐派,QeRL 发现量化噪声助探索;datatype 格局'8-bit 归标准、4-bit 起分歧'。核心:HiF8 锥形精度(dot 域变长编码/38 binade)与'单格式+极简缩放'训练配方逐项拆解——证据链止于 13B 且全为华为自证,DeepSeek V4 在 950 上弃 HiF8 选 MX;HiF8" />
+  <link rel="canonical" href="https://lloo099.github.io/mission44/p/dispatch-27-low-bit-training.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Dispatch 27 · 低比特训练全景:从 FP8 预训练到 HiF8,昇腾的数值层答案" />
+  <meta property="og:description" content="深度调研篇(5 路并行扫描,全来源带 arXiv/URL):预训练 FP8 已生产标配(V3 配方拆解)、NVFP4 收敛中(550B/20T 背书);'训练末段 QAT'成万亿 MoE 新默认;RL 侧训推一致裂成 IS 修正派 vs 数值对齐派,QeRL 发现量化噪声助探索;datatype 格局'8-bit 归标准、4-bit 起分歧'。核心:HiF8 锥形精度(dot 域变长编码/38 binade)与'单格式+极简缩放'训练配方逐项拆解——证据链止于 13B 且全为华为自证,DeepSeek V4 在 950 上弃 HiF8 选 MX;HiF8" />
+  <meta property="og:url" content="https://lloo099.github.io/mission44/p/dispatch-27-low-bit-training.html" />
+  <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-27-low-bit-training.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-27-low-bit-training.png" />
+  <script>location.replace("https://lloo099.github.io/mission44/#blog/dispatch-27-low-bit-training");</script>
+  <meta http-equiv="refresh" content="0; url=https://lloo099.github.io/mission44/#blog/dispatch-27-low-bit-training" />
+  <style>body{font-family:system-ui,sans-serif;background:#0b0f17;color:#dfe7f5;max-width:720px;margin:80px auto;padding:0 20px;line-height:1.7}a{color:#6aa6ff}</style>
+</head>
+<body>
+  <h1>Dispatch 27 · 低比特训练全景:从 FP8 预训练到 HiF8,昇腾的数值层答案</h1>
+  <p><em>2026-07-17 · NPU Frontier Dispatch · low-bit-training / FP8 / HiF8 / quantization / RL-on-NPU</em></p>
+  <p>深度调研篇(5 路并行扫描,全来源带 arXiv/URL):预训练 FP8 已生产标配(V3 配方拆解)、NVFP4 收敛中(550B/20T 背书);'训练末段 QAT'成万亿 MoE 新默认;RL 侧训推一致裂成 IS 修正派 vs 数值对齐派,QeRL 发现量化噪声助探索;datatype 格局'8-bit 归标准、4-bit 起分歧'。核心:HiF8 锥形精度(dot 域变长编码/38 binade)与'单格式+极简缩放'训练配方逐项拆解——证据链止于 13B 且全为华为自证,DeepSeek V4 在 950 上弃 HiF8 选 MX;HiF8</p>
+  <p><a href="https://lloo099.github.io/mission44/#blog/dispatch-27-low-bit-training">→ 阅读全文(RL-on-NPU Research Dashboard)</a></p>
+</body>
+</html>
