@@ -1,7 +1,7 @@
 {
-  "updated": "2026-07-26T08:39:55.171477Z",
+  "updated": "2026-07-27T10:12:25.923145Z",
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 46,
+  "count": 40,
   "pinned": 25,
   "items": [
     {
@@ -332,15 +332,67 @@
       ]
     },
     {
-      "title": "MIRROR: Learning from the Other View for Multi-Modal Reasoning",
-      "org": "Wen Ye +3",
-      "year": "2026-07-23",
-      "summary": "Unlike large language models (LLMs) that exhibit strong reasoning capabilities, vision-language models (VLMs) struggle with visual reasoning, even on geometry problems that admit equivalent text, diagram, and combined diagram+text views. We show that these views often elicit different behaviors: a m…",
-      "url": "http://arxiv.org/abs/2607.21552v1",
-      "category": "rl-llm",
+      "title": "Skill Self-Play: Pushing the Frontier of LLM Capability with Co-Evolving Skills",
+      "org": "Siyuan Huang +12",
+      "year": "2026-07-24",
+      "summary": "LLM training is shifting from manual design and annotation to interaction-driven self-evolution. However, existing self-evolutionary methods face a fundamental dilemma between task diversity and verification reliability: environment-bound methods obtain precise feedback but confine learning to narro…",
+      "url": "http://arxiv.org/abs/2607.22529v1",
+      "category": "agentic-rl",
       "tags": [
         "live",
-        "rl-llm",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Deconstructing Off-Policy Ratios: Entropy-Scaled Trust Regions for Asynchronous Reinforcement Learning",
+      "org": "Guanqun Zhao +7",
+      "year": "2026-07-24",
+      "summary": "Asynchronous reinforcement learning (RL) accelerates large language model (LLM) post-training by overlapping rollout generation with policy optimization, but the resulting stale, off-policy data can destabilize optimization and ultimately cause policy collapse. Existing methods typically retain or d…",
+      "url": "http://arxiv.org/abs/2607.22186v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "HiKV: Hierarchical Importance-Aware KV Cache with Hardware Acceleration for LLM Decoding",
+      "org": "Chao Fang +3",
+      "year": "2026-07-24",
+      "summary": "With the rapid adoption of long-context large language models (LLMs), the continuously growing KV cache during decoding has become the critical memory bottleneck. To tackle this challenge, we propose HiKV, a novel algorithm-hardware co-design that exploits KV cache redundancy through hierarchical im…",
+      "url": "http://arxiv.org/abs/2607.22389v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "RIS-Kernel: A Model-Agnostic Architecture for Long-Context LLM Inference via Sparse Attention",
+      "org": "Anderson R. Santos",
+      "year": "2026-07-24",
+      "summary": "Full self-attention in large language models scales as O(N^2), which limits long-context document analysis to 65,536 tokens and requires costly GPU clusters. The Reduced Interaction Sampling (RIS) inference engine addresses this constraint as a model-agnostic architecture. Without modifying weights,…",
+      "url": "http://arxiv.org/abs/2607.21927v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "MoE$^2$-LoRA: When MoE Models Meet MoE-style Low-Rank Adaptation",
+      "org": "Qingyu Yang +6",
+      "year": "2026-07-24",
+      "summary": "Mixture-of-Experts (MoE) architectures have been widely adopted in large language models, yet parameter-efficient fine-tuning (PEFT) for MoE models remains underexplored. Existing PEFT methods for MoE either ignore router priors with uniform adapters, reducing efficiency and risking forgetting, or r…",
+      "url": "http://arxiv.org/abs/2607.21978v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
         "auto"
       ]
     },
@@ -350,75 +402,23 @@
       "year": "2026-07-23",
       "summary": "In long-horizon LLM agent reinforcement learning, weak policies often repeat similar failures, producing uninformative rollout trajectories and limiting effective policy optimization. Existing skill-centric methods improve exploration by optimizing, filtering, or internalizing reusable skills. Howev…",
       "url": "http://arxiv.org/abs/2607.21419v1",
-      "category": "rl-llm",
+      "category": "agentic-rl",
       "tags": [
         "live",
-        "rl-llm",
+        "agentic-rl",
         "auto"
       ]
     },
     {
-      "title": "FORGE-plus: Force-Budgeted Recovery for Contact-Rich Assembly with a Frozen LLM Supervisor",
-      "org": "Kyupaeck Jeff Rah +1",
+      "title": "Parameter-free Adaptive Sparse Attention via Compression-Based Content Selection",
+      "org": "Debarshi Kundu +2",
       "year": "2026-07-23",
-      "summary": "Force-conditioned reinforcement learning (RL) enables tight-clearance assembly under a commanded force ceiling, but practical deployment requires determining an appropriate force limit for each object and recovering from insertion failures without exceeding it. We present a two-layer framework in wh…",
-      "url": "http://arxiv.org/abs/2607.21227v1",
-      "category": "rl-llm",
+      "summary": "Data-adaptive sparse attention masks substantially outperform fixed patterns (e.g., BigBird and Longformer) and can even exceed dense attention on long sequences. Existing adaptive approaches---including SBM-Transformer, Dynamic Mask Attention, and NSA---typically require additional learnable parame…",
+      "url": "http://arxiv.org/abs/2607.21752v1",
+      "category": "sparse-attention",
       "tags": [
         "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Training Large Language Models for Self-Explanation Faithfulness",
-      "org": "Yeoktatt Cheah +3",
-      "year": "2026-07-23",
-      "summary": "We propose a Reinforcement Learning (RL) method to directly optimize the faithfulness of self-explanations - the extent to which a model's generated reasoning accurately reflects its internal decision-making process. While existing work focuses on evaluating faithfulness or using inference-time prom…",
-      "url": "http://arxiv.org/abs/2607.21090v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "EmoAgent-R1: Towards Multimodal Emotion Understanding with Reinforcement Learning-based Dynamic Agent Specialization",
-      "org": "Lihuang Fang +3",
-      "year": "2026-07-23",
-      "summary": "Multimodal large language models (MLLMs) have achieved impressive performance in multimodal emotion recognition (MER) tasks and lifted MER to a new level that is complex emotion understanding with advanced video understanding abilities and natural language description. However, existing MLLM-based m…",
-      "url": "http://arxiv.org/abs/2607.21013v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Multi-turn RL with Structural and Performance Aware Rewards for CUDA Kernel Generation",
-      "org": "Quazi Ishtiaque Mahmud +2",
-      "year": "2026-07-23",
-      "summary": "Reinforcement Learning with Verifiable Rewards (RLVR) has emerged as a powerful technique to enhance the reasoning capacity of LLMs for optimized code generation. However, existing RLVR approaches primarily rely on outcome-based signals such as correctness and speedup, overlooking performance-critic…",
-      "url": "http://arxiv.org/abs/2607.20908v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "The Weight of Silence: A Causal Case for Weights Over the Scratchpad in Latent Chess Reasoning",
-      "org": "Ishan S. Kshirsagar",
-      "year": "2026-07-23",
-      "summary": "Latent, or silent, reasoning lets language models carry out intermediate computation in continuous vector space instead of words, and is widely assumed to function as an internal scratchpad the model actively consults during inference. Whether that assumption survives reinforcement learning has not …",
-      "url": "http://arxiv.org/abs/2607.20952v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
+        "sparse-attention",
         "auto"
       ]
     },
@@ -462,32 +462,6 @@
       ]
     },
     {
-      "title": "Learning to Detect UI Principle Violations via Reinforcement Learning",
-      "org": "Nishi Mehta +4",
-      "year": "2026-07-22",
-      "summary": "Small language models and coding agents increasingly generate web front-end code, yet their outputs are typically evaluated primarily for functional correctness. A generated interface may compile, render, and pass unit tests while still violating established interface quality principles, including a…",
-      "url": "http://arxiv.org/abs/2607.20690v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Notes to Self: Can LLMs Benefit from Experiential Abstractions?",
-      "org": "Chang Liu +2",
-      "year": "2026-07-22",
-      "summary": "Humans distill experience into reusable abstractions, e.g., strategies and cautionary reminders, and apply them to gradually solve problems more effectively. We study whether Large Language Models (LLMs) can similarly benefit from such experiential abstractions. From LLMs' solution traces on the MAT…",
-      "url": "http://arxiv.org/abs/2607.20372v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
       "title": "SLAI T-Rex: Full-Parameter Post-training of the DeepSeek-V4 Family on Ascend SuperPOD",
       "org": "Dongfang Li +64",
       "year": "2026-07-22",
@@ -527,67 +501,15 @@
       ]
     },
     {
-      "title": "HijackKV: New Threat in Position-Independent KV Cache Reuse",
-      "org": "Yichi Zhang +3",
-      "year": "2026-07-22",
-      "summary": "Key-Value (KV) cache reduces inference latency in large language models (LLMs). Traditional prefix-based reuse has low cache hit rates across inference requests because it requires exact token and position matches. To improve efficiency, recent system optimizations introduce position-independent KV …",
-      "url": "http://arxiv.org/abs/2607.19957v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
       "title": "Solar Open 2 Technical Report",
       "org": "Sungrae Park +52",
       "year": "2026-07-22",
       "summary": "We present Solar Open 2, a 250B-A15B Mixture-of-Experts language model built for long-horizon agentic tasks, scaled up from Solar Open 1 (Solar Open 100B). To hold entire agent trajectories in a single context, Solar Open 2 reaches a 1M-token window through a hybrid attention stack that interleaves …",
-      "url": "http://arxiv.org/abs/2607.20062v1",
+      "url": "http://arxiv.org/abs/2607.20062v2",
       "category": "efficient-llm",
       "tags": [
         "live",
         "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Copy Less, Ground More: Overcoming Repetitive Copying in Long-Context Reasoning via Evidence-Aware Reinforcement Learning",
-      "org": "Lizhe Fang +3",
-      "year": "2026-07-21",
-      "summary": "Large language models that generate step-by-step reasoning traces have achieved strong performance on complex tasks, and extending them to long-context settings has emerged as an important frontier. However, we identify a critical failure mode in this regime: \\emph{repetitive copying}, where models …",
-      "url": "http://arxiv.org/abs/2607.19345v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "MoA-Structured Decode Attention DNF Derivation, KV-Cache Accumulation, GQA/MQA, and OpenACC Kernel",
-      "org": "Lenore Mulin +1",
-      "year": "2026-07-21",
-      "summary": "We derive four memory-optimal inference artifacts for transformer attention using the Mathematics of Arrays (MoA), each following directly from the forward-pass Denotational Normal Form (DNF) of with the query-row index fixed to the current decode step. The artifacts are: (1)~a single-query decode D…",
-      "url": "http://arxiv.org/abs/2607.19456v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "HyMCache: A KV Cache Framework for Multi-Turn LLM Serving with CXL-Hybrid Memory",
-      "org": "Hakbeom Jang +3",
-      "year": "2026-07-20",
-      "summary": "Long-context, multi-turn, and agentic LLM workloads increasingly reuse previously processed context, making KV-cache reuse essential for reducing redundant computation. However, this reuse shifts the bottleneck to the memory tier that stores and serves reusable KV states at cluster scale. GPU HBM an…",
-      "url": "http://arxiv.org/abs/2607.18141v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
         "auto"
       ]
     },
