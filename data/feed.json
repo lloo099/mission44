@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-02T08:37:57.876994Z",
+  "updated": "2026-08-03T10:07:09.307518Z",
   "source": "curated (data/feed_pinned.json) + arXiv API",
   "count": 48,
   "pinned": 25,
@@ -332,6 +332,149 @@
       ]
     },
     {
+      "title": "CodeShrink: Adaptive Visual Compression for Efficient Multimodal Code Understanding",
+      "org": "Wenxin Tang +8",
+      "year": "2026-07-31",
+      "summary": "Rendering source code as images offers a promising way to reduce the input costs of Multimodal Large Language Models (MLLMs). Adjusting image resolution can trade visual token cost against content fidelity. However, resolution scaling alone overlooks two sources of inefficiency: blank regions create…",
+      "url": "http://arxiv.org/abs/2607.29637v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Don't Mix Rewards, Mix Policies: Policy Decomposition and Optimization for Multi-Reward RL",
+      "org": "Ruiming Liang +8",
+      "year": "2026-07-31",
+      "summary": "Modern large language models (LLMs) are expected not just to answer correctly, but to adapt their behavior to different human values and use cases. As a result, multi-reward reinforcement learning (RL) has become an increasingly important problem for LLMs, where each reward captures a different aspe…",
+      "url": "http://arxiv.org/abs/2607.29246v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "SAF-OPD: Stable Advantage Fusion for On-Policy Distillation",
+      "org": "Yifan Ding +9",
+      "year": "2026-07-31",
+      "summary": "Reinforcement learning with verifiable rewards (RLVR) broadcasts a single response-level reward to every token, while on-policy distillation (OPD) scores each token against a stronger teacher for a dense advantage but caps performance at teacher quality and discourages exploration beyond it. Their c…",
+      "url": "http://arxiv.org/abs/2607.29209v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Learning Latent Reasoning Traces for Scalar Reward Models End-to-End",
+      "org": "Sanwoo Lee +5",
+      "year": "2026-07-31",
+      "summary": "Reward models (RMs) are central to aligning large language models with human preferences via reinforcement learning. Although traditional scalar RMs enable efficient and probabilistic reward modeling, they rely on superficial cues that fail to generalize to complex or out-of-distribution (OOD) tasks…",
+      "url": "http://arxiv.org/abs/2607.29185v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "CLIFT: Turning Gemini Robotics On-Device into Humanoid Specialists via Non-Invasive Closed-Loop Iterative Fine-Tuning",
+      "org": "Yuxin Chen +9",
+      "year": "2026-07-31",
+      "summary": "While robot foundation models are growing increasingly capable, the strongest models are typically trained on proprietary data and remain closed-source, limiting downstream users' ability to adapt them to new tasks, embodiments, and deployment settings. Following the LLM community, an emerging acces…",
+      "url": "http://arxiv.org/abs/2607.29172v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Think2Go: Generative Next POI Recommendation with LLM Reasoning",
+      "org": "Zhuang Zhuang +6",
+      "year": "2026-07-31",
+      "summary": "Next Point-of-Interest (POI) recommendation task focuses on mining user behavioral preference patterns from historical check-ins to provide personalized suggestions for the next destination. Existing methods primarily rely on shallow contextual information and handcrafted feature interactions to pre…",
+      "url": "http://arxiv.org/abs/2607.28997v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Sign compression for Muon: SignMuon, MuonSign, and the Limits of Error Feedback",
+      "org": "Maria Smirnova +1",
+      "year": "2026-07-31",
+      "summary": "SignMuon compresses the Muon update to one bit per parameter by taking its elementwise sign, providing the most direct way to run a matrix-aware optimizer under an extremely low communication budget. It outperforms SignSGD in practice, yet it can ascend even on a linear function. Signing the gradien…",
+      "url": "http://arxiv.org/abs/2607.29674v1",
+      "category": "ascend-npu",
+      "tags": [
+        "live",
+        "ascend-npu",
+        "auto"
+      ]
+    },
+    {
+      "title": "ParaASR: Multi-Token Prediction for Fast and Long-Context LLM-Based Speech Recognition",
+      "org": "Qingjian Lin +16",
+      "year": "2026-07-31",
+      "summary": "Audio-encoder-LLM-decoder architectures have become the dominant paradigm for modern automatic speech recognition (ASR), improving transcription quality through large-scale language modeling. However, the cost of autoregressive decoding scales with decoder size, creating a fundamental trade-off betw…",
+      "url": "http://arxiv.org/abs/2607.29279v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Selective KV Cache Protection for Noise-Resilient LLM Inference on Analog Compute-In-Memory Systems",
+      "org": "Yuannuo Feng +7",
+      "year": "2026-07-31",
+      "summary": "Analog compute-in-memory (CIM) arrays have emerged as a promising substrate for energy-efficient LLM inference, particularly for weight-stationary computations in linear layers. However, extending analog CIM to attention mechanisms introduces a fundamental challenge: KV cache operations demand repea…",
+      "url": "http://arxiv.org/abs/2607.29076v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Mixture-of-Translators: Translating KV Caches Across Heterogeneous Large Language Models",
+      "org": "Jin-woo Lee +6",
+      "year": "2026-07-31",
+      "summary": "Heterogeneous Large Language Model (LLM) systems increasingly rely on shared contexts, retrieved evidence, and multi-agent dialogue histories, yet their internal key-value (KV) caches remain model-specific and cannot be reused across architectures. Consequently, each model must repeatedly prefill or…",
+      "url": "http://arxiv.org/abs/2607.28979v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Distilling Knowledge from Large Language Models into Lightweight Reinforcement Learning Agents for Autonomous Cyber Operations",
+      "org": "Konur Tholl +4",
+      "year": "2026-07-30",
+      "summary": "Autonomous Cyber Operations (ACO) are increasingly important for defending enterprise networks as cyber threats continue to evolve in sophistication. ACO applications commonly employ Reinforcement Learning (RL) agents to learn defensive behaviors through interaction with environments. However, RL ag…",
+      "url": "http://arxiv.org/abs/2607.28826v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
       "title": "Beacon: Knowing When and How to Perform Agentic Visual Reasoning",
       "org": "Qixun Wang +13",
       "year": "2026-07-30",
@@ -350,97 +493,6 @@
       "year": "2026-07-30",
       "summary": "Detection and localization of AI-tampered images are critical for trustworthy AI, yet modern generative models have made such manipulations increasingly difficult to identify. While traditional binary classifiers can detect image tampering, they lack interpretability and generalization. Vision-Langu…",
       "url": "http://arxiv.org/abs/2607.28464v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Cybersecurity Detection Classification with Reasoning-enabled Language Models",
-      "org": "Amol Khanna +12",
-      "year": "2026-07-30",
-      "summary": "A major issue in Security Operations Centers (SOCs) is alert fatigue, as the number of detections reported is more than staff can triage in a given day. Prior work prompts or fine-tunes large language models (LLMs) to emit a triage label directly, but does not train them to reason about whether a de…",
-      "url": "http://arxiv.org/abs/2607.28460v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "HARGO: Heterogeneity-Aware Reward-Guided Optimization for RL Post-Training of LLMs on HPC Tasks",
-      "org": "Tiangang Li +1",
-      "year": "2026-07-30",
-      "summary": "Supervised fine-tuning (SFT) can equip large language models (LLMs) with domain knowledge for high-performance computing (HPC) tasks such as data race detection and benchmark question answering. However, knowledge alone does not guarantee task-appropriate behavior: the same SFT model that correctly …",
-      "url": "http://arxiv.org/abs/2607.28301v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "FinSMART: Financial Sentiment Analysis for Algorithmic Trading through Market-Aligned Reinforcement Learning",
-      "org": "Giorgos Iacovides +2",
-      "year": "2026-07-30",
-      "summary": "Recent advances in Generative AI have substantially improved financial sentiment analysis through post-trained financial large language models (LLMs). However, existing approaches remain confined to a market-agnostic, supervised learning paradigm that relies on limited, static and human-annotated da…",
-      "url": "http://arxiv.org/abs/2607.28127v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "LEEPS: Latent-Guided Explore-Exploit Prompt Sampling for Efficient RLVR in Large Language Models",
-      "org": "Shuang Liang +4",
-      "year": "2026-07-30",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) improves the reasoning capabilities of large language models, but prompt groups with identical rollout rewards consume generation budget without effective learning signals. Pre-rollout prompt selection can reduce this waste by screening prompts b…",
-      "url": "http://arxiv.org/abs/2607.28077v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Group-Reflective Self-Distillation for Agentic Reinforcement Learning",
-      "org": "Binbin Zheng +6",
-      "year": "2026-07-30",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) is effective for training large language model agents. However, terminal rewards provide only coarse trajectory-level supervision, leaving successful behaviors, recurring mistakes, and incidental choices entangled in the same outcome signal. Exis…",
-      "url": "http://arxiv.org/abs/2607.28076v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Contrastive Reinforced Policy Optimization via Privileged Self-Distillation",
-      "org": "Xingjian Wu +8",
-      "year": "2026-07-30",
-      "summary": "Recent advances in post-training Large Language Models (LLMs) increasingly rely on Reinforcement Learning with Verifiable Rewards (RLVR) or On-Policy Self-Distillation (OPSD). While OPSD provides dense, logit-level supervision, it inherently suffers from exposure bias due to the privileged informati…",
-      "url": "http://arxiv.org/abs/2607.28026v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "TAPO: Transition-Aware Policy Optimization for LLM Agents",
-      "org": "Cong Li +6",
-      "year": "2026-07-30",
-      "summary": "Recently, Reinforcement Learning (RL) has emerged as a crucial paradigm for the post-training of Large Language Model (LLM) agents. However, existing methods predominantly rely on sparse task rewards for policy optimization, failing to fully exploit another class of inherently dense supervisory sign…",
-      "url": "http://arxiv.org/abs/2607.27973v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -527,19 +579,6 @@
       ]
     },
     {
-      "title": "GyRot: Leveraging Hidden Synergy between Rotation and Fine-grained Group Quantization for Low-bit LLM Inference",
-      "org": "Sangjin Kim +4",
-      "year": "2026-07-30",
-      "summary": "Low-bit quantization is essential for efficient LLM inference, and both rotation and fine-grained group quantization have shown individual promise. However, their combination often leads to accuracy degradation or hardware overhead due to a mismatch between the global nature of rotation and the loca…",
-      "url": "http://arxiv.org/abs/2607.27694v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
       "title": "AgenticCANN: Automated Ascend C Operator Generation via Knowledge-Augmented Agentic Evolution",
       "org": "Junhao Qiu +5",
       "year": "2026-07-29",
@@ -549,45 +588,6 @@
       "tags": [
         "live",
         "ascend-npu",
-        "auto"
-      ]
-    },
-    {
-      "title": "A Photonic-CXL Memory Appliance for Scalable KV Cache Management in LLM Inference",
-      "org": "Jing Ding +4",
-      "year": "2026-07-29",
-      "summary": "LLM inference at scale faces a memory wall. The KV cache demands tens of terabytes at hundreds of gigabytes per second, yet no current memory tier delivers both at once. Characterization across multi-generation GPU systems with various LLaMA models shows host memory retrieval achieves up to 100x spe…",
-      "url": "http://arxiv.org/abs/2607.27187v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "Beyond KV Reconstruction: Functional Reconstruction for MLA Draft Models in Speculative Decoding",
-      "org": "Weiye Shi +2",
-      "year": "2026-07-29",
-      "summary": "Multi-head latent attention (MLA) is increasingly important for long-context LLM inference because compact latent states replace the growing key-value (KV) cache and reduce decoding memory traffic. Yet most capable open checkpoints use multi-head or grouped-query attention (MHA/GQA), so conversion i…",
-      "url": "http://arxiv.org/abs/2607.27269v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "DualDecoder: Accelerate Long Context LLM Inference by Predictive Prefetch",
-      "org": "Zuning Liang +8",
-      "year": "2026-07-29",
-      "summary": "Long-context inference is becoming a fundamental capability for modern LLM serving, especially driven by emerging agentic applications. Yet it faces a severe memory wall that the KV cache scales proportionally with increasing context length and request concurrency. Existing sparse KV cache methods o…",
-      "url": "http://arxiv.org/abs/2607.26475v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
         "auto"
       ]
     },
