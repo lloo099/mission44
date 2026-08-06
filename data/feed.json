@@ -1,7 +1,7 @@
 {
-  "updated": "2026-08-05T09:07:42.350320Z",
+  "updated": "2026-08-06T09:07:52.642461Z",
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 49,
+  "count": 54,
   "pinned": 25,
   "items": [
     {
@@ -332,11 +332,11 @@
       ]
     },
     {
-      "title": "TurnSight: Turn-Level Hindsight Self-Distillation for Tool-Integrated Reasoning",
-      "org": "Changle Qu +6",
-      "year": "2026-08-04",
-      "summary": "Tool-Integrated Reasoning (TIR) enables LLMs to solve complex tasks through iterative tool interactions. However, existing reinforcement learning methods often rely on trajectory-level supervision, limiting fine-grained credit assignment in long-horizon TIR scenarios. On-policy self-distillation off…",
-      "url": "http://arxiv.org/abs/2608.04007v1",
+      "title": "Agent Against Agent: An Agentic System for Automatic Prompt Injection Red Teaming",
+      "org": "Yanting Wang +3",
+      "year": "2026-08-05",
+      "summary": "Prompt injection poses significant security risks to LLM agents. Efficient and effective red-teaming is therefore critical, both for evaluating these risks and for collecting training data to improve defenses. Existing state-of-the-art prompt injection red-teaming methods primarily rely on reinforce…",
+      "url": "http://arxiv.org/abs/2608.05108v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -345,11 +345,11 @@
       ]
     },
     {
-      "title": "CausalOPD: First-Wrong-Step Supervision for Distilling Causal Chain Reasoning",
-      "org": "Jian Zhang +2",
-      "year": "2026-08-04",
-      "summary": "Many critical reasoning tasks, including clinical diagnosis, legal judgment, and industrial fault diagnosis, require step-dependent causal chains in which early errors propagate and correct conclusions can mask invalid reasoning. Although large language models perform well on such tasks, privacy, la…",
-      "url": "http://arxiv.org/abs/2608.03673v1",
+      "title": "Optimizing What Policies Learn From: Recoverability-aware Rollout Intervention Learning",
+      "org": "Zheyuan Zhang +10",
+      "year": "2026-08-05",
+      "summary": "Critic-free group-based reinforcement learning has become a scalable approach for post-training large language models. However, most existing methods allocate the same number of rollouts to every task and trajectory state, even though some rollouts provide much more useful learning signals than othe…",
+      "url": "http://arxiv.org/abs/2608.05080v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -358,11 +358,11 @@
       ]
     },
     {
-      "title": "Group Perspective Matters: Regulating Debate Relationships Can Mitigate Blind Conformity in Multi-Agent Debate",
-      "org": "Hao Wu +6",
-      "year": "2026-08-04",
-      "summary": "Multi-Agent Debate (MAD) improves the reasoning performance of Large Language Models (LLMs) through multi-round interaction. However, LLMs in MAD are highly susceptible to blind conformity. Existing individual evaluation methods, typically based on confidence or perplexity, fail to reflect the corre…",
-      "url": "http://arxiv.org/abs/2608.03648v1",
+      "title": "ORACLE: A Multi-Objective Reinforcement Learning-Based Analog Circuit Design Optimizer with Large Language Models-Guided Exploration",
+      "org": "Osei Brempong +3",
+      "year": "2026-08-05",
+      "summary": "Analog circuit design automation using reinforcement learning (RL) has emerged as a promising approach for reducing manual effort. However, many existing RL-based methods focus on single-objective optimization. Even methods designed for multi-objective (MO) problems often reduce multiple design spec…",
+      "url": "http://arxiv.org/abs/2608.04999v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -371,11 +371,11 @@
       ]
     },
     {
-      "title": "Language-Specialized Multi-Teacher On-Policy Distillation for Multilingual LLM-Based ASR",
-      "org": "Yuan Xie +5",
-      "year": "2026-08-04",
-      "summary": "Modern LLM-based ASR systems have established multilingual capability as a standard feature, leveraging large-scale multilingual corpora and LLMs' cross-lingual knowledge to achieve competitive performance across multilingual benchmarks. However, joint modeling of languages with heterogeneous acoust…",
-      "url": "http://arxiv.org/abs/2608.03610v1",
+      "title": "SpecRoll: Fast-Slow Verifier-Feedback Adaptation for Speculative Reinforcement Learning Rollouts",
+      "org": "Nhat Minh Pham +4",
+      "year": "2026-08-05",
+      "summary": "Reinforcement learning (RL) post-training improves the reasoning capabilities of large language models, but autoregressive rollout generation remains a major efficiency bottleneck. Speculative decoding can accelerate generation, yet applying it during RL is difficult because the target policy contin…",
+      "url": "http://arxiv.org/abs/2608.04962v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -384,11 +384,11 @@
       ]
     },
     {
-      "title": "SFT Conflicts, RL Coexists: A Theoretical and Empirical Analysis of Multi-Task Learning for LLMs",
-      "org": "Kejian Zhu +7",
-      "year": "2026-08-04",
-      "summary": "Supervised Fine-Tuning (SFT) and Reinforcement Learning (RL) exhibit fundamentally different behaviors in enhancing multi-task reasoning for large language models (LLMs). Our preliminary experiments revealed a phenomenon: SFT suffers from severe task conflicts under multi-stage training, whereas RL …",
-      "url": "http://arxiv.org/abs/2608.03573v1",
+      "title": "State2State: Environment-Derived Mid-Training for LLM Agents",
+      "org": "Xuanyu Lei +8",
+      "year": "2026-08-05",
+      "summary": "Training LLM agents commonly relies on supervised fine-tuning from expert trajectories or online reinforcement learning over human-specified tasks with handcrafted verifiers. Though effective, both remain bottlenecked by externally specified tasks and supervision signals, limiting the scalability an…",
+      "url": "http://arxiv.org/abs/2608.04934v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -397,11 +397,11 @@
       ]
     },
     {
-      "title": "Hi-TTRL: Regulating Consensus with Hints for Test-Time Reinforcement Learning",
-      "org": "Kunbin Xu +3",
-      "year": "2026-08-04",
-      "summary": "Test-time reinforcement learning (TTRL) improves the reasoning capabilities of large language models without labeled data by updating the policy with pseudo-labels constructed through majority voting. While effective, the reward signal assigned from majority voting is highly sensitive to consensus s…",
-      "url": "http://arxiv.org/abs/2608.03545v1",
+      "title": "Agentic Reinforcement Learning with Observation-Calibrated Self-Distillation",
+      "org": "Yi Yang +10",
+      "year": "2026-08-05",
+      "summary": "Large language model agents are commonly trained through reinforcement learning with sparse trajectory-level rewards, which offer limited guidance on how strongly individual tokens should be updated. On-Policy Self-Distillation (OPSD) addresses this by re-scoring generated tokens under a privileged …",
+      "url": "http://arxiv.org/abs/2608.04788v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -410,11 +410,11 @@
       ]
     },
     {
-      "title": "Hybrid LLM-Augmented Reinforcement Learning Agents for Complex Sequential Decision Tasks",
-      "org": "Christophe D. Hounwanou +2",
-      "year": "2026-08-04",
-      "summary": "Large Language Models (LLMs) have recently shown strong capabilities in reasoning, planning, and tool-use, enabling new forms of autonomous agents. However, LLM-based agents struggle with long-horizon sequential decision tasks that require precise action optimization and environment interaction. Rei…",
-      "url": "http://arxiv.org/abs/2608.03502v1",
+      "title": "Teaching MLLMs to Say No: Generalized Referring Expression Comprehension via Refusal Calibrated GRPO",
+      "org": "Xuzheng Yang +4",
+      "year": "2026-08-05",
+      "summary": "We tackle the challenging yet underexplored task of Generalized Referring Expression Comprehension (GREC), which requires a model to localize the object described by a textual expression when it exists (positive sample) and to refuse output when it does not (negative sample). Although Multimodal Lar…",
+      "url": "http://arxiv.org/abs/2608.04698v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -423,11 +423,11 @@
       ]
     },
     {
-      "title": "ToolLIFT: Lifting Tool-Specific Trajectories into Function-Level Graphs for Generalizable Tool Planning",
-      "org": "Xiuhui You +4",
-      "year": "2026-08-04",
-      "summary": "Historical tool-use trajectories provide valuable experience for large language model (LLM) agents to plan and coordinate tool usage. Existing approaches directly construct tool-level graphs from these trajectories, but the resulting graphs remain tied to specific tools and are hard to generalize ac…",
-      "url": "http://arxiv.org/abs/2608.03468v1",
+      "title": "Evaluating Theory of Mind in Reasoning Models: Robustness over Reasoning",
+      "org": "Ian B. de Haan +2",
+      "year": "2026-08-05",
+      "summary": "Large language models (LLMs) have recently shown strong performance on Theory of Mind (ToM) tests, prompting debate about the nature and validity of the underlying capabilities. At the same time, reasoning-oriented LLMs trained via reinforcement learning with verifiable rewards have demonstrated not…",
+      "url": "http://arxiv.org/abs/2608.04646v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -436,11 +436,50 @@
       ]
     },
     {
-      "title": "AgenticVAU: Multi-Agent Explore-Verify Reasoning for Video Anomaly Understanding",
-      "org": "Yuxiang Duan +8",
-      "year": "2026-08-04",
-      "summary": "Video anomaly understanding (VAU) focuses on comprehensively interpreting abnormal events in videos, requiring models to identify anomalous occurrences, discover their supporting evidence, and explain the underlying causes beyond simple anomaly detection. Existing VAU methods often rely on specializ…",
-      "url": "http://arxiv.org/abs/2608.03779v1",
+      "title": "EASy: Towards Efficient LLM-Based Agentic System",
+      "org": "Junnan Liu +3",
+      "year": "2026-08-05",
+      "summary": "Agentic systems have emerged as a promising paradigm for solving complex tasks by coordinating specialized LLM-based agents. However, most existing systems primarily optimize task success while giving limited consideration to execution efficiency under practical constraints such as executor capabili…",
+      "url": "http://arxiv.org/abs/2608.04588v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Privileged, but Biased: How PI-Conditioned Teachers Break Self-Distillation",
+      "org": "Sarthak Harne +4",
+      "year": "2026-08-05",
+      "summary": "Self-distillation (SD) has emerged as a compute-efficient alternative to reinforcement learning with verifiable rewards: a self-teacher, conditioned on privileged information (PI) about the answer such as a reference solution, supplies dense per-token supervision to a student that never sees it. Rep…",
+      "url": "http://arxiv.org/abs/2608.04794v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Trident : How to Break Deep Reinforcement Learning Cyber Defenses (Agentic)",
+      "org": "Ryozo Masukawa +8",
+      "year": "2026-08-05",
+      "summary": "Autonomous cyber defense systems based on Deep Reinforcement Learning (DRL) have attracted significant research attention, yet remain evaluated almost exclusively against static, heuristic red agents, leaving their robustness against adaptive threats critically understudied. Meanwhile, recent advanc…",
+      "url": "http://arxiv.org/abs/2608.04317v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Argus: A General-Purpose Agentic Runtime for Long-Horizon Reasoning",
+      "org": "Boxiu Li +25",
+      "year": "2026-08-05",
+      "summary": "Long-horizon reasoning requires an agentic runtime that can persist when evidence supports its current approach and pivot when measurements reveal failure, hidden constraints, or a misspecified objective. We present Argus, a persistent, self-evolving runtime in which Manager, Planner, Engineer, and …",
+      "url": "http://arxiv.org/abs/2608.05144v1",
       "category": "agentic-rl",
       "tags": [
         "live",
@@ -449,15 +488,80 @@
       ]
     },
     {
-      "title": "TimeRLM: Recursive Language Models Enable Precise Anomaly Localization in Long-Context Time-Series",
-      "org": "Nicolas Zumarraga +11",
-      "year": "2026-08-04",
-      "summary": "Precise anomaly localization over long-context time series is a crucial task in monitoring applications across clinical care, industrial operations, financial services, and logistics, where brief evidence may hide inside long spans of high-frequency data. Time-Series Language Models (TSLMs) are able…",
-      "url": "http://arxiv.org/abs/2608.03391v1",
-      "category": "agentic-rl",
+      "title": "Chained Recursive Language Models for Multi-Iteration Reasoning",
+      "org": "Purbesh Mitra +1",
+      "year": "2026-08-05",
+      "summary": "Long context reasoning in large language models (LLMs) is usually constrained by the fact that a single inference trajectory has to simultaneously explore the context, store intermediate state, verify evidence, and produce the final answer. This becomes particularly difficult in tasks that require e…",
+      "url": "http://arxiv.org/abs/2608.05124v1",
+      "category": "sparse-attention",
       "tags": [
         "live",
-        "agentic-rl",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Training-Free Hashing-Based Attention via Binary Principal Components",
+      "org": "Daohai Yu +8",
+      "year": "2026-08-05",
+      "summary": "Long-context large language models (LLMs) are increasingly deployed in real-world applications, yet self-attention remains a major efficiency bottleneck -- especially during decoding -- due to the necessity of repeatedly processing ever-growing key-value (KV) caches. Existing sparse attention reduce…",
+      "url": "http://arxiv.org/abs/2608.04405v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "AFD-Ledger: Deployment Provisioning for Attention--FFN Disaggregation",
+      "org": "Chengyu Qiu +8",
+      "year": "2026-08-05",
+      "summary": "Attention--Feed-Forward Network (FFN) Disaggregation (AFD) is emerging as a promising architecture for serving Mixture-of-Experts (MoE) language models. While existing AFD systems improve the efficiency of disaggregated execution, they leave a deployment question unanswered: under the same model, wo…",
+      "url": "http://arxiv.org/abs/2608.04502v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Beyond Global Routing Aggregation: Phase-Aware Expert Merging for MoE Vision-Language Models",
+      "org": "Hongyu Zhang +3",
+      "year": "2026-08-05",
+      "summary": "Mixture-of-experts vision-language models (MoE-VLMs) increase model capacity with sparse expert activation, yet deployment requires storing the full expert pool. Training-free expert merging reduces this burden, and many routing-based methods aggregate routing statistics across all tokens to determi…",
+      "url": "http://arxiv.org/abs/2608.04454v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "MESH: Memory-Efficient Sinkhorn Optimization for Mixture-of-Experts Training",
+      "org": "Masato Fujitake",
+      "year": "2026-08-05",
+      "summary": "Memory-efficient matrix optimizers such as Sinkhorn gradient descent remove most AdamW optimizer state for dense Transformer matrices, but direct application to Mixture-of-Experts (MoE) training is unreliable. We study this failure in a controlled 110M-parameter nanowhale DeepSeek-style MoE pretrain…",
+      "url": "http://arxiv.org/abs/2608.04407v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Spend Bits Where Queries Look: KV Cache Vector Quantization with Attention-Preserving Transforms",
+      "org": "Samuel Fernández-Menduiña +4",
+      "year": "2026-08-04",
+      "summary": "Long-context LLM decoding reads the key-value (KV) cache at every step. Loading it takes longer than computing attention over it, so throughput is bandwidth-bound. Hence, reducing the cache size can raise both decoding speed and serving capacity. The challenge is to reduce cache size while preservin…",
+      "url": "http://arxiv.org/abs/2608.04074v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
         "auto"
       ]
     },
@@ -467,6 +571,19 @@
       "year": "2026-08-04",
       "summary": "This paper presents a heterogeneous decode-phase serving system that relocates the KV cache out of GPU memory, motivated by the retrieval-based sparse attention that recent frontier LLMs adopt to serve million-token contexts. It partitions a decode step by operation type: GPU nodes hold the model we…",
       "url": "http://arxiv.org/abs/2608.03555v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "TimeRLM: Recursive Language Models Enable Precise Anomaly Localization in Long-Context Time-Series",
+      "org": "Nicolas Zumarraga +11",
+      "year": "2026-08-04",
+      "summary": "Precise anomaly localization over long-context time series is a crucial task in monitoring applications across clinical care, industrial operations, financial services, and logistics, where brief evidence may hide inside long spans of high-frequency data. Time-Series Language Models (TSLMs) are able…",
+      "url": "http://arxiv.org/abs/2608.03391v1",
       "category": "sparse-attention",
       "tags": [
         "live",
@@ -501,32 +618,6 @@
       ]
     },
     {
-      "title": "TAOT: Topology-Aware Optimal Transport for Dynamic Expert Replica Placement in MoE Training",
-      "org": "Lingyun Zhang +7",
-      "year": "2026-08-04",
-      "summary": "Mixture-of-Experts (MoE) has become a key architecture for scaling large language models (LLMs), yet its dynamic routing causes severe load imbalance in expert-parallel training. Existing dynamic-replica methods copy hot experts onto idle ranks to share computation, but they optimize load balance al…",
-      "url": "http://arxiv.org/abs/2608.03676v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "LLaDA MoE v2: Scaling Mixture-of-Experts Diffusion Language Models",
-      "org": "Fengqi Zhu +13",
-      "year": "2026-08-04",
-      "summary": "Diffusion language models (dLLMs) offer an alternative to autoregressive (AR) language modeling, yet the scaling behavior of Mixture-of-Experts (MoE) dLLMs remains poorly understood. We systematically characterize how optimization hyperparameters, compute allocation, and architecture scale for MoE d…",
-      "url": "http://arxiv.org/abs/2608.03457v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
       "title": "AnchorKV: Anchor-Residual KV Cache Compression",
       "org": "Malik Khalaf +4",
       "year": "2026-08-03",
@@ -545,32 +636,6 @@
       "year": "2026-08-03",
       "summary": "Retrieval-augmented generation (RAG) imposes a prefill cost proportional to retrieved context length, and -- with Transformer backbones -- a KV-cache that grows with each generated token. State-Space Models (SSMs) avoid the second cost by construction; we eliminate the first, collapsing prefill from…",
       "url": "http://arxiv.org/abs/2608.02560v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "Efficiency and Cost Alignment in Batched LLM Serving via Resource-Fair Scheduling",
-      "org": "Dayi Yao +1",
-      "year": "2026-08-03",
-      "summary": "This paper studies a resource-allocation inefficiency in batched large language model (LLM) serving: heterogeneous requests that share a decode batch impose max-driven computational costs on one another. Because the wall-clock cost of a batch step is largely governed by the largest active KV-cache f…",
-      "url": "http://arxiv.org/abs/2608.02244v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "DART: Decoded Attention over Recurrent States for Efficient Long-Context Sequence Modeling",
-      "org": "Yixiao Qian +5",
-      "year": "2026-08-03",
-      "summary": "Modern language models are built primarily from Transformers, recurrent models, and their hybrid architectures. Transformers rely on token-level attention memories, while recurrent models such as state space models (SSMs) and linear attention maintain compact recurrent states. These architectures ar…",
-      "url": "http://arxiv.org/abs/2608.02032v1",
       "category": "sparse-attention",
       "tags": [
         "live",
