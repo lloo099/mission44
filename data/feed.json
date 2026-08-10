@@ -1,7 +1,7 @@
 {
-  "updated": "2026-08-09T07:18:07.322693Z",
+  "updated": "2026-08-10T08:08:35.772058Z",
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 50,
+  "count": 40,
   "pinned": 25,
   "items": [
     {
@@ -332,132 +332,41 @@
       ]
     },
     {
-      "title": "DASH: Divergence-Adaptive Supervision Horizons for On-Policy Self-Distillation of Reasoning Models",
-      "org": "ZhiYan Hou +11",
-      "year": "2026-08-06",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) improves the reasoning capabilities of large language models using automatically verifiable outcome signals, but these signals are typically sparse and at the sequence-level. On-policy self-distillation (OPSD) mitigates this sparsity by querying …",
-      "url": "http://arxiv.org/abs/2608.06243v1",
-      "category": "rl-llm",
+      "title": "HiSparse: Scaling Sparse-Attention Decoding with Hierarchical KV Cache Management",
+      "org": "Zhiqiang Xie +5",
+      "year": "2026-08-07",
+      "summary": "Top-k sparse attention makes long-context LLM decoding cheap to compute: each step reads only a few thousand selected KV entries rather than the full context. Serving systems, however, typically keep the entire KV cache in GPU HBM so that every position stays selectable, so a request's memory bill s…",
+      "url": "http://arxiv.org/abs/2608.07009v1",
+      "category": "sparse-attention",
       "tags": [
         "live",
-        "rl-llm",
+        "sparse-attention",
         "auto"
       ]
     },
     {
-      "title": "EnvACE: Internalizing Environment Dynamics via World Rehearsal for Agentic Reinforcement Learning",
-      "org": "Zishan Xu +11",
-      "year": "2026-08-06",
-      "summary": "Training large language model agents for long-horizon tool use typically relies on interactions with real or synthesized executable environments, whose construction and verification are costly, or on external simulators that are difficult to ground. We introduce EnvACE, an agentic reinforcement lear…",
-      "url": "http://arxiv.org/abs/2608.06197v1",
-      "category": "rl-llm",
+      "title": "Every Cache Entry Earns Its Place: Global Allocation of Resolution and Coverage for KV Cache Compression",
+      "org": "Haolin Tian +2",
+      "year": "2026-08-07",
+      "summary": "As large language models (LLMs) process increasingly long contexts, KV cache storage and repeated access have become a major bottleneck. Existing KV cache compression methods rely on predefined, fixed compression rules and are typically developed around either token eviction or merging. As a result,…",
+      "url": "http://arxiv.org/abs/2608.07001v1",
+      "category": "sparse-attention",
       "tags": [
         "live",
-        "rl-llm",
+        "sparse-attention",
         "auto"
       ]
     },
     {
-      "title": "Contextual Information Policy Optimization for Search Agents",
-      "org": "Xingyu Guo +3",
-      "year": "2026-08-06",
-      "summary": "Search agents extend large language models beyond static parametric memory by enabling them to acquire and use ex ternal evidence during multi-step reasoning. For knowledge intensive tasks involving complex or evolving information, their reliability depends not only on retrieving relevant ev idence …",
-      "url": "http://arxiv.org/abs/2608.06128v1",
-      "category": "rl-llm",
+      "title": "Autonomy-of-Heads: Data-Free Sparse Attention from Frozen Query-Key Geometry",
+      "org": "Yehan Yang +5",
+      "year": "2026-08-07",
+      "summary": "Long-context LLM inference is bottlenecked by quadratic attention computation and growing KV-cache costs. Existing sparse attention and KV-compression methods typically decide which tokens or heads to preserve from runtime attention scores, observation windows, calibration prompts, or learned gates,…",
+      "url": "http://arxiv.org/abs/2608.06849v1",
+      "category": "sparse-attention",
       "tags": [
         "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "OneEmo: A Unified Multimodal Reasoning Model for Emotion Perception, Understanding, and Interaction",
-      "org": "Jiahao Huang +5",
-      "year": "2026-08-06",
-      "summary": "Multimodal Large Language Models (MLLMs) have demonstrated remarkable capabilities in emotional intelligence. However, prevailing research predominantly focuses on task-specific specialization, often neglecting inter-task synergy and leaving latent reasoning potential underexplored. To bridge this g…",
-      "url": "http://arxiv.org/abs/2608.06013v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Enhancing Social Intelligence in LLMs with Hierarchical Reasoning and Utterance-Level Goal Rewarding",
-      "org": "Xiaofeng Wang +11",
-      "year": "2026-08-06",
-      "summary": "Large language models (LLMs) excel in structured tasks but struggle with dynamic social interactions, where success requires long-term goal coordination and rapid adaptation. Current methods often apply uniform goal-based rewards to every utterance, overlooking the specificity of objectives at each …",
-      "url": "http://arxiv.org/abs/2608.05832v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "On-Policy Delta Distillation for Multilingual Math Reasoning",
-      "org": "Byeongho Heo +3",
-      "year": "2026-08-06",
-      "summary": "On-Policy Distillation (OPD) is emerging as a promising alternative to reinforcement learning for LLM post-training, yet its effectiveness in multilingual settings remains underexplored. We study OPD and its advanced variant, On-Policy Delta Distillation (OPD$^2$), for mathematical reasoning in Engl…",
-      "url": "http://arxiv.org/abs/2608.05802v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Learning from Failures: Retrieval-Centric CoT via Hard Negatives for Unified Multimodal Retrieval",
-      "org": "Zelong Sun +5",
-      "year": "2026-08-06",
-      "summary": "Unified multimodal retrieval aims to identify candidates that satisfy complex user intent expressed through heterogeneous inputs. Although Large Vision-Language Model (LVLM)-based retrievers are efficient and scalable, directly encoding raw multimodal inputs often misses fine-grained discriminative …",
-      "url": "http://arxiv.org/abs/2608.06060v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "AgentOPSD: Recursive Self-Distillation for Agentic Reinforcement Learning",
-      "org": "Zi-Han Wang +12",
-      "year": "2026-08-06",
-      "summary": "Reinforcement learning (RL) with verifiable rewards constructs trajectory-level advantage estimates, yet it often fails to credit the few pivotal decisions that determine outcomes in long-horizon, multi-turn agentic tasks. Recent work introduces privileged self-distillation for credit assignment, pr…",
-      "url": "http://arxiv.org/abs/2608.05987v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "iARCS: Iterative Agentic RL for Controllable 3D Scene Generation",
-      "org": "Saugat Adhikari +4",
-      "year": "2026-08-06",
-      "summary": "Synthetic 3D scene generation is increasingly used as a data source for computer vision and embodied AI, but existing generators often optimize perceptual realism without reliably satisfying task-critical functional constraints. This mismatch limits the usefulness of synthetic data for downstream tr…",
-      "url": "http://arxiv.org/abs/2608.06161v1",
-      "category": "agentic-rl",
-      "tags": [
-        "live",
-        "agentic-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "VLMs for Videogame Data Annotation",
-      "org": "Katrin Schmid +1",
-      "year": "2026-08-06",
-      "summary": "Vision Language Models (VLMs) and Artificial Intelligence (AI) agents have revolutionized how engineers approach complex problems in real-world applications. Their adoption in video games is on the other hand limited by the extreme variability of the synthetic scenarios and their poor compliance wit…",
-      "url": "http://arxiv.org/abs/2608.05949v1",
-      "category": "agentic-rl",
-      "tags": [
-        "live",
-        "agentic-rl",
+        "sparse-attention",
         "auto"
       ]
     },
@@ -466,7 +375,7 @@
       "org": "Omar Coser +3",
       "year": "2026-08-06",
       "summary": "Inspired by recent evidence that transformer architectures benefit from Self-PreTraining (SPT) on long-context benchmarks, we investigate whether similar gains extend to multimodal, multivariate, and even simple univariate medical time series. Our objective is to assess the impact of SPT on the perf…",
-      "url": "http://arxiv.org/abs/2608.06122v1",
+      "url": "http://arxiv.org/abs/2608.06122v2",
       "category": "sparse-attention",
       "tags": [
         "live",
@@ -540,32 +449,6 @@
       ]
     },
     {
-      "title": "Heterogeneous LLM Serving with General-Purpose Processing-Near-Memory for Retrieval-Based Sparse Attention",
-      "org": "Hyungkyu Ham +4",
-      "year": "2026-08-04",
-      "summary": "This paper presents a heterogeneous decode-phase serving system that relocates the KV cache out of GPU memory, motivated by the retrieval-based sparse attention that recent frontier LLMs adopt to serve million-token contexts. It partitions a decode step by operation type: GPU nodes hold the model we…",
-      "url": "http://arxiv.org/abs/2608.03555v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "TimeRLM: Recursive Language Models Enable Precise Anomaly Localization in Long-Context Time-Series",
-      "org": "Nicolas Zumarraga +11",
-      "year": "2026-08-04",
-      "summary": "Precise anomaly localization over long-context time series is a crucial task in monitoring applications across clinical care, industrial operations, financial services, and logistics, where brief evidence may hide inside long spans of high-frequency data. Time-Series Language Models (TSLMs) are able…",
-      "url": "http://arxiv.org/abs/2608.03391v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
       "title": "Heterogeneity-Aware Microscaling for Efficient Low-Bit LLM Inference",
       "org": "Junyi Luo +11",
       "year": "2026-08-04",
@@ -614,19 +497,6 @@
       "tags": [
         "live",
         "fp8-lowprec",
-        "auto"
-      ]
-    },
-    {
-      "title": "Sign compression for Muon: SignMuon, MuonSign, and the Limits of Error Feedback",
-      "org": "Maria Smirnova +1",
-      "year": "2026-07-31",
-      "summary": "SignMuon compresses the Muon update to one bit per parameter by taking its elementwise sign, providing the most direct way to run a matrix-aware optimizer under an extremely low communication budget. It outperforms SignSGD in practice, yet it can ascend even on a linear function. Signing the gradien…",
-      "url": "http://arxiv.org/abs/2607.29674v1",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
         "auto"
       ]
     },
