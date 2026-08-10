@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-17",
+  "updated": "2026-08-10",
   "items": [
     {
       "title": "Kimi K3(2.8T 极稀疏 MoE,线性注意力 KDA 首登开源旗舰)",
@@ -7,7 +7,7 @@
       "year": "2026-07",
       "category": "model-report",
       "innovation": "首个把线性注意力(KDA)扶正到旗舰规模的开源模型主张:2.8T 总参、16/896 极稀疏路由(Stable LatentMoE)、AttnRes 跨深度选择性检索、原生 1M 上下文",
-      "analysis": "Official/provisional: 2026-07-16 发布,API 已可用(/5 每百万 token,对标 Sonnet 档),权重承诺 07-27 前放出、主张 3 万亿参数级首个开源。架构四组件:KDA(源自 Kimi Linear,arXiv 2510.26692——channel-wise 门控 delta rule + chunkwise 算法,3:1 混合配比、KV cache -75%、1M 解码至多 6×,论文主张短/长/RL scaling 三范式不输全注意力)+ AttnRes(跨深度选择性检索早层表征,机理待报告)+ Gated MLA + Stable LatentMoE(16/896 专家)。K3 自称 1M 上下文解码提速 6.3×。跑分全自报且为新基准体系(FrontierSWE 81.2、DeepSWE 67.5、Terminal-Bench 2.1 88.3 等),与旧 SWE-bench 不可跨表比。对 RL-on-NPU:KDA 的 KV 减省与解码提速直接打在 decode-bound rollout 痛点(Dispatch 02)上;线性注意力的 chunkwise 训练 vs recurrent 解码是新的训推一致风险面(推断)。技术报告未出,详见 Dispatch 24。",
+      "analysis": "Tech report (arXiv 2607.24653) + weights released: 2.78T 总参/104.2B 激活,93 层=69 KDA+24 Gated MLA(3:1 配比沿用 Kimi Linear),896 routed/16 激活/2 shared,SiTU-GLU+Quantile Balancing+Per-Head Muon,NoPE(位置信息全由 KDA 递归门控承载,1M 零修改直接外推),MoonViT-V2 原生视觉,对 K2 scaling 效率约 2.5×。后训练:SFT→三域×三档 effort RL(9 专家)→MOPD 合并;SFT 起 MXFP4 权重+MXFP8 激活 QAT 贯穿,RL rollout 与训练同量化方案消灭训推失配;预算控制 Reasoning Effort RL(超 τ·b0 直接 reward -1)。基建:co-located RL 数百 GPU/1M 上下文、partial rollout、外部 KV 池、AgentENV microVM 沙箱开源(全程 5121 万箱)、KDA-aware 前缀缓存(512-token hash 块)。自评整体落后 Claude Fable 5/GPT-5.6 Sol、领先其余;详见 Dispatch 24 第 7 节。",
       "url": "https://www.kimi.com/blog/kimi-k3",
       "tags": [
         "Kimi-K3",
@@ -16,7 +16,7 @@
         "MoE",
         "1M-context"
       ],
-      "confidence": "self-reported"
+      "confidence": "confirmed"
     },
     {
       "title": "LongCat-2.0(1.6T MoE,全训练周期在国产芯片超节点完成)",

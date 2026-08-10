@@ -169,6 +169,47 @@ flowchart TB
 
 一句收束:K3 是四条注意力路线分岔后,唯一走"改方程"而非"挑 token"的旗舰——它的成败不只是 Moonshot 一家的事,而是"线性注意力能否承载旗舰级 agentic RL"这个问题的第一次全尺度实验。报告与权重落地前,一切数字按 provisional 处理;落地后,本看板逐项核对。
 
+## 7 · 跟进更新:技术报告落地,逐项核对(2026-08-10)
+
+技术报告来了([arXiv:2607.24653](https://arxiv.org/abs/2607.24653),《Kimi K3: Open Frontier Intelligence》,47 页),权重开源也已兑现(报告明言 "We release the full Kimi K3 model weights")。本节按第 6 节留下的核对清单逐项过账,并把报告里对本看板各条主线的"意外馈赠"记录在案。以下全部为报告口径(一手来源,不再标 provisional,但注意跑分仍是厂商自评 harness)。
+
+### 7.1 核对清单过账
+
+| 首发解读留下的问题 | 报告答案 | 首发判断对错 |
+|---|---|---|
+| K3 是否沿用 Kimi Linear 的 3:1 配比? | **保留**:每 block 3 层 KDA + 1 层 Gated MLA,全模型 93 层 = 69 KDA + 24 MLA | ✓ 猜想成立 |
+| 激活参数量? | **104.2B**(总参 2.78T,对比 K2 的 1.04T/32.6B) | 首发时拒绝引用第三方推算是对的 |
+| AttnRes 机理? | 学习到的**伪查询(pseudo-queries)**对 embedding 与所有前序 block 输出计算注意力权重,跨深度选择性检索;推理时配两阶段 Block AttnRes kernel | 首发的"跨深度选择性检索"定性猜想方向正确 |
+| 位置编码? | **NoPE**——位置信息全部由 KDA 的递归门控与衰减隐式承载,**1M 上下文零位置编码修改直接外推**(渐进课程:预训练 8K→64K,cooldown 256K→1M) | 与 Kimi Linear 的 NoPE 分工一脉相承 |
+| 其余组件 | SiTU-GLU 激活函数、Quantile Balancing 负载均衡、Per-Head Muon 优化器、MoonViT-V2 原生视觉(401M);cosine decay 击败 WSD(各自调最优超参后比较) | 报告给的比博客口径多一整层 |
+| 对 K2 的提升 | 架构+数据+配方合计 **scaling 效率约 2.5×**(scaling law 曲线口径) | 新信息 |
+
+### 7.2 对看板各主线的"意外馈赠"
+
+这份报告几乎给本看板每条主线都补了一块生产级证据,密度罕见:
+
+**① MXFP4 QAT 贯穿后训练——D27"量化层训推一致"的最强新样本。** 报告明确:从 SFT 阶段起做 QAT,**MoE 专家权重 MXFP4、激活 MXFP8**,非专家组件保高精度,贯穿整个后训练;**RL 期间 rollout 与训练共用同一量化方案,"消灭训推失配"**(原文 "eliminating the train-inference mismatch")。三个看板级含义:(a) D27 写的"训练末段 QAT 成万亿 MoE 新默认"再添最重旗舰——而且从 INT4(K2 Thinking)升级到了 **MXFP4**;(b) D27 的"4-bit 起分歧"格局中,Kimi 把票投给了**开放 MX 标准**而非 NVFP4——继 gpt-oss、DeepSeek UE8M0 之后,MX 阵营又收一面旗舰旗帜;(c) 数值对齐派(D27 第 4 节)拿到了 4-bit 级的生产实证。
+
+**② 预算控制的 Reasoning Effort RL——D25"效率感知 RL"的生产配方。** 报告的做法与 D25 讨论的设计空间惊人对齐:每个问题 x 关联初始 token 预算 b0(x)(由冷启动模型估计),轨迹总 token 超过 τ·b0(x) 直接把任务奖励改写为 **-1**;τ 按域分阶段退火(先 max-budget 再收紧出 high/low 档);agentic 任务的 T(y) 计入推理轨迹+工具调用参数的累计输出。配套的 Agentic GRM(锦标赛式二元比较)也上了**冗长度预算**:输出超 σ·ℓ0 自动判负——正是 D25 说的"防 verbose reward hacking"。K3 用三域 × 三档 effort 训出 **9 个专家**再 MOPD 合并,效率控制是一等公民而非事后补丁。
+
+**③ Agentic RL 系统全景——D02/D23 的又一份对照答案。** 同步框架 + **partial rollout 扩展**(λ 比例完成即推进优化,暂停轨迹入队下轮续跑;per-token 正则让算法容忍跨迭代的极端 off-policy);co-located 设计把单个 1M 上下文 RL 实验控制在**数百 GPU**;外部 KV 池(闲置前缀 write-back 到 CPU DRAM,KDA 状态与 MLA 块同生命周期迁移;训练态权重/优化器下放 NVMe 腾 DRAM);rollout 自动限流调度器按 KV 压力动态控并发;引用模型不驻显存、借用策略模型的 FP32 梯度 buffer 分块流式前向。
+
+**④ AgentENV 沙箱开源——D23"沙箱成本主导"的最硬量化证据。** microVM(Firecracker)沙箱系统,**已开源**([github.com/kvcache-ai/AgentENV](https://github.com/kvcache-ai/AgentENV)):增量 checkpoint 133ms / resume 49ms;**Pause/Resume**——模型推理等待可占沙箱生命周期 **98%**,暂停期零内存零 CPU;**Fork** 用于无副作用判分;OverlayBD+P2P 秒级万箱启动,内存超卖 **6.5×**。全程数字:**训练+评测共创建 51,219,741 个沙箱、1,505,678 个镜像**。这组数字既坐实了 D23"沙箱是主导成本"的判断,也直接回应 D26 layer 六——"工具等待期资源怎么办"在 K3 这里的答案是暂停 microVM 而不是换出 KV。
+
+**⑤ KDA-aware 前缀缓存与机队调度——D26"agent-aware serving"的生产落地。** 混合架构双缓存(MLA 逐 token 分页 vs KDA 定长递归状态)统一进同一分页池;**512-token 细粒度 hash 块**与稀疏 KDA checkpoint(对齐会话轮边界)解耦,任意 512 边界可复用前缀;机队级 **cache-aware affinity scheduling**(典型 coding 请求:400K 前缀 + 仅 4K 增量,命中与 miss 差几个数量级)+ **budget-based admission control** 防长上下文突发拖垮 SLO。D26 说的"洼地"子项,在 K3 的生产系统里已经是实装件。
+
+**⑥ KDA×投机解码的回滚问题——D24 第 6 节预警的风险面,报告自己解了。** MTP 层微调成 EAGLE-3 式 draft(直接优化接受率的 LK 损失,不用 KL 代理);KDA 递归状态原地更新导致草稿被拒后无法回滚——解法是**只缓存草稿 token 的投影输入、片上重建被接受前缀的状态**(与同期 ReplaySSM 撞车),验证时延随验证 token 数亚线性增长。首发解读把"线性注意力×投机解码"列为新训推一致风险面,报告证明这个风险真实存在且已有工程解。
+
+**⑦ 统一白盒 RL 环境——防 harness 过拟合。** 把 agent harness 拆成可配置模块(工具接口/系统提示/上下文管理/skills/记忆/子 agent),可实例化 Kimi Code、Claude Code、Codex、OpenClaw、Hermes 等主流 harness 并动态混合训练——回应了 D12/D22 语境里"scaffold 绑定"的老问题,也是"训练时就见过你的 harness"这一产品主张的技术底座。
+
+### 7.3 跑分的最终口径
+
+报告自评(effort=max):K3 **整体落后 Claude Fable 5 与 GPT-5.6 Sol,稳定领先其余开源与闭源模型**;DeepSWE 67.5(v1.1;mini-SWE-agent harness 下 67.3)、Terminal-Bench 2.1 88.3、GPQA Diamond 93.5、HLE-Full 43.5/56.0(无/有工具)。首发解读"新基准体系不可跨表比"的警示保持不变——但报告把 harness、温度、top-p 全部披露,可复现性比博客口径强了一档。
+
+### 7.4 一句话收束
+
+首发解读的核心判断全部站住:3:1 配比保留、"线性注意力扶正旗舰"成立、风险面(投机×递归状态)真实存在。报告超出预期的部分在系统侧——**它同时是 D25(预算控制 RL)、D26(agent-aware serving)、D27(MXFP4 QAT 训推一致)三篇的生产级印证**,一份报告喂饱四期看板。悬置项收窄为:第三方复测跑分、以及 2.8T/MXFP4 权重在非 NVIDIA 硬件(昇腾)上的适配路径——KDA kernel 与 CANN 的距离,现在是"开源权重已就位"之后唯一的拦路虎。
+
 ## 下一步看什么
 
 1. **2026-07-27 权重兑现**:是否按期放出、是否完整权重(而非蒸馏/阉割版)、许可证条款——"3 万亿级首个开源"的厂商主张能否落地,这是 11 天内最硬的观察点。

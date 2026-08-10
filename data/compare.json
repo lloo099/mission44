@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-17",
+  "updated": "2026-08-10",
   "doc": "docs/2026-frontier-models.md",
   "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。 Kimi K3 数字为发布日自报,权重与技术报告尚未放出。",
   "models": {
@@ -28,7 +28,7 @@
         "109B (multimodal)",
         "open weights",
         "1.6T / ~48B act",
-        "2.8T 总参 / 16-896 极稀疏 MoE",
+        "2.78T 总参 / 104.2B 激活(16-896 极稀疏)",
         "671B MoE"
       ],
       [
@@ -46,7 +46,7 @@
         "MSA (block-sparse on GQA)",
         "GLM-5 lineage",
         "LSA(细节待报告)",
-        "KDA 线性 + Gated MLA + AttnRes",
+        "KDA 线性 3:1 Gated MLA + AttnRes,NoPE",
         "DSA (token top-k on MLA)"
       ],
       [
@@ -55,7 +55,7 @@
         "open weights",
         "MIT",
         "open weights",
-        "权重承诺 07-27 前(开源,许可待公布)",
+        "权重已开源(报告 2607.24653)",
         "open weights"
       ],
       [
