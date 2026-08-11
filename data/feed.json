@@ -1,7 +1,7 @@
 {
-  "updated": "2026-08-10T08:08:35.772058Z",
+  "updated": "2026-08-11T07:39:08.194317Z",
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 40,
+  "count": 52,
   "pinned": 25,
   "items": [
     {
@@ -332,11 +332,141 @@
       ]
     },
     {
-      "title": "HiSparse: Scaling Sparse-Attention Decoding with Hierarchical KV Cache Management",
-      "org": "Zhiqiang Xie +5",
-      "year": "2026-08-07",
-      "summary": "Top-k sparse attention makes long-context LLM decoding cheap to compute: each step reads only a few thousand selected KV entries rather than the full context. Serving systems, however, typically keep the entire KV cache in GPU HBM so that every position stays selectable, so a request's memory bill s…",
-      "url": "http://arxiv.org/abs/2608.07009v1",
+      "title": "Parameter Exploration for RLVR via Variational Learning",
+      "org": "Vatsal Venkatkrishna +2",
+      "year": "2026-08-10",
+      "summary": "Exploration has been a focus of reinforcement learning research for a long time. Recently, there has been growing evidence that it is also an important ingredient in LLM reinforcement learning recipes that can significantly impact downstream performance. Many existing methods control exploration in …",
+      "url": "http://arxiv.org/abs/2608.09805v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Bidirectional Context Self-Distillation for Reinforcement Learning of Skill-Based LLM Agents",
+      "org": "Tianjun Pan +10",
+      "year": "2026-08-10",
+      "summary": "External natural-language skills provide large language model (LLM) agents with reusable and editable guidance for solving complex tasks. Yet their effectiveness depends not only on skill quality, but also on whether the policy can translate the provided guidance into appropriate actions. However, m…",
+      "url": "http://arxiv.org/abs/2608.09555v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Learning Preference Adaptation for Large Language Model Personalization via Verbal Reinforcement Learning",
+      "org": "Yuting Liu +3",
+      "year": "2026-08-10",
+      "summary": "Natural language user preferences provide an interpretable interface for LLM personalization. However, universal preference summaries often contain information irrelevant to a particular downstream task. Directly supplying the full preference summary therefore wastes context capacity and introduces …",
+      "url": "http://arxiv.org/abs/2608.09507v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "ZetaGPT: A Reference Implementation of Positional--Encoding--Free State--Space--Attention Language Models",
+      "org": "Róisín Luo",
+      "year": "2026-08-10",
+      "summary": "Transformer-based language models rely on self-attention, whose computation is permutation-equivariant and therefore lacks an intrinsic mechanism for representing token order. Existing architectures address this limitation by explicitly incorporating positional information through learned positional…",
+      "url": "http://arxiv.org/abs/2608.09432v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Beyond Solvability: Task Learnability as a Static Prior for LLM RL Post-Training",
+      "org": "Ting Zhou +6",
+      "year": "2026-08-10",
+      "summary": "Reinforcement learning (RL) has become a central post-training paradigm for eliciting reasoning capabilities in large language models, yet uniform task sampling allocates compute without regard to differences in how tasks respond to optimization. Existing task-valuation methods mostly rely on snapsh…",
+      "url": "http://arxiv.org/abs/2608.09217v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "An Agentic Generative Large Language Model for Treatment Planning of Colorectal Cancer",
+      "org": "Mengxian Lyu +20",
+      "year": "2026-08-10",
+      "summary": "Treatment planning in precision oncology requires synthesizing heterogeneous patient information with rapidly evolving clinical guidelines to ensure guideline-concordant care. While large language models (LLMs) show promise in many diagnostic tasks, their adoption for high-stakes treatment planning …",
+      "url": "http://arxiv.org/abs/2608.09142v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Distill Skills into Weights, Not Prompts: Abstract Skills as Privileged Signals for On-Policy Self-Distillation",
+      "org": "Yubo Jiang +3",
+      "year": "2026-08-10",
+      "summary": "Reinforcement learning with verifiable rewards yields no group-relative signal when rollout groups are uniformly correct or uniformly wrong, which account for 63.0-68.0% of groups in our experiments. We propose SKALD (Skill-Anchored Latent Distillation), an on-policy self-distillation framework that…",
+      "url": "http://arxiv.org/abs/2608.09826v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Listen, See and Track: Spatio-Temporal Audio-Visual Sound Event Reasoning for Omni-Modal Language Models",
+      "org": "Zhi Zeng +11",
+      "year": "2026-08-10",
+      "summary": "Understanding dynamic sound sources requires jointly determining what produces a sound, where the source is located, and how it moves over time. Yet existing audio-language models often represent clips as global acoustic events, while vision-language models lack the spatial audio cues needed to loca…",
+      "url": "http://arxiv.org/abs/2608.09435v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "From Relevance to Execution Utility: Reward-Aware Dynamic Execution Gating for Skill-Based LLM Agents",
+      "org": "Liang He +7",
+      "year": "2026-08-10",
+      "summary": "Agent skills are increasingly used to equip large language model (LLM) agents with reusable procedural knowledge. Although recent work has substantially improved skill retrieval due to the increasing skill libraries, retrieving a plausible skill bundle does not guarantee that executing it is worthwh…",
+      "url": "http://arxiv.org/abs/2608.09168v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Motif 3: Technical Report",
+      "org": "Junghwan Lim +26",
+      "year": "2026-08-10",
+      "summary": "We introduce Motif 3, a decoder-only Mixture-of-Experts language model with 314 billion total parameters and 13.2 billion activated per token. Each sparse MoE layer contains 384 routed experts, with eight selected per token. This fine-grained sparsity provides substantial expert capacity while limit…",
+      "url": "http://arxiv.org/abs/2608.09119v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "MixFormer: Linear Transformer with Mixture of Memory Experts",
+      "org": "Yu Guo +1",
+      "year": "2026-08-10",
+      "summary": "State Space Models (SSMs), as a mainstream research direction of linear Transformers, aim to achieve higher efficiency than standard Transformers in long-context modeling. However, existing SSMs suffer from limited input adaptivity and constrained memory capacity, leading to information loss when mo…",
+      "url": "http://arxiv.org/abs/2608.09468v1",
       "category": "sparse-attention",
       "tags": [
         "live",
@@ -345,11 +475,11 @@
       ]
     },
     {
-      "title": "Every Cache Entry Earns Its Place: Global Allocation of Resolution and Coverage for KV Cache Compression",
-      "org": "Haolin Tian +2",
-      "year": "2026-08-07",
-      "summary": "As large language models (LLMs) process increasingly long contexts, KV cache storage and repeated access have become a major bottleneck. Existing KV cache compression methods rely on predefined, fixed compression rules and are typically developed around either token eviction or merging. As a result,…",
-      "url": "http://arxiv.org/abs/2608.07001v1",
+      "title": "Governing the KV Cache: Preventing Timing Side-Channel Leakage in Multi-Tenant LLM Inference",
+      "org": "Tejasvi C. Addagada",
+      "year": "2026-08-10",
+      "summary": "The key-value (KV) cache is the primary throughput optimization in modern large language model (LLM) inference, enabling prefix reuse across requests. In multi-tenant deployments this cache is shared across tenants, creating a timing side channel: an adversarial tenant can reconstruct another tenant…",
+      "url": "http://arxiv.org/abs/2608.09225v1",
       "category": "sparse-attention",
       "tags": [
         "live",
@@ -358,76 +488,11 @@
       ]
     },
     {
-      "title": "Autonomy-of-Heads: Data-Free Sparse Attention from Frozen Query-Key Geometry",
-      "org": "Yehan Yang +5",
-      "year": "2026-08-07",
-      "summary": "Long-context LLM inference is bottlenecked by quadratic attention computation and growing KV-cache costs. Existing sparse attention and KV-compression methods typically decide which tokens or heads to preserve from runtime attention scores, observation windows, calibration prompts, or learned gates,…",
-      "url": "http://arxiv.org/abs/2608.06849v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "Is Self-Pretraining really useful to improve diagnosis in medical Time Series?",
-      "org": "Omar Coser +3",
-      "year": "2026-08-06",
-      "summary": "Inspired by recent evidence that transformer architectures benefit from Self-PreTraining (SPT) on long-context benchmarks, we investigate whether similar gains extend to multimodal, multivariate, and even simple univariate medical time series. Our objective is to assess the impact of SPT on the perf…",
-      "url": "http://arxiv.org/abs/2608.06122v2",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "TensorCast: The Missing Tensor Management Layer in Large Language Model Infrastructure",
-      "org": "Yuhan Zhou +7",
-      "year": "2026-08-06",
-      "summary": "Modern LLM infrastructure increasingly manages tensors not only as computation data, but also as persistent states shared across distributed components. Existing systems optimize individual tensor management tasks, such as model weight loading, KV cache management, and checkpoint synchronization, by…",
-      "url": "http://arxiv.org/abs/2608.06007v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "Chained Recursive Language Models for Multi-Iteration Reasoning",
-      "org": "Purbesh Mitra +1",
-      "year": "2026-08-05",
-      "summary": "Long context reasoning in large language models (LLMs) is usually constrained by the fact that a single inference trajectory has to simultaneously explore the context, store intermediate state, verify evidence, and produce the final answer. This becomes particularly difficult in tasks that require e…",
-      "url": "http://arxiv.org/abs/2608.05124v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "Training-Free Hashing-Based Attention via Binary Principal Components",
-      "org": "Daohai Yu +8",
-      "year": "2026-08-05",
-      "summary": "Long-context large language models (LLMs) are increasingly deployed in real-world applications, yet self-attention remains a major efficiency bottleneck -- especially during decoding -- due to the necessity of repeatedly processing ever-growing key-value (KV) caches. Existing sparse attention reduce…",
-      "url": "http://arxiv.org/abs/2608.04405v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "EdgeXpert: An Edge Device for Memory-Efficient LLM Inference with Mixture-of-Experts and Speculative Decoding",
-      "org": "Sangwoo Ha +4",
-      "year": "2026-08-05",
-      "summary": "On-device deployment of Large Language Models (LLMs) has become essential for personalized edge applications. A primary bottleneck is external memory access (EMA) in feed-forward network (FFN) layers. Speculative decoding and mixture-of-experts (MoE) are promising solutions. Speculative decoding red…",
-      "url": "http://arxiv.org/abs/2608.05303v1",
+      "title": "DistMoE: Private-data Rehearsal-free Routing in Mixture-of-Experts for Distributed Instruction Tuning",
+      "org": "Mainak Singha +3",
+      "year": "2026-08-10",
+      "summary": "Multimodal Large Language Models (MLLMs) have shown strong multimodal instruction-following ability, but adapting them to diverse visual-language domains typically assumes centralized data access and costly joint training. This is restrictive when data is distributed across private, domain-specific,…",
+      "url": "http://arxiv.org/abs/2608.09907v1",
       "category": "efficient-llm",
       "tags": [
         "live",
@@ -436,11 +501,128 @@
       ]
     },
     {
-      "title": "Spend Bits Where Queries Look: KV Cache Vector Quantization with Attention-Preserving Transforms",
-      "org": "Samuel Fernández-Menduiña +4",
-      "year": "2026-08-04",
-      "summary": "Long-context LLM decoding reads the key-value (KV) cache at every step. Loading it takes longer than computing attention over it, so throughput is bandwidth-bound. Hence, reducing the cache size can raise both decoding speed and serving capacity. The challenge is to reduce cache size while preservin…",
-      "url": "http://arxiv.org/abs/2608.04074v1",
+      "title": "UnionSparse: An Index-Efficient Sparsity Framework for Low-Bit Sparse LLM Inference on Edge",
+      "org": "Tianhao Jiang +11",
+      "year": "2026-08-10",
+      "summary": "Edge LLM inference combines sparsity and low-bit quantization to meet device memory, latency, and power limits. Yet quantization shrinks weight payloads without proportionally reducing sparse metadata, so index traffic and nonzero extraction become critical SpMM bottlenecks. We introduce the Payload…",
+      "url": "http://arxiv.org/abs/2608.09291v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Reading is not Reasoning: Bridging the Agentic Policy Gap in Vision-Text Compression",
+      "org": "Cheng Fan +7",
+      "year": "2026-08-09",
+      "summary": "Multi-step language-model agents repeatedly process growing interaction histories, leading to substantial context costs. Vision--text compression reduces these costs by rendering history as images, but the resulting modality shift creates a marked capability gap. Through controlled evaluations of hi…",
+      "url": "http://arxiv.org/abs/2608.08960v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "DistillCache: KL-Guided Adaptive KV-Cache Eviction for Memory-Efficient LLM Inference",
+      "org": "Asaad Althoubi",
+      "year": "2026-08-09",
+      "summary": "Transformer-based large language models (LLMs) achieve strong performance across many tasks, but their Key-Value (KV) cache grows linearly with sequence length, creating a severe memory bottleneck for long-context inference. Existing heuristic eviction methods (e.g., H$_2$O and SnapKV) rely on stati…",
+      "url": "http://arxiv.org/abs/2608.08878v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Sparse Attention to Emotion: Efficient Facial Emotion Recognition via Token Reduction",
+      "org": "Aya Manel Zitouni +3",
+      "year": "2026-08-09",
+      "summary": "Facial Emotion Recognition (FER) is an important task that has significant implications across various fields such as biometrics, health, and human-computer interaction. Current Vision Transformer-based approaches display quadratic complexity $\\mathcal{O}(N^2)$, with N being the input sequence lengt…",
+      "url": "http://arxiv.org/abs/2608.08873v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Deferred Audio Pruning with Local Audio-Visual Dynamics for Omni-LLMs",
+      "org": "Kyeongyoon Lee +3",
+      "year": "2026-08-09",
+      "summary": "Omni-modal LLMs jointly process audio, video, and text, but long multimodal sequences incur substantial prefill and KV-cache costs. Existing omni-modal compression methods primarily focus on pre-LLM token reduction, leaving modality-specific compression across the LLM boundary underexplored. We prop…",
+      "url": "http://arxiv.org/abs/2608.08794v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "RippleKV: Cross-Layer KV Cache Allocation via Perturbation Propagation",
+      "org": "Dongjie Xu +8",
+      "year": "2026-08-09",
+      "summary": "Long-context LLM inference is bottlenecked by KV cache memory, yet distributing a limited cache budget across layers remains challenging. Existing methods rely on proxies such as layer depth, attention statistics, or representation change. These proxies do not measure how perturbations at each layer…",
+      "url": "http://arxiv.org/abs/2608.08684v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "VLZip: Unified Visual and Textual Compression for Interleaved Long-Context Modeling",
+      "org": "Yuqi Zhang +8",
+      "year": "2026-08-09",
+      "summary": "Vision Language Models (VLMs) face significant challenges with ultra-long, interleaved image-text sequences due to the quadratic complexity of self-attention. Current solutions either resort to aggressive token pruning, risking irreversible information loss, or adopt efficient but less precise archi…",
+      "url": "http://arxiv.org/abs/2608.08630v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "MotionCraft: Latent World Modeling with Sparse Attention for Visual Upscaling",
+      "org": "Rong Fu +11",
+      "year": "2026-08-09",
+      "summary": "Video super-resolution (VSR) aims to recover high-fidelity high-resolution videos from low-resolution inputs and is central to applications ranging from mobile capture to streaming and archival restoration. Existing approaches trade off among local-detail fidelity, long-range spatio-temporal modelin…",
+      "url": "http://arxiv.org/abs/2608.08553v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Tied Trit-Planes: Constraining PTQTP to a Uniform Nine-Level Quantizer, with a Persistent Folded Format for Disk-Streamed Mixture-of-Experts Serving",
+      "org": "Matteo Grella",
+      "year": "2026-08-09",
+      "summary": "PTQTP decomposes LLM weight matrices into two ternary (trit) planes with two free per-group scales. Tying the scales to a fixed ratio of three collapses the decomposition into a single uniform nine-level quantizer, a known balanced-ternary identity. To our knowledge, at the time of writing, this wor…",
+      "url": "http://arxiv.org/abs/2608.08910v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "OasisKV: Scaling In-Decode KV Cache Beyond HBM with Lookahead Sparse Prefetching",
+      "org": "Can Xiao +9",
+      "year": "2026-08-08",
+      "summary": "Large language model (LLM) inference serving is increasingly constrained by memory rather than compute. As long-context and long-form reasoning workloads become more prevalent, the key-value (KV) cache dominates both memory footprint and memory traffic during LLM token generation, i.e., decode. In p…",
+      "url": "http://arxiv.org/abs/2608.08097v1",
       "category": "sparse-attention",
       "tags": [
         "live",
@@ -493,32 +675,6 @@
       "year": "2026-08-03",
       "summary": "Large language models (LLMs) achieve remarkable performance but are expensive to deploy due to their enormous size. FP4 quantization, with formats such as MXFP4 and NVFP4, offers an appealing solution with native hardware support on modern accelerators. However, maintaining accuracy under FP4 precis…",
       "url": "http://arxiv.org/abs/2608.01847v1",
-      "category": "fp8-lowprec",
-      "tags": [
-        "live",
-        "fp8-lowprec",
-        "auto"
-      ]
-    },
-    {
-      "title": "HiFloat4 Format for End-To-End Reinforcement Learning Post-Training of Large Language Models",
-      "org": "Hei Yi Mak +12",
-      "year": "2026-07-29",
-      "summary": "We present, to our knowledge, the first end-to-end FP4 RL post-training, in which both the rollout and training policies, including their forward and backward passes, operate at 4-bit precision. A systematic study reveals that the dominant source of degradation in FP4 RL is not training-side quantiz…",
-      "url": "http://arxiv.org/abs/2607.26515v1",
-      "category": "fp8-lowprec",
-      "tags": [
-        "live",
-        "fp8-lowprec",
-        "auto"
-      ]
-    },
-    {
-      "title": "Stable FP4 Training via Transposition-Invariant Block Quantization",
-      "org": "Mehdi Rahimifar +8",
-      "year": "2026-07-27",
-      "summary": "Reducing training precision is a key lever for improving the e ciency of large language model (LLM) training, but pushing beyond FP8 to 4-bit oating point (FP4) remains challenging due to instability during optimization. We identify a fundamental source of this instability in existing microscaling a…",
-      "url": "http://arxiv.org/abs/2607.24953v1",
       "category": "fp8-lowprec",
       "tags": [
         "live",
