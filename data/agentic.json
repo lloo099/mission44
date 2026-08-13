@@ -1,6 +1,10 @@
 {
-  "updated": "2026-08-10",
+  "updated": "2026-08-13",
   "trends": [
+    {
+      "title": "长程化:agent 评测与训练的新标尺",
+      "body": "OSWorld 2.0 把标尺换成人类中位 1.6 小时的长程任务后最强系统仅 20.6%(原版已 85% 饱和);Horizon Gap 综述梳理 1547 篇提出单步能力与多小时可靠性之间的能力缺口;训练侧回应是信用分配稠密化(ADRS 自蒸馏 token 级)与异步 off-policy 容忍度提升(ESTR/PNPO)。竞争重心从模型分数移向长程可靠性+生产级 agent 运行时(MCP 无状态化)。"
+    },
     {
       "title": "长程自治量级跃升,评测与成本基线双双重置",
       "body": "OSWorld 2.0 把 computer-use 评测推到人类中位 1.6 小时的真实工作流:Claude Opus 4.7 平均每任务 318 次工具调用(1.0 版仅 ~30 次),500 步预算下最强前沿智能体也只完成 20.6%——旧榜(OSWorld-Verified 83.5%)严重高估真实部署能力。与此同时厂商把 agentic 能力压进中低价位(Sonnet 5 $2/$10、GPT-5.6 Terra 自称同能力便宜 2 倍):单任务数百次工具调用 × 更低单价,意味着 RL 训练侧的 rollout 长度、沙箱环境需求和成本核算都要按新量级重排。"
@@ -31,6 +35,77 @@
     }
   ],
   "items": [
+    {
+      "title": "MCP 2026-07-28 规范(协议核心全面无状态化)",
+      "org": "Model Context Protocol(Anthropic 主导)",
+      "year": "2026-07",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "移除 initialize 握手与 Session-Id,协议核心无状态化,远程 server 可水平扩展",
+      "summary": "07-28 修订版把 MCP 协议核心全面无状态化:移除 initialize 握手与 Session-Id,支持多轮往返、header 路由与可缓存的 tools/list,远程 server 从此可像普通 HTTP 服务一样水平扩展——agent 基建走向生产级。对 RL 训练侧的含义:工具环境可无状态复制,大规模并行 rollout 的工具调用基础设施成本显著下降。",
+      "url": "https://blog.modelcontextprotocol.io/posts/2026-07-28",
+      "tags": [
+        "industry",
+        "MCP",
+        "standards",
+        "infrastructure",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Claude Opus 5(1M 上下文旗舰半价,agent 运行时内建)",
+      "org": "Anthropic",
+      "year": "2026-07",
+      "category": "product",
+      "track": "industry",
+      "innovation": "1M 上下文/128K 输出/5 档 effort,旗舰价格砍半($5/$25),内置浏览与 5 层子代理嵌套",
+      "summary": "07-24 发布:1M 上下文、128K 输出、5 档 reasoning effort,定价 $5/$25 每百万 token(旗舰半价),成为 Claude Code 默认模型;内置浏览、会话 fork 与最多 5 层子代理嵌套——把过去靠外部脚手架实现的 agent 运行时能力收进模型侧。「单位智能成本」竞争延续,长程 agent rollout 的成本与上下文基线再次重置(二手印证)。",
+      "url": "https://www.anthropic.com/news/claude-opus-5",
+      "tags": [
+        "industry",
+        "frontier-model",
+        "pricing",
+        "multi-agent",
+        "2026"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Horizon Gap 综述(1547 篇梳理长程能力缺口)",
+      "org": "research",
+      "year": "2026-08",
+      "category": "trend",
+      "track": "academic",
+      "innovation": "提出 horizon gap 概念,区分 long-horizon / long-context / long-term memory 三属性",
+      "summary": "08-07 发布的大型综述:系统梳理 1547 篇文献,提出 horizon gap——模型单步能力与多小时长程可靠性之间的系统性缺口,并厘清 long-horizon(决策跨度)、long-context(输入长度)、long-term memory(跨会话记忆)三个常被混用的属性。为长程 agent 训练与评测(OSWorld 2.0 类基准)提供概念坐标系。",
+      "url": "https://arxiv.org/abs/2608.06663",
+      "tags": [
+        "academic",
+        "survey",
+        "long-horizon",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "ADRS(自蒸馏 reward shaping:token 级信用分配)",
+      "org": "Ranxu Zhang 等",
+      "year": "2026-08",
+      "category": "algorithm",
+      "track": "academic",
+      "innovation": "特权技能快照重打分 + Teacher Value Advantage 门控,把稀疏轨迹奖励稠密化到 token 级",
+      "summary": "自蒸馏 reward shaping:用训练期特权技能的快照对轨迹重打分,经 Teacher Value Advantage 门控后作为 token 级 shaping 信号,直击稀疏轨迹奖励下的信用分配。ALFWorld 97.7% 峰值、终点比 GRPO 高 9.4 分,WebShop +5.5;与 SDAR(arXiv 2605.15155)同属自蒸馏稠密化路线,是长程 agentic RL「信用分配稠密化」趋势的代表作。",
+      "url": "https://arxiv.org/abs/2608.03223",
+      "tags": [
+        "academic",
+        "credit-assignment",
+        "reward-shaping",
+        "long-horizon",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
     {
       "title": "OSWorld 2.0(长程真实电脑使用基准:318 次工具调用/任务)",
       "org": "XLang Lab (xlang-ai, HKU 等)",
@@ -1024,22 +1099,6 @@
       "track": "academic",
       "summary": "Precise anomaly localization over long-context time series is a crucial task in monitoring applications across clinical care, industrial operations, financial services, and logistics, where brief evidence may hide inside long spans of high-frequency data. Time-Series Language Mod…",
       "url": "http://arxiv.org/abs/2608.03391v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "Agentic Reinforcement Learning with Self-Distilled Reward Shaping",
-      "org": "Ranxu Zhang +7",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Agentic reinforcement learning enables LLM agents to learn through interaction, but sparse trajectory-level rewards reveal success without identifying which intermediate decisions deserve credit. Training-only privileged skills can provide denser supervision by allowing the same …",
-      "url": "http://arxiv.org/abs/2608.03223v1",
       "tags": [
         "academic",
         "agentic-rl",

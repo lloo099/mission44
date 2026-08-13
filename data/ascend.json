@@ -1,6 +1,96 @@
 {
-  "updated": "2026-07-07",
+  "updated": "2026-08-13",
   "items": [
+    {
+      "title": "Atlas 950 超节点 WAIC 真机亮相(获 SAIL 奖;950DT 上云仍未兑现)",
+      "org": "华为 (WAIC 2026)",
+      "year": "2026-07",
+      "category": "hardware",
+      "innovation": "1024 卡/1 EFLOPS FP8/256TB 统一编址的 950 超节点真机首秀",
+      "analysis": "What it is: 07-17 WAIC 上 Atlas 950 超节点真机首次公开亮相并获 SAIL 奖——1024 卡、1 EFLOPS FP8、256TB 统一编址(厂商自报口径)。Why it matters: 从 2025 年发布会 PPT 走到可展出真机,是 950 系兑现进度的实物证据;但本次专项核查显示,「950DT 8 月上云」的承诺截至 08-13 未见兑现证据——承诺仍在,时间点存疑。对 RL-on-NPU 的意义: 1 EFLOPS FP8 + 统一编址超节点正是 FP8 RL 与大规模训推分离 RL(独立 rollout/train 资源池)的目标织物;真机亮相降低了'纸面路线图'风险,但在上云可用之前,FP8 RL-on-950 仍停留在预研窗口期。",
+      "summary": "07-17 WAIC:Atlas 950 超节点真机亮相并获 SAIL 奖,1024 卡/1 EFLOPS FP8/256TB 统一编址(厂商自报);专项核查:「950DT 8 月上云」承诺截至 08-13 未见兑现证据。",
+      "url": "https://www.huawei.com/cn/news",
+      "tags": [
+        "950",
+        "supernode",
+        "FP8",
+        "WAIC",
+        "2026"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "vLLM-Ascend v0.23.0rc1 / v0.24.0rc1(首次加入 Ascend 950 支持)",
+      "org": "vLLM-Ascend (vLLM project / 昇腾社区)",
+      "year": "2026-08",
+      "category": "software-stack",
+      "innovation": "v0.23.0rc1 首次加入 Ascend 950 支持,并引入 context-parallel 与 KV offload",
+      "analysis": "Innovation: v0.23.0rc1(07-19)首次为 Ascend 950 系列加入支持,同时引入 context-parallel 与 KV offload;v0.24.0rc1(08-04)继续对齐上游 vLLM 例行迭代。Why it matters: 软件栈先于芯片上云就位——950 云端可用性尚未兑现,但推理栈已提前适配;KV offload 直接缓解长上下文 rollout 的 HBM 压力,context-parallel 是 1M 级 rollout 的并行基础。对 RL-on-NPU 的意义: rollout 引擎是 RL-on-Ascend 的地基,'950 支持 + KV offload + CP'三件套为 FP8 RL 与 1M 长上下文 agentic rollout 铺好推理侧路径,等 950 硬件可用即可端到端验证;KV offload 也部分对冲 sleep-mode 缺失下的显存争用。",
+      "summary": "v0.23.0rc1(07-19)首次加入 Ascend 950 支持 + context-parallel + KV offload;v0.24.0rc1(08-04)继续对齐上游。软件栈先于 950 上云就位。",
+      "url": "https://github.com/vllm-project/vllm-ascend/releases",
+      "tags": [
+        "vllm-ascend",
+        "950",
+        "kv-cache",
+        "rollout",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "HiF8 捐赠 GCC 成团体标准(自研低精度格式走向公标)",
+      "org": "华为 / 全球计算联盟 (GCC)",
+      "year": "2026-06",
+      "category": "software-stack",
+      "innovation": "自研 8-bit 浮点格式 HiF8 捐赠 GCC 成团体标准 + IEEE 立项 + 10 个社区开源仓",
+      "analysis": "What it is: 华为将自研 8-bit 浮点格式 HiF8 于 6-23 捐赠全球计算联盟(GCC)成为团体标准,并推进 IEEE 立项,配套 10 个社区开源仓(hifloat.gccorg.com)。Why it matters: 950 系原生支持 HiF8,格式公标化意味着它不再是私有格式——编译器/框架/算子库可依规范实现,跨厂商互操作成为可能;但本次专项核查显示 CANN 侧 HiF8 算子仍未见专项开源——标准先行,实现待补。对 RL-on-NPU 的意义: FP8 RL 是 950 时代最大的算法机会,HiF8 与 OCP FP8 的数值行为差异将直接决定训推一致与精度对齐策略;标准文本公开后,align-probe 类工具终于有了可对照的规范依据。",
+      "summary": "HiF8 于 6-23 捐赠 GCC 成团体标准、IEEE 立项、配 10 个社区开源仓(hifloat.gccorg.com);但 CANN 侧 HiF8 算子专项开源仍未见——标准先行,实现待补。",
+      "url": "https://hifloat.gccorg.com",
+      "tags": [
+        "HiF8",
+        "FP8",
+        "standards",
+        "950",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "DeepSeek-V4-Pro-0813 × Ascend 950(适配 950PR 推理提速 35 倍表态)",
+      "org": "DeepSeek-AI / 华为",
+      "year": "2026-08",
+      "category": "inference",
+      "innovation": "旗舰开源模型发布即绑定 950 适配与降价表态,模型-国产芯片协同进入发布节奏",
+      "analysis": "What it is: 08-13 发布的 DeepSeek-V4-Pro-0813(1M 上下文/双模式,自报接近 Claude Fable 5);厂商同步表态 V4 适配 Ascend 950PR 后推理提速 35 倍,并称 950 超节点上线后将大幅降价。Why it matters: 旗舰开源模型把国产 NPU 适配写进发布节奏本身——但 35 倍与降价均为厂商自报/表态,且 950 云端可用性尚未兑现,需以实测为准。对 RL-on-NPU 的意义: 若 V4-Pro 在 950PR 上的推理适配坐实,rollout 引擎将首次在国产芯片上跑最前沿开源旗舰——这是 RL-on-Ascend 从 910B 复现走向前沿规模的关键前置;降价表态也预示 rollout 成本曲线可能在 950 世代重构。",
+      "summary": "08-13 发布 V4-Pro-0813(1M/双模式,自报接近 Claude Fable 5);厂商称 V4 适配 950PR 后推理提速 35 倍、950 超节点上线后大幅降价——均为厂商表态,950 云端可用性尚未兑现。",
+      "url": "https://deepseek.ai/blog",
+      "tags": [
+        "DeepSeek-V4",
+        "950",
+        "inference",
+        "domestic-npu",
+        "2026"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "寒武纪 / 摩尔线程 H1 财报(国产算力放量的硬数据)",
+      "org": "寒武纪 / 摩尔线程(财报)",
+      "year": "2026-08",
+      "category": "hardware",
+      "innovation": "H1 营收 59.96 亿(+108.1%)/ 17.36 亿(+147.4%),国产 AI 算力从叙事走向放量实证",
+      "analysis": "What it is: 寒武纪 2026 H1 营收 59.96 亿元(同比 +108.1%);摩尔线程 H1 营收 17.36 亿元(+147.4%)并筹划 H 股上市——国产 AI 算力需求放量的财报级实证(confirmed)。Why it matters: 与 08-10 美方致函收紧最终用户管制(中等信源)形成对冲叙事——管制越紧,国产芯片采购放量越快,资本面(摩尔线程 H 股)进一步加注。对 RL-on-NPU 的意义: 国产算力多极化加速——昇腾之外,思元/MTT 的训练生态若继续完善,RL 框架的'跨国产 NPU 后端抽象'(HCCL 之外的集合通信与算子层)将从可选项变成必答题;本看板此前以昇腾为单极的假设需要持续校准。",
+      "summary": "寒武纪 H1 营收 59.96 亿(+108.1%)、摩尔线程 H1 17.36 亿(+147.4%)并筹划 H 股——国产算力放量的财报实证;背景是 08-10 美方致函堵最终用户漏洞、管制收紧(中等信源)。",
+      "url": "https://finance.sina.com.cn/",
+      "tags": [
+        "cambricon",
+        "moore-threads",
+        "domestic-npu",
+        "earnings",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
     {
       "title": "vLLM-Ascend v0.22.1rc1(HCCL 权重传输后端打通 RL 流水线)",
       "org": "vLLM-Ascend (vLLM project / 昇腾社区)",

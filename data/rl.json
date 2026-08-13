@@ -1,6 +1,96 @@
 {
-  "updated": "2026-07-07",
+  "updated": "2026-08-13",
   "items": [
+    {
+      "title": "slime v0.3.1(训推一致内建化:top-p masking + R3 路由专家)",
+      "org": "THUDM / Zhipu",
+      "year": "2026-08",
+      "category": "framework",
+      "innovation": "top-p masking 让训练侧复现 rollout 的有效采样分布,训推一致从外挂探针变成框架内建能力",
+      "analysis": "Innovation: 08-06 发布的 v0.3.1 把训推一致做进框架:top-p masking 使训练侧 logprob 计算复现 rollout 时的有效采样分布,配合 PD 分离 + R3 路由专家(记录并回放 MoE 路由,与 Miles 的 R3 同源思路)从源头压制 MoE RL 的训推失配;另有并行 update_from_disk 权重更新、融合 PPO logprob/entropy 算子,并移除了 Megatron Bridge 依赖。Performance: 官方 release note 口径,GLM 系生产 RL 栈的例行大版本。对 RL-on-NPU 的意义: 训推一致正是 Ascend 上数值漂移(本看板 align-probe 主线)最敏感的环节——top-p masking 与 R3 都是纯算法/记录层手段,不依赖 CUDA 特性,是最值得优先移植到 NPU 训练栈的一致性机制;去 Megatron Bridge 也缩小了向 MindSpeed 侧适配的接口面。",
+      "summary": "slime v0.3.1(08-06):top-p masking 在训练侧复现 rollout 有效采样分布(训推一致内建化)、并行 update_from_disk 权重更新、PD 分离 + R3 路由专家、融合 PPO logprob/entropy 算子,并移除 Megatron Bridge。",
+      "url": "https://github.com/THUDM/slime/releases",
+      "tags": [
+        "framework",
+        "train-inference",
+        "MoE",
+        "weight-sync",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "ESTR(熵缩放信任域:异步 off-policy 追平同步 GRPO)",
+      "org": "arXiv 预印本",
+      "year": "2026-07",
+      "category": "algorithm",
+      "innovation": "发现 off-policy 偏差随 token 熵内生缩放,据此构造熵缩放信任域",
+      "analysis": "Innovation: 指出异步 RL 的 off-policy 偏差并非均匀分布,而是随 token 熵内生缩放——高熵 token 承担更大的分布漂移;据此把信任域(clip 范围)按熵缩放,给高熵 token 更宽容忍度、低熵 token 更紧约束。Performance: BrowseComp-Plus 37.3,超异步基线 34.9,并追平同步 GRPO——异步吞吐不再以牺牲最终性能为代价。对 RL-on-NPU 的意义: 异步/训推分离是 Ascend 上绕开 sleep-mode 缺失的主路线,而 staleness 容忍度一直是瓶颈;ESTR 与 Staleness–LR 标度律、GAC 同属'让高异步度可用'的稳定器,且只改 loss 端 clip 逻辑,NPU 移植成本几乎为零。",
+      "summary": "熵缩放信任域:利用 off-policy 偏差随 token 熵内生缩放的规律自适应调整 clip 范围,BrowseComp-Plus 37.3 vs 异步基线 34.9,追平同步 GRPO。",
+      "url": "https://arxiv.org/abs/2607.22186",
+      "tags": [
+        "async-rl",
+        "off-policy",
+        "trust-region",
+        "entropy",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "PNPO(因果前缀几何平均比率,rollout 安全复用多 epoch)",
+      "org": "arXiv 预印本",
+      "year": "2026-08",
+      "category": "algorithm",
+      "innovation": "把重要性比率改为因果前缀几何平均,使同一批 rollout 可安全复用多个 epoch",
+      "analysis": "Innovation: 针对 rollout 复用多 epoch 时重要性比率方差爆炸的问题,把 token 级/序列级比率改为因果前缀几何平均——每个 token 的比率由其因果前缀的几何平均平滑,兼得 token 级信用分配与序列级稳定性。Performance: 4 epoch 复用下超 GSPO 3.00 分,说明在高复用(强 off-policy)区间优势更明显。对 RL-on-NPU 的意义: rollout 是 NPU RL 最贵的环节(>70% 墙钟、显存大头),同一批 rollout 能安全多 epoch 复用直接把生成成本摊薄数倍——与 Train Less Learn More 的自适应采样、ExGRPO 的经验回放同向,是 Ascend 上'少生成、多利用'路线的算法端支点。",
+      "summary": "把重要性比率改为因果前缀几何平均,使 rollout 可安全复用多个 epoch:4 epoch 下超 GSPO 3.00 分,直接摊薄 RL 中最贵的生成成本。",
+      "url": "https://arxiv.org/abs/2608.01418",
+      "tags": [
+        "off-policy",
+        "rollout",
+        "sample-reuse",
+        "GRPO",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "RLSVR / SpyRL(任务变换:把开放任务转成规则可验证自博弈)",
+      "org": "arXiv 预印本(COLM 2026)",
+      "year": "2026-07",
+      "category": "algorithm",
+      "innovation": "用「谁是卧底」式自博弈把摘要/创意写作等开放任务变换成规则可验证博弈",
+      "analysis": "Innovation: RLVR 只覆盖可形式化验证的任务,RLSVR/SpyRL 提出'任务变换'——把开放式生成任务嵌进规则可判胜负的博弈(「谁是卧底」自博弈:生成质量由博弈胜负这一硬规则裁决),从而免 reward model 地为不可验证任务制造可验证奖励。Performance: 摘要/创意写作胜率 75.4%/77.3%,且反哺数学 +8.97%/+6.16%(COLM 2026)。对 RL-on-NPU 的意义: 与 Right in the Right Way 的判别器混合奖励同属'扩大 RLVR 疆域'路线,但奖励端只需规则判定、无需额外 RM 前向,显存与算子负担比判别器方案更轻——对 64GB 910B 上的开放任务 RL 是更省资源的配方。",
+      "summary": "任务变换把开放任务转成规则可验证博弈(「谁是卧底」自博弈):摘要/创意写作胜率 75.4%/77.3%,数学 +8.97%/+6.16%,免 reward model 扩大 RLVR 覆盖面(COLM 2026)。",
+      "url": "https://arxiv.org/abs/2607.23802",
+      "tags": [
+        "RLVR",
+        "self-play",
+        "reward-design",
+        "open-ended",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "DeepSeek-V4-Flash-0731(底座不变重做 RL 后训练,反超自家 Pro)",
+      "org": "DeepSeek-AI",
+      "year": "2026-07",
+      "category": "model",
+      "innovation": "同一底座仅重做 RL 后训练,Terminal-Bench 2.1 +25.8 分并反超 V4-Pro-Preview",
+      "analysis": "Innovation: 07-31 发布的 V4-Flash 更新版底座完全不变、只重做 agentic RL 后训练配方,Terminal-Bench 2.1 从 56.9 跳到 82.7(+25.8)、DeepSWE 54.4,以 13B 激活反超参数量数倍的自家 V4-Pro-Preview。Performance: 这是'后训练配方 > 底座规模'迄今最直接的单变量证据——同底座对照消除了预训练混杂因素(数字为厂商自报,待第三方复验)。对 RL-on-NPU 的意义: 若后训练配方的杠杆确实大于底座规模,那么在算力受限的 Ascend 集群上把预算投给 RL 后训练迭代(而非更大底座)是性价比更高的路径;且 V4 系已在 vLLM-Ascend 支持,13B 激活的 Flash 是 910B 上现实可跑的 agentic RL 底座候选。",
+      "summary": "07-31 更新:底座不变仅重做 RL 后训练,Terminal-Bench 2.1 56.9→82.7(+25.8)、DeepSWE 54.4,反超自家 V4-Pro-Preview——「后训练配方>底座规模」最直接的同底座对照证据(厂商自报)。",
+      "url": "https://deepseek.ai/blog/deepseek-v4-flash-ga-agent-benchmarks",
+      "tags": [
+        "RL-posttrain",
+        "agentic-rl",
+        "model",
+        "DeepSeek-V4",
+        "2026"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "AReaL v2.0.0(微服务化重构的异步 RL 训练系统)",
       "org": "inclusionAI (Ant Group) / AReaL 团队",

@@ -1,6 +1,84 @@
 {
-  "updated": "2026-08-10",
+  "updated": "2026-08-13",
   "items": [
+    {
+      "title": "openPangu-2.0-Pro(505B/A18B 昇腾全栈训练旗舰兑现开源)",
+      "org": "华为 (ascend-tribe / GitCode)",
+      "year": "2026-07",
+      "category": "model-report",
+      "innovation": "昇腾全栈训练的 505B MoE 旗舰按期开源:权重 + 推理代码 + 技术报告",
+      "analysis": "Innovation: 07-31 华为兑现 6 月承诺,在 GitCode 放出 openPangu-2.0-Pro——505B 总参/A18B 激活 MoE、34T token 预训练、512K 上下文,权重、推理代码与技术报告齐全,全程在昇腾集群完成训练。Performance: 目前公开可查的最大规模昇腾全栈训练模型实证(基准数字以技术报告为准)。对 RL-on-NPU 的意义: 一手参照系价值极高——技术报告直接披露 NPU 上前沿规模训练的工程取舍(并行、算子、稳定性);遗憾是预训练/后训练代码未随 Pro 放出,RL-on-Ascend 的实现细节仍需回到 Flash 版已开源的部分对照研究。",
+      "summary": "07-31 兑现开源:505B/A18B MoE、34T token、512K 上下文,权重+推理代码+技术报告上线 GitCode,昇腾全栈训练;预训练/后训练代码未随本次放出。",
+      "ascend": "ready",
+      "ascendNote": "昇腾全栈训练并提供昇腾推理代码;预训练/后训练代码未开源。",
+      "url": "https://ai.gitcode.com/ascend-tribe/openPangu-2.0-Pro",
+      "tags": [
+        "openPangu",
+        "MoE",
+        "open-weights",
+        "ascend-native",
+        "2026",
+        "model"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "LongCat LSA 技术报告(流式感知稀疏注意力的完整答卷)",
+      "org": "美团 (Meituan)",
+      "year": "2026-08",
+      "category": "attention",
+      "innovation": "流式感知索引 + 跨层索引复用/蒸馏 + 层次化粗到细打分,对全注意力近无损且训推双提速",
+      "analysis": "Innovation: LongCat-2.0 卡片里只有轮廓的 LSA 终于落成技术报告(arXiv 2608.01662):流式感知索引让 token 选择与增量解码流对齐;跨层索引复用+蒸馏摊薄 DSA 系'索引本身很贵'的隐藏成本(与 GLM-5.2 IndexShare 同向);层次化粗到细打分兼顾召回与开销。Performance: 报告口径对全注意力近无损,训练与推理双侧提速。对 RL-on-NPU 的意义: 稀疏注意力是 memory-bound NPU 上降 rollout 成本的主杠杆,而索引开销正是 NPU 缺定制 kernel 时的痛点——跨层索引复用把索引计算次数直接砍掉,是最容易在 Ascend 上兑现收益的稀疏注意力设计之一。",
+      "summary": "LSA 技术报告(arXiv 2608.01662,08 初):流式感知索引、跨层索引复用+蒸馏、层次化粗到细打分;报告称对全注意力近无损、训推双提速——补齐 LongCat-2.0 卡片缺失的注意力机制细节。",
+      "url": "https://arxiv.org/abs/2608.01662",
+      "tags": [
+        "sparse-attention",
+        "long-context",
+        "LongCat",
+        "2026"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Qwen3.8-Max(2.4T MoE 多模态,自报 OSWorld-Verified 86.1)",
+      "org": "Qwen Team, Alibaba",
+      "year": "2026-08",
+      "category": "model-report",
+      "innovation": "2.4T 总参/95B 激活 MoE、1M 上下文、原生多模态,自报 OSWorld-Verified 86.1 超 Claude Fable 5",
+      "analysis": "Innovation: 08-02 API 先行发布(权重 pending):2.4T MoE/95B 激活、1M 上下文、原生多模态,主打 computer-use——自报 OSWorld-Verified 86.1,超 Claude Fable 5 的 85.0(vendor 口径)。Performance: 若属实是开放模型系首次在 computer-use 头部基准登顶,但恰逢 OSWorld 2.0 把原版判定为饱和(85%+),长程真实任务上的成色仍待检验。对 RL-on-NPU 的意义: 95B 激活对 NPU 推理偏重,但 Qwen 家族是 vLLM-Ascend 支持最全的谱系,权重放出后大概率快速适配;其 computer-use RL 配方(对照 ComputerRL 千桌面路线)是 agentic RL 训练侧的重要参照。",
+      "summary": "08-02 发布(API 先行、权重 pending):2.4T MoE/95B 激活/1M 上下文/多模态,自报 OSWorld-Verified 86.1 超 Claude Fable 5 的 85.0——恰逢原版 OSWorld 被判饱和,长程成色待 2.0 检验(厂商自报)。",
+      "url": "https://qwenlm.github.io/blog/qwen3.8-max/",
+      "tags": [
+        "MoE",
+        "multimodal",
+        "computer-use",
+        "long-context",
+        "2026",
+        "model"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "DeepSeek-V4-Flash-0731(284B/A13B:1M 上下文效率架构的上限刷新)",
+      "org": "DeepSeek-AI",
+      "year": "2026-07",
+      "category": "model-report",
+      "innovation": "CSA+HCA 混合注意力 + mHC 的 284B/13B 激活效率端旗舰,小激活承接旗舰级 agent 能力",
+      "analysis": "Innovation: 07-31 GA 的 V4-Flash 更新版,底座沿用 V4 系 284B 总参/13B 激活、1M 上下文,架构上是 CSA+HCA 混合注意力+mHC 路线的效率端代表——二手博客口径称 V4-Pro 在 1M 场景单 token FLOPs 仅 V3.2 的 27%、KV 占用仅 10%,Flash 进一步把激活压到 13B。Performance: agent 基准反超自家 V4-Pro-Preview(后训练配方角度见 RL 页对应卡),说明该效率架构的能力上限并不由激活规模封顶。对 RL-on-NPU 的意义: 13B 激活 + 稀疏注意力 + KV 大幅压缩,是 64GB 910B 上最现实的 1M 上下文 rollout 底座之一;V4 系已在 vLLM-Ascend 有定制算子与 MTP 投机解码支持,Flash-0731 基本可无缝承接。",
+      "summary": "284B/13B 激活、1M 上下文;V4 系 CSA+HCA 混合注意力+mHC,二手口径 V4-Pro 1M 场景单 token FLOPs 仅 V3.2 的 27%、KV 10%。小激活承接旗舰级 agent 能力(架构角度;后训练证据见 RL 页)。",
+      "ascend": "ready",
+      "ascendNote": "V4 家族已在 vLLM-Ascend 支持(定制算子 + MTP KV-cache 分片投机解码)。",
+      "url": "https://deepseek.ai/blog/deepseek-v4-flash-ga-agent-benchmarks",
+      "tags": [
+        "MoE",
+        "sparse-attention",
+        "long-context",
+        "efficiency",
+        "2026",
+        "model"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "Kimi K3(2.8T 极稀疏 MoE,线性注意力 KDA 首登开源旗舰)",
       "org": "月之暗面 (Moonshot AI)",
