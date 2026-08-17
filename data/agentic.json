@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-13",
+  "updated": "2026-08-17",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -1124,13 +1124,13 @@
       "auto": true
     },
     {
-      "title": "FaithMed: Training LLMs For Faithful Evidence-Based Medical Reasoning",
-      "org": "Zhiyun Zhang +3",
-      "year": "2026-07",
+      "title": "Rollplex: Cross-Phase GPU Spatial Sharing for Vision Language Model Post-Training",
+      "org": "Hanfeng Lu +10",
+      "year": "2026-08",
       "category": "algorithm",
       "track": "academic",
-      "summary": "Faithful reasoning is essential in medicine, where clinical decisions require transparent justification grounded in reliable evidence. Current medical LLMs either lack active access to evidence or use retrieved evidence without supervising how it should be appraised and applied d…",
-      "url": "http://arxiv.org/abs/2607.01440v1",
+      "summary": "Vision-language models (VLMs) enable embodied agents to reason and act from visual observations and language instructions. Reinforcement learning (RL) post-training enhances these capabilities using task feedback, but current on-policy RL runtimes execute rollout, reference scori…",
+      "url": "http://arxiv.org/abs/2608.14498v1",
       "tags": [
         "academic",
         "agentic-rl",
@@ -1140,13 +1140,13 @@
       "auto": true
     },
     {
-      "title": "Is One Layer Enough? Training A Single Transformer Layer Can Match Full-Parameter RL Training",
-      "org": "Zijian Zhang +6",
-      "year": "2026-07",
+      "title": "A Graph-Based Reinforcement Learning Framework for Structured Drift Diagnosis and Recovery in Autonomous LLM Agents",
+      "org": "Ismail El Hamraoui +3",
+      "year": "2026-08",
       "category": "algorithm",
       "track": "academic",
-      "summary": "Reinforcement learning (RL) has become a central component of post-training large language models (LLMs), yet little is understood about how RL adaptation is distributed across transformer layers. Existing approaches typically update all model parameters uniformly, implicitly ass…",
-      "url": "http://arxiv.org/abs/2607.01232v2",
+      "summary": "Autonomous LLM agents are increasingly deployed in complex real-world workflows, yet they remain vulnerable to runtime behavioral drift, a silent deviation from the original task that can lead to irreversible side effects on external systems. Existing approaches address drift at …",
+      "url": "http://arxiv.org/abs/2608.14109v1",
       "tags": [
         "academic",
         "agentic-rl",
@@ -1156,17 +1156,33 @@
       "auto": true
     },
     {
-      "title": "Next-Generation Agentic Reinforcement Learning Systems Enable Self-Evolving Agents",
-      "org": "Ran Yan +23",
-      "year": "2026-07",
+      "title": "LoongReflect: Boosting Long-Horizon Reflection in Search Agents via Global Perspective Distillation",
+      "org": "Zhixin Zhang +7",
+      "year": "2026-08",
       "category": "algorithm",
       "track": "academic",
-      "summary": "LLM agents are rapidly being deployed in production, including coding assistants, customer-support chatbots, and scientific research assistants, yet they remain fundamentally static in enterprise deployment. The LLM weights, system prompts, tool repertoires, and in-context harnes…",
-      "url": "http://arxiv.org/abs/2607.01120v2",
+      "summary": "Large language model agents increasingly rely on long-horizon reasoning to solve complex tasks involving planning, tool use, and memory. A critical capability in such settings is reflection: assessing trajectory progress, identifying missing evidence and unreliable intermediate s…",
+      "url": "http://arxiv.org/abs/2608.11967v1",
       "tags": [
         "academic",
         "agentic-rl",
-        "agentic-rl"
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Dual-Loop Self-Evolution via Verifiable Emotion Feedback for Multi-Turn Empathetic Dialogue",
+      "org": "Yi Wei +7",
+      "year": "2026-08",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Large language models have demonstrated conversational capabilities, yet empathetic competence remains challenging. Empathetic support is inherently multi-turn and path-dependent: users disclose concerns gradually, emotions evolve over time, and early responses shape trust and re…",
+      "url": "http://arxiv.org/abs/2608.10626v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
       ],
       "confidence": "confirmed",
       "auto": true
