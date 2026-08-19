@@ -20,6 +20,7 @@ flowchart LR
         N16["D16 · V4 的 Agent"]
         N21["D21 · LongCat-2.0"]
         N24["D24 · Kimi K3"]
+        N28["D28 · 原生多模态两路线"]
     end
     subgraph SWE ["SWE 与训练数据"]
         N12["D12 · SWE Agents 上手"]
@@ -57,6 +58,7 @@ flowchart LR
     N12 -. "阻力最小起点" .-> N22
     N09 -. "slime 的下游" .-> N19
     N04 -. "注意力路线分岔" .-> N24
+    N24 -. "连续对离散原生对照" .-> N28
     N03 --> N13
     N20 -. "规模实证互补" .-> N21
     N23 -. "问题域落到框架" .-> FW
