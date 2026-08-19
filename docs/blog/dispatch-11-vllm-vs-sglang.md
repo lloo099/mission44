@@ -2,9 +2,9 @@
 
 *2026-06-25 · NPU Frontier Dispatch · inference / vLLM / SGLang / investment*
 
-> **TL;DR** — 2026 年 1 月,两大开源推理引擎几乎同时商业化:**vLLM → Inferact**(**$800M 估值 / $150M 种子**,a16z + Lightspeed 领投,创始团队 Simon Mo、Woosuk Kwon、Kaichao You、Roger Wang + **Ion Stoica**,vLLM 跑在 **40 万+ GPU** 上);**SGLang → RadixArk**(**~$400M 估值 / $100M 种子**,Accel 领投,Intel CEO 陈立武天使)。两家都出自 **UC Berkeley** 系,瞄准同一个爆发的推理市场。差别:**vLLM 赢在生态广度、社区、硬件中立、资金**;**SGLang 赢在 prefix-heavy/agent 场景性能(RadixAttention)+ 自带 RL 训练框架 Miles**。对 RL-on-NPU:两个引擎都有 Ascend 后端,是 rollout 引擎选型的两个主选项;SGLang 的 RadixAttention + Miles 的 R3/FP8 让它在"RL 训练侧"叙事更完整,vLLM 则以 vLLM-Ascend 的广覆盖见长。
+> **TL;DR** — 2026 年 1 月,两大开源推理引擎几乎同时商业化:**vLLM → Inferact**(**$800M 估值 / $150M 种子**,a16z + Lightspeed 领投,创始团队 Simon Mo、Woosuk Kwon、Kaichao You、Roger Wang + **Ion Stoica**,vLLM 运行在 **40 万+ GPU** 上);**SGLang → RadixArk**(**~$400M 估值 / $100M 种子**,Accel 领投,Intel CEO 陈立武天使)。两家都出自 **UC Berkeley** 系,面向同一个高速增长的推理市场。差别:**vLLM 优势在生态广度、社区、硬件中立、资金**;**SGLang 优势在 prefix-heavy/agent 场景性能(RadixAttention)+ 自带 RL 训练框架 Miles**。对 RL-on-NPU:两个引擎都有 Ascend 后端,是 rollout 引擎选型的两个主选项;SGLang 的 RadixAttention + Miles 的 R3/FP8 让它在"RL 训练侧"叙事更完整,vLLM 则以 vLLM-Ascend 的广覆盖见长。
 
-承接 Dispatch 09/10。应要求把 vLLM 这一侧也做进来,和 SGLang 正面对比。
+承接 Dispatch 09/10。应要求将 vLLM 一侧纳入,与 SGLang 直接对比。
 
 > ⚠️ 估值/融资为媒体报道口径(provisional),非投资建议。
 

@@ -2,23 +2,23 @@
 
 *2026-06-29 · NPU Frontier Dispatch · RL-frameworks / slime / SGLang / GLM / RL-on-NPU*
 
-> **TL;DR** — slime 是 THUDM / Z.ai(智谱)开源的 SGLang 原生 RL post-training 框架(Apache-2.0,7.2k stars),架构核心是三模块 + Data Buffer 中枢:官方设计是把 Megatron 训练与 SGLang 推理连成一套系统、拒绝碎片化成三张皮,数据面经 Buffer 中转解耦,权重同步走独立通道。设计原则是零封装税——SGLang 每个参数经 `--sglang-` 前缀直通,Megatron 并行/优化器/checkpoint 参数原样保留,hackability 优先。真正的分量在战绩:官方自述它是 GLM-4.5→5.2 六代旗舰背后的生产 RL 引擎。同步基线之外有 fully_async 全异步路径(Multi-Task Rollout Orchestrator、PD 分离、Delta Weight Sync)。Miles(RadixArk)是其企业级下游发行版。对昇腾:Buffer 中枢硬件无关,移植缺口可精确圈定在训练引擎、推理引擎、权重同步三点——但每一点都有实在的坑。规格均 provisional。
+> **TL;DR** — slime 是 THUDM / Z.ai(智谱)开源的 SGLang 原生 RL post-training 框架(Apache-2.0,7.2k stars),架构核心是三模块 + Data Buffer 中枢:官方设计是把 Megatron 训练与 SGLang 推理连成一套系统、拒绝碎片化为三套割裂组件,数据面经 Buffer 中转解耦,权重同步走独立通道。设计原则是零封装税——SGLang 每个参数经 `--sglang-` 前缀直通,Megatron 并行/优化器/checkpoint 参数原样保留,hackability 优先。核心分量在生产记录:官方自述它是 GLM-4.5→5.2 六代旗舰背后的生产 RL 引擎。同步基线之外有 fully_async 全异步路径(Multi-Task Rollout Orchestrator、PD 分离、Delta Weight Sync)。Miles(RadixArk)是其企业级下游发行版。对昇腾:Buffer 中枢硬件无关,移植缺口可精确圈定在训练引擎、推理引擎、权重同步三点——但每一点都有具体的障碍。规格均 provisional。
 
 应要求调研 slime 这个被 GLM 全家桶反复点名的 RL 框架;承接本看板 Dispatch 02(rollout 瓶颈与 staleness)、06(GLM-5.2)、09(RadixArk Miles)、12(SWE agentic RL 框架表)、18(prime-rl vs SkyRL-Agent)。
 
 ---
 
-## 1 · slime 是什么:GLM 全家桶背后的 RL 引擎
+## 1 · slime 的定位:GLM 全家桶背后的 RL 引擎
 
-slime 是 THUDM / Z.ai(智谱)开源的 LLM post-training 框架,定位一句话:**for RL scaling**。仓库口径(provisional)是 Apache-2.0、7.2k stars / 1k forks,官方给出的两大核心能力是"高性能训练"与"灵活数据生成"——前者对应 Megatron 训练侧,后者对应 SGLang rollout 侧。
+slime 是 THUDM / Z.ai(智谱)开源的 LLM post-training 框架,官方定位:**for RL scaling**。仓库口径(provisional)是 Apache-2.0、7.2k stars / 1k forks,官方给出的两大核心能力是"高性能训练"与"灵活数据生成"——前者对应 Megatron 训练侧,后者对应 SGLang rollout 侧。
 
-但真正让 slime 与众不同的不是任何 benchmark,而是一行官方自述:**slime 是 GLM-4.5 / 4.6 / 4.7 / GLM-5 / 5.1 / 5.2 六代旗舰背后的 RL 框架**(provisional,官方口径)。这件事的信息量远超吞吐数字。RL 后训练框架的死亡地带从来不在 demo,而在生产:一个 753B/40B 激活的 MoE(GLM-5.2,见 Dispatch 06)要跑长周期的 RL,期间权重同步、rollout 长尾、reward 服务、checkpoint 恢复任何一环崩了都是真金白银。能连续扛住六代旗舰模型的迭代,意味着这套系统在"最难伺候的用户就是自己"的压力下被反复锤炼过——这是玩具框架和生产框架的分界线。相比之下,很多开源 RL 框架的"战绩"是论文复现,slime 的战绩是它的东家把公司押在上面。
+但真正让 slime 与众不同的不是任何 benchmark,而是一行官方自述:**slime 是 GLM-4.5 / 4.6 / 4.7 / GLM-5 / 5.1 / 5.2 六代旗舰背后的 RL 框架**(provisional,官方口径)。这件事的信息量远超吞吐数字。RL 后训练框架的真正考验从来不在 demo,而在生产:一个 753B/40B 激活的 MoE(GLM-5.2,见 Dispatch 06)要跑长周期的 RL,期间权重同步、rollout 长尾、reward 服务、checkpoint 恢复任何一环故障都会造成直接损失。能连续支撑六代旗舰模型的迭代,意味着这套系统在自身即最高要求用户的压力下被反复验证——这是玩具框架和生产框架的分界线。相比之下,很多开源 RL 框架的验证止于论文复现,slime 的验证是其所属公司将旗舰模型的生产构建其上。
 
-开源自家生产 RL 栈,则是清晰的生态打法:模型权重开源之后,让社区用同一套工具在 GLM 系模型上做 RL,等于把"GLM + slime + SGLang"绑成一条默认路径。支持模型列表(provisional)也印证了这个策略——GLM 系之外覆盖 Qwen(2.5/3/3MoE/3Next/3.5/3.6)、DeepSeek(V3/V3.1/R1)、Llama 3,即主流开源 MoE/Dense 全家桶。配套的公开叙事有两篇:lmsys.org 的愿景博客《slime: An SGLang-Native Post-Training Framework for RL Scaling》(2025-07-09)与 v0.1.0 release《Redefining High-Performance RL Training Frameworks》(均 provisional)。
+开源自家生产 RL 栈,则是清晰的生态策略:模型权重开源之后,让社区用同一套工具在 GLM 系模型上做 RL,等于把"GLM + slime + SGLang"组合为一条默认路径。支持模型列表(provisional)也印证了这个策略——GLM 系之外覆盖 Qwen(2.5/3/3MoE/3Next/3.5/3.6)、DeepSeek(V3/V3.1/R1)、Llama 3,即主流开源 MoE/Dense 全家桶。配套的公开叙事有两篇:lmsys.org 的愿景博客《slime: An SGLang-Native Post-Training Framework for RL Scaling》(2025-07-09)与 v0.1.0 release《Redefining High-Performance RL Training Frameworks》(均 provisional)。
 
 ## 2 · 三模块架构:以 Data Buffer 为中枢的解耦
 
-slime 的架构声明里最有态度的一句是:不把系统碎片化成"trainer、rollout 服务、agent 框架"三张皮,而是把 Megatron 训练与 SGLang 推理直接连起来。落到结构上是三个模块:
+slime 的架构声明里最具立场的一句是:不把系统碎片化为"trainer、rollout 服务、agent 框架"三套割裂组件,而是把 Megatron 训练与 SGLang 推理直接连起来。落到结构上是三个模块:
 
 1. **Training(Megatron)**:从 Data Buffer 读数据训练,每步训练后把参数同步给 rollout 模块;
 2. **Rollout(SGLang + router)**:生成新数据(含 reward / verifier 输出)写入 Data Buffer;
@@ -44,19 +44,19 @@ flowchart LR
     T1 -. "权重流:每步训练后同步参数" .-> R1
 ```
 
-把 Data Buffer 做成数据面的中枢,而不是让 trainer 与 rollout 在数据面点对点耦合,是这套设计里最值得细看的决策(官方说的"直接连起来"指训推收在一套系统内,数据流仍经 Buffer 中转)。对比一下"trainer 与 rollout 数据面直接耦合"的脆弱形态:trainer 需要知道 rollout 的批组织方式、采样时序、失败重试语义;rollout 需要知道 trainer 什么时候要数据、要多少、什么格式。两侧的每一次演进都是对方的破坏性变更,想从同步切异步、想换推理引擎、想在中间插一个 agent 循环,都要同时改两侧——这正是很多 RL 框架长成"三张皮"的原因:改不动核心,只好在外面再包一层。
+把 Data Buffer 做成数据面的中枢,而不是让 trainer 与 rollout 在数据面点对点耦合,是这套设计里最值得细看的决策(官方说的"直接连起来"指训推收在一套系统内,数据流仍经 Buffer 中转)。对比一下"trainer 与 rollout 数据面直接耦合"的脆弱形态:trainer 需要知道 rollout 的批组织方式、采样时序、失败重试语义;rollout 需要知道 trainer 什么时候要数据、要多少、什么格式。两侧的每一次演进都是对方的破坏性变更,想从同步切异步、想换推理引擎、想在中间插一个 agent 循环,都要同时改两侧——这正是很多 RL 框架演化为三套割裂组件的原因:核心难以修改,只能在外层再封装一层。
 
 Buffer 中心化之后,契约收敛为两条:**训练侧只对 Buffer 编程**(读 batch),**rollout 侧只对 Buffer 编程**(写轨迹 + 附带 reward/verifier 信号),外加一条独立的权重同步通道。于是三个好处自然成立:
 
 - **数据生成变成可插拔的**(详见下节);
 - **同步/异步是 Buffer 两侧的调度策略,不是架构重写**——同步就是"写完一批读一批",异步就是"两侧各自全速跑",切换的是策略,不是接口(详见第 4 节);
-- **故障域隔离**——rollout 的沙箱崩了、verifier 超时了,烂在 Buffer 之前;训练侧看到的永远是干净的数据流。
+- **故障域隔离**——rollout 的沙箱崩溃、verifier 超时,均被隔离在 Buffer 之前;训练侧看到的永远是干净的数据流。
 
 这套"以缓冲区为中心"的解耦,本质上是把 RL 系统里最不稳定的部分(环境交互、数据生成)和最昂贵的部分(大规模训练)之间加了一层阻抗匹配。
 
 ## 3 · Data Buffer 中枢:灵活数据生成的统一接口
 
-"灵活数据生成"作为官方两大核心能力之一,落地就在 Data Buffer 的自定义数据生成接口上:math / code / search / tools / sandboxes / verifiers / environments / multi-agent,全部通过同一个口子插进来。你的 agentic 工作流不管多复杂——多轮工具调用、沙箱执行、多智能体协作——最终产出的就是写进 Buffer 的轨迹(含 RLVR 的 reward / verifier 输出),训练侧一行不用改。
+"灵活数据生成"作为官方两大核心能力之一,落地就在 Data Buffer 的自定义数据生成接口上:math / code / search / tools / sandboxes / verifiers / environments / multi-agent,全部通过同一接口接入。agentic 工作流无论多复杂——多轮工具调用、沙箱执行、多智能体协作——最终产出的就是写进 Buffer 的轨迹(含 RLVR 的 reward / verifier 输出),训练侧无需任何修改。
 
 ```mermaid
 flowchart LR
@@ -93,17 +93,17 @@ flowchart LR
     B1 -->|"训练数据"| TRAIN["Training——Megatron"]
 ```
 
-这个接口设计的含义是:RL 算法研究者与 agent 工作流开发者被 Buffer 隔在两侧,各自迭代互不拖累。想给训练加一个新的 verifier 环境?写一个数据生成组件插上即可;想换 GRPO 的分组策略?训练侧的事,rollout 组件毫无感知。Rollout 侧的两个系统特性(PD Disaggregation、External Rollout Engines)也在这一层生效,细节留到第 4 节的异步语境里讲。
+这个接口设计的含义是:RL 算法研究者与 agent 工作流开发者被 Buffer 隔在两侧,各自迭代互不干扰。为训练新增一个 verifier 环境,编写一个数据生成组件接入即可;更换 GRPO 的分组策略属于训练侧改动,rollout 组件毫无感知。Rollout 侧的两个系统特性(PD Disaggregation、External Rollout Engines)也在这一层生效,细节留到第 4 节的异步语境里讲。
 
 ## 4 · SGLang-native 与参数直通:hackability 作为设计原则
 
 slime 自称 SGLang-native,这个"native"有非常具体的含义(provisional,仓库口径):**你装的那个 SGLang 支持的每一个参数,都可以通过 `--sglang-` 前缀直通传入**;Megatron 侧同样直通——并行策略、优化器、checkpoint 相关的全部参数原样保留。
 
-这是一个反主流的设计选择。多数框架的做法是"封装层":从底层系统里挑一个子集包成自己的配置项,美其名曰简化,实际是阉割——底层系统的大部分能力被封装层挡在外面,用户想调一个封装层没暴露的参数,只能改框架源码或提 issue 等下个版本。slime 的选择是零封装税:两个成熟系统(Megatron 的训练能力、SGLang 的 serving 能力)的**全部**表面积直接暴露给用户,框架自己只做粘合与调度。
+这是一个反主流的设计选择。多数框架的做法是"封装层":从底层系统里挑一个子集包成自己的配置项,名义上是简化,实际是能力裁剪——底层系统的大部分能力被封装层挡在外面,用户想调整一个封装层未暴露的参数,只能修改框架源码或提 issue 等待下个版本。slime 的选择是零封装税:两个成熟系统(Megatron 的训练能力、SGLang 的 serving 能力)的**全部**表面积直接暴露给用户,框架自己只做粘合与调度。
 
 ```mermaid
 flowchart TB
-    subgraph OTHERS ["别家路线——三张皮各自为政"]
+    subgraph OTHERS ["其他框架路线——三套组件各自独立"]
         O1["独立 Trainer"]
         O2["独立 Rollout 服务"]
         O3["独立 Agent 框架"]
@@ -130,17 +130,17 @@ flowchart TB
     OTHERS -. "对比:slime 拒绝系统碎片化" .-> SLIME
 ```
 
-对研究者这是真价值。做 RL 的人日常要动的恰恰是封装层最容易砍掉的东西:采样侧要改 temperature 调度、改 constrained decoding、开关 radix cache;训练侧要针对一个新 MoE 调 EP/PP/TP 组合、换优化器配置。参数直通意味着这些全都是命令行层面的事,SGLang 或 Megatron 上游发了新特性,slime 用户第一时间就能用,不用等框架"支持"。
+对研究者这是实际价值。做 RL 的人日常要调整的恰恰是封装层最常去除的部分:采样侧要改 temperature 调度、改 constrained decoding、开关 radix cache;训练侧要针对一个新 MoE 调 EP/PP/TP 组合、换优化器配置。参数直通意味着这些全部在命令行层面完成,SGLang 或 Megatron 上游发布新特性后,slime 用户第一时间即可使用,无需等待框架适配。
 
-代价也要诚实说:**门槛不低**。参数直通等于把两个系统的复杂度都直通给了用户——你得同时懂 Megatron 的并行语义和 SGLang 的 serving 参数,配置面巨大,没有封装层帮你挡错误组合。slime 实际上是在筛选用户:它假设你是能读懂 Megatron 报错的工程师,而不是想要一键跑通的入门者。对目标场景(千亿级 MoE 的生产 RL)来说这个假设成立,但选型时要认清这一点。
+代价同样明确:**使用门槛较高**。参数直通等于把两个系统的复杂度都直通给了用户——使用者需同时理解 Megatron 的并行语义和 SGLang 的 serving 参数,配置面巨大,没有封装层拦截错误组合。slime 实际上是在筛选用户:它假设用户是能理解 Megatron 报错的工程师,而非期望开箱即用的入门者。对目标场景(千亿级 MoE 的生产 RL)来说这个假设成立,但选型时需明确这一点。
 
 ## 5 · 从同步到全异步:Agent-Oriented Design
 
-slime 提供两条路径(provisional,仓库口径:同步主路径 + `examples/fully_async`),这个"两条都给"本身就是正确的工程判断。
+slime 提供两条路径(provisional,仓库口径:同步主路径 + `examples/fully_async`),同时提供两条路径本身是合理的工程判断。
 
 **同步路径**是简单正确的基线:每步训练后把参数同步给 rollout,rollout 用最新权重生成下一批数据。on-policy 性质干净,调试和归因容易,算法研究首选。问题是吞吐——Dispatch 02 给过量化背景:rollout 通常占整个 RL 迭代 70% 以上的时间,且长尾严重(一批里最慢的几条 agentic 轨迹决定了整批的等待时间,同属 Dispatch 02 的长尾观察)。同步意味着昂贵的训练集群在 rollout 长尾期间空转。
 
-**全异步路径**对应那篇 Agent-Oriented Design 博客(《An Asynchronous and Decoupled Framework for Agentic RL》):经中央 **Multi-Task Rollout Orchestrator** 解耦推理与训练引擎,跨多种 agentic 负载做高吞吐联合训练。训练不再等 rollout,rollout 不再等训练,Orchestrator 负责在多个 agentic 任务之间调度生成容量。代价是 staleness——异步生成的数据来自旧权重,off-policy 程度需要算法侧(Dispatch 02 提到的 TIS/MIS 一类重要性修正)来买单。slime 把这个取舍留给用户:基线要正确性走同步,规模化要吞吐走 fully_async,而这正是 Data Buffer 中枢设计的红利——两条路共享同一套模块和接口。
+**全异步路径**对应那篇 Agent-Oriented Design 博客(《An Asynchronous and Decoupled Framework for Agentic RL》):经中央 **Multi-Task Rollout Orchestrator** 解耦推理与训练引擎,跨多种 agentic 负载做高吞吐联合训练。训练不再等 rollout,rollout 不再等训练,Orchestrator 负责在多个 agentic 任务之间调度生成容量。代价是 staleness——异步生成的数据来自旧权重,off-policy 程度需由算法侧(Dispatch 02 提到的 TIS/MIS 一类重要性修正)承担。slime 把这个取舍留给用户:基线要正确性走同步,规模化要吞吐走 fully_async,而这正是 Data Buffer 中枢设计的收益——两条路径共享同一套模块和接口。
 
 ```mermaid
 flowchart TB
@@ -169,7 +169,7 @@ flowchart TB
 围绕异步路径还有三个系统特性(均 provisional),各自对应一个具体痛点:
 
 - **PD Disaggregation**:prefill 和 decode 分资源部署。agentic 负载的特征是反复的长上下文 re-prefill(每轮工具调用返回都要重新预填),和 decode 的算力特征完全不同,分开部署才能各自打满。
-- **Delta Weight Sync**:大 MoE 每步全量权重同步太贵——对 GLM-5.2 这个量级(753B 参数)的模型,每步把全量权重推给所有 rollout 实例是不可接受的带宽开销,增量同步把成本降到"只传变化的部分"。
+- **Delta Weight Sync**:大 MoE 每步全量权重同步成本过高——对 GLM-5.2 这个量级(753B 参数)的模型,每步把全量权重推给所有 rollout 实例是不可接受的带宽开销,增量同步把成本降到"只传变化的部分"。
 - **External Rollout Engines**:分离式 serving,rollout 引擎可以完全外置。生成容量独立于训练集群伸缩,甚至可以复用既有的推理集群。
 
 ## 6 · 生态位:slime vs verl vs prime-rl vs SkyRL-Agent vs Miles
@@ -187,7 +187,7 @@ flowchart TB
 ```mermaid
 flowchart TB
     SLIME["slime——THUDM 与 Z.ai 智谱<br>Apache-2.0,GitHub 7.2k stars、1k forks"]
-    subgraph GLM ["自家战绩——GLM 全家桶背后的 RL 框架"]
+    subgraph GLM ["生产记录——GLM 全家桶背后的 RL 框架"]
         G1["GLM-4.5"] --> G2["GLM-4.6"]
         G2 --> G3["GLM-4.7"]
         G3 --> G4["GLM-5"]
@@ -205,21 +205,21 @@ flowchart TB
     SLIME -. "同赛道对照——Dispatch 12 与 18" .-> PEERS
 ```
 
-定位分析:这五者其实不在同一层竞争。verl 赢在生态广度,是"默认选项";prime-rl(Dispatch 18)把全异步做成第一性原理,三组件(训练/编排/推理)全栈自持;SkyRL-Agent 干脆不做全栈,只做后端无关的 agent 层,理论上可以架在任何 trainer 上。slime 的独特组合是三件事的交集:**SGLang 原生**(把"推理引擎全能力直通"作为设计原则,在同类框架中少见)、**GLM 六代生产验证**(有连续旗舰模型战绩背书,在开源 RL 框架中罕见)、**Miles 的上游**——Dispatch 09 讲过,Miles 从 slime fork 共演化、与上游保持对齐,以 R3 和统一 FP8 作为差异化,再叠企业特性(更深 SGLang 集成、运维工具、部署支持、新模型/新硬件优化、LoRA、TITO、低精度训练)。这个上下游关系意味着选型题是分层的:要社区上游和最新特性选 slime,要企业化交付和低精度路线选 Miles,两者不是竞品而是发行版关系。另外 Dispatch 12 框架表里的一个细节值得重提:slime 归在 Megatron 系、"能正确做 EP"——对 MoE 时代的 RL 这不是加分项,是入场券。
+定位分析:五者并不在同一层竞争。verl 的优势在生态广度,是"默认选项";prime-rl(Dispatch 18)把全异步做成第一性原理,三组件(训练/编排/推理)全栈自持;SkyRL-Agent 则不做全栈,只做后端无关的 agent 层,理论上可以架在任何 trainer 上。slime 的独特组合是三件事的交集:**SGLang 原生**(把"推理引擎全能力直通"作为设计原则,在同类框架中少见)、**GLM 六代生产验证**(有连续旗舰模型战绩背书,在开源 RL 框架中罕见)、**Miles 的上游**——Dispatch 09 讲过,Miles 从 slime fork 共演化、与上游保持对齐,以 R3 和统一 FP8 作为差异化,再叠企业特性(更深 SGLang 集成、运维工具、部署支持、新模型/新硬件优化、LoRA、TITO、低精度训练)。这个上下游关系意味着选型题是分层的:要社区上游和最新特性选 slime,要企业化交付和低精度路线选 Miles,两者不是竞品而是发行版关系。另外 Dispatch 12 框架表里的一个细节值得重提:slime 归在 Megatron 系、"能正确做 EP"——对 MoE 时代的 RL 这不是加分项,而是必要条件。
 
 ## 7 · 对 RL-on-NPU 的意义
 
-先说一个信源纪律层面的推论。slime 训练侧绑定 Megatron——纯正的 NVIDIA 栈——这本身就是本看板架构综述第 4 条纪律("GLM 完全在昇腾训练、零 NVIDIA"是误传)的佐证:GLM-5 一手技术报告的训练基建引用 Megatron-LM,训练硬件从未明示;而 GLM 全家桶的 RL 引擎公开地跑在 Megatron 上。用二手转述去推"全昇腾训练",在一手证据面前站不住。
+先说一个信源纪律层面的推论。slime 训练侧绑定 Megatron——纯正的 NVIDIA 栈——这本身就是本看板架构综述第 4 条纪律("GLM 完全在昇腾训练、零 NVIDIA"是误传)的佐证:GLM-5 一手技术报告的训练基建引用 Megatron-LM,训练硬件从未明示;而 GLM 全家桶的 RL 引擎公开地跑在 Megatron 上。用二手转述去推"全昇腾训练",在一手证据面前不成立。
 
-那 slime 这套架构对昇腾(NPU)上的 RL 有什么意义?诚实拆解:
+slime 这套架构对昇腾(NPU)上的 RL 的意义,可客观拆解如下:
 
-**移植路径存在但每一段都有缺口。** 训练侧的对应关系是 Megatron→MindSpeed(昇腾的 Megatron 适配层),概念映射清楚,但 slime 依赖的 Megatron 特性(尤其 EP 相关)在 MindSpeed 侧的覆盖度需要逐项核对;推理侧 SGLang 有 Ascend 后端,但成熟度待验证(本看板既有判断)——昇腾栈上更成熟的是 vLLM-Ascend / MindSpeed-RL 这条线。最难啃的可能是权重同步通道:Delta Weight Sync 这类特性大概率建立在 NVIDIA 侧通信语义(NCCL 一类)之上(推断,待核),搬到 HCCL/CANN 上更可能是重实现而非改配置。
+**移植路径存在但每一段都有缺口。** 训练侧的对应关系是 Megatron→MindSpeed(昇腾的 Megatron 适配层),概念映射清楚,但 slime 依赖的 Megatron 特性(尤其 EP 相关)在 MindSpeed 侧的覆盖度需要逐项核对;推理侧 SGLang 有 Ascend 后端,但成熟度待验证(本看板既有判断)——昇腾栈上更成熟的是 vLLM-Ascend / MindSpeed-RL 这条线。难度最高的可能是权重同步通道:Delta Weight Sync 这类特性大概率建立在 NVIDIA 侧通信语义(NCCL 一类)之上(推断,待核),迁移到 HCCL/CANN 上更可能是重实现而非修改配置。
 
-**好消息是 Data Buffer 中枢本身硬件无关。** 这正是解耦架构的价值兑现时刻:Buffer 的读写契约、自定义数据生成接口、同步/异步调度策略,全都不碰硬件。理论上换掉两侧引擎(Megatron→MindSpeed、SGLang→昇腾后端),中枢和 agentic 工作流层原样保留。硬件相关性被这个架构压缩到了三个明确的点:训练引擎、推理引擎、权重同步通道——移植工作量可以精确圈定,这比"整个框架和 CUDA 缠在一起"的形态好移植得多。
+**有利的一面是 Data Buffer 中枢本身硬件无关。** 这正是解耦架构的价值兑现时刻:Buffer 的读写契约、自定义数据生成接口、同步/异步调度策略,全都不碰硬件。理论上换掉两侧引擎(Megatron→MindSpeed、SGLang→昇腾后端),中枢和 agentic 工作流层原样保留。硬件相关性被这个架构压缩到了三个明确的点:训练引擎、推理引擎、权重同步通道——移植工作量可以精确圈定,这远优于整个框架与 CUDA 深度耦合的形态。
 
 **对 MindSpeed-RL 的借鉴意义**在于设计而非代码:三模块 + Buffer 中枢的解耦、参数直通的 hackability 原则、同步/异步双路径共存,这三条都是硬件中立的架构决策,昇腾栈的 RL 框架完全可以吸收。反过来,如果 MindSpeed-RL 想承接 agentic RL 负载,slime 的 Multi-Task Rollout Orchestrator 是现成的参考答案。
 
-**与 Miles 移植缺口的关系**(接 Dispatch 09 的表):Miles 的差异化恰恰落在硬件敏感区——统一 FP8、低精度训练、新硬件优化。把 Miles 路线搬到 NPU,等于在 slime 移植缺口之上再叠一层低精度算子适配(昇腾的 FP8 支持路径与 NVIDIA 不同构,推断,待核)。也就是说,slime→NPU 是架构移植问题,Miles→NPU 是架构移植 + 数值路线移植的双重问题——评估 RL-on-NPU 可行性时,这两笔账要分开算。
+**与 Miles 移植缺口的关系**(接 Dispatch 09 的表):Miles 的差异化恰恰落在硬件敏感区——统一 FP8、低精度训练、新硬件优化。把 Miles 路线搬到 NPU,等于在 slime 移植缺口之上再叠一层低精度算子适配(昇腾的 FP8 支持路径与 NVIDIA 不同构,推断,待核)。也就是说,slime→NPU 是架构移植问题,Miles→NPU 是架构移植 + 数值路线移植的双重问题——评估 RL-on-NPU 可行性时,这两部分成本需分开评估。
 
 ## 下一步看什么
 

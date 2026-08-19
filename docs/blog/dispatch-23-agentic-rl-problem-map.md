@@ -10,9 +10,9 @@
 
 ## 1 · 为什么 agentic RL 的难度是系统性的
 
-如果只看算法论文,agentic RL 似乎就是"GRPO 加多轮工具调用"——但工程实践表明,难度不在目标函数,而在目标函数之外的一切。这一期我们把过去几周分散在各个 Dispatch 里的线索收拢成一张地图:社区到底在解决什么问题,哪些已经收敛出标准答案,哪些仍是开放问题。
+如果只看算法论文,agentic RL 似乎就是"GRPO 加多轮工具调用"——但工程实践表明,难度不在目标函数,而在目标函数之外的一切。本期将过去几周分散在各个 Dispatch 里的线索收拢成一张地图:社区正在解决什么问题,哪些已经收敛出标准答案,哪些仍是开放问题。
 
-先说结论:agentic RL 的难度是**系统性**的,因为它的核心矛盾不是单点的,而是相互纠缠的。一条长 rollout 轨迹会同时触发三个问题域:
+核心结论:agentic RL 的难度是**系统性**的,因为它的核心矛盾不是单点的,而是相互纠缠的。一条长 rollout 轨迹会同时触发三个问题域:
 
 - **效率**:rollout 已占 RL 单步 70%+ wall-clock(D02),长尾轨迹使同步 batch 里最快的 rank 空等最慢的一条,GPU bubble 巨大;
 - **稳定性**:为了消除 bubble 引入异步/partial rollout,立刻制造 off-policy staleness,重要性权重重尾,单条轨迹可以垄断一个 batch 的梯度;
@@ -123,11 +123,11 @@ flowchart LR
     P --> S6 --> R6
 
     Q["正交加速线:FP8 量化 rollout 吞吐+20–80% —— D02"]
-    S6 -. "量化×投机两条 lossless 线可叠加,复合收益无人报数" .-> Q
+    S6 -. "量化×投机两条 lossless 线可叠加,复合收益尚无公开数据" .-> Q
     S3 -. "代价:staleness 交给训练稳定性域治理" .-> P
 ```
 
-**参与方与收敛判断。** 这已是系统会议主流赛道:高校系统组(HKUST/清华)+ 大模型厂(Moonshot、美团)+ 推理系统厂(Together、NVIDIA)+ 框架方(veRL/slime/AReaL)。竞争焦点已从"要不要异步"转向"如何在保收敛前提下消除 bubble"。"训练/推理/环境三方解耦 + 中央 dispatcher"已成架构共识。开放缺口:各方案多在数学/代码单轮 RLVR 上验证,agentic 多轮场景的组合效果缺基准;投机解码 × FP8 rollout 叠加的复合收益无人报数;acceptance rate 随 RL 训练推进的长期漂移缺刻画。
+**参与方与收敛判断。** 这已是系统会议主流赛道:高校系统组(HKUST/清华)+ 大模型厂(Moonshot、美团)+ 推理系统厂(Together、NVIDIA)+ 框架方(veRL/slime/AReaL)。竞争焦点已从"要不要异步"转向"如何在保收敛前提下消除 bubble"。"训练/推理/环境三方解耦 + 中央 dispatcher"已成架构共识。开放缺口:各方案多在数学/代码单轮 RLVR 上验证,agentic 多轮场景的组合效果缺基准;投机解码 × FP8 rollout 叠加的复合收益尚无公开数据;acceptance rate 随 RL 训练推进的长期漂移缺刻画。
 
 ## 3 · 问题域二:训练稳定性与算法
 
@@ -173,7 +173,7 @@ flowchart TB
 
 **失稳模式三:信用分配失准。** episode 级稀疏奖励要分摊到上百回合,粒度选择决定方差-偏差-成本三角:粒度越细信号越精确但估计越不可靠(value-free 方法在稀疏奖励下 step 级估值系统性失准),越粗方差越大。D08 综述按"粒度 × 机制"两维梳理了 47 种方法,但没有粒度自动选择的原则。当前格局:**turn 级是性价比最优点**(工业事实默认);GiGPO([arXiv:2505.10978](https://arxiv.org/abs/2505.10978))做 episode + step 双层分组归因(依赖锚点状态可重复);2026 新方向是 hindsight 机制——HCAPO 用 LLM 作后验 critic 修正 step 级 Q 值([arXiv:2603.08754](https://arxiv.org/abs/2603.08754)),策略与内部奖励模型共演化。但注意:所有 dense 化方案都重新打开 hacking 面,与失稳模式二冲突;而 OSWorld 2.0 的 318 次调用量级下,turn 级本身也开始信号稀释。
 
-**失稳模式四:staleness / off-policy 漂移。** 异步解耦后 rollout 策略落后训练策略多个版本,朴素 IS 无偏但重尾——单条轨迹可支配整个 batch 的梯度。更糟的是 agentic 场景常**丢失旧 logits**(工具调用、多轮拼接),修正项本身语义失配;训推数值不一致再叠一层。防御的代际演进很清晰:
+**失稳模式四:staleness / off-policy 漂移。** 异步解耦后 rollout 策略落后训练策略多个版本,朴素 IS 无偏但重尾——单条轨迹可支配整个 batch 的梯度。更不利的是,agentic 场景常**丢失旧 logits**(工具调用、多轮拼接),修正项本身语义失配;训推数值不一致再叠一层。防御的代际演进很清晰:
 
 - 第一代(成熟):clip 系——gradient truncation(Decoupled PPO 系)vs IS-clip(TIS/CISPO/TOPR),加 D02 四招(GAC/staleness 上界/Periodic Asynchrony/APRIL)与 D18 的 AIPO;
 - 第二代(收敛中):**控制量从 clip 阈值升级为方差显式指标**——VCPO/VESPO 用有效样本量(ESS)与 IS 权重二阶矩类指标做稳定信号([arXiv:2602.17616](https://arxiv.org/pdf/2602.17616))。VCPO 在长上下文 TIR 多轮 RL、两步 policy lag 下 2.5× wall-clock 达到同步最优精度(42h vs 105h,provisional),而 sequence-level TIS 出现梯度尖峰后崩溃;
@@ -195,7 +195,7 @@ flowchart TB
 
 **Verifier 质量是 RLVR 的天花板。** 2026 年研究显示 hacking 已进化到语义级:RLVR 模型系统性放弃规则归纳、改为枚举实例级标签骗过 verifier;rubric-RL 出现谄媚开场白、自我表扬、长度偏置([arXiv:2604.15149](https://arxiv.org/abs/2604.15149))。关键的经济事实:LLM coding agent 自动写环境的成本已降到约 $4/个(provisional)——环境本身不再稀缺,**verifier 质量成为环境扩产的真正瓶颈**。一条值得注意的对冲路线是噪声容忍理论("An Imperfect Verifier is Good Enough",[arXiv:2604.07666](https://arxiv.org/pdf/2604.07666)):刻画奖励噪声水平与可学习性的关系,论证一定噪声下 RL 仍收敛,降低对完美 verifier 的工程要求。math/code 之外的开放域 verifier 公认未解。
 
-**任务策展:pass-rate 窗口是标配,但需要持续投入。** 双侧过滤只保留 0 < pass@k < 1 的任务——P=0(歧义/坏任务)与 P=1(已掌握)都贡献零梯度,在 rollout 占 70%+ wall-clock 的前提下浪费加倍昂贵。但"有效学习边界"随策略进步不断漂移,静态任务池快速枯竭;从公开源扩池又面临 benchmark 污染(D12),且污染检测在推理模型上被证明脆弱——RL 后的模型会改写记忆痕迹([arXiv:2510.02386](https://arxiv.org/pdf/2510.02386))。程序化合成路线在扩池,但难度分布控制仍依赖人工调整,也没有随策略在线自适应的 curriculum 调度(何时重扫被丢弃的 P=0 任务?)。
+**任务策展:pass-rate 窗口是标配,但需要持续投入。** 双侧过滤只保留 0 < pass@k < 1 的任务——P=0(歧义/坏任务)与 P=1(已掌握)都贡献零梯度,在 rollout 占 70%+ wall-clock 的前提下浪费加倍昂贵。但"有效学习边界"随策略进步不断漂移,静态任务池快速枯竭;从公开源扩池又面临 benchmark 污染(D12),且污染检测在推理模型上被证明脆弱——RL 后的模型会改写记忆痕迹([arXiv:2510.02386](https://arxiv.org/pdf/2510.02386))。程序化合成路线在扩池,但难度分布控制仍依赖人工调整,也没有随策略在线自适应的 curriculum 调度(被丢弃的 P=0 任务何时重新扫描,尚无机制)。
 
 **接口标准化三足鼎立。** MCP 只定义工具调用,不含 reward、episode 终止、task split、curriculum 等 RL 语义,导致每个训练框架为每个环境写定制胶水。三个竞争标准:
 
@@ -203,7 +203,7 @@ flowchart TB
 2. **verifiers / Environments Hub**(Prime Intellect):dataset/parser/rubric/rollout 四积木,与 prime-rl(D18)和自家算力市场垂直整合;
 3. **ORS / OpenReward**(General Reasoning,[openreward.ai](https://openreward.ai/)):在 MCP 之上扩展 RL 原语,330+ 环境托管 API(provisional),宣称与 Tinker/Miles/slime(即 D09/D19 主角)即插即用。
 
-值得注意:部分环境厂商同时是 OpenEnv 委员会成员——典型的对冲策略(provisional)。三个标准语义并不同构(同步 Gym 式 vs MCP 扩展 vs 组件规范),无互转层;有状态环境快照、异步 rollout、多智能体 episode 都超出 0.1 版规范。谁成事实标准未定。
+值得注意:部分环境厂商同时是 OpenEnv 委员会成员——典型的对冲策略(provisional)。三个标准语义并不同构(同步 Gym 式 vs MCP 扩展 vs 组件规范),无互转层;有状态环境快照、异步 rollout、多智能体 episode 都超出 0.1 版规范。事实标准归属未定。
 
 **商业化格局**在"少而精"(Mechanize 精品路线)与"平台化"(Prime Intellect 众包 Hub、OpenReward 托管 API、Mercor/Surge/Scale 转型)之间分化。定价模型未收敛(买断 vs 按 rollout 计量 vs 订阅);环境"保鲜"责任(策略进步后任务失效谁维护)无行业惯例;而如果 $4/个的自动生成解决了 verifier 问题,可能直接压低人工精品环境的定价基准。
 
@@ -257,7 +257,7 @@ flowchart LR
 
 还有一个值得单独记录的观点分歧:2026 年出现了挑战纯数值视角的**"优化流派"**——认为 mismatch 本质是优化问题,以响应长度骤增为早期信号动态触发 LR 衰减即可抑制,不动数值栈([arXiv:2602.01826](https://arxiv.org/abs/2602.01826))。这与"位级根治"路线的成本-收益权衡,目前无定论。
 
-## 6 · 收敛与分歧:大家都在解决什么
+## 6 · 收敛与分歧:社区正在解决的问题
 
 把四个问题域放在一起看,可以给出一个粗糙但有用的成熟度分层。
 
@@ -355,8 +355,8 @@ flowchart LR
 
 ## 下一步看什么
 
-- **投机解码 × 量化 rollout 的复合收益**:两条 lossless 加速线(DAS 系投机解码、FP8/FP4 量化)理论上正交可叠加,但至今无人报出复合数字;acceptance rate 随 RL 训练推进的长期漂移刻画也是空白。谁先给出系统性报数,谁就定义下一代 rollout 加速的 baseline。
-- **环境标准三足鼎立的走向**:OpenEnv 委员会治理 vs Prime Intellect verifiers vs ORS/OpenReward,加上 $4/个自动生成环境对人工精品定价基准的冲击——关注是否出现互转层或某一方拿下头部框架的默认集成。
+- **投机解码 × 量化 rollout 的复合收益**:两条 lossless 加速线(DAS 系投机解码、FP8/FP4 量化)理论上正交可叠加,但至今未见公开的复合数字;acceptance rate 随 RL 训练推进的长期漂移刻画也是空白。率先给出系统性数据的工作,将定义下一代 rollout 加速的 baseline。
+- **环境标准三足鼎立的走向**:OpenEnv 委员会治理 vs Prime Intellect verifiers vs ORS/OpenReward,加上 $4/个自动生成环境对人工精品定价基准的冲击——关注是否出现互转层或某一方获得头部框架的默认集成。
 - **staleness × mismatch 联合治理**:两者是同一重要性比率上的两个污染源,当前分开治理;VCPO/VESPO 的 ESS/二阶矩控制量能否与数值侧修正(AIS 类)合成统一方案,是第二代稳定性算法的关键分岔。
 - **NPU 侧根治层的首个突破**:昇腾上 batch-invariant 核等价物、HCCL 侧 delta 权重同步、GPU 训练 × NPU rollout 混部一致性——任何一项落地都会显著改变 RL-on-NPU 的可行性边界,值得逐月跟踪 verl 三栈与 vllm-ascend 的 release notes。
 
