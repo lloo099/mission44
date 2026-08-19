@@ -33,7 +33,7 @@
     {
       "id": "dispatch-26-inference-efficiency-map",
       "title": "Dispatch 26 · 推理效率的大颗粒地图:下一个 10 倍来自\"让计算不发生\"",
-      "subtitle": "探索篇(4 路文献扫描逐层验证一份六层大颗粒分析):以 IndexShare(D06)与 DSpark(D15)为锚点的三阶段演进——FLOP 更便宜→算法×调度联合→计算不发生;架构层(dLLM/block diffusion+AR 验证、深度稀疏 MoD、注意力终局与 KV 语义压缩)、数值层(FP4/KV 2bit/BitNet/激活稀疏)、算子与框架层(通算融合、AI 生成 kernel、A/F 分离、分布式 KV 存储、投机×调度)、服务化与 Agent 联合优化(最大洼地核实:KV 租约/级联路由/test-time 调度/语义缓存原语);\"四个跳过\"叠加的算术检验与昇腾优先级。",
+      "subtitle": "探索篇(4 路文献扫描逐层验证一份六层大颗粒分析):以 IndexShare(D06)与 DSpark(D15)为锚点的三阶段演进——FLOP 更便宜→算法×调度联合→计算不发生;架构层(dLLM/block diffusion+AR 验证、深度稀疏 MoD、注意力终局与 KV 语义压缩)、数值层(FP4/KV 2bit/BitNet/激活稀疏)、算子与框架层(通算融合、AI 生成 kernel、A/F 分离、分布式 KV 存储、投机×调度)、服务化与 Agent 联合优化(最大空白领域核实:KV 租约/级联路由/test-time 调度/语义缓存原语);\"四个跳过\"叠加的算术检验与昇腾优先级。",
       "date": "2026-07-17",
       "tags": [
         "inference-efficiency",
@@ -73,7 +73,7 @@
     {
       "id": "dispatch-23-agentic-rl-problem-map",
       "title": "Dispatch 23 · Agentic RL 系统难题地图:大家都在解决什么",
-      "subtitle": "综述式收拢(4 路问题域调研 + 事实核查):rollout 效率(长尾/异步/dispatcher)、训练稳定性(四种崩法分类学与防御)、环境与奖励工程(沙箱成本主导、verifier 天花板、环境赛道资本化)、训推一致(三层解法×异构放大)。已收敛的标准答案 vs 开放战场(粒度自适应信用分配、开放域 verifier、异构一致性),玩家收敛矩阵,以及对昇腾'根治层缺位、短期靠监控+算法补偿'的判断。",
+      "subtitle": "综述式收拢(4 路问题域调研 + 事实核查):rollout 效率(长尾/异步/dispatcher)、训练稳定性(四种失稳模式分类学与防御)、环境与奖励工程(沙箱成本主导、verifier 天花板、环境赛道资本化)、训推一致(三层解法×异构放大)。已收敛的标准答案 vs 开放战场(粒度自适应信用分配、开放域 verifier、异构一致性),玩家收敛矩阵,以及对昇腾'根治层缺位、短期靠监控+算法补偿'的判断。",
       "date": "2026-07-07",
       "tags": [
         "agentic-RL",
@@ -86,7 +86,7 @@
     {
       "id": "dispatch-22-deepswe-rllm",
       "title": "Dispatch 22 · 详解 DeepSWE 与 rLLM:纯 RL 编码智能体的开源全家桶",
-      "subtitle": "Agentica×Together:Qwen3-32B 纯 RL 零 SFT(R2E-Gym 4500 任务,64 H100×6 天),GRPO++ 稳定化逐项拆解(compact filtering/去归一化/entropy-free);三个分数分开读——Pass@1 42.2 / Pass@16 71 / 混合 TTS 59(verifier 挑选换 17 分)。rLLM 框架解剖:Episode⊃Trajectory⊃Step 三层抽象 + Model Gateway 捕 logprob + verl/tinker/fireworks 可插拔后端。撞名警示(datacurve DeepSWE=考卷)与对昇腾的接口意义。",
+      "subtitle": "Agentica×Together:Qwen3-32B 纯 RL 零 SFT(R2E-Gym 4500 任务,64 H100×6 天),GRPO++ 稳定化逐项拆解(compact filtering/去归一化/entropy-free);三个分数分开读——Pass@1 42.2 / Pass@16 71 / 混合 TTS 59(verifier 挑选换 17 分)。rLLM 框架解剖:Episode⊃Trajectory⊃Step 三层抽象 + Model Gateway 捕 logprob + verl/tinker/fireworks 可插拔后端。同名混淆提示(datacurve DeepSWE=考卷)与对昇腾的接口意义。",
       "date": "2026-07-07",
       "tags": [
         "DeepSWE",
@@ -140,7 +140,7 @@
     {
       "id": "dispatch-18-prime-rl-vs-skyrl",
       "title": "Dispatch 18 · prime-rl vs SkyRL-Agent:两个开源异步 agentic RL 框架怎么选",
-      "subtitle": "都开源 Apache-2.0、都打 rollout 70%+长尾瓶颈,但层次不同:prime-rl(Prime Intellect)是全栈全解耦异步 trainer(Trainer/Inference/Orchestrator 三组件 + AIPO off-policy + FP8 vLLM,押注 1000+ GPU/1T MoE/去中心化,复现 INTELLECT-3.1);SkyRL-Agent(arXiv 2511.16108)是后端无关的 agent 层(叠在 SkyRL-train/VeRL/Tinker 上,异步 dispatcher 1.55× + AST 工具配方,SA-SWE-32B 24.4%→39.4% Verified、成本 >2× 降)。互补可组合,以及对昇腾 RL 栈的镜鉴。",
+      "subtitle": "都开源 Apache-2.0、都打 rollout 70%+长尾瓶颈,但层次不同:prime-rl(Prime Intellect)是全栈全解耦异步 trainer(Trainer/Inference/Orchestrator 三组件 + AIPO off-policy + FP8 vLLM,面向 1000+ GPU/1T MoE/去中心化,复现 INTELLECT-3.1);SkyRL-Agent(arXiv 2511.16108)是后端无关的 agent 层(叠在 SkyRL-train/VeRL/Tinker 上,异步 dispatcher 1.55× + AST 工具配方,SA-SWE-32B 24.4%→39.4% Verified、成本 >2× 降)。互补可组合,以及对昇腾 RL 栈的镜鉴。",
       "date": "2026-06-29",
       "tags": [
         "RL-frameworks",
@@ -192,7 +192,7 @@
     },
     {
       "id": "dispatch-14-scaleswe",
-      "title": "Dispatch 14 · 详解 ScaleSWE:把 GitHub 宇宙挖成 SWE 训练数据",
+      "title": "Dispatch 14 · 详解 ScaleSWE:把 GitHub 宇宙转化为 SWE 训练数据",
       "subtitle": "AweAI-Team(非 Scale AI)的 arXiv 2602.09892:6M PR→10万实例 + 合成 F2P + DeepSeek 蒸馏 71k 轨迹 → SFT Qwen3-30B-A3B 拿 64% Verified(SFT-only)。方法、AweAgent/DeNovoSWE 生态,以及 vs SWE-smith/SWE-Gym/R2E-Gym/DeepSWE 对比表。",
       "date": "2026-06-26",
       "tags": [
@@ -231,7 +231,7 @@
     },
     {
       "id": "dispatch-11-vllm-vs-sglang",
-      "title": "Dispatch 11 · vLLM/Inferact vs SGLang/RadixArk:两家伯克利系推理公司的对决",
+      "title": "Dispatch 11 · vLLM/Inferact vs SGLang/RadixArk:两家伯克利系推理公司的竞争格局",
       "subtitle": "同源(Berkeley)、同台(推理)、同期(2026初)商业化。Inferact $800M(a16z+Lightspeed,vLLM 40万 GPU)vs RadixArk $400M(Accel,SGLang+Miles)。引擎、战略、投资视角与昇腾 rollout 引擎选型。",
       "date": "2026-06-25",
       "tags": [
