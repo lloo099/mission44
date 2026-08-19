@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dispatch 28 · 原生多模态训练的两条路线:K3 的连续特征与 LongCat-Next 的离散 token · NPU Frontier Dispatch</title>
-  <meta name="description" content="双工作对照(数据/架构/训练三主题):K3 连续特征路线——MoonViT-V2 完全 from scratch+纯 NTP 无对比学习(SigLIP 初始化联训梯度 spike 是弃用主因)、native resolution 打包、薄 projector、token-0 起联合;LongCat-Next 离散路线——DiNA 全模态同源 token、dNaViT 8 层 RVQ/28× 压缩、理解+生成统一、先离散后联合的原生化课程。两家在'去 CLIP 遗产'上殊途同归;数据配比双双黑箱。对 RL-on-NPU:离散路线让 vision-in-th" />
+  <meta name="description" content="双工作对照(数据/架构/训练三主题):K3 连续特征路线——MoonViT-V2 完全 from scratch+纯 NTP 无对比学习(SigLIP 初始化联训梯度 spike 是弃用主因)、native resolution 打包、薄 projector、token-0 起联合;LongCat-Next 离散路线——DiNA 全模态同源 token、dNaViT 8 层 RVQ/28× 压缩、理解+生成统一、先离散后联合的原生化课程。两者在移除对比学习遗产上殊途同归;数据配比均未公开。对 RL-on-NPU:离散路线让 vision-in-the-l" />
   <link rel="canonical" href="https://lloo099.github.io/mission44/p/dispatch-28-native-multimodal.html" />
   <meta property="og:type" content="article" />
   <meta property="og:title" content="Dispatch 28 · 原生多模态训练的两条路线:K3 的连续特征与 LongCat-Next 的离散 token" />
-  <meta property="og:description" content="双工作对照(数据/架构/训练三主题):K3 连续特征路线——MoonViT-V2 完全 from scratch+纯 NTP 无对比学习(SigLIP 初始化联训梯度 spike 是弃用主因)、native resolution 打包、薄 projector、token-0 起联合;LongCat-Next 离散路线——DiNA 全模态同源 token、dNaViT 8 层 RVQ/28× 压缩、理解+生成统一、先离散后联合的原生化课程。两家在'去 CLIP 遗产'上殊途同归;数据配比双双黑箱。对 RL-on-NPU:离散路线让 vision-in-th" />
+  <meta property="og:description" content="双工作对照(数据/架构/训练三主题):K3 连续特征路线——MoonViT-V2 完全 from scratch+纯 NTP 无对比学习(SigLIP 初始化联训梯度 spike 是弃用主因)、native resolution 打包、薄 projector、token-0 起联合;LongCat-Next 离散路线——DiNA 全模态同源 token、dNaViT 8 层 RVQ/28× 压缩、理解+生成统一、先离散后联合的原生化课程。两者在移除对比学习遗产上殊途同归;数据配比均未公开。对 RL-on-NPU:离散路线让 vision-in-the-l" />
   <meta property="og:url" content="https://lloo099.github.io/mission44/p/dispatch-28-native-multimodal.html" />
   <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-28-native-multimodal.png" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -20,7 +20,7 @@
 <body>
   <h1>Dispatch 28 · 原生多模态训练的两条路线:K3 的连续特征与 LongCat-Next 的离散 token</h1>
   <p><em>2026-08-19 · NPU Frontier Dispatch · native-multimodal / Kimi-K3 / LongCat-Next / MoonViT / RL-on-NPU</em></p>
-  <p>双工作对照(数据/架构/训练三主题):K3 连续特征路线——MoonViT-V2 完全 from scratch+纯 NTP 无对比学习(SigLIP 初始化联训梯度 spike 是弃用主因)、native resolution 打包、薄 projector、token-0 起联合;LongCat-Next 离散路线——DiNA 全模态同源 token、dNaViT 8 层 RVQ/28× 压缩、理解+生成统一、先离散后联合的原生化课程。两家在'去 CLIP 遗产'上殊途同归;数据配比双双黑箱。对 RL-on-NPU:离散路线让 vision-in-th</p>
+  <p>双工作对照(数据/架构/训练三主题):K3 连续特征路线——MoonViT-V2 完全 from scratch+纯 NTP 无对比学习(SigLIP 初始化联训梯度 spike 是弃用主因)、native resolution 打包、薄 projector、token-0 起联合;LongCat-Next 离散路线——DiNA 全模态同源 token、dNaViT 8 层 RVQ/28× 压缩、理解+生成统一、先离散后联合的原生化课程。两者在移除对比学习遗产上殊途同归;数据配比均未公开。对 RL-on-NPU:离散路线让 vision-in-the-l</p>
   <p><a href="https://lloo099.github.io/mission44/#blog/dispatch-28-native-multimodal">→ 阅读全文(RL-on-NPU Research Dashboard)</a></p>
 </body>
 </html>

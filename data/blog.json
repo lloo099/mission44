@@ -5,7 +5,7 @@
     {
       "id": "dispatch-28-native-multimodal",
       "title": "Dispatch 28 · 原生多模态训练的两条路线:K3 的连续特征与 LongCat-Next 的离散 token",
-      "subtitle": "双工作对照(数据/架构/训练三主题):K3 连续特征路线——MoonViT-V2 完全 from scratch+纯 NTP 无对比学习(SigLIP 初始化联训梯度 spike 是弃用主因)、native resolution 打包、薄 projector、token-0 起联合;LongCat-Next 离散路线——DiNA 全模态同源 token、dNaViT 8 层 RVQ/28× 压缩、理解+生成统一、先离散后联合的原生化课程。两家在'去 CLIP 遗产'上殊途同归;数据配比双双黑箱。对 RL-on-NPU:离散路线让 vision-in-the-loop RL 的 rollout 与纯文本同构、训练系统退化为标准 LLM 训练——对算子生态薄的 NPU 栈更友好(推断);'离散视觉 token×RLVR'为无人占坑交叉。",
+      "subtitle": "双工作对照(数据/架构/训练三主题):K3 连续特征路线——MoonViT-V2 完全 from scratch+纯 NTP 无对比学习(SigLIP 初始化联训梯度 spike 是弃用主因)、native resolution 打包、薄 projector、token-0 起联合;LongCat-Next 离散路线——DiNA 全模态同源 token、dNaViT 8 层 RVQ/28× 压缩、理解+生成统一、先离散后联合的原生化课程。两者在移除对比学习遗产上殊途同归;数据配比均未公开。对 RL-on-NPU:离散路线让 vision-in-the-loop RL 的 rollout 与纯文本同构、训练系统退化为标准 LLM 训练——对算子生态薄的 NPU 栈更友好(推断);'离散视觉 token×RLVR'为尚无公开工作的交叉方向。",
       "date": "2026-08-19",
       "tags": [
         "native-multimodal",
