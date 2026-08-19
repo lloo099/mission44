@@ -102,11 +102,11 @@ flowchart TD
 - **RAG**:同一篇(或同一批)检索文档被反复塞进 prompt 头部,文档前缀在不同 query 间共享。
 - **group rollout / best-of-n / fork**:同一个 prompt 派生出多条采样分支(RL 训练采样、投机、树搜索),这些分支共享完全相同的前缀,只在生成端分叉——这是前缀复用收益最极端的场景。
 
-这些场景的共同点是:**前缀不是偶然重合,而是由应用逻辑保证的大段重叠**。谁能把这部分的重复计算和重复显存吃掉,谁就能在相同 GPU 上服务更多并发。
+这些场景的共同点是:**前缀不是偶然重合,而是由应用逻辑保证的大段重叠**。谁能把这部分的重复计算和重复显存消除,谁就能在相同 GPU 上服务更多并发。
 
 **基数树如何"自动"命中。** RadixAttention 把所有活跃请求的前缀组织成一棵**基数树(radix tree)**:每个节点是一段 token 序列,从根到任意节点的路径就是一个被缓存的前缀,对应一块 KV。新请求进来时,沿树做最长公共前缀匹配——匹配到的部分直接挂载已有 KV,**完全跳过 prefill**,只对新增的尾部 token 算注意力。关键的工程点有两个:一是缓存以树结构而非扁平哈希表组织,共享前缀自然形成共享路径,分叉点之下各自延伸,天然适配 fork/多分支;二是 **cache-aware 调度**——调度器在决定先跑哪个请求、把谁留在显存里时,会优先编排能命中已有缓存的请求,并据此做缓存淘汰(LRU on the tree),让"命中"从偶发变成被调度主动制造的常态。这就是为什么官方口径下,**充分优化对比时整体吞吐比 vLLM 高约 29%(provisional),prefix-heavy 场景可达约 6×(provisional)**——6× 来自把本该重复做的 prefill 几乎全部省掉。
 
-**vLLM 的 APC 在哪里也能复用,差距何时收窄。** vLLM 并非没有前缀缓存:它的 **APC(Automatic Prefix Caching)** 用**精确哈希**对 KV block 分块缓存,只要前缀的 block 内容逐块哈希相同就命中。对 system prompt 复用、共享 few-shot、固定文档头这类**对齐良好的前缀**,APC 同样能省掉 prefill,效果可以和 RadixAttention 很接近。两者真正拉开差距的是:RadixAttention 的树结构在**动态分叉、不定长追加、cache-aware 主动调度**上更顺手,prefix-heavy 且高并发交错时命中率维持得更好;而 APC 是块级精确匹配,前缀对齐和 block 边界稍有偏移就可能错过命中。反过来,**当 workload 是"每条 prompt 都唯一、几乎没有共享前缀"的批处理**(典型如一次性、互不相关的离线打分/抽取),前缀复用本身无收益,两套机制都退化为"只能靠 PagedAttention/分页 KV 提升显存利用率",**此时二者性能趋同**——这也是公认两家差距最小的场景。换句话说:RadixAttention 的溢价完全押注在"未来的负载越来越 prefix-heavy"这个判断上,而 2026 的 agentic 浪潮恰好在兑现这个判断。
+**vLLM 的 APC 在哪里也能复用,差距何时收窄。** vLLM 并非没有前缀缓存:它的 **APC(Automatic Prefix Caching)** 用**精确哈希**对 KV block 分块缓存,只要前缀的 block 内容逐块哈希相同就命中。对 system prompt 复用、共享 few-shot、固定文档头这类**对齐良好的前缀**,APC 同样能省掉 prefill,效果可以和 RadixAttention 很接近。两者真正拉开差距的是:RadixAttention 的树结构在**动态分叉、不定长追加、cache-aware 主动调度**上更顺手,prefix-heavy 且高并发交错时命中率维持得更好;而 APC 是块级精确匹配,前缀对齐和 block 边界稍有偏移就可能错过命中。反过来,**当 workload 是"每条 prompt 都唯一、几乎没有共享前缀"的批处理**(典型如一次性、互不相关的离线打分/抽取),前缀复用本身无收益,两套机制都退化为"只能靠 PagedAttention/分页 KV 提升显存利用率",**此时二者性能趋同**——这也是公认两家差距最小的场景。换句话说:RadixAttention 的溢价完全投入在"未来的负载越来越 prefix-heavy"这个判断上,而 2026 的 agentic 浪潮恰好在兑现这个判断。
 
 ## 3 · 战略差异
 
@@ -178,12 +178,12 @@ RadixArk 的产品不是单一推理引擎,而是**推理(SGLang)+ RL 训练采�
 |---|---|---|
 | 估值 / 融资 | ~$800M 估值 / $150M 种子 | ~$400M 估值 / $100M 种子 |
 | 领投 / 关键背书 | a16z + Lightspeed 领投(+Sequoia/Altimeter/Redpoint/ZhenFund);Ion Stoica(Databricks 联创) | Accel 领投;Intel CEO 陈立武(Lip-Bu Tan)天使;LMSYS 系核心团队 |
-| 护城河 | 最大覆盖面 + 社区/生态 + 硬件中立(vLLM-Ascend 昇腾)+ "事实默认" + 资金厚度 | 性能领先的细分(RadixAttention/agent 负载)+ 推理×RL 双入口 + 训推一致(Miles FP8/R3) |
+| 竞争壁垒 | 最大覆盖面 + 社区/生态 + 硬件中立(vLLM-Ascend 昇腾)+ "事实默认" + 资金厚度 | 性能领先的细分(RadixAttention/agent 负载)+ 推理×RL 双入口 + 训推一致(Miles FP8/R3) |
 | 变现路径 | 托管/企业版 + 广覆盖带来的默认入口与跨硬件部署 | 高性能托管 + 切入前沿后训练采样(更贴近实验室核心预算) |
 | 最大风险 | 开源推理商品化、变现难;广而不深、被云厂/NVIDIA 夹击,差异化溢价弱 | 估值与"性能领先"叙事强绑定;一旦 vLLM 在 agent 负载追平,溢价收窄;Miles 采用未证实 |
 | 关键观察指标 | 托管/企业版收入起量;采用份额;非 NVIDIA 硬件覆盖 | 同上 + **Miles 是否被头部实验室真实采用**;prefix-heavy 优势能否维持 |
 
-**中性 bull/bear 分析。** *Inferact–vLLM* — **Bull**:推理界的"事实默认",40 万+ GPU 在跑,覆盖最广、社区最大、硬件最中立,叠加最厚资金和 Ion Stoica 背书,是"卖水给所有人"的分发护城河,变现只要在巨大装机量上抽一层。**Bear**:开源推理正在商品化,广度不等于定价权;NVIDIA(TensorRT-LLM)和云厂自有栈两头夹击,$800M 估值需尽快证明托管/企业版起量。*RadixArk–SGLang* — **Bull**:押中 agentic 浪潮,负载越 prefix-heavy 优势越值钱,再用 Miles 把推理延伸到 RL 后训练采样,占住更粘、更难被价格战商品化、更贴近实验室核心预算的位置,训推一致是真痛点。**Bear**:估值一半建立在"性能领先"叙事上,而这优势高度依赖 workload,vLLM 的 APC 在 RAG/对齐前缀上已能逼近;覆盖面显著小于 vLLM,Miles 被头部实验室真实采用尚未证实。(以上均为 provisional,非投资建议。)
+**中性 bull/bear 分析。** *Inferact–vLLM* — **Bull**:推理界的"事实默认",40 万+ GPU 在跑,覆盖最广、社区最大、硬件最中立,叠加最厚资金和 Ion Stoica 背书,是"卖水给所有人"的分发竞争壁垒,变现只要在巨大装机量上抽一层。**Bear**:开源推理正在商品化,广度不等于定价权;NVIDIA(TensorRT-LLM)和云厂自有栈两头夹击,$800M 估值需尽快证明托管/企业版起量。*RadixArk–SGLang* — **Bull**:押中 agentic 浪潮,负载越 prefix-heavy 优势越值钱,再用 Miles 把推理延伸到 RL 后训练采样,占住更粘、更难被价格战商品化、更贴近实验室核心预算的位置,训推一致是真痛点。**Bear**:估值一半建立在"性能领先"叙事上,而这优势高度依赖 workload,vLLM 的 APC 在 RAG/对齐前缀上已能逼近;覆盖面显著小于 vLLM,Miles 被头部实验室真实采用尚未证实。(以上均为 provisional,非投资建议。)
 
 ## 6 · 对 RL-on-NPU 的意义
 

@@ -4,7 +4,7 @@
 
 > **TL;DR** — 直接回答:"SFT 冷启动 + 可验证奖励在线 RL"主干在 2026 年年中已是行业标配,原样复现是训练不是研究;但五个缝隙全部真实,收敛度差异极大。核心修正:效率感知 RL 要拆两半——单轮长度奖励已被综述与 DLER 判定边际价值趋零,agent 侧(异质成本、步级 credit assignment、不掐断有效轨迹)才是仍开着的可发表窗口,且按月收窄。四步路线维持骨架:verl+GSM8K 基线复现 → 效率项消融练手 → 并行精读 → 迁移 agent 环境;论文重心压在第四步,建议②③期间并行搭 agent 环境卡位。
 
-本篇是研究定位篇(开题报告性质):回应一份读者提交的方向分析——四个主张分别是"主干已成熟""五个缝隙存在""最小系统配置""四步路线图"——以本轮四路文献扫描为据逐项判定"采纳"或"修正",全部判断带 URL,承接 D02(rollout 瓶颈)、D08(agentic RL 三难题与监控信号)、D22(compact filtering)、D23(崩法清单)的既有结论。
+本篇是研究定位篇(开题报告性质):回应一份读者提交的方向分析——四个主张分别是"主干已成熟""五个缝隙存在""最小系统配置""四步路线图"——以本轮四路文献扫描为据逐项判定"采纳"或"修正",全部判断带 URL,承接 D02(rollout 瓶颈)、D08(agentic RL 三难题与监控信号)、D22(compact filtering)、D23(失稳模式清单)的既有结论。
 
 ---
 
@@ -112,7 +112,7 @@ Rubric/LLM-judge 这一半**收敛中偏后期**:[Rubrics as Rewards](https://ar
 防御手段与看板既有事实几乎逐条对应:
 
 - **监控信号**:D08 确立的"reward 升 + 长度骤降 = hacking 信号"正是模式 1/3 的探测器——但要升级为**双曲线加分解**:reward、长度、以及"正确子集内的长度"三条曲线分开画,才能区分"删冗余"(正确解变短、精度持平)与"underthinking"(难题精度掉、长度整体塌)。
-- **截断污染**:D23 四种崩法里的"截断污染",在效率 RL 里被放大——截断式奖励天然制造大量截断轨迹。D22 的 compact filtering(mask 截断轨迹不给负分)是**效率相邻的先行稳定化技巧**:它防止模型把"被截断"学成"被惩罚",这正是 [Learning When Not to Act](https://arxiv.org/abs/2606.02132) 指出的"硬预算掐断有效轨迹"问题的单轮版解法。
+- **截断污染**:D23 四种失稳模式里的"截断污染",在效率 RL 里被放大——截断式奖励天然制造大量截断轨迹。D22 的 compact filtering(mask 截断轨迹不给负分)是**效率相邻的先行稳定化技巧**:它防止模型把"被截断"学成"被惩罚",这正是 [Learning When Not to Act](https://arxiv.org/abs/2606.02132) 指出的"硬预算掐断有效轨迹"问题的单轮版解法。
 - **奖励结构**:D12/D23 的"稀疏二元结果奖励最稳,dense shaping 诱发 hacking"在这里具体化为:效率项宁可做成**截断(改变环境)而非稠密惩罚(改变奖励)**——DLER 路线的胜利本质上是这条看板经验的文献版。
 
 ### 图B · 长度奖励设计空间与hack模式对照
@@ -183,7 +183,7 @@ flowchart LR
 
 关键纪律:**同协议下同时报起点分和终点分**。起点分对 few-shot/zero-shot、答案抽取正则极度敏感,漂移可达 ±5-10 分——足够吞掉全部"增益",这是社区复现([如此例](https://arxiv.org/abs/2506.08745))反复踩的坑。
 
-**环境:GSM8K 采纳;tau-bench 修正。** 扫描发现三个坑:tau2-bench telecom 域已被前沿模型打到 97-99% [接近报废](https://openai.com/index/introducing-gpt-5-for-developers/);任务与判分随版本持续修订(见[官方 releases](https://github.com/sierra-research/tau2-bench/releases)),新旧版本分数不可直接比较;最致命的是**它对 1.5B-7B 小模型近乎归零**——前沿模型在 airline 域才 [~56%](https://hal.cs.princeton.edu/taubench_airline),小模型基本为 0,一个全零分环境给不出任何 RL 梯度(D23 的"全零组"崩法会直接吃掉训练)。**修正建议:agent 环境选代码沙箱或搜索工具 QA 起步,正式阶段用 R2E-Gym/SWE 路线(D12 已有配方),tau-bench 只做前沿模型的对照评测,不做小模型的训练环境。**
+**环境:GSM8K 采纳;tau-bench 修正。** 扫描发现三个坑:tau2-bench telecom 域已被前沿模型打到 97-99% [接近报废](https://openai.com/index/introducing-gpt-5-for-developers/);任务与判分随版本持续修订(见[官方 releases](https://github.com/sierra-research/tau2-bench/releases)),新旧版本分数不可直接比较;最致命的是**它对 1.5B-7B 小模型近乎归零**——前沿模型在 airline 域才 [~56%](https://hal.cs.princeton.edu/taubench_airline),小模型基本为 0,一个全零分环境给不出任何 RL 梯度(D23 的"全零组"失稳模式会直接消除训练)。**修正建议:agent 环境选代码沙箱或搜索工具 QA 起步,正式阶段用 R2E-Gym/SWE 路线(D12 已有配方),tau-bench 只做前沿模型的对照评测,不做小模型的训练环境。**
 
 **SFT 配方:方法采纳,原创性声明修正。** "rejection sampling 留正确且最短"不是自创配方:"留正确"出自 [STaR](https://arxiv.org/abs/2203.14465)(2022)/[RFT](https://arxiv.org/abs/2308.01825)(2023),在 [DeepSeek-R1](https://arxiv.org/abs/2501.12948) 定型;"留最短"是 [Kimi k1.5](https://arxiv.org/abs/2501.12599) long2short 一节的 shortest rejection sampling 原样。写报告时引用而非声称原创。另注意 2026 年已有[反方向工作](https://arxiv.org/abs/2602.04391)指出只留正确轨迹丢弃失败信息——这在 agent 场景可能更严重,失败轨迹里有"哪些工具调用是死路"的信息。
 
@@ -195,7 +195,7 @@ flowchart LR
 
 **硬件:采纳,但把上下文长度列为第一预算变量。** 1.5B 短上下文 GRPO 单卡 80G 绰绰有余(verl 官方示例 0.5B 只需 [≥24GB](https://verl.readthedocs.io/en/latest/start/quickstart.html);LoRA 路线 Unsloth 压到 [5-7GB](https://unsloth.ai/blog/grpo)),GSM8K 规模数小时到一天量级(社区数据:3B GRPO-LoRA 4×A100 [~9.5h](https://huggingface.co/blog/Weyaxi/engineering-handbook-grpo-lora-with-verl))。但一旦转 8K+ 长 CoT,就是 [DeepScaleR](https://huggingface.co/agentica-org/DeepScaleR-1.5B-Preview) 那种 3,800 A100 小时的量级——差两个数量级。2-4 卡的预算规划必须按上下文长度分档。
 
-**看板视角的补充监控项**(用户配置里没写,必须加):reward 与长度双曲线 + 正确子集长度分解(D08 hacking 信号);组内全零比例(D23 全零组崩法);截断轨迹占比(D23 截断污染);熵曲线(DLER 点名的熵坍缩)。四条曲线在第一步基线阶段就接好,第二步注入效率项后它们就是你的失效模式探测网。
+**看板视角的补充监控项**(用户配置里没写,必须加):reward 与长度双曲线 + 正确子集长度分解(D08 hacking 信号);组内全零比例(D23 全零组失稳模式);截断轨迹占比(D23 截断污染);熵曲线(DLER 点名的熵坍缩)。四条曲线在第一步基线阶段就接好,第二步注入效率项后它们就是你的失效模式探测网。
 
 ### 图C · 最小可行系统架构与效率奖励注入点
 
@@ -243,16 +243,16 @@ flowchart TB
 ## 5 · 四步路线图(带看板参照物)
 
 **① 基线复现(1-2 周):采纳。**
-目的:摸熟 verl 管线,不是出结果。产出物:同协议起点/终点分对齐 verl 表(1.5B GRPO-LoRA 到 77.9±2),wandb 曲线存档,四条监控曲线接好。看板参照:D12 的配方纪律(数据/引擎/算法三件套逐项固定)。常见死法:eval 协议漂移吃掉增益(±5-10 分);过训回退(社区复现中屡有 1.5B 中后期分数明显回落的记录,幅度对协议敏感、未见系统刻画);答案抽取正则与 chat template 不匹配导致起点分虚低、"增益"虚高。
+目的:摸熟 verl 管线,不是出结果。产出物:同协议起点/终点分对齐 verl 表(1.5B GRPO-LoRA 到 77.9±2),wandb 曲线存档,四条监控曲线接好。看板参照:D12 的配方纪律(数据/引擎/算法三件套逐项固定)。常见死法:eval 协议漂移消除增益(±5-10 分);过训回退(社区复现中屡有 1.5B 中后期分数明显回落的记录,幅度对协议敏感、未见系统刻画);答案抽取正则与 chat template 不匹配导致起点分虚低、"增益"虚高。
 
 **② 注入效率变量(2-4 周):步骤采纳,定位修正。**
-用户原计划"长度惩罚从绝对项换成组内相对比较"——**修正:这个对比实验本身已经是文献**(绝对项 = Kimi k1.5,组内相对 = Arora & Zanette/ShorterBetter,截断 = ThinkPrune/DLER)。所以这一步的正确定位是**带着文献做系统消融的练手**,不是找创新:三个家族(绝对/组内相对/截断+compact filtering)在同一 1.5B 设置下扫精度-长度帕累托前沿,亲手复现至少一种 hack(易题灌水或 underthinking 滑移)。产出物:帕累托图 + 失效模式日志——这份日志是第④步的核心资产。看板参照:D08 监控信号、D22 compact filtering、D23 崩法清单。常见死法:训练早期精度突崩([2606.22716](https://arxiv.org/abs/2606.22716) 记录的模式)却误判为超参问题反复重跑,烧掉两周。
+用户原计划"长度惩罚从绝对项换成组内相对比较"——**修正:这个对比实验本身已经是文献**(绝对项 = Kimi k1.5,组内相对 = Arora & Zanette/ShorterBetter,截断 = ThinkPrune/DLER)。所以这一步的正确定位是**带着文献做系统消融的练手**,不是找创新:三个家族(绝对/组内相对/截断+compact filtering)在同一 1.5B 设置下扫精度-长度帕累托前沿,亲手复现至少一种 hack(易题灌水或 underthinking 滑移)。产出物:帕累托图 + 失效模式日志——这份日志是第④步的核心资产。看板参照:D08 监控信号、D22 compact filtering、D23 失稳模式清单。常见死法:训练早期精度突崩([2606.22716](https://arxiv.org/abs/2606.22716) 记录的模式)却误判为超参问题反复重跑,烧掉两周。
 
 **③ 边做边读:采纳,书单增补。**
 用户的顺序(InstructGPT→R1→DeepSeekMath→efficient reasoning→AReaL)保留,增补四篇本轮扫描确认的必读:[DLER](https://arxiv.org/abs/2510.15110)(为什么奖励设计不是主矛盾)、[GR3](https://arxiv.org/abs/2603.10535)(组内相对法的结构缺陷)、[OTC](https://arxiv.org/abs/2504.14870)(agent 侧已被占的角度)、[Learning When Not to Act](https://arxiv.org/abs/2606.02132)(agent 侧硬预算的坑)。综述用 [Stop Overthinking](https://arxiv.org/abs/2503.16419) 一篇够了。
 
 **④ 迁移 agent 环境:采纳,且这才是论文所在。**
-"简洁性被放大"的机理值得讲透,它是三重放大的叠加:**轨迹长**——多轮交互上下文逐轮累积,decode 成本随轮数超线性增长,同样的冗余在 agent 里贵一个量级(D02:rollout 占单步 70%+ wall-clock,decode-bound);**奖励稀疏**——单轮场景每条轨迹都有终点奖励,agent 场景只有 episode 末端一个二元信号,中间几十步工具调用没有任何逐步反馈,长度信号与结果信号的 credit assignment 纠缠加剧(D08 三难题之首);**步数即真实成本**——每次工具调用有真金白银的延迟/美元成本,效率不再是审美而是 SLO。这三重放大正好对应第 2 节列的开缝:异质成本进奖励、步级 credit assignment(D08 的"turn 级信用分配是性价比甜点"是现成的切入姿势)、不掐断有效长轨迹(D22 compact filtering 的 agent 版推广)。产出物目标:**一个小模型可跑的 agent 环境上,成功率-成本帕累托前沿的系统刻画 + 一种不掐断有效轨迹的效率信号**——评测可对着 [CostBench](https://arxiv.org/abs/2511.02734) 的成本最优规划设定。看板参照:D12 SWE-RL 配方、D13 四坑、D22。常见死法:环境选了小模型全零分的基准(见第 4 节 tau-bench 修正);以及**窗口期误判**——2026-06 单月 4+ 篇的涌入速度意味着"工具计数惩罚 + 组内相对轨迹长度"这类一阶想法会在数月内被占完,第④步不能等①②③全部做完美再启动,建议②③期间就并行搭 agent 环境。
+"简洁性被放大"的机理值得讲透,它是三重放大的叠加:**轨迹长**——多轮交互上下文逐轮累积,decode 成本随轮数超线性增长,同样的冗余在 agent 里贵一个量级(D02:rollout 占单步 70%+ wall-clock,decode-bound);**奖励稀疏**——单轮场景每条轨迹都有终点奖励,agent 场景只有 episode 末端一个二元信号,中间几十步工具调用没有任何逐步反馈,长度信号与结果信号的 credit assignment 纠缠加剧(D08 三难题之首);**步数即真实成本**——每次工具调用有真金白银的延迟/美元成本,效率不再是审美而是 SLO。这三重放大正好对应第 2 节列的开缝:异质成本进奖励、步级 credit assignment(D08 的"turn 级信用分配是性价比最优点"是现成的切入姿势)、不掐断有效长轨迹(D22 compact filtering 的 agent 版推广)。产出物目标:**一个小模型可跑的 agent 环境上,成功率-成本帕累托前沿的系统刻画 + 一种不掐断有效轨迹的效率信号**——评测可对着 [CostBench](https://arxiv.org/abs/2511.02734) 的成本最优规划设定。看板参照:D12 SWE-RL 配方、D13 四坑、D22。常见死法:环境选了小模型全零分的基准(见第 4 节 tau-bench 修正);以及**窗口期误判**——2026-06 单月 4+ 篇的涌入速度意味着"工具计数惩罚 + 组内相对轨迹长度"这类一阶想法会在数月内被占完,第④步不能等①②③全部做完美再启动,建议②③期间就并行搭 agent 环境。
 
 ### 图D · 四步路线图与agent放大机理
 
@@ -274,7 +274,7 @@ flowchart LR
     S3 -. "指出哪些方向已被占" .-> S4
     S4 --> O4
 
-    AMP["机理旁注:为何agent环境放大简洁性问题<br/>轨迹更长、奖励更稀疏、每步叠加工具与token成本<br/>overthinking分数与成功率负相关——选低分轨迹即+30%性能、-43%成本<br/>信用分配难度同步上升,turn级常是性价比甜点——D08"]
+    AMP["机理旁注:为何agent环境放大简洁性问题<br/>轨迹更长、奖励更稀疏、每步叠加工具与token成本<br/>overthinking分数与成功率负相关——选低分轨迹即+30%性能、-43%成本<br/>信用分配难度同步上升,turn级常是性价比最优点——D08"]
     S4 -. "旁注" .-> AMP
 ```
 
@@ -309,7 +309,7 @@ flowchart LR
     E2 -. "副作用兼机会" .-> R2
 ```
 
-**再往前一步,是那个零命中的交叉点。** 效率感知奖励在训练过程中持续改变 rollout 时长分布,而异步系统的 staleness 分布恰恰由 rollout 时长分布决定(长尾轨迹回来时策略已更新多步)——效率训练会**在线地重塑自己所处系统的 staleness 动力学**,可能缓解长尾(轨迹整体变短)也可能制造新的非平稳性(时长分布训练中漂移,恰是 D23 "staleness 漂移"崩法的诱因)。这条链在本轮全部检索中零文献命中,且它天然要在异步系统(AReaL/slime,D18/D19 语境)上做,是本方向做完第④步之后的第二篇储备,也是建议写入 ideas.json 的新卡:"效率感知奖励 × staleness 分布的联合动力学"。
+**再往前一步,是那个零命中的交叉点。** 效率感知奖励在训练过程中持续改变 rollout 时长分布,而异步系统的 staleness 分布恰恰由 rollout 时长分布决定(长尾轨迹回来时策略已更新多步)——效率训练会**在线地重塑自己所处系统的 staleness 动力学**,可能缓解长尾(轨迹整体变短)也可能制造新的非平稳性(时长分布训练中漂移,恰是 D23 "staleness 漂移"失稳模式的诱因)。这条链在本轮全部检索中零文献命中,且它天然要在异步系统(AReaL/slime,D18/D19 语境)上做,是本方向做完第④步之后的第二篇储备,也是建议写入 ideas.json 的新卡:"效率感知奖励 × staleness 分布的联合动力学"。
 
 **落点。** 本方向已入 Project Ideas;经本轮扫描,方向卡应做三处更新:(a) 范围从"效率感知 RL"收窄为"agent 场景的效率感知 RL(异质成本/步级信号/不掐断机制)",单轮部分降级为练手消融;(b) 标注窗口期——agent 侧拥挤度 ≈ 单轮侧 2025-03,按单轮侧的收敛速度推算,一阶想法的可发表窗口在 2026 年底前后关闭,需立即卡位;(c) 挂接第二篇储备卡(效率×staleness)。用户四个主张的最终判定:主张一采纳;主张二采纳框架、修正 (1)(2) 两条的收敛度;主张三采纳骨架、修正 tau-bench 定位与配方原创性声明;主张四采纳步骤、修正第②步定位(练手非创新)并把论文重心明确压到第④步。
 
@@ -331,6 +331,6 @@ flowchart LR
 - 弱可验证奖励:[Rubrics as Rewards](https://arxiv.org/abs/2507.17746)、[RLCF](https://arxiv.org/abs/2507.18624)、[噪声 verifier 理论](https://arxiv.org/abs/2510.00915)、[用户反馈噪声](https://arxiv.org/abs/2507.23158)、[OpenAI 谄媚 postmortem](https://openai.com/index/expanding-on-sycophancy/)、[WildFeedback](https://arxiv.org/abs/2408.15549)
 - 小模型与蒸馏:[DAPO](https://arxiv.org/abs/2503.14476)、[SPEED-RL](https://arxiv.org/abs/2506.09016)、[Yue et al.](https://arxiv.org/abs/2504.13837)、[ProRL](https://arxiv.org/abs/2505.24864)、[边界感知课程](https://arxiv.org/html/2606.22317v1)、[SFT 可塑性损失](https://arxiv.org/pdf/2606.09932)、[MOPD](https://arxiv.org/pdf/2606.30406)、[SASR](https://arxiv.org/abs/2505.13026)、[Thinking Machines OPD](https://thinkingmachines.ai/blog/on-policy-distillation/)、[STaR](https://arxiv.org/abs/2203.14465)、[RFT](https://arxiv.org/abs/2308.01825)、[失败轨迹信息](https://arxiv.org/abs/2602.04391)
 - 复现与硬件:[GRPO-LoRA 社区手册](https://huggingface.co/blog/Weyaxi/engineering-handbook-grpo-lora-with-verl)、[eval 协议敏感性](https://arxiv.org/abs/2506.08745)、[Unsloth GRPO](https://unsloth.ai/blog/grpo)、[DeepScaleR](https://huggingface.co/agentica-org/DeepScaleR-1.5B-Preview)、[GPT-5 for Developers(tau2 telecom)](https://openai.com/index/introducing-gpt-5-for-developers/)、[HAL taubench airline](https://hal.cs.princeton.edu/taubench_airline)、[tau2-bench releases](https://github.com/sierra-research/tau2-bench/releases)
-- 本看板既有内容:D02(rollout 瓶颈)、D08(agentic RL 三难题与 hacking 监控信号)、D12(SWE-RL 配方)、D13(昇腾 SWE-RL 四坑)、D18(prime-rl/AIPO)、D19(slime 与 staleness 标度律)、D22(compact filtering)、D23(崩法清单)
+- 本看板既有内容:D02(rollout 瓶颈)、D08(agentic RL 三难题与 hacking 监控信号)、D12(SWE-RL 配方)、D13(昇腾 SWE-RL 四坑)、D18(prime-rl/AIPO)、D19(slime 与 staleness 标度律)、D22(compact filtering)、D23(失稳模式清单)
 
 **Provisional 声明**:本篇为研究定位分析,非实验报告。文中全部收敛度判断("已收敛/收敛中/远未收敛")、拥挤度类比("agent 侧 ≈ 单轮侧 2025-03")与窗口期估计("2026 年底前后关闭")均为本轮文献扫描基础上的分析性判断,随每月新文献涌入可能失效,建议按"下一步看什么"第 1 条的节奏滚动重估。verl 基线表数字以官方文档为准,社区复现数字(起点分区间、过训回退幅度、训练时长、显存)对协议与硬件配置敏感,引用时须自行同协议复核。所有 2026 年 arXiv 编号文献以其挂出版本为准,后续修订可能改变结论细节。

@@ -2,26 +2,26 @@
 
 *2026-06-23 · NPU Frontier Dispatch · attention / sparse / MiniMax M3 / RL-on-NPU*
 
-> **TL;DR** — MSA(MiniMax Sparse Attention,arXiv 2606.13392)是 MiniMax-M3 的核心:在标准 **GQA** 主干上做**块级稀疏**——不压缩 KV,而是用一个轻量 **Index 分支**为每个 query 组挑出 **top-k 个 KV 块**,再用 **Main 分支**只在这些块上跑精确 softmax。默认块大小 `Bk=128`、每组选 `k=16` 块 → **每个 query 固定只看 2048 个 KV token**,与上下文长度**无关**(把 O(n²) 压成近 O(n))。在 109B MoE 上**质量持平 GQA**,1M 上下文**每 token 注意力算力降 28.4×**,配套 kernel 后 H800 上 **prefill 14.2× / decode 7.6×** 提速。对 RL-on-NPU 的关键点:它跑在**未压缩的真实 KV** 上、复用标准注意力 kernel,是**最好往昇腾移植**的一档稀疏注意力,而且 decode 端的大提速正好压在 RL rollout 的痛点上。
+> **TL;DR** — MSA(MiniMax Sparse Attention,arXiv 2606.13392)是 MiniMax-M3 的核心:在标准 **GQA** 主干上做**块级稀疏**——不压缩 KV,而是用一个轻量 **Index 分支**为每个 query 组挑出 **top-k 个 KV 块**,再用 **Main 分支**只在这些块上跑精确 softmax。默认块大小 `Bk=128`、每组选 `k=16` 块 → **每个 query 固定只看 2048 个 KV token**,与上下文长度**无关**(把 O(n²) 压成近 O(n))。在 109B MoE 上**质量持平 GQA**,1M 上下文**每 token 注意力算力降 28.4×**,配套 kernel 后 H800 上 **prefill 14.2× / decode 7.6×** 提速。对 RL-on-NPU 的关键点:它跑在**未压缩的真实 KV** 上、复用标准注意力 kernel,是**最易移植到昇腾**的一档稀疏注意力,而且 decode 端的大幅提速恰好对应 RL rollout 的瓶颈。
 
-接 Dispatch 03(昇腾 950)。这期应要求,把 6 月最受关注的注意力机制 **MSA** 拆开讲清楚:它解决什么、怎么工作、怎么训、和 DSA/MLA/NSA 有什么不同。
+接 Dispatch 03(昇腾 950)。本期应要求,对 6 月最受关注的注意力机制 **MSA** 进行拆解阐明:它解决什么、如何工作、如何训练、与 DSA/MLA/NSA 有何不同。
 
 ---
 
-## 1 · 背景:MiniMax 为什么"绕了一圈又回来"
+## 1 · 背景:MiniMax 注意力路线的往返演进
 
-MiniMax 的注意力路线很有故事:
+MiniMax 的注意力路线经历了多次转折:
 
-- **M1 / MiniMax-01**:押注 **Lightning Attention**(线性/次二次注意力),想用线性复杂度换长上下文。
-- **M2**:规模做大后发现,**线性 / 滑窗注意力严重损伤"多跳推理"**——跨长文档把分散线索串起来的能力。团队只好**退回完整二次注意力**,硬扛算力成本来保住前沿智能。
-- **M3 → MSA**:既不想要线性注意力的推理缺陷,又不想吃满二次注意力的成本,于是走**稀疏注意力**这条中间路——只在"该看的地方"做精确注意力。
+- **M1 / MiniMax-01**:选择投入 **Lightning Attention**(线性/次二次注意力),想用线性复杂度换长上下文。
+- **M2**:规模做大后发现,**线性 / 滑窗注意力严重损伤"多跳推理"**——跨长文档把分散线索串起来的能力。团队只能**退回完整二次注意力**,承担算力成本以保住前沿智能。
+- **M3 → MSA**:既不想要线性注意力的推理缺陷,又不愿承担二次注意力的全部成本,于是走**稀疏注意力**这条中间路——只在"该看的地方"做精确注意力。
 
-一句话:**MSA 是 MiniMax 在"线性太笨、全注意力太贵"之间找的第三条路。**
+一句话:**MSA 是 MiniMax 在"线性能力不足、全注意力成本过高"之间找的第三条路。**
 
 ```mermaid
 flowchart LR
     subgraph M1 ["M1 - MiniMax-01"]
-        A1["押注 Lightning Attention<br/>线性或次二次"]
+        A1["投入 Lightning Attention<br/>线性或次二次"]
         A2["想用线性复杂度<br/>换长上下文便宜"]
         A1 --> A2
     end

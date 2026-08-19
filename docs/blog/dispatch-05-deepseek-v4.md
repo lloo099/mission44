@@ -161,7 +161,7 @@ flowchart TB
 
 **为什么先分开练再蒸馏成一个。** 最直接的做法是把所有领域数据混在一起做一轮 RL,但实践中会**互相干扰**:不同领域的 reward 尺度、最优策略、输出风格都不一样(代码要严格可执行、数学要步骤严谨、对话要自然),混在一起做 GRPO,梯度相互拉扯,出现此消彼长(代码涨了数学掉、对齐了风格丢了推理),reward 信号也变脏(一个 batch 混着多领域优势估计,噪声大、方向不一致)。**第一阶段分领域分养**:各自独立 SFT + RL(GRPO),每个领域是一条干净的优化通道——reward 只来自本领域、策略只朝本领域最优走,专家在自己领域被充分压榨到上限、不被其他领域梯度干扰。**第二阶段 on-policy 蒸馏合并进单体**:关键是用 on-policy 而非离线蒸馏——离线蒸馏让学生拟合教师**预先生成**的固定输出,而这些输出落在教师分布上,学生推理时走自己的分布,二者不匹配(exposure bias);on-policy 蒸馏让**学生先自己采样生成**(在自己分布上),再由对应领域教师对这些 on-policy 轨迹打分/提供目标分布,学生在**自己实际产生的状态**上对齐教师,显著减少分布漂移、合并后跨领域更稳。整条链路再叠 32T+ token 多教师蒸馏,把多路能力收敛为一,既拿到各专家充分优化的成果,又避免从头混合 RL 的相互干扰。
 
-## 5 · 效率与跑分(论文/厂商口径,provisional)
+## 5 · 效率与评测分数(论文/厂商口径,provisional)
 
 - **效率**:1M 上下文下,V4-Pro 单 token 推理仅需 V3.2 的 **27% FLOPs** 和 **10% KV cache**——混合注意力把长上下文成本砍到约 1/4~1/10。
 - **质量**:V4-Pro(Max)**SWE-bench Verified 80.6%**,开源最强、与 Gemini 3.1 Pro 持平;LiveCodeBench ~93.5%。
@@ -187,7 +187,7 @@ flowchart TB
 | kernel 与移植 | 定制算子,双机制交替;压得最狠但移植成本高、易 train-inference 漂移 | 复用标准 attention kernel;务实、易加速、易移植 |
 | 长检索风险 | 高压缩(128×)丢 token 级细节,超长精确检索是风险点,靠 CSA 层兜底 | 真实 K/V 不丢精度,风险主要在 top-k 是否选中目标块 |
 
-> 数值与跑分均 **provisional**(论文/厂商口径)。尤其:CSA/HCA 定制算子在 NPU(vLLM-Ascend 910B)上需重写,存在 **train-inference 数值漂移**风险,推理与训练一致性须经 **align-probe** 验证后方可采信线上数值。
+> 数值与评测分数均 **provisional**(论文/厂商口径)。尤其:CSA/HCA 定制算子在 NPU(vLLM-Ascend 910B)上需重写,存在 **train-inference 数值漂移**风险,推理与训练一致性须经 **align-probe** 验证后方可采信线上数值。
 
 ## 6 · 对 RL-on-NPU 的意义
 
@@ -206,4 +206,4 @@ flowchart TB
 
 ---
 
-*来源:DeepSeek-V4 技术报告与解析(HuggingFace deepseek-ai/DeepSeek-V4-Pro、DeepSeek API Docs、latent.space、morphllm、techjacksolutions 等);vLLM-Ascend 2026 支持矩阵。规格 / 跑分为论文 / 厂商口径,provisional。相关卡片见本看板 LLM Modeling 标签页。*
+*来源:DeepSeek-V4 技术报告与解析(HuggingFace deepseek-ai/DeepSeek-V4-Pro、DeepSeek API Docs、latent.space、morphllm、techjacksolutions 等);vLLM-Ascend 2026 支持矩阵。规格 / 评测分数为论文 / 厂商口径,provisional。相关卡片见本看板 LLM Modeling 标签页。*

@@ -2,7 +2,7 @@
 
 *2026-07-17 · NPU Frontier Dispatch · inference-efficiency / systems-map / agent-serving / RL-on-NPU*
 
-> TL;DR:推理效率三阶段:让 FLOP 更便宜(已存量)→计算×系统状态联合调度(IndexShare、DSpark,正在发生)→让不必要的计算根本不发生——并行生成、条件深度、语义缓存、agent 感知调度四个"跳过"。核实裁定:六层地图方向基本全对,但时间戳落后 6-12 个月,多数"空白"已被占坑;唯一干净的实证空白是级联+验证器仲裁。四个跳过叠加约 7.5×(推断),是 agent 负载专属而非普适 10×。NPU 落点:潮汐调度与 KV 分层存储可先行,AI 生成 kernel 是 CANN 杠杆,FP4 代差最不利。
+> TL;DR:推理效率三阶段:让 FLOP 更便宜(已存量)→计算×系统状态联合调度(IndexShare、DSpark,正在发生)→让不必要的计算根本不发生——并行生成、条件深度、语义缓存、agent 感知调度四个"跳过"。核实裁定:六层地图方向基本全对,但时间戳落后 6-12 个月,多数"空白"已有工作覆盖;唯一干净的实证空白是级联+验证器仲裁。四个跳过叠加约 7.5×(推断),是 agent 负载专属而非普适 10×。NPU 落点:潮汐调度与 KV 分层存储可先行,AI 生成 kernel 是 CANN 杠杆,FP4 代差最不利。
 
 本篇性质:探索/地图验证型——针对对话中给出的一份"推理效率六层大颗粒地图"逐格核实(检索时点 2026-07),承接 D06(GLM-5.2 IndexShare)、D15(DSpark)、D24(Kimi 线性混合注意力)、D25(效率感知 RL)。
 
@@ -22,7 +22,7 @@ DSpark 的意义类似但在另一个轴上。半自回归草稿 + 置信度调�
 2. **阶段二(2025-2026,正在发生):让计算与系统状态联合调度。** IndexShare、DSpark、PD 分离、EPLB、SLO-aware 混布都属于这一类:同样的计算,在对的时间、对的位置、对的预算下发生。
 3. **阶段三(下一个 10 倍的来源,本篇主题):让不必要的计算根本不发生。** 并行生成跳过串行等待、条件深度跳过简单 token 的满层计算、语义缓存跳过重复上下文的重 prefill、agent 感知调度跳过无效的资源占用。
 
-对话用户给出的六层大颗粒地图,本质上是在给阶段三画疆域。本篇用四路文献扫描(检索时点 2026-07)逐层核实:哪些格子确实是空白,哪些已经被占坑,哪些倍数判断要打折。先说总裁定:**方向嗅觉基本全对,但时间戳普遍落后 6-12 个月**——多数被标为"空白"的格子,在 2025 下半年到 2026 上半年之间被密集填掉了。这本身是个有信息量的结论:它说明这张地图画的确实是主战场,只是竞争者比作者以为的多。
+对话用户给出的六层大颗粒地图,本质上是在给阶段三画疆域。本篇用四路文献扫描(检索时点 2026-07)逐层核实:哪些格子确实是空白,哪些已经已有工作覆盖,哪些倍数判断要打折。先说总裁定:**方向嗅觉基本全对,但时间戳普遍落后 6-12 个月**——多数被标为"空白"的格子,在 2025 下半年到 2026 上半年之间被密集填掉了。这本身是个有信息量的结论:它说明这张地图画的确实是主战场,只是竞争者比作者以为的多。
 
 ### 图 A · 六层大颗粒地图总览:从"FLOP 更便宜"到"计算不发生"
 
@@ -48,12 +48,12 @@ flowchart TB
         D3["投机×调度联合"]
     end
     subgraph L5 ["层五·服务化"]
-        E1["SLO 混布调度——已红海"]
+        E1["SLO 混布调度——已竞争充分的领域"]
         E2["decode 专用硬件——实测 3-5×"]
         E3["训推潮汐——ROSE 刚开枪,窗口未关"]
     end
     subgraph L6 ["层六·Agent 联合优化"]
-        F1["轨迹级 KV 租约——已被占坑"]
+        F1["轨迹级 KV 租约——已有工作覆盖"]
         F2["级联+验证器仲裁——精确空白"]
         F3["test-time compute 调度器"]
         F4["语义缓存原语——半空白"]
@@ -133,7 +133,7 @@ flowchart LR
 
 用户判断:MoD/early exit/looped transformer 构成与 MoE 宽度稀疏正交的"深度稀疏",agent 轨迹大量格式化 token 不需要满深度,故尤其有价值。裁定:**诊断采纳,机制修正**。
 
-"格式化/样板 token 便宜"这个前提有支撑——结构化输出因投机接受率高,投机解码提速常见 ~3× 量级(provisional,社区经验数字,无单一出处)。但这块红利正在被**投机解码和 semi-AR 以无损、免重训的方式吃掉**,而不是被 MoD/early-exit 吃掉。MoD([arXiv:2404.02258](https://arxiv.org/abs/2404.02258))提出两年、LayerSkip([arXiv:2404.16710](https://arxiv.org/abs/2404.16710))进了 HuggingFace trl,但没有任何公开证据表明进入生产旗舰;2026-03 还出现了方向性负面结果:新一代预训练配方降低了层冗余,MoE/SSM 架构的 early-exit 空间比 dense 更小,早退收益随模型代际递减([arXiv:2603.23701](https://arxiv.org/abs/2603.23701))。更工程化的解释是:MoD 路由后 batch 不齐,与 KV cache/批处理调度的冲突始终没有生产级解法——这可能才是它进不了旗舰的真原因。
+"格式化/样板 token 便宜"这个前提有支撑——结构化输出因投机接受率高,投机解码提速常见 ~3× 量级(provisional,社区经验数字,无单一出处)。但这块红利正在被**投机解码和 semi-AR 以无损、免重训的方式消除**,而不是被 MoD/early-exit 消除。MoD([arXiv:2404.02258](https://arxiv.org/abs/2404.02258))提出两年、LayerSkip([arXiv:2404.16710](https://arxiv.org/abs/2404.16710))进了 HuggingFace trl,但没有任何公开证据表明进入生产旗舰;2026-03 还出现了方向性负面结果:新一代预训练配方降低了层冗余,MoE/SSM 架构的 early-exit 空间比 dense 更小,早退收益随模型代际递减([arXiv:2603.23701](https://arxiv.org/abs/2603.23701))。更工程化的解释是:MoD 路由后 batch 不齐,与 KV cache/批处理调度的冲突始终没有生产级解法——这可能才是它进不了旗舰的真原因。
 
 深度稀疏思想的"正确寄生宿主"是 looped/recursive 路线:从预训练起内建循环深度,而非推理期补丁。字节 Ouro LoopLM 用 7.7T token 真金预训练,1.4B/2.6B 打平 4-12B SOTA([arXiv:2510.25741](https://arxiv.org/abs/2510.25741) / [权重](https://huggingface.co/ByteDance/Ouro-1.4B));Mixture-of-Recursions 把"深度稀疏 + 参数共享"合进一个框架([arXiv:2507.10524](https://arxiv.org/abs/2507.10524));加上 Huginn([arXiv:2502.05171](https://arxiv.org/abs/2502.05171))和 LoopFormer([arXiv:2602.11451](https://arxiv.org/abs/2602.11451)),这是该子层唯一上行的研究期权。但注意它的收益口径是**参数效率 3-5×,不是解码省算力**——循环 4 次 FLOPs 一点不省,对"让计算不发生"的叙事帮助有限。作为推理期加速手段,深度稀疏这格基本可以从大颗粒地图上降级。
 
@@ -201,7 +201,7 @@ flowchart LR
 
 **BitNet 1.58:采纳(定位为远期期权)。** 原生三值 2B/4T 模型开源([arXiv:2504.12285](https://arxiv.org/abs/2504.12285))、bitnet.cpp CPU 提速 1.37-6.17×、能耗 -82%([GitHub](https://github.com/microsoft/BitNet)),并有厂商跟进迹象显示生态在向边端扩散。但关键判断:BitNet 与 FP4 是**替代关系而非叠加关系**,FP4 有 Blackwell 硬件东风、BitNet 没有原生硬件,这一轮资本开支已把胜负判给 FP4;BitNet 真实生态位滑向边端/CPU。三值模型的 RL 后训练完全空白。
 
-**激活稀疏 50-70% 近无损:修正为"免训练 40-50%、训练式 60% 且仅部分张量,70% 无支撑"。** TEAL 免训练近无损区间是 40-50%([arXiv:2408.14690](https://arxiv.org/abs/2408.14690),已被 [Together AI 实装](https://www.together.ai/blog/teal-training-free-activation-sparsity-in-large-language-models));Q-Sparse 的 >60% 只在训练式且仅 gate 张量达成([arXiv:2407.10969](https://arxiv.org/abs/2407.10969))。更重要的折扣:wall-clock 增益远小于稀疏率——50% 稀疏 ≈ 1.5-1.8× decode(访存节省),不是算力减半。且"激活稀疏"的大头其实早被 MoE 吃掉了,dense 层内稀疏是二阶收益。2026 年的合流信号是 SharQ 打通激活稀疏 × FP4([arXiv:2606.26587](https://arxiv.org/pdf/2606.26587))。
+**激活稀疏 50-70% 近无损:修正为"免训练 40-50%、训练式 60% 且仅部分张量,70% 无支撑"。** TEAL 免训练近无损区间是 40-50%([arXiv:2408.14690](https://arxiv.org/abs/2408.14690),已被 [Together AI 实装](https://www.together.ai/blog/teal-training-free-activation-sparsity-in-large-language-models));Q-Sparse 的 >60% 只在训练式且仅 gate 张量达成([arXiv:2407.10969](https://arxiv.org/abs/2407.10969))。更重要的折扣:wall-clock 增益远小于稀疏率——50% 稀疏 ≈ 1.5-1.8× decode(访存节省),不是算力减半。且"激活稀疏"的大头其实早被 MoE 消除了,dense 层内稀疏是二阶收益。2026 年的合流信号是 SharQ 打通激活稀疏 × FP4([arXiv:2606.26587](https://arxiv.org/pdf/2606.26587))。
 
 ### 4.2 算子层:两个判断,一个窗口收窄、一个正中靶心
 
@@ -225,11 +225,11 @@ A/F 分离的采用链条比用户预期走得更远:MegaScale-Infer(层内 atte
 
 修正"空白"判断:goodput 联合调度 2024 年中即有(SmartSpec,[arXiv:2406.14066](https://www.emergentmind.com/papers/2406.14066),思想已进 vLLM),batch 装箱有 TETRIS([arXiv:2502.15197](https://arxiv.org/abs/2502.15197)),自适应长度有 SpecDec++([arXiv:2405.19715](https://arxiv.org/abs/2405.19715))/BanditSpec([arXiv:2505.15141](https://arxiv.org/abs/2505.15141)),树验证的生产化终点是 EAGLE-3 并入 vLLM/SGLang/TRT-LLM 三大框架主线([arXiv:2503.01840](https://arxiv.org/abs/2503.01840)),2026 年已推进到投机×PD 分离联合(StreamServe,[arXiv:2604.09562](https://arxiv.org/abs/2604.09562))。但采纳其"未收敛"直觉:除树验证外,长度自适应与跨请求装箱在生产框架里仍是半手动旋钮,还有论文在质疑真实服务收益([arXiv:2601.11580](https://arxiv.org/abs/2601.11580))。可吃缝隙是把这些做成默认开启的联合调度器——DSpark 的置信度调度验证正是这个方向的第一个大规模生产样本(D15),它证明了这层收益要在"drafter 架构 × 验证调度"一起设计时才兑现。
 
-### 5.4 SLO 混布与潮汐调度:一红海,一窗口
+### 5.4 SLO 混布与潮汐调度:一竞争充分的领域,一窗口
 
-SLO 分级/交互流+批处理流混布/抢占迁移:**修正为红海**。Llumnix 已生产化开源(P99 TTFT 最高降 12.1×,[arXiv:2406.03243](https://arxiv.org/abs/2406.03243)),HyGen([arXiv:2501.14808](https://arxiv.org/abs/2501.14808))等同类工作 2025-2026 密集出现。2× 级收益真实,但坑位密集,不构成洼地。
+SLO 分级/交互流+批处理流混布/抢占迁移:**修正为竞争充分的领域**。Llumnix 已生产化开源(P99 TTFT 最高降 12.1×,[arXiv:2406.03243](https://arxiv.org/abs/2406.03243)),HyGen([arXiv:2501.14808](https://arxiv.org/abs/2501.14808))等同类工作 2025-2026 密集出现。2× 级收益真实,但坑位密集,不构成空白领域。
 
-训推一体潮汐调度(推理低谷跑 RL rollout):**修正但窗口未关**。"无公开实践"在 2026-05 前基本成立,现在被 HKUST+阿里的 ROSE 正面占坑(SLO-safe 地把 rollout 混布到 serving GPU,端到端吞吐 1.3-3.3×,[arXiv:2605.06534](https://arxiv.org/abs/2605.06534)),verl/HybridFlow 的 HybridEngine 是训推同卡的事实标准开源件([GitHub](https://github.com/verl-project/verl)),国内厂商在公开场合讨论"白天推理、夜间 rollout"([实录](https://qingkeai.online/archives/2025infra))。但公开占坑者仅 1-2 家,fast-follow 有位置。接 D02:rollout 占 RL 单步 70%+ wall-clock 且 decode-bound——**推理集群的夜间低谷,正是 RL 系统最缺的那种算力**(大量、可抢占、decode 友好),潮汐调度是把 serving 世界与 RL 世界焊起来的那条缝。权重同步成本、SLO 与 on-policy 新鲜度的联合优化、多区域全球潮汐编排,均无公开工作。
+训推一体潮汐调度(推理低谷跑 RL rollout):**修正但窗口未关**。"无公开实践"在 2026-05 前基本成立,现在被 HKUST+阿里的 ROSE 正面跟进(SLO-safe 地把 rollout 混布到 serving GPU,端到端吞吐 1.3-3.3×,[arXiv:2605.06534](https://arxiv.org/abs/2605.06534)),verl/HybridFlow 的 HybridEngine 是训推同卡的事实标准开源件([GitHub](https://github.com/verl-project/verl)),国内厂商在公开场合讨论"白天推理、夜间 rollout"([实录](https://qingkeai.online/archives/2025infra))。但公开先行工作仅 1-2 家,fast-follow 有位置。接 D02:rollout 占 RL 单步 70%+ wall-clock 且 decode-bound——**推理集群的夜间低谷,正是 RL 系统最缺的那种算力**(大量、可抢占、decode 友好),潮汐调度是把 serving 世界与 RL 世界焊起来的那条缝。权重同步成本、SLO 与 on-policy 新鲜度的联合优化、多区域全球潮汐编排,均无公开工作。
 
 ### 5.5 Decode 专用硬件:3-5× 是实数,5-10× 是厂商口径
 
@@ -237,23 +237,23 @@ SLO 分级/交互流+批处理流混布/抢占迁移:**修正为红海**。Llumn
 
 ---
 
-## 6 · 层六·Agent 联合优化:最大洼地的核实
+## 6 · 层六·Agent 联合优化:最大空白领域的核实
 
-用户判断层六是最大洼地,理由是 agent 负载统计特性(超长共享前缀/突发工具等待/轨迹间高度相似)与 chat 完全不同而 serving 仍按 chat 假设设计。**理由采纳,结论重大修正:四个子项里三个的"空白"已在 2025 下半年至 2026 上半年被填掉。**逐项裁定:
+用户判断层六是最大空白领域,理由是 agent 负载统计特性(超长共享前缀/突发工具等待/轨迹间高度相似)与 chat 完全不同而 serving 仍按 chat 假设设计。**理由采纳,结论重大修正:四个子项里三个的"空白"已在 2025 下半年至 2026 上半年被填掉。**逐项裁定:
 
-**(1) 轨迹级 KV 生命周期管理 / 工具等待期换出——被证伪最彻底的一格。** 九个月内连续占坑:Autellix 把 agent 程序当一等公民做程序级抢占调度,同延迟吞吐 4-15×([arXiv:2502.13965](https://arxiv.org/abs/2502.13965));TokenCake 在函数调用期间事件驱动地 offload 空闲 KV、预测式回传——就是"工具等待期换出"本身([arXiv:2510.18586](https://arxiv.org/html/2510.18586));Continuum 按预测工具时长给 KV 设 TTL([arXiv:2511.02230](https://arxiv.org/abs/2511.02230));CacheWise 面向 coding agent 用工具调用元数据做 reuse-aware 驱逐,会话完成时间提升 ~3.5×([arXiv:2606.16824](https://arxiv.org/pdf/2606.16824))。剩余的真空白收窄为:**跨实例/跨集群的租约语义(带计费与多租户隔离)+ 与主流引擎的 API 标准化**——占坑者全停在单集群研究原型,"agent 框架向 serving 声明我还会回来"的协议层仍然没人定义。
+**(1) 轨迹级 KV 生命周期管理 / 工具等待期换出——被证伪最彻底的一项。** 九个月内连续有工作跟进:Autellix 把 agent 程序当一等公民做程序级抢占调度,同延迟吞吐 4-15×([arXiv:2502.13965](https://arxiv.org/abs/2502.13965));TokenCake 在函数调用期间事件驱动地 offload 空闲 KV、预测式回传——就是"工具等待期换出"本身([arXiv:2510.18586](https://arxiv.org/html/2510.18586));Continuum 按预测工具时长给 KV 设 TTL([arXiv:2511.02230](https://arxiv.org/abs/2511.02230));CacheWise 面向 coding agent 用工具调用元数据做 reuse-aware 驱逐,会话完成时间提升 ~3.5×([arXiv:2606.16824](https://arxiv.org/pdf/2606.16824))。剩余的真空白收窄为:**跨实例/跨集群的租约语义(带计费与多租户隔离)+ 与主流引擎的 API 标准化**——先行工作全停在单集群研究原型,"agent 框架向 serving 声明我还会回来"的协议层仍然没人定义。
 
-**(2) 级联 + 验证器仲裁——唯一空白内核仍然成立的子项。** 80/20 方向被 NVIDIA 实测背书:MetaGPT/Open Operator/Cradle 三框架里 40-70% 的大模型调用可由调优小模型承接,SLM 每 token 成本低 10-30×([arXiv:2506.02153](https://arxiv.org/abs/2506.02153))。但"端到端 3-5× 近无损降本"**无人实证**:公开数字要么是每 token 成本 10-30×(不含质量损失与重试),要么是单查询路由的 31%(UCCI,[arXiv:2605.18796](https://arxiv.org/html/2605.18796))——远低于 3-5×。"带验证器仲裁的 agent 轨迹级端到端成本-质量曲线"这个精确的坑还空着,失败重试会吃掉多少级联收益也无人量化。
+**(2) 级联 + 验证器仲裁——唯一空白内核仍然成立的子项。** 80/20 方向被 NVIDIA 实测背书:MetaGPT/Open Operator/Cradle 三框架里 40-70% 的大模型调用可由调优小模型承接,SLM 每 token 成本低 10-30×([arXiv:2506.02153](https://arxiv.org/abs/2506.02153))。但"端到端 3-5× 近无损降本"**无人实证**:公开数字要么是每 token 成本 10-30×(不含质量损失与重试),要么是单查询路由的 31%(UCCI,[arXiv:2605.18796](https://arxiv.org/html/2605.18796))——远低于 3-5×。"带验证器仲裁的 agent 轨迹级端到端成本-质量曲线"这个精确的坑还空着,失败重试会消除多少级联收益也无人量化。
 
-**(3) Test-time compute 调度器——请求级已被占坑,集群级空着。** Dynasor/Certaindex 2024 年底就做了 serving 系统级 TTC 调度(实时估计推理进度、答案趋稳即回收 token 预算跨请求重分配,[arXiv:2412.20993](https://arxiv.org/abs/2412.20993)),2026 年已卷到影子价格理论([arXiv:2606.03092](https://arxiv.org/pdf/2606.03092))。真正空的是 **TTC 预算 × SLO × 集群容量三者联合**,以及 TTC 与 agent 轨迹价值估计的耦合(哪个子任务值得烧算力)。
+**(3) Test-time compute 调度器——请求级已有工作覆盖,集群级空着。** Dynasor/Certaindex 2024 年底就做了 serving 系统级 TTC 调度(实时估计推理进度、答案趋稳即回收 token 预算跨请求重分配,[arXiv:2412.20993](https://arxiv.org/abs/2412.20993)),2026 年已卷到影子价格理论([arXiv:2606.03092](https://arxiv.org/pdf/2606.03092))。真正空的是 **TTC 预算 × SLO × 集群容量三者联合**,以及 TTC 与 agent 轨迹价值估计的耦合(哪个子任务值得烧算力)。
 
-**(4) 语义缓存/压缩表示作为 serving 原语——半成立半修正,取决于指哪一半。** 如果指"压缩 KV 直接注入代替重 prefill":不空白,UChicago 系已占坑并生产化——CacheGen 把 KV 编码成比特流跨网络传输注入(SIGCOMM'24,[arXiv:2310.07240](https://arxiv.org/abs/2310.07240))、CacheBlend 多段 KV 拼接 + 选择性重算恢复交叉注意力(EuroSys'25,TTFT 降 2.2-3.3×,[arXiv:2405.16444](https://arxiv.org/abs/2405.16444))、LMCache 是它们的产品化层。如果指"学习型语义压缩表示(gist/soft token)作为一等 serving 原语":**空白成立**——gist 压缩有系统性质量损失([arXiv:2412.17483](https://arxiv.org/abs/2412.17483)),且换模型缓存作废,模型侧研究与 serving 侧之间的桥没人搭。
+**(4) 语义缓存/压缩表示作为 serving 原语——半成立半修正,取决于指哪一半。** 如果指"压缩 KV 直接注入代替重 prefill":不空白,UChicago 系已跟进并生产化——CacheGen 把 KV 编码成比特流跨网络传输注入(SIGCOMM'24,[arXiv:2310.07240](https://arxiv.org/abs/2310.07240))、CacheBlend 多段 KV 拼接 + 选择性重算恢复交叉注意力(EuroSys'25,TTFT 降 2.2-3.3×,[arXiv:2405.16444](https://arxiv.org/abs/2405.16444))、LMCache 是它们的产品化层。如果指"学习型语义压缩表示(gist/soft token)作为一等 serving 原语":**空白成立**——gist 压缩有系统性质量损失([arXiv:2412.17483](https://arxiv.org/abs/2412.17483)),且换模型缓存作废,模型侧研究与 serving 侧之间的桥没人搭。
 
 **与 D25 的同一硬币论,现在可以说得更完整。** D25 的结论是训练侧压轨迹长度(效率感知 RL),本篇层六是系统侧让重复与等待不付费。两面的分工在核实后更清晰了:训练侧管"生成的 token 本身要不要存在",系统侧管"存在的 token 要不要重复付费"——前者是效率奖励×staleness 的动力学问题(D25 标记为零命中交叉点),后者的基础件(KV 分层存储、租约、换出)已经有人造好,缺的是协议和经济学层。
 
 **最适合作为研究切入的子项裁定:(2)。** 理由:(1)(3)(4) 的剩余空白都是"标准化/协议/理论精细化"性质,适合框架维护者和大厂;(2) 是一个干净的实证空白——不需要改任何框架主线,只需要一套 agent 基准 + 验证器仲裁策略 + 诚实核算重试成本的端到端账本,而且它的结论直接裁定"3-5×"这个被广泛引用却无人验证的数字。次选是 (1) 的协议层:谁先把"KV 租约"写成 agent 协议(MCP 一类)与推理引擎之间的标准握手,谁就占住了 agent-serving 接口的定义权。
 
-### 图 D · Agent-aware serving:洼地还剩多少是真空白
+### 图 D · Agent-aware serving:空白领域还剩多少是真空白
 
 ```mermaid
 flowchart LR
@@ -274,9 +274,9 @@ flowchart LR
     T3 --> G2
     T3 --> G3
 
-    V1["空白被证伪最彻底:Autellix·Continuum·TokenCake·CacheWise 九个月连续占坑——剩余空白=跨集群租约与计费·多租户语义"]
+    V1["空白被证伪最彻底:Autellix·Continuum·TokenCake·CacheWise 九个月连续有工作跟进——剩余空白=跨集群租约与计费·多租户语义"]
     V2["半空半实:40-70% 调用可下沉有 NVIDIA 实测背书,但 3-5× 端到端降本+验证器仲裁无人实证——精确空白仍在"]
-    V3["请求级已被 Dynasor·Certaindex 占坑并卷到影子价格理论——空白=TTC×SLO×集群容量三者联合调度"]
+    V3["请求级已被 Dynasor·Certaindex 跟进并卷到影子价格理论——空白=TTC×SLO×集群容量三者联合调度"]
     V4["KV 级压缩注入已生产化:CacheGen·CacheBlend·LMCache——学习型 gist 压缩作 serving 原语仍空白,卡在质量损失与模型耦合"]
     G1 --> V1
     G2 --> V2
@@ -333,12 +333,12 @@ flowchart LR
 | A/F 分离 | 每 GPU ~1.7-1.9×(实测) | 一年内(vLLM RFC 中) | 采纳,CXL 冷专家层才是剩余空白 |
 | 分布式 KV 存储 | 命中率主导(agent 负载) | 今天可吃(双雄 GA) | 采纳;真空白=脱敏跨用户共享 |
 | 投机×调度联合 | +60-85%(DSpark 生产实测) | 树验证今天/联合调度一年内 | 修正:非空白,缝隙在"默认开启" |
-| SLO 混布 | ~2×(利用率) | 今天可吃 | 修正:红海 |
+| SLO 混布 | ~2×(利用率) | 今天可吃 | 修正:竞争充分的领域 |
 | 潮汐调度 | 1.3-3.3×(ROSE) | 一年内,窗口未关 | 修正:刚被占第一坑 |
 | decode 专用硬件 | 3-5×(第三方实测) | 今天可吃(Groq/Cerebras) | 采纳带折扣;Etched 未验证 |
-| 轨迹级 KV 租约 | 会话完成 ~3.5×(CacheWise) | 一年内 | 修正:被密集占坑;空白收窄至协议层 |
+| 轨迹级 KV 租约 | 会话完成 ~3.5×(CacheWise) | 一年内 | 修正:被密集跟进;空白收窄至协议层 |
 | 级联+验证器仲裁 | 40-70% 调用可下沉(实测);3-5× 未证 | 研究期权(最佳切入) | 部分采纳:精确空白仍在 |
-| TTC 调度器 | 请求级已占坑 | 一年内 | 修正:空白上移至集群级 |
+| TTC 调度器 | 请求级已跟进 | 一年内 | 修正:空白上移至集群级 |
 | 语义压缩为 serving 原语 | KV 级 2-3×(实测) | KV 级今天/学习型期权 | 半成立:学习型空白真 |
 
 一句话版本:这张六层地图画对了战场,画错了敌情——它以为自己在标注无人区,实际标注的是 2026 年上半年火力最密集的前线。而"让计算不发生"的下一个 10 倍,大概率不会以通用倍数的形式到来,它会以 agent 负载专属红利的形式,先落在那些同时握有 serving 流量和 RL 训练需求的玩家手里。
@@ -359,7 +359,7 @@ flowchart LR
             P6["Mooncake·LMCache 分布式 KV"]
             P7["DeepEP·COMET 通信计算融合"]
             P8["TEAL 激活稀疏约 1.5×"]
-            P9["SLO 混布调度——收益真实但已红海"]
+            P9["SLO 混布调度——收益真实但已竞争充分的领域"]
         end
     end
     subgraph M2 ["一年内可吃"]
@@ -399,9 +399,9 @@ flowchart LR
 
 ## 下一步看什么
 
-1. **级联 + 验证器仲裁的端到端账本**:谁第一个在公开 agent 基准上,把"验证器仲裁 + 失败重试成本"诚实核算进级联降本曲线,直接裁定"3-5× 近无损"这个被广泛引用却无人验证的数字——这是本篇裁定的最佳研究切入点,值得盯每一篇新占坑。
+1. **级联 + 验证器仲裁的端到端账本**:谁第一个在公开 agent 基准上,把"验证器仲裁 + 失败重试成本"诚实核算进级联降本曲线,直接裁定"3-5× 近无损"这个被广泛引用却无人验证的数字——这是本篇裁定的最佳研究切入点,值得盯每一篇新跟进。
 2. **KV 租约协议层**:MCP 一类 agent 协议与 vLLM/SGLang 之间会不会出现"我还会回来"的标准握手(带计费与多租户语义)?Autellix/Continuum/CacheWise 的原型谁先推标准,谁就占住 agent-serving 接口定义权。
-3. **潮汐调度的第二枪与 NPU 版**:ROSE 之后是否有第二家公开占坑(尤其权重同步 × on-policy 新鲜度联合优化);昇腾语境的"低谷跑 rollout"是现成组合,无人做,窗口未关。
+3. **潮汐调度的第二枪与 NPU 版**:ROSE 之后是否有第二家公开跟进(尤其权重同步 × on-policy 新鲜度联合优化);昇腾语境的"低谷跑 rollout"是现成组合,无人做,窗口未关。
 4. **DFlash 型混合路线的接受率演进**:开放式长推理上的接受率是这条"扩散想、AR 说"路线兑现 5-10× 的最后闸门;同时盯 Fast-dLLM v2 式"AR 改造 block-dLLM"是否被某家旗舰吸收进主线。
 
 ---

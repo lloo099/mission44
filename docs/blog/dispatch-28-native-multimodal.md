@@ -143,9 +143,9 @@ flowchart TB
 
 1. **LongCat-Next 的 RL 后训练**:离散统一模型怎么做 RLVR(尤其生成侧的可验证奖励),美团是否会在 LongCat-2.0 系上复用 DiNA。
 2. **K3 §5.2.3 细节**:multimodal encoder 训练基建若随 CANN/开源生态披露,变长视觉负载均衡的做法值得单独拆。
-3. **第三方复测**:两家的视觉跑分目前全部自报;MMMU-Pro/Video-MME 的独立复现是检验"原生>嫁接"叙事的关键。
+3. **第三方复测**:两家的视觉评测分数目前全部自报;MMMU-Pro/Video-MME 的独立复现是检验"原生>嫁接"叙事的关键。
 4. **离散 tokenizer 军备**:dNaViT 之后,8 层 RVQ/28× 压缩这组数字会不会像"3:1 混合比"一样成为下一个被各家消融的超参。
 
 ---
 
-**来源与声明**:K3 侧基于技术报告 arXiv [2607.24653](https://arxiv.org/abs/2607.24653)(本看板已精读,见 D24 §7)与官方 [GitHub README](https://github.com/MoonshotAI/Kimi-K3/blob/main/README.md)(视觉跑分为 README 原文);MoonViT-V2 的 projector/位置编码细节来自第三方 config 逆向([kimi-k3-mlx](https://github.com/PipeNetwork/kimi-k3-mlx) 等),已标注待原文复核。LongCat-Next 侧基于 arXiv [2603.27538](https://arxiv.org/abs/2603.27538)、[美团技术博客](https://tech.meituan.com/2026/04/02/longcat-next.html)、[LongCat-Audio-Codec](https://arxiv.org/abs/2510.15227) 与 [HF 模型页](https://huggingface.co/meituan-longcat/LongCat-Next)(MIT 开源)。全部 benchmark 为厂商自报(provisional);"解码 10×/算力省 30%"为 LongCat 官方口径;标注(推断)处为本看板分析。两家的数据配比均未公开,文中如实标注。
+**来源与声明**:K3 侧基于技术报告 arXiv [2607.24653](https://arxiv.org/abs/2607.24653)(本看板已精读,见 D24 §7)与官方 [GitHub README](https://github.com/MoonshotAI/Kimi-K3/blob/main/README.md)(视觉评测分数为 README 原文);MoonViT-V2 的 projector/位置编码细节来自第三方 config 逆向([kimi-k3-mlx](https://github.com/PipeNetwork/kimi-k3-mlx) 等),已标注待原文复核。LongCat-Next 侧基于 arXiv [2603.27538](https://arxiv.org/abs/2603.27538)、[美团技术博客](https://tech.meituan.com/2026/04/02/longcat-next.html)、[LongCat-Audio-Codec](https://arxiv.org/abs/2510.15227) 与 [HF 模型页](https://huggingface.co/meituan-longcat/LongCat-Next)(MIT 开源)。全部 benchmark 为厂商自报(provisional);"解码 10×/算力省 30%"为 LongCat 官方口径;标注(推断)处为本看板分析。两家的数据配比均未公开,文中如实标注。

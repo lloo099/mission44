@@ -2,7 +2,7 @@
 
 *2026-06-25 · NPU Frontier Dispatch · model / MiMo-V2.5 / hybrid-attention / RL-on-NPU*
 
-> **TL;DR** — MiMo-V2.5-Pro(小米,2026-04-28,**MIT 开源**)是一记"硬件厂商杀进模型赛道"的重拳:**1.02T / 42B 激活 MoE**,但长上下文的省法和别家都不同——不靠块稀疏(MSA/DSA),而是**交替堆叠滑动窗口注意力(SWA,128-token 窗)与全局注意力,比例 6:1**,把 KV cache 砍掉约 **7×**,撑起 1M 上下文。真正的杀手锏是配套的 **MiMo Code** 智能体编码 harness:厂商基准里 MiMo Code + V2.5-Pro 在 **SWE-bench Verified 82 / Pro 62 / Terminal-Bench 2 73** 上分别压过 Claude Code + Sonnet 4.6,且在 **200+ 步超长任务**上更稳。对 RL-on-NPU:SWA 解码极省、7× KV cut 直接缓解 rollout 显存,MIT 许可适合做 RL 基座——**但目前没有 Ascend 移植**,且跑分与 harness 强绑定,要打折看。
+> **TL;DR** — MiMo-V2.5-Pro(小米,2026-04-28,**MIT 开源**)是一记"硬件厂商杀进模型赛道"的重拳:**1.02T / 42B 激活 MoE**,但长上下文的省法和别家都不同——不靠块稀疏(MSA/DSA),而是**交替堆叠滑动窗口注意力(SWA,128-token 窗)与全局注意力,比例 6:1**,把 KV cache 砍掉约 **7×**,撑起 1M 上下文。真正的杀手锏是配套的 **MiMo Code** 智能体编码 harness:厂商基准里 MiMo Code + V2.5-Pro 在 **SWE-bench Verified 82 / Pro 62 / Terminal-Bench 2 73** 上分别压过 Claude Code + Sonnet 4.6,且在 **200+ 步超长任务**上更稳。对 RL-on-NPU:SWA 解码极省、7× KV cut 直接缓解 rollout 显存,MIT 许可适合做 RL 基座——**但目前没有 Ascend 移植**,且评测分数与 harness 强绑定,要打折看。
 
 接 Dispatch 06(GLM-5.2)。应要求把这次研究动态里最值得单讲的新模型 **MiMo-V2.5-Pro** 拆开。所有数字均**厂商/媒体口径,provisional**。
 
@@ -129,12 +129,12 @@ MiMo 的卖点不只是模型,还有配套的 **MiMo Code** —— 一个开源 
 
 ```mermaid
 flowchart TB
-  subgraph SCORE ["跑分由两者共同决定"]
+  subgraph SCORE ["评测分数由两者共同决定"]
     direction LR
     MODEL["模型能力 — V2.5-Pro"]
     HARNESS["harness 脚手架 — MiMo Code"]
   end
-  MODEL --> RUN["最终基准跑分"]
+  MODEL --> RUN["最终基准评测分数"]
   HARNESS --> RUN
   RUN --> WARN["读榜须知 — harness 加模型一起测 — 换 harness 数字会变 — 厂商口径"]
   WARN --> REPRO["需裸模型复现才知真实水平"]
@@ -161,7 +161,7 @@ flowchart TB
 - **SWA 解码极省,正中 rollout 痛点**。RL 的 rollout 是 decode-heavy + memory-bound;128-token 滑窗让绝大多数层的 KV 访存几乎是常数级,**7× KV cut** 直接松绑昇腾"无 sleep-mode"的显存争用(见 NPU 架构页"RL 显存争用"视图)。这是比块稀疏更易拿到的工程收益。
 - **kernel 最现成**。SWA + 周期性全局是成熟模式,NPU 上重写比 MSA/DSA/CSA 这类自定义稀疏注意力风险更低——**移植友好度高**。
 - **MIT = 可做 RL 基座**。可商用 + 可二次训练,适合在昇腾上做 agentic RL 实验;MiMo Code 的多步 agent 场景本身就是 agentic RL 的训练场。
-- **但有两个坎**:① **目前无 Ascend 移植**(未在 vLLM-Ascend 列出);② 跑分 harness 强绑定,需要裸模型复现来定真实水平。
+- **但有两个坎**:① **目前无 Ascend 移植**(未在 vLLM-Ascend 列出);② 评测分数 harness 强绑定,需要裸模型复现来定真实水平。
 - **数值一致性**:SWA 的窗口边界 + 全局层在 NPU 上重写,仍要用 **align-probe** 量化 train-inference 漂移。
 
 ## 6 · 下一步看什么
@@ -173,4 +173,4 @@ flowchart TB
 
 ---
 
-*来源:小米 MiMo 官方(mimo.mi.com / mimo.xiaomi.com)、MiMo-V2.5 开源公告、VentureBeat(MiMo Code vs Claude Code)、BigGo/fonearena/Medium 等解析。规格与跑分均厂商/媒体口径,provisional;基准与 MiMo Code harness 耦合。相关卡片见本看板 LLM Modeling 标签页与 Overview 对比组件。*
+*来源:小米 MiMo 官方(mimo.mi.com / mimo.xiaomi.com)、MiMo-V2.5 开源公告、VentureBeat(MiMo Code vs Claude Code)、BigGo/fonearena/Medium 等解析。规格与评测分数均厂商/媒体口径,provisional;基准与 MiMo Code harness 耦合。相关卡片见本看板 LLM Modeling 标签页与 Overview 对比组件。*

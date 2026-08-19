@@ -2,7 +2,7 @@
 
 *2026-07-17 · NPU Frontier Dispatch · low-bit-training / FP8 / HiF8 / quantization / RL-on-NPU*
 
-> **TL;DR** — 低比特训练三大战场现状:预训练 FP8 已生产标配(DeepSeek-V3 配方成骨架)、NVFP4 收敛中(550B/20T 生产背书);后训练"训练末段 QAT"成万亿 MoE 新默认("发布即低比特");RL 侧 FP8 rollout 已是框架默认,训推一致裂成 IS 修正与数值对齐两派。datatype 格局:**8-bit 归标准、4-bit 起分歧**(NVFP4/MXFP4/HiF4 三路)。核心问题 HiF8:锥形精度 + 38 binade 换"单格式 + 极简缩放"的训练配方,证据链止于 13B 且全为华为自证,DeepSeek V4 在 950 上弃 HiF8 选 MX 是刺眼信号;但 HiF8×RL 零先例恰是机会窗口。另含一条看板自我修正:D13 的 0.05 nats 阈值无文献依据。
+> **TL;DR** — 低比特训练三大战场现状:预训练 FP8 已生产标配(DeepSeek-V3 配方成骨架)、NVFP4 收敛中(550B/20T 生产背书);后训练"训练末段 QAT"成万亿 MoE 新默认("发布即低比特");RL 侧 FP8 rollout 已是框架默认,训推一致裂成 IS 修正与数值对齐两派。datatype 格局:**8-bit 归标准、4-bit 起分歧**(NVFP4/MXFP4/HiF4 三路)。核心问题 HiF8:锥形精度 + 38 binade 换"单格式 + 极简缩放"的训练配方,证据链止于 13B 且全为华为自证,DeepSeek V4 在 950 上弃 HiF8 选 MX 是显著的负向信号;但 HiF8×RL 零先例恰是机会窗口。另含一条看板自我修正:D13 的 0.05 nats 阈值无文献依据。
 
 本篇性质:深度调研篇(五路并行扫描,全部来源带 URL/arXiv 号),承接 D02(FP8 rollout)、D09(Miles 统一 FP8)、D23(训推一致三层)、D26(数值层与 FP4 代差)的数值层线索,并回答一个悬置已久的问题:昇腾自己的数值格式 HiF8 到底怎么训练。
 
@@ -10,7 +10,7 @@
 
 ## 1 · 为什么现在盘点低比特训练
 
-Dispatch 26 给出过一个不太舒服的裁定:在训练侧的精度代差里,**FP4 一代对国产算力栈最不利**——NVIDIA 已经把 NVFP4 做进 Blackwell 的 tensor core 并拿出旗舰级预训练背书,而国产芯片连 FP8 这一代都尚未普遍补齐。但 D26 当时是从硬件矩阵往下看的粗粒度判断,没有回答一个更根本的问题:**昇腾在数值层自己的答案是什么?** 答案其实存在,就是 HiF8/HiF4 这条自研格式路线([arXiv:2409.16626](https://arxiv.org/abs/2409.16626)、[arXiv:2604.08826](https://arxiv.org/abs/2604.08826)),只是它长期游离在英文社区的讨论半径之外。本篇的任务就是把这条线放回低比特训练的全景里称一称重量。
+Dispatch 26 给出过一个不利的结论:在训练侧的精度代差里,**FP4 一代对国产算力栈最不利**——NVIDIA 已经把 NVFP4 做进 Blackwell 的 tensor core 并拿出旗舰级预训练背书,而国产芯片连 FP8 这一代都尚未普遍补齐。但 D26 当时是从硬件矩阵往下看的粗粒度判断,没有回答一个更根本的问题:**昇腾在数值层自己的答案是什么?** 答案其实存在,就是 HiF8/HiF4 这条自研格式路线([arXiv:2409.16626](https://arxiv.org/abs/2409.16626)、[arXiv:2604.08826](https://arxiv.org/abs/2604.08826)),只是它长期游离在英文社区的讨论半径之外。本篇的任务就是把这条线放回低比特训练的全景里做系统评估。
 
 盘点之前先立坐标系。低比特训练的动机可以拆成三条主线,它们经常被混为一谈但收益结构完全不同:
 
@@ -54,7 +54,7 @@ flowchart TB
     R1 -->|"进一步压比特"| R2
 ```
 
-本篇路线图:第 2–3 节盘预训练与 QAT/PTQ 的"时机之争",第 4 节回到低比特 RL 主场并做一次看板自我修正,第 5 节梳理 datatype 动物园与硬件矩阵,第 6 节深挖 HiF8 的编码机理与训练配方(核心节),第 7 节给出昇腾数值层的攻防综合判断与可做题目。
+本篇路线图:第 2–3 节盘预训练与 QAT/PTQ 的"时机之争",第 4 节回到低比特 RL 主场并做一次看板自我修正,第 5 节梳理 datatype 谱系与硬件矩阵,第 6 节深挖 HiF8 的编码机理与训练配方(核心节),第 7 节给出昇腾数值层的攻防综合判断与可做题目。
 
 ## 2 · 低比特预训练:FP8 已生产,FP4 在路上
 
@@ -64,7 +64,7 @@ flowchart TB
 
 - **只动 GEMM 三类**:前向(Fprop)、权重梯度(Wgrad)、激活梯度(Dgrad)三种矩阵乘用 FP8;embedding、输出 head、MoE 门控、归一化、attention 全部保 BF16–FP32。也就是说"FP8 训练"实际是"FP8 GEMM 训练",数值敏感路径一个都没碰。
 - **细粒度缩放**:激活按 1×128 tile、权重按 128×128 block 各自缩放,并且每累加 4 次 WGMMA 就升到 FP32 累加器——对付 Hopper FP8 累加精度不足的工程补丁。
-- **前反向统一 E4M3**:放弃了经典的"前向 E4M3、反向 E5M2"分工(详见第 5 节),用细粒度缩放吃掉动态范围压力。
+- **前反向统一 E4M3**:放弃了经典的"前向 E4M3、反向 E5M2"分工(详见第 5 节),用细粒度缩放吸收动态范围压力。
 - 主权重 FP32、优化器一阶/二阶矩 BF16。
 
 这套配方之后被快速跟进:蚂蚁 Ling 2.0 全程 FP8 训练并开源方案([arXiv:2510.22115](https://arxiv.org/abs/2510.22115)、[FP8 训练方案](https://huggingface.co/blog/im0qianqian/ling-mini-2-fp8-mixed-precision-training-solution));MiniMax-M2 以 FP8 权重发布([HF](https://huggingface.co/MiniMaxAI/MiniMax-M2),是否全程 FP8 预训练未见官方说明);NVIDIA 的 MXFP8 配方([arXiv:2506.08027](https://arxiv.org/abs/2506.08027))支撑了 Nemotron Nano 2 的 20T token 预训练([arXiv:2508.14444](https://arxiv.org/abs/2508.14444));学术侧有 InfiR2([2509.22536](https://arxiv.org/abs/2509.22536))、FP8-Flow-MoE([2511.02302](https://arxiv.org/abs/2511.02302))继续补细节。可以说 FP8 预训练在 2025 年完成了"论文→生产标配"的转身。但要重复一遍代价表:**端到端加速约 1.2–1.4×,离 GEMM 理论 2× 有明显距离**,attention、通信、优化器状态三块尚未低比特化。
@@ -200,7 +200,7 @@ flowchart TB
 
 截至 2026-07:①**FP8 优化器状态 × RL** 无公开工作(预训练侧有 FP8-LM [2310.18313](https://arxiv.org/abs/2310.18313) 可迁移);②**低比特 agentic 训练**(长轨迹、工具调用)未见任何工作——且社区 infra 侧观察指出 agentic 场景的小 batch 下 FP8 反而可能更慢;③**跨精度 advantage 偏差**的方法无关系统测量缺失(没人回答"同一条轨迹在 FP8/FP4 下算出的 advantage 偏多少、偏差怎么随训练演化")。
 
-## 5 · datatype 动物园:8-bit 归标准,4-bit 起分歧
+## 5 · datatype 谱系:8-bit 归标准,4-bit 起分歧
 
 ### 分工惯例之死
 
@@ -325,14 +325,14 @@ flowchart LR
 
 论文报告:T5、LLaMA-7B、GPT-3 6.7B–13B 的 loss 曲线与 FP16 在 run-to-run 波动内重合;ResNet/ViT 等传统模型同;PTQ 推理 top-1 掉点 ≤0.5%。证据链的上限同样清楚:**未见 >13B 或任何 MoE 规模的公开数字**;所有系统评测均为华为自证——包括推理侧对比([2602.12635](https://arxiv.org/abs/2602.12635),作者全部来自华为:HiF8 在高方差激活/KV 上占优,W8A8+KV8 比静态 log-FP8 高 0.3–0.5%,但加 scaling 后与 MXFP8 相当);**无独立第三方复现**。姊妹篇 HiF4 预训练([2604.08826](https://arxiv.org/abs/2604.08826))主张 HiF4 比 MXFP4 需要的补救(Hadamard/随机舍入等)更少——逻辑自洽(锥形格式在 4-bit 下范围优势更放大),但同样只有华为口径。
 
-### 落地时间线与一个刺眼的信号
+### 落地时间线与一个显著的负向信号
 
 - 910B/910C:不支持任何 FP8,HiF8 无硬件可跑;
 - **950 首次原生支持 HiF8**:950PR 已于 2026 年一季度随 Atlas 350 上市([TrendForce](https://www.trendforce.com/news/2026/04/07/news-decoding-deepseek-v4-how-huaweis-ascend-950-pr-is-powering-chinas-push-to-break-cuda-dependence/)),偏 prefill;950DT(训练 + decode 向)提前至 2026-08 云上部署([TrendForce](https://www.trendforce.com/news/2026/06/08/news-huawei-brings-forward-ascend-950dt-deployment-to-august-deepseek-v4-2-seen-as-potential-early-adopter/));
 - 软件:CANN 宣布将开源 HiF8 转换算子与训推 recipe(2026-03 [官方直播](https://cann.csdn.net/69bd582a54b52172bc62f5f0.html)),AMCT 已支持 HiF8 PTQ;
 - 第三方生态几乎为零:GitHub 上只有个人项目 [Windere/HiFP8](https://github.com/Windere/HiFP8)(CUDA 伪量化 + vLLM 插件)。
 
-最刺眼的信号:**DeepSeek V4 部署在 950PR 上,却选择 UE8M0/MX 式 FP8 而非 HiF8**([TrendForce](https://www.trendforce.com/news/2026/04/07/news-decoding-deepseek-v4-how-huaweis-ascend-950-pr-is-powering-chinas-push-to-break-cuda-dependence/))。最有能力给 HiF8 做第三方背书的头部用户,在同一块芯片上用脚投了 MX 标准的票。可能的解释包括跨平台可移植性、已有 FP8 工具链沉淀、以及对私有格式锁定的顾虑——具体原因未见公开信息,但无论哪种,对 HiF8 的生态前景都不是好消息。
+最显著的负向信号:**DeepSeek V4 部署在 950PR 上,却选择 UE8M0/MX 式 FP8 而非 HiF8**([TrendForce](https://www.trendforce.com/news/2026/04/07/news-decoding-deepseek-v4-how-huaweis-ascend-950-pr-is-powering-chinas-push-to-break-cuda-dependence/))。最有能力给 HiF8 做第三方背书的头部用户,在同一块芯片上以实际选择支持了 MX 标准。可能的解释包括跨平台可移植性、已有 FP8 工具链沉淀、以及对私有格式锁定的顾虑——具体原因未见公开信息,但无论哪种,对 HiF8 的生态前景都不是好消息。
 
 ## 7 · 综合判断:昇腾数值层的攻防
 
@@ -350,7 +350,7 @@ D26 的结论"FP4 代差对国产栈最不利"需要细化为三层(以下为分
 
 ### 给 RL-on-NPU 研究者的三个题目
 
-1. **950DT 上 HiF8 GRPO 复现 + 对齐测量**:小模型 GRPO,rollout 与训练全 HiF8,用 token 级 KL/top-1 翻转率(而非静态 nats 阈值)对照 BF16 与 FP8 基线——同时产出 HiF8 的第一份第三方训练数字,一石二鸟。
+1. **950DT 上 HiF8 GRPO 复现 + 对齐测量**:小模型 GRPO,rollout 与训练全 HiF8,用 token 级 KL/top-1 翻转率(而非静态 nats 阈值)对照 BF16 与 FP8 基线——同时产出 HiF8 的第一份第三方训练数字,兼具两项产出。
 2. **HiF8 QAT rollout**:把 GLM/slime 的 INT4 QAT RL 模式移植到 HiF8——SFT 末段 HiF8 fake quant,rollout 原生 HiF8,检验"发布即 HiF8"是否能在昇腾闭环里跑通。
 3. **跨精度 advantage 偏差基准**:方法无关地测量同一批轨迹在 BF16/FP8/HiF8/NVFP4 下的 advantage 估计偏差及其随策略尖锐化的漂移——直接填第 4 节第三个空白,且天然覆盖 HiF 格式。
 
@@ -365,7 +365,7 @@ D26 的结论"FP4 代差对国产栈最不利"需要细化为三层(以下为分
 ## 下一步看什么
 
 1. **950DT 2026-08 云上部署**:HiF8 训练第一次有硬件可跑,关注首批公开训练数字与 CANN HiF8 recipe 的实际开源。
-2. **CANN HiF8 算子开源兑现**:从"宣布将开源"到代码落地的时间差,是判断华为对 HiF8 生态决心的试金石。
+2. **CANN HiF8 算子开源兑现**:从"宣布将开源"到代码落地的时间差,是判断华为对 HiF8 生态决心的关键验证点。
 3. **两派头对头**:IS 修正(AIS)vs 数值对齐(QaRL/Jet-RL)在同一任务同一预算下的系统比较——谁先做谁定义评测标准。
 4. **低比特 agentic 训练第一篇**:长轨迹 + 工具调用 + 量化的交叉零先例,QeRL 的"噪声助探索"在 agent 场景是否成立值得第一个去测。
 

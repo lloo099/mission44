@@ -2,7 +2,7 @@
 
 *2026-06-29 · NPU Frontier Dispatch · RL-frameworks / async-RL / prime-rl / SkyRL / RL-on-NPU*
 
-> **TL;DR** — 两个都开源(Apache-2.0)、都冲 Dispatch 02 那个"rollout 占 70% wall-clock + 长尾"瓶颈,但站在**不同层**。**prime-rl**(Prime Intellect)是**重量级、全栈、全解耦的异步训练系统本身**:Trainer(FSDP2+EP+CP)/ Inference(vLLM+FP8)/ Orchestrator 三组件各自独立伸缩,用 **AIPO loss + trajectory merging** 做 off-policy 修正,押注 **1000+ GPU / 1T+ MoE / 去中心化**(INTELLECT 血统,复现 INTELLECT-3.1)。**SkyRL-Agent**(Berkeley NovaSky,arXiv 2511.16108)是**轻量、后端无关的 agent 编排层**:不重造 trainer,叠在 **SkyRL-train / VeRL / Tinker** 之上,靠两招提效——**异步 dispatcher 比朴素异步批处理 1.55×**(细粒度 per-trajectory 调度治长尾)+ **AST 搜索工具配方**(提 rollout Pass@K → 喂强 GRPO 组内对比信号),把 **SA-SWE-32B** 从 Qwen3-32B 的 24.4% 纯 RL 训到 SWE-bench Verified **39.4% Pass@1**、成本 **>2× 下降**。一句话:**prime-rl 改发动机(为规模),SkyRL-Agent 改变速箱(为效率),互补可组合、不是二选一。** 数字均 provisional(论文/仓库口径)。
+> **TL;DR** — 两个都开源(Apache-2.0)、都冲 Dispatch 02 那个"rollout 占 70% wall-clock + 长尾"瓶颈,但站在**不同层**。**prime-rl**(Prime Intellect)是**重量级、全栈、全解耦的异步训练系统本身**:Trainer(FSDP2+EP+CP)/ Inference(vLLM+FP8)/ Orchestrator 三组件各自独立伸缩,用 **AIPO loss + trajectory merging** 做 off-policy 修正,投入 **1000+ GPU / 1T+ MoE / 去中心化**(INTELLECT 血统,复现 INTELLECT-3.1)。**SkyRL-Agent**(Berkeley NovaSky,arXiv 2511.16108)是**轻量、后端无关的 agent 编排层**:不重造 trainer,叠在 **SkyRL-train / VeRL / Tinker** 之上,靠两招提效——**异步 dispatcher 比朴素异步批处理 1.55×**(细粒度 per-trajectory 调度治长尾)+ **AST 搜索工具配方**(提 rollout Pass@K → 喂强 GRPO 组内对比信号),把 **SA-SWE-32B** 从 Qwen3-32B 的 24.4% 纯 RL 训到 SWE-bench Verified **39.4% Pass@1**、成本 **>2× 下降**。一句话:**prime-rl 改发动机(为规模),SkyRL-Agent 改变速箱(为效率),互补可组合、不是二选一。** 数字均 provisional(论文/仓库口径)。
 
 应要求把这两个常被并列提及、其实层次不同的开源 RL 框架拆开对比。承接本看板 Dispatch 02(rollout 瓶颈)、08(agentic RL 长 rollout)、12(SWE agentic RL 上手)。
 
@@ -134,7 +134,7 @@ graph TB
             R2["AST 搜索工具 提 rollout Pass@K"]
         end
     end
-    GOAL["共同目标 - 吃掉 rollout 占 70% wall-clock 与 长尾"]
+    GOAL["共同目标 - 消除 rollout 占 70% wall-clock 与 长尾"]
     L1 --> GOAL
     L2 --> GOAL
     L3 --> GOAL
@@ -186,4 +186,4 @@ graph TB
 
 ---
 
-*来源:prime-rl(GitHub `PrimeIntellect-ai/prime-rl`,Apache-2.0)、SkyRL-Agent(arXiv 2511.16108,GitHub `NovaSky-AI/SkyRL`,Apache-2.0);承接本看板 Dispatch 02/03/08/09/12/13。规格与跑分均论文/仓库口径,provisional,缺统一第三方复测,以官方一手发布与独立复现为准。*
+*来源:prime-rl(GitHub `PrimeIntellect-ai/prime-rl`,Apache-2.0)、SkyRL-Agent(arXiv 2511.16108,GitHub `NovaSky-AI/SkyRL`,Apache-2.0);承接本看板 Dispatch 02/03/08/09/12/13。规格与评测分数均论文/仓库口径,provisional,缺统一第三方复测,以官方一手发布与独立复现为准。*

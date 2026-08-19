@@ -2,9 +2,9 @@
 
 *2026-07-17 · NPU Frontier Dispatch · Kimi-K3 / KDA / linear-attention / RL-on-NPU*
 
-> **TL;DR** — 2026-07-16,月之暗面发布 **Kimi K3**:2.8T 总参数极稀疏 MoE(每 token 激活 16/896 个 routed experts + shared experts),架构四件套 KDA + AttnRes + Gated MLA + Stable LatentMoE,原生视觉理解、1M token 上下文,定价 $3/$15 每百万 token 直接对标 Claude Sonnet 档,承诺 2026-07-27 前开源权重。**完整技术报告尚未发布**,本篇定位是首发解读:所有 benchmark 与提速数字均为厂商自报、按 provisional 处理,机理层面的判断以官方博客口径 + KDA 谱系论文(Kimi Linear,arXiv 2510.26692)外推为准,报告落地后本看板逐项跟进校正。一句话看点:这是线性注意力第一次被扶正进开源旗舰级模型。
+> **TL;DR** — 2026-07-16,月之暗面发布 **Kimi K3**:2.8T 总参数极稀疏 MoE(每 token 激活 16/896 个 routed experts + shared experts),架构四件套 KDA + AttnRes + Gated MLA + Stable LatentMoE,原生视觉理解、1M token 上下文,定价 $3/$15 每百万 token 直接对标 Claude Sonnet 档,承诺 2026-07-27 前开源权重。**完整技术报告尚未发布**,本篇定位是首发解读:所有 benchmark 与提速数字均为厂商自报、按 provisional 处理,机理层面的判断以官方博客口径 + KDA 谱系论文(Kimi Linear,arXiv 2510.26692)外推为准,报告落地后本看板逐项跟进校正。一句话看点:这是线性注意力第一次进入开源旗舰级模型的主力架构。
 
-承接本看板脉络:D02 说清了 rollout 是 agentic RL 的 wall-clock 主宰、D04/D06/D21 追踪了 MiniMax MSA、GLM-5.2 DSA+IndexShare、LongCat-2.0 LSA 三条"稀疏化全注意力"路线、D23 铺开了训推一致的问题地图——K3 在这四条线索的交汇点上,给出了第四条截然不同的答案。
+承接本看板脉络:D02 阐明了 rollout 是 agentic RL 的 wall-clock 主宰、D04/D06/D21 追踪了 MiniMax MSA、GLM-5.2 DSA+IndexShare、LongCat-2.0 LSA 三条"稀疏化全注意力"路线、D23 铺开了训推一致的问题地图——K3 在这四条线索的交汇点上,给出了第四条截然不同的答案。
 
 ---
 
@@ -21,7 +21,7 @@
 - **开源承诺**:权重承诺 2026-07-27 前放出,厂商主张这将是"3 万亿参数级的首个开源模型"——注意这是**尚未兑现的承诺**,截至发稿权重未上架。
 - **定位**:长程 coding、知识工作、推理。
 
-一句话概括本次发布的看点:这是**线性注意力第一次被扶正进开源旗舰级模型**。前几期看板里 MiniMax、GLM、LongCat 走的都是"稀疏化全注意力",Kimi 是唯一把状态更新方程本身换掉的那家。下面逐层拆。
+一句话概括本次发布的看点:这是**线性注意力第一次进入开源旗舰级模型的主力架构**。前几期看板里 MiniMax、GLM、LongCat 走的都是"稀疏化全注意力",Kimi 是唯一替换状态更新方程本身的厂商。下面逐层拆解。
 
 ```mermaid
 flowchart LR
@@ -31,16 +31,16 @@ flowchart LR
         T3 --> T4["技术报告待发布<br/>AttnRes 机理、KDA 配比<br/>激活参数量均待确认"]
     end
     subgraph NOTE ["兑现观察点"]
-        N1["LongCat 期房先例——D21<br/>先承诺后交付的模式<br/>已有前例,07-27 是否<br/>按期放权重值得盯"]
+        N1["LongCat 先承诺后交付先例——D21<br/>这一模式已有前例<br/>07-27 是否按期放权重<br/>值得关注"]
         N2["全部 benchmark 数字<br/>为厂商自报 provisional<br/>报告落地后需校正"]
     end
     T3 -. "对照先例" .-> N1
     T4 -. "诚实边界" .-> N2
 ```
 
-## 2 · KDA 谱系:从 Kimi Linear 到扶正旗舰
+## 2 · KDA 谱系:从 Kimi Linear 到旗舰落地
 
-K3 的核心押注 KDA 不是凭空出现的,它有一条清晰的谱系,落点是 2025 年 10 月的 Kimi Linear 论文(arXiv 2510.26692),配套开源了 Kimi-Linear-48B-A3B-Instruct(HF 可下)。理解 K3,先要理解这条递进链:
+K3 的核心架构选择 KDA 并非凭空出现,它有一条清晰的谱系,落点是 2025 年 10 月的 Kimi Linear 论文(arXiv 2510.26692),配套开源了 Kimi-Linear-48B-A3B-Instruct(HF 可下载)。理解 K3,先要理解这条递进链:
 
 **delta rule → Gated DeltaNet → KDA**
 
@@ -50,7 +50,7 @@ K3 的核心押注 KDA 不是凭空出现的,它有一条清晰的谱系,落点�
 
 **3:1 混合与 NoPE 分工**。Kimi Linear 不是纯线性:每 3 层 KDA 配 1 层全注意力 MLA,消融显示 3:1 是吞吐 × 验证损失的最优点。更精巧的是分工设计:MLA 层用 **NoPE(无位置编码)**,位置信息和 recency bias **全部交给 KDA 层承担**——因为 KDA 的逐维遗忘门天然就是一种数据依赖的位置衰减机制,全注意力层则被解放出来做纯内容寻址的精确检索。这个分工让两种层各干各擅长的事,而不是互相冗余。工程收益:KV cache 至多减 75%(只有 1/4 的层需要 KV cache),1M 上下文解码吞吐至多 6×。
 
-**三范式主张——尤其是 RL scaling**。Kimi Linear 论文最重的一条主张:在短上下文、长上下文、**RL scaling** 三种范式下,混合线性架构全都不输甚至超过全注意力基线。前两条业界已有零散证据,第三条是关键增量——这是"线性注意力能进 RL 训练"迄今最直接的证据。为什么这条对本看板意义重大:D02 讲过,RL 后训练的单步 wall-clock 里 rollout 占 70%+ 且 decode-bound;如果线性注意力在 RL 范式下质量掉链子,那它省下的推理成本就只对 serving 有意义、对训练闭环没意义。Kimi Linear 说的是:不掉,甚至更好。K3 定位"长程 coding + 推理"(意味着重度 RL 后训练),等于把这条论文主张押到了旗舰上。
+**三范式主张——尤其是 RL scaling**。Kimi Linear 论文最重的一条主张:在短上下文、长上下文、**RL scaling** 三种范式下,混合线性架构全都不输甚至超过全注意力基线。前两条业界已有零散证据,第三条是关键增量——这是"线性注意力能进 RL 训练"迄今最直接的证据。为什么这条对本看板意义重大:D02 讲过,RL 后训练的单步 wall-clock 里 rollout 占 70%+ 且 decode-bound;如果线性注意力在 RL 范式下质量失效,那它省下的推理成本就只对 serving 有意义、对训练闭环没意义。Kimi Linear 说的是:不掉,甚至更好。K3 定位"长程 coding + 推理"(意味着重度 RL 后训练),等于把这条论文主张押到了旗舰上。
 
 **跨度与风险**。从 48B-A3B 的验证模型到 2.8T 的旗舰,规模跨了约 60 倍。3:1 配比在 2.8T 尺度是否仍是最优、K3 的 KDA 是否有版本改动、MLA 是否还是 NoPE——官方一律未说,**全部待技术报告确认**。架构结论随规模迁移不是免费的,这是本次发布最大的不确定性来源。
 
@@ -88,7 +88,7 @@ flowchart TB
 
 Kimi 走的是另一条哲学:**改掉状态更新方程本身**。KDA 层没有 KV cache,只有一个固定大小的矩阵状态——上下文再长,状态也不长大。这意味着信息必须被**有损压缩**进固定容量,靠遗忘门决定留什么;换来的是解码每 token 成本与上下文长度无关(KDA 层部分)。两条哲学的本质差异就在这里:稀疏化是"存全量、省着读",线性是"边读边压、只存摘要"——前者的显存随上下文线性涨(打折的线性),后者是常数。
 
-为什么其他家不敢、Kimi 敢?两个原因。其一,线性注意力有前科:MiniMax 在 M1 用 lightning attention 走过线性路线,后来在 M3 转回稀疏化(脉络见 D04)——业界普遍担心线性架构在精确检索、长程 recall 上的天花板,以及 RL 训练下的稳定性。其二,Kimi 有**九个月的验证期**:从 2025-10 的 Kimi Linear 论文 + 开源 48B 模型,到 2026-07 的 K3,中间有九个月的时间在真实训练管线里踩坑。别家是"没验证过所以不敢",Kimi 是"验证过一轮所以敢"——当然,48B 的验证能否覆盖 2.8T 的风险面,仍是上一节说的那个未知数。
+为什么其他家不敢、Kimi 敢?两个原因。其一,线性注意力有前科:MiniMax 在 M1 用 lightning attention 走过线性路线,后来在 M3 转回稀疏化(脉络见 D04)——业界普遍担心线性架构在精确检索、长程 recall 上的天花板,以及 RL 训练下的稳定性。其二,Kimi 有**九个月的验证期**:从 2025-10 的 Kimi Linear 论文 + 开源 48B 模型,到 2026-07 的 K3,中间有九个月的时间在真实训练管线里验证与试错。别家是"没验证过所以不敢",Kimi 是"验证过一轮所以敢"——当然,48B 的验证能否覆盖 2.8T 的风险面,仍是上一节说的那个未知数。
 
 ## 4 · AttnRes 与 Stable LatentMoE:另外两个待解之谜
 
@@ -126,15 +126,15 @@ flowchart TB
     A4 -. "数字待报告" .-> P3
 ```
 
-## 5 · 跑分与定价怎么读
+## 5 · 评测分数与定价怎么读
 
-先泼冷水再谈战略。
+先提示风险再谈战略。
 
-**跑分:三重折扣**。第一,六项 benchmark 全部厂商自报,provisional,无第三方复现。第二,这批名目——FrontierSWE、DeepSWE、SWE Marathon、Program Bench——是新一代基准体系,与旧 SWE-bench Verified **不可跨表比较**;尤其注意 Kimi Code Bench 2.0 是内部基准,参考价值再打一折。第三,跨厂商也不可比:D21 里 LongCat-2.0 自报 SWE Pro 59.5,和 K3 的 FrontierSWE 81.2 / DeepSWE 67.5 属于不同分数体系,任何"K3 比 LongCat 高 X 分"的说法都是错误比较——D21 我们吃过一次"新基准名目无锚点"的教训,这里再强调一遍。能读出的可靠信号只有一个:六项全是 coding/agentic 长程任务,配合 SWE Marathon(名字暗示超长程任务)42.0 这种"故意放一个不高的分",说明官方叙事重心是**长程 agent 工作负载**,与 1M 上下文 + KDA 解码提速的架构选择自洽。
+**评测分数:三重折扣**。第一,六项 benchmark 全部厂商自报,provisional,无第三方复现。第二,这批名目——FrontierSWE、DeepSWE、SWE Marathon、Program Bench——是新一代基准体系,与旧 SWE-bench Verified **不可跨表比较**;尤其注意 Kimi Code Bench 2.0 是内部基准,参考价值再打一折。第三,跨厂商也不可比:D21 里 LongCat-2.0 自报 SWE Pro 59.5,和 K3 的 FrontierSWE 81.2 / DeepSWE 67.5 属于不同分数体系,任何"K3 比 LongCat 高 X 分"的说法都是错误比较——D21 我们吃过一次"新基准名目无锚点"的教训,这里再强调一遍。能读出的可靠信号只有一个:六项全是 coding/agentic 长程任务,配合 SWE Marathon(名字暗示超长程任务)42.0 这种"故意放一个不高的分",说明官方叙事重心是**长程 agent 工作负载**,与 1M 上下文 + KDA 解码提速的架构选择自洽。
 
 **定价:$3/$15 的战略含义**。对标 Claude Sonnet 价位档,而不是打折甩卖——这传递两个信息。其一,自信:定价即定位,Moonshot 认为 K3 的能力配得上 Sonnet 档。其二,更有意思的是成本结构:如果 KDA 的 75% KV 减省和 6.3× 长上下文解码提速(自报)在生产 serving 中兑现,那么**同样的标价下,长上下文请求的毛利结构会显著优于全注意力同行**——线性注意力的架构红利可以选择不降价、吃成利润率,或者留作未来价格战的弹药。这是架构选择直接传导到商业面的少见案例。
 
-**"3 万亿级首个开源":07-27 是试金石**。这是厂商主张,且截至发稿权重未放出。D21 记录过 LongCat 的"期房"先例——先宣布后交付(LongCat 最终兑现了 MIT 权重,算是良性先例)。K3 承诺 07-27 前放权重,距发布 11 天。放不放、放的是不是完整权重(而非蒸馏版/阉割版)、许可证是什么——这三问在 07-27 之前都悬着。本看板届时跟进。
+**"3 万亿级首个开源":07-27 是关键验证点**。这是厂商主张,且截至发稿权重未放出。D21 记录过 LongCat 的先承诺后交付的先例——先宣布后交付(LongCat 最终兑现了 MIT 权重,算是良性先例)。K3 承诺 07-27 前放权重,距发布 11 天。放不放、放的是不是完整权重(而非蒸馏版/阉割版)、许可证是什么——这三问在 07-27 之前都悬着。本看板届时跟进。
 
 ## 6 · 对 RL-on-NPU 的含义
 
@@ -171,9 +171,9 @@ flowchart TB
 
 ## 7 · 跟进更新:技术报告落地,逐项核对(2026-08-10)
 
-技术报告来了([arXiv:2607.24653](https://arxiv.org/abs/2607.24653),《Kimi K3: Open Frontier Intelligence》,47 页),权重开源也已兑现(报告明言 "We release the full Kimi K3 model weights")。本节按第 6 节留下的核对清单逐项过账,并把报告里对本看板各条主线的"意外馈赠"记录在案。以下全部为报告口径(一手来源,不再标 provisional,但注意跑分仍是厂商自评 harness)。
+技术报告来了([arXiv:2607.24653](https://arxiv.org/abs/2607.24653),《Kimi K3: Open Frontier Intelligence》,47 页),权重开源也已兑现(报告明言 "We release the full Kimi K3 model weights")。本节按第 6 节留下的核对清单逐项核对,并把报告里对本看板各条主线的"意外馈赠"记录在案。以下全部为报告口径(一手来源,不再标 provisional,但注意评测分数仍是厂商自评 harness)。
 
-### 7.1 核对清单过账
+### 7.1 核对清单核对
 
 | 首发解读留下的问题 | 报告答案 | 首发判断对错 |
 |---|---|---|
@@ -196,19 +196,19 @@ flowchart TB
 
 **④ AgentENV 沙箱开源——D23"沙箱成本主导"的最硬量化证据。** microVM(Firecracker)沙箱系统,**已开源**([github.com/kvcache-ai/AgentENV](https://github.com/kvcache-ai/AgentENV)):增量 checkpoint 133ms / resume 49ms;**Pause/Resume**——模型推理等待可占沙箱生命周期 **98%**,暂停期零内存零 CPU;**Fork** 用于无副作用判分;OverlayBD+P2P 秒级万箱启动,内存超卖 **6.5×**。全程数字:**训练+评测共创建 51,219,741 个沙箱、1,505,678 个镜像**。这组数字既坐实了 D23"沙箱是主导成本"的判断,也直接回应 D26 layer 六——"工具等待期资源怎么办"在 K3 这里的答案是暂停 microVM 而不是换出 KV。
 
-**⑤ KDA-aware 前缀缓存与机队调度——D26"agent-aware serving"的生产落地。** 混合架构双缓存(MLA 逐 token 分页 vs KDA 定长递归状态)统一进同一分页池;**512-token 细粒度 hash 块**与稀疏 KDA checkpoint(对齐会话轮边界)解耦,任意 512 边界可复用前缀;机队级 **cache-aware affinity scheduling**(典型 coding 请求:400K 前缀 + 仅 4K 增量,命中与 miss 差几个数量级)+ **budget-based admission control** 防长上下文突发拖垮 SLO。D26 说的"洼地"子项,在 K3 的生产系统里已经是实装件。
+**⑤ KDA-aware 前缀缓存与机队调度——D26"agent-aware serving"的生产落地。** 混合架构双缓存(MLA 逐 token 分页 vs KDA 定长递归状态)统一进同一分页池;**512-token 细粒度 hash 块**与稀疏 KDA checkpoint(对齐会话轮边界)解耦,任意 512 边界可复用前缀;机队级 **cache-aware affinity scheduling**(典型 coding 请求:400K 前缀 + 仅 4K 增量,命中与 miss 差几个数量级)+ **budget-based admission control** 防长上下文突发拖垮 SLO。D26 说的"空白领域"子项,在 K3 的生产系统里已经是实装件。
 
 **⑥ KDA×投机解码的回滚问题——D24 第 6 节预警的风险面,报告自己解了。** MTP 层微调成 EAGLE-3 式 draft(直接优化接受率的 LK 损失,不用 KL 代理);KDA 递归状态原地更新导致草稿被拒后无法回滚——解法是**只缓存草稿 token 的投影输入、片上重建被接受前缀的状态**(与同期 ReplaySSM 撞车),验证时延随验证 token 数亚线性增长。首发解读把"线性注意力×投机解码"列为新训推一致风险面,报告证明这个风险真实存在且已有工程解。
 
 **⑦ 统一白盒 RL 环境——防 harness 过拟合。** 把 agent harness 拆成可配置模块(工具接口/系统提示/上下文管理/skills/记忆/子 agent),可实例化 Kimi Code、Claude Code、Codex、OpenClaw、Hermes 等主流 harness 并动态混合训练——回应了 D12/D22 语境里"scaffold 绑定"的老问题,也是"训练时就见过你的 harness"这一产品主张的技术底座。
 
-### 7.3 跑分的最终口径
+### 7.3 评测分数的最终口径
 
 报告自评(effort=max):K3 **整体落后 Claude Fable 5 与 GPT-5.6 Sol,稳定领先其余开源与闭源模型**;DeepSWE 67.5(v1.1;mini-SWE-agent harness 下 67.3)、Terminal-Bench 2.1 88.3、GPQA Diamond 93.5、HLE-Full 43.5/56.0(无/有工具)。首发解读"新基准体系不可跨表比"的警示保持不变——但报告把 harness、温度、top-p 全部披露,可复现性比博客口径强了一档。
 
 ### 7.4 一句话收束
 
-首发解读的核心判断全部站住:3:1 配比保留、"线性注意力扶正旗舰"成立、风险面(投机×递归状态)真实存在。报告超出预期的部分在系统侧——**它同时是 D25(预算控制 RL)、D26(agent-aware serving)、D27(MXFP4 QAT 训推一致)三篇的生产级印证**,一份报告喂饱四期看板。悬置项收窄为:第三方复测跑分、以及 2.8T/MXFP4 权重在非 NVIDIA 硬件(昇腾)上的适配路径——KDA kernel 与 CANN 的距离,现在是"开源权重已就位"之后唯一的拦路虎。
+首发解读的核心判断全部站住:3:1 配比保留、"线性注意力扶正旗舰"成立、风险面(投机×递归状态)真实存在。报告超出预期的部分在系统侧——**它同时是 D25(预算控制 RL)、D26(agent-aware serving)、D27(MXFP4 QAT 训推一致)三篇的生产级印证**,一份报告同时支撑四期内容。悬置项收窄为:第三方复测评测分数、以及 2.8T/MXFP4 权重在非 NVIDIA 硬件(昇腾)上的适配路径——KDA kernel 与 CANN 的距离,现在是"开源权重已就位"之后唯一的拦路虎。
 
 ## 下一步看什么
 
@@ -224,6 +224,6 @@ flowchart TB
 - 官方发布博客:kimi.com/blog/kimi-k3(2026-07-16;完整技术报告尚未发布,官方链接指向未来技术报告)
 - Kimi Linear 论文:arXiv 2510.26692(2025-10),配套开源 Kimi-Linear-48B-A3B-Instruct(Hugging Face)
 - 第三方首发报道与解读:simonwillison.net、marktechpost(2026-07-16/17,WebSearch 多源交叉,2026-07-17)
-- 本看板既有内容:D02(rollout 瓶颈)、D04(MiniMax MSA 与 M1 线性前科)、D06(GLM-5.2 DSA+IndexShare)、D21(LongCat-2.0 LSA 与"期房"先例)、D23(训推一致问题地图)
+- 本看板既有内容:D02(rollout 瓶颈)、D04(MiniMax MSA 与 M1 线性前科)、D06(GLM-5.2 DSA+IndexShare)、D21(LongCat-2.0 LSA 与先承诺后交付的先例)、D23(训推一致问题地图)
 
 **Provisional 声明**:本文所有 K3 的 benchmark 分数、6.3× 解码提速、KV cache 减省比例均为厂商自报或论文自报数字,未经第三方复现;AttnRes 机理、Stable LatentMoE 路由机制、KDA 混合配比、激活参数量等均待官方技术报告确认;文中标注"推断"的段落为本看板分析性外推,非官方口径。"3 万亿参数级首个开源模型"为厂商尚未兑现的主张。技术报告与权重落地后,本看板将跟进校正。
