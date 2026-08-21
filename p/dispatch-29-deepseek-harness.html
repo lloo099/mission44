@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispatch 29 · 详解 DeepSeek Harness:插件内核、透明日志与&quot;模型×harness&quot;联合系统 · NPU Frontier Dispatch</title>
+  <meta name="description" content="详解篇(两路定向调研):2026-08-13 随 V4-Pro GA 发布的 MIT 开源 agent runtime,四天约 14 万 star 创 GitHub 纪录。三个技术支点——Cordis 插件内核(连 agent 主循环都是可替换插件)、append-only 会话日志(压缩即投影、fork 与精确回放)、Model + Harness = Agent 协同设计(minimal 模式=复现 RL 训练分布=官方评测环境;DSML tool-call 格式的生态摩擦)。分析框架'harness 即分数':同模型跨 harness 分差 9.5" />
+  <link rel="canonical" href="https://lloo099.github.io/mission44/p/dispatch-29-deepseek-harness.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Dispatch 29 · 详解 DeepSeek Harness:插件内核、透明日志与&quot;模型×harness&quot;联合系统" />
+  <meta property="og:description" content="详解篇(两路定向调研):2026-08-13 随 V4-Pro GA 发布的 MIT 开源 agent runtime,四天约 14 万 star 创 GitHub 纪录。三个技术支点——Cordis 插件内核(连 agent 主循环都是可替换插件)、append-only 会话日志(压缩即投影、fork 与精确回放)、Model + Harness = Agent 协同设计(minimal 模式=复现 RL 训练分布=官方评测环境;DSML tool-call 格式的生态摩擦)。分析框架'harness 即分数':同模型跨 harness 分差 9.5" />
+  <meta property="og:url" content="https://lloo099.github.io/mission44/p/dispatch-29-deepseek-harness.html" />
+  <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-29-deepseek-harness.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-29-deepseek-harness.png" />
+  <script>location.replace("https://lloo099.github.io/mission44/#blog/dispatch-29-deepseek-harness");</script>
+  <meta http-equiv="refresh" content="0; url=https://lloo099.github.io/mission44/#blog/dispatch-29-deepseek-harness" />
+  <style>body{font-family:system-ui,sans-serif;background:#0b0f17;color:#dfe7f5;max-width:720px;margin:80px auto;padding:0 20px;line-height:1.7}a{color:#6aa6ff}</style>
+</head>
+<body>
+  <h1>Dispatch 29 · 详解 DeepSeek Harness:插件内核、透明日志与&quot;模型×harness&quot;联合系统</h1>
+  <p><em>2026-08-21 · NPU Frontier Dispatch · DeepSeek-Harness / agent-harness / Cordis / RL-on-NPU</em></p>
+  <p>详解篇(两路定向调研):2026-08-13 随 V4-Pro GA 发布的 MIT 开源 agent runtime,四天约 14 万 star 创 GitHub 纪录。三个技术支点——Cordis 插件内核(连 agent 主循环都是可替换插件)、append-only 会话日志(压缩即投影、fork 与精确回放)、Model + Harness = Agent 协同设计(minimal 模式=复现 RL 训练分布=官方评测环境;DSML tool-call 格式的生态摩擦)。分析框架'harness 即分数':同模型跨 harness 分差 9.5</p>
+  <p><a href="https://lloo099.github.io/mission44/#blog/dispatch-29-deepseek-harness">→ 阅读全文(RL-on-NPU Research Dashboard)</a></p>
+</body>
+</html>

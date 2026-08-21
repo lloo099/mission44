@@ -1,7 +1,20 @@
 {
-  "updated": "2026-08-19",
+  "updated": "2026-08-21",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-29-deepseek-harness",
+      "title": "Dispatch 29 · 详解 DeepSeek Harness:插件内核、透明日志与\"模型×harness\"联合系统",
+      "subtitle": "详解篇(两路定向调研):2026-08-13 随 V4-Pro GA 发布的 MIT 开源 agent runtime,四天约 14 万 star 创 GitHub 纪录。三个技术支点——Cordis 插件内核(连 agent 主循环都是可替换插件)、append-only 会话日志(压缩即投影、fork 与精确回放)、Model + Harness = Agent 协同设计(minimal 模式=复现 RL 训练分布=官方评测环境;DSML tool-call 格式的生态摩擦)。分析框架'harness 即分数':同模型跨 harness 分差 9.5-15pt 甚至 36pt;K3 多 harness 白盒混训 vs DeepSeek 单接口产品化两条防过拟合路线对立。回答 D16 悬置问题;对 RL-on-NPU:透明日志×轨迹采集、可配置 harness 底座、DSec/AgentENV 沙箱基建对照。",
+      "date": "2026-08-21",
+      "tags": [
+        "DeepSeek-Harness",
+        "agent-harness",
+        "Cordis",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-29-deepseek-harness.md"
+    },
     {
       "id": "dispatch-28-native-multimodal",
       "title": "Dispatch 28 · 原生多模态训练的两条路线:K3 的连续特征与 LongCat-Next 的离散 token",
