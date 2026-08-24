@@ -1,7 +1,20 @@
 {
-  "updated": "2026-08-21",
+  "updated": "2026-08-25",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-30-agent-eval",
+      "title": "Dispatch 30 · SWE-bench 与 Agent 评测方法学:指标如何定义,又如何失效",
+      "subtitle": "方法学调研篇(两路定向调研):判分原点 F2P/P2P 双测试口径精确复述;谱系三条演化轴(清洗题目/扩域抗污染 copyleft/拉长原创化,SWE-Lancer 经济加权与 SWE-Marathon 27.2M token);效度危机数字链——32.67% solution leakage、Verified 15.7% 假通过、76% 凭记忆定位、63% 的通过靠检索已知修复,OpenAI 2026-02 正式弃用 Verified。指标四正交轴:pass@k 无偏估计(能力上限)、pass^k(可靠性)、成本 Pareto(HAL)、METR time horizon(倍增加速至约 3 个月);测量协议三威胁(harness 不披露/无误差棒/污染)。训练与评测是同一问题两面:verifier 漏洞=reward hacking 的评测镜像;看板信源纪律的方法论依据。",
+      "date": "2026-08-25",
+      "tags": [
+        "agent-evaluation",
+        "SWE-bench",
+        "metrics",
+        "benchmark-methodology"
+      ],
+      "file": "docs/blog/dispatch-30-agent-eval.md"
+    },
     {
       "id": "dispatch-29-deepseek-harness",
       "title": "Dispatch 29 · 详解 DeepSeek Harness:插件内核、透明日志与\"模型×harness\"联合系统",

@@ -192,7 +192,7 @@ async function wireBlog() {
   const MAP_CLUSTERS = [
     ["系统与综述", ["survey-2026-h1-architecture", "dispatch-02-rollout-bottleneck", "dispatch-08-agentic-rl", "dispatch-10-radixattention", "dispatch-11-vllm-vs-sglang", "dispatch-23-agentic-rl-problem-map", "dispatch-25-efficiency-aware-agent-rl", "dispatch-26-inference-efficiency-map", "dispatch-27-low-bit-training"]],
     ["模型与架构", ["dispatch-01-seed-2-1", "dispatch-04-minimax-msa", "dispatch-05-deepseek-v4", "dispatch-06-glm-5-2", "dispatch-07-mimo-v2-5", "dispatch-15-dspark", "dispatch-16-deepseek-v4-agent", "dispatch-21-longcat-2", "dispatch-24-kimi-k3", "dispatch-28-native-multimodal"]],
-    ["SWE 与训练数据", ["dispatch-12-swe-agents", "dispatch-14-scaleswe", "dispatch-17-denovoswe"]],
+    ["SWE 与训练数据", ["dispatch-12-swe-agents", "dispatch-14-scaleswe", "dispatch-17-denovoswe", "dispatch-30-agent-eval"]],
     ["RL 框架", ["dispatch-09-radixark-miles", "dispatch-18-prime-rl-vs-skyrl", "dispatch-19-slime", "dispatch-22-deepswe-rllm", "dispatch-29-deepseek-harness"]],
     ["昇腾落地", ["dispatch-03-ascend-950", "dispatch-13-swe-rl-on-ascend", "dispatch-20-openpangu"]],
   ];

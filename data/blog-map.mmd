@@ -26,6 +26,7 @@ flowchart LR
         N12["D12 · SWE Agents 上手"]
         N14["D14 · ScaleSWE"]
         N17["D17 · DeNovoSWE"]
+        N30["D30 · Agent 评测方法学"]
     end
     subgraph FW ["RL 框架"]
         N09["D09 · RadixArk Miles"]
@@ -61,6 +62,8 @@ flowchart LR
     N04 -. "注意力路线分岔" .-> N24
     N24 -. "连续对离散原生对照" .-> N28
     N16 -. "自家 harness 之问的答案" .-> N29
+    N29 -. "harness 即分数延伸" .-> N30
+    N12 --> N30
     N03 --> N13
     N20 -. "规模实证互补" .-> N21
     N23 -. "问题域落到框架" .-> FW
