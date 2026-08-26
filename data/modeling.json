@@ -177,6 +177,7 @@
       "year": "2026-06",
       "category": "inference",
       "innovation": "块扩散草稿模型一次前向并行出整块草稿 token",
+      "analysis": "Innovation: 用块扩散(block-diffusion)草稿模型取代自回归草稿循环,一次前向并行产出整块草稿 token,打破 EAGLE-3 '草稿本身仍串行'的约 2–3 倍加速天花板。Performance: 卡片口径 Qwen3-8B 平均 4.86 倍无损加速、Blackwell 批量吞吐约 15 倍,已进 SGLang 并获 NVIDIA/Google 复现(provisional)。对 RL-on-NPU 的意义: rollout 是 decode 密集负载,草稿并行化的收益在带宽受限的 NPU 上同样成立;但块扩散 drafter 需要新的采样/验证 kernel,Ascend 侧尚无对应算子,属于投机解码移植清单上收益大、成本也高的一项,可先经 SGLang Spec V2 的统一接口跟进。",
       "summary": "用块扩散(block-diffusion)草稿取代自回归草稿循环,打破 EAGLE-3「草稿仍串行」的 ~2–3× 天花板:Qwen3-8B 平均 4.86× 无损加速,Blackwell 批量吞吐 ~15×;已进 SGLang,NVIDIA/Google 复现。是 DSpark(Dispatch 15)对照的并行 drafter。数字 provisional。",
       "url": "https://github.com/z-lab/dflash",
       "tags": [
@@ -193,6 +194,7 @@
       "year": "2026-06",
       "category": "inference",
       "innovation": "因果并行草稿头单次前向预测多个树节点 + 块级因果注意力保分支一致",
+      "analysis": "Innovation: 调和'自回归草稿付深度串行代价 vs 块扩散草稿分支不一致'的两难——因果并行草稿头单次前向预测多个树节点,块级因果注意力保证各分支的条件一致性。Performance: 卡片口径 MATH-500 端到端最高 9.64 倍加速(provisional),与 DFlash 同期、同出 UCSD 系,构成并行 drafter 的两条技术路线对照。对 RL-on-NPU 的意义: 树状草稿把验证并行度做满,对 batch 利用率偏低的 rollout 场景尤其有利;其块级因果注意力可基于现有 attention 算子改造,相比块扩散路线在 Ascend 上的移植面更小,是 NPU 侧投机解码升级的务实候选。",
       "summary": "调和「自回归草稿付深度代价 vs 块扩散草稿分支不一致」的两难:单次前向预测多个树节点、块级因果注意力保分支条件一致;MATH-500 端到端最高 9.64× 加速。与 DFlash 同期(UCSD 邻校)。provisional。",
       "url": "https://arxiv.org/abs/2606.18394",
       "tags": [
@@ -209,6 +211,7 @@
       "year": "2026-06",
       "category": "inference",
       "innovation": "overlap scheduling 隐藏 CPU 开销 + 统一 EAGLE/MTP/DFlash 树草稿",
+      "analysis": "Innovation: SGLang 把投机解码升级为默认路径——overlap scheduling 把每步 CPU 调度开销隐藏进设备计算,统一支持 EAGLE/MTP/DFlash 的 topk>1 树草稿,覆盖 triton/FA3/MLA/aiter 多后端。Performance: 官方博客口径,定位是让新 drafter 从论文走向生产可用的服务底座,而非单点加速数字。对 RL-on-NPU 的意义: SGLang 是 slime/AReaL 等 RL 栈的 rollout 引擎,Spec V2 的统一草稿接口意味着 Ascend 侧只需适配一次即可承接多种 drafter;overlap scheduling 属调度层改动、不依赖 CUDA 特性,是 SGLang-on-Ascend 值得优先跟进的性能特性,直接惠及 RL rollout 吞吐。",
       "summary": "SGLang 把 Spec V2 设为默认推测解码路径:overlap scheduling 隐藏 per-step CPU 开销,统一支持 EAGLE/MTP/DFlash 的 topk>1 树草稿,覆盖 triton/FA3/MLA/aiter 后端。是让新 drafter 生产可用的服务底座。",
       "url": "https://www.lmsys.org/blog/2026-06-15-next-generation-speculative-decoding-dflash-v2/",
       "tags": [
@@ -319,6 +322,7 @@
       "year": "2026-04",
       "category": "long-context",
       "innovation": "Tiered KV cache across HBM/DRAM with mixed precision",
+      "analysis": "Innovation: 把 KV cache 按时间维分层——近期 KV 驻留高速/高精度层(HBM),久远 KV 下沉到低速/低精度层(DRAM),配合块级流式注意力在紧张显存下服务长上下文。Performance: 属实用型长上下文推理配方,收益体现在显存占用与可服务上下文长度(具体数字以论文为准)。对 RL-on-NPU 的意义: 64GB 910B 上 KV cache 是长上下文 rollout 的显存大头,分层+混合精度是不改模型即可落地的系统手段;与 vLLM-Ascend v0.23 引入的 KV offload 思路同向,可作为其精细化(按时间层定容量与精度)的参考设计,亦部分对冲 sleep-mode 缺失下的训推显存争用。",
       "summary": "Partitions the KV cache into temporal tiers with heterogeneous capacity and precision (recent KV in faster/higher-precision tiers), using block-wise streaming attention to serve long contexts under tight memory — a practical long-context inference recipe.",
       "url": "https://arxiv.org/abs/2604.19769",
       "tags": [
@@ -335,6 +339,7 @@
       "year": "2026-06",
       "category": "long-context",
       "innovation": "Position-independent KV reuse via per-head decomposition",
+      "analysis": "Innovation: 沿 KV head 维度分解 KV cache,实现位置无关的 KV 复用、前缀压缩与冷热分离(SegPagedAttention),无需重训模型即可提升长上下文服务效率。Performance: 论文口径,收益体现在长上下文 serving 的缓存复用率与显存利用(具体数字以论文为准)。对 RL-on-NPU 的意义: RL rollout 中同一 prompt 组的多条响应天然共享长前缀,位置无关复用与前缀压缩恰好命中 GRPO 组采样的负载模式,可显著降低组内重复 KV 开销;paged 化的冷热分离也与 NPU 内存池管理方式契合,是 vLLM-Ascend KV 管理层可借鉴的免训练优化方向。",
       "summary": "Decomposes the KV cache along KV heads to enable position-independent reuse, prefix compression, and hot/cold separation (SegPagedAttention) — improving long-context serving efficiency without retraining.",
       "url": "https://arxiv.org/abs/2606.06256",
       "tags": [
@@ -351,6 +356,7 @@
       "year": "2025-12",
       "category": "attention",
       "innovation": "Trainable sparse attention for cheaper long-context training/inference",
+      "analysis": "Innovation: 把可训练稀疏注意力(DSA)引入旗舰开源模型——学习式 token 选择在训练期即习得稀疏模式,而非推理期外挂,长上下文计算显著降低且质量保持。Performance: 支撑 V3.2 在 2025 底/2026 初推进开源前沿,并成为 V4 系混合注意力(CSA+HCA)、GLM-5.2 IndexShare、LongCat LSA 等后续设计的共同源头——DSA 系已是国产旗舰稀疏注意力的事实谱系。对 RL-on-NPU 的意义: DeepSeek V3.x 家族已在 vLLM-Ascend 支持(910B),DSA 是 NPU 上实际可用的稀疏注意力起点,直接降低长上下文 rollout 成本;其索引开销问题(HISA/跨层索引复用所治)也提示了 Ascend 侧定制 kernel 的优先方向。",
       "summary": "DeepSeek-V3.2 introduces DeepSeek Sparse Attention (DSA), a learned token-selection sparse-attention scheme that cuts long-context compute while preserving quality, pushing the open-weight frontier in late 2025 / early 2026.",
       "ascend": "ready",
       "ascendNote": "DeepSeek V3.x family supported on vLLM-Ascend (910B).",
@@ -382,6 +388,7 @@
       "year": "2024-08",
       "category": "moe",
       "innovation": "Per-expert routing bias nudged by load — no auxiliary loss",
+      "analysis": "Innovation: 不再用辅助损失惩罚 MoE 负载失衡(会损伤模型质量),而是给每个专家的亲和度分数加一个按近期负载动态调整的 bias、再做 top-K 路由——把负载均衡与主训练目标解耦。Performance: 论文与 DeepSeek-V3 实践显示均衡度与模型质量双优,已成为 V3 系 MoE 的标配设计。对 RL-on-NPU 的意义: RL 阶段策略分布持续漂移,辅助损失式均衡会与奖励目标互相干扰,bias 调节路线天然更适合 RL 后训练场景;同时路由 bias 是训推一致的敏感点之一——推理引擎与训练侧的 bias 状态若不同步会引发路由漂移,在 Ascend 上做 MoE RL 时应与 R3 类路由回放机制配合核对。",
       "summary": "Instead of penalizing imbalance with an auxiliary loss (which hurts quality), a per-expert bias is added to affinity scores before top-K and adjusted by recent load. Yields better balance and better quality; used to train DeepSeek-V3.",
       "url": "https://arxiv.org/abs/2408.15664",
       "tags": [
@@ -560,6 +567,7 @@
       "year": "2025-02",
       "category": "attention",
       "innovation": "MoE-style routing applied to attention KV blocks",
+      "analysis": "Innovation: 把 MoE 式路由思想搬到注意力上——上下文切块后由可学习 router 为每个 query 选取最相关的 KV 块,免手工设计稀疏模式,并且可在全注意力与稀疏注意力之间无缝切换。Performance: 已在 Kimi 长上下文生产环境使用,与 NSA 同期,是 2025 年学习式稀疏注意力的代表工作之一。对 RL-on-NPU 的意义: 块级选择的计算模式规整(top-k 路由 + 块内标准注意力),对缺少精细稀疏 kernel 的 Ascend 而言比 token 级稀疏更易高效实现;其全/稀疏可切换特性也便于在 NPU 上做训推一致性对照实验——同一模型可在两种模式下比对 logits 漂移,天然适配 align-probe 场景。",
       "summary": "Partitions context into blocks and uses a learned router to pick the most relevant blocks per query, avoiding hand-designed sparsity. Switches seamlessly between full and sparse attention; in production for Kimi long-context.",
       "url": "https://arxiv.org/abs/2502.13189",
       "tags": [
@@ -694,6 +702,7 @@
       "year": "2025-09",
       "category": "efficiency-precision",
       "innovation": "Large-scale microscaled-FP4 pretraining on Blackwell",
+      "analysis": "Innovation: 在 Blackwell 上用微缩放 FP4(NVFP4)完成 12B 混合 Mamba-Transformer 的 10T token 全程预训练——随机 Hadamard 变换、2D 一致量化与随机舍入三件套治住 FP4 的量化误差与激活异常值。Performance: 精度对齐 FP8,吞吐 2–3 倍、显存约减半(论文口径)。对 RL-on-NPU 的意义: 昇腾 950 系原生支持 MXFP4,这篇是'FP4 训练在较大规模可行'的最强公开证据之一;其配方(Hadamard 旋转、一致量化、随机舍入)多为算法层手段、可跨硬件复用。FP4 世代的训推一致比 FP8 更敏感,量化方案在 rollout 与训练两侧的一致性将更难保证,进一步抬高 align-probe 类对齐工具的价值。",
       "summary": "Pretrains a 12B hybrid Mamba-Transformer on 10T tokens entirely in NVFP4 with Random Hadamard transforms, 2D consistent quantization, and stochastic rounding, matching FP8. 2–3x throughput, ~half memory.",
       "url": "https://arxiv.org/abs/2509.25149",
       "tags": [
@@ -771,6 +780,7 @@
       "year": "2025-07",
       "category": "model-report",
       "innovation": "MuonClip (Muon + QK-Clip) — zero-loss-spike 1T-param MoE training",
+      "analysis": "Innovation: 1T 总参/32B 激活的开源 agentic MoE,15.5T token 训练全程无 loss spike,头牌技术是 MuonClip——Muon 优化器叠加 QK-Clip 对注意力 logits 设上界,从源头抑制注意力数值爆炸。Performance: 发布时为 LMSYS Arena 最强开源模型;其稳定性配方随后在 K3(Per-Head Muon 等)延续,说明经受了更大规模验证。对 RL-on-NPU 的意义: 万亿级训练稳定性技术对 NPU 集群同样关键——数值漂移环境下 loss spike 风险更高,QK-Clip 这类硬上界机制实现简单、与硬件无关,是 Ascend 上大规模预训练/后训练值得默认启用的稳健化手段;Muon 系优化器在 MindSpeed 侧的支持度也因此值得跟踪。",
       "summary": "A 1T-total / 32B-active open-weight MoE for agentic tasks, trained on 15.5T tokens with QK-Clip bounding attention logits as the headline stability technique. Top open-weight model on LMSYS Arena at release.",
       "url": "https://arxiv.org/abs/2507.20534",
       "tags": [

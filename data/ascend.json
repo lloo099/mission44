@@ -249,6 +249,7 @@
       "year": "2026-05",
       "category": "software-stack",
       "innovation": "Latest Ascend rollout backend — broader model coverage + perf",
+      "analysis": "What it is: 2026 年 5 月发布的 vLLM-Ascend 最新稳定版、官方推荐生产使用——延续 v0.9.1 大规模专家并行之后的主线,将 attention/采样算子迁移至 CANN、适配昇腾内存池并优化 HCCS 通信,模型覆盖与性能持续扩大。Why it matters: 它是 verl/MindSpeed-RL 等 RL 栈在 NPU 上默认的 rollout 引擎,稳定版的成熟度直接决定 RL-on-Ascend 的地基质量。对 RL-on-NPU 的意义: NPU 上 RL 实验的 rollout 引擎版本应锚定此稳定版;但 sleep/offload 相对 CUDA vLLM 的缺口仍在,colocate 式 RL 依旧受限,需要配合异步/训推分离架构,或跟进后续 rc 版(v0.23+)引入的 KV offload 与 context-parallel 能力。",
       "summary": "vLLM-Ascend reached v0.18.0 (May 2026), the production-recommended stable release — broader model coverage and performance after large-scale Expert Parallelism (v0.9.1, Sep 2025). It migrates attention/sampling ops to CANN, adapts Ascend's memory pool, and optimizes HCCS comms. The rollout engine RL stacks (verl / MindSpeed-RL) target on NPU; the sleep/offload gap vs CUDA vLLM remains the key constraint.",
       "url": "https://github.com/vllm-project/vllm-ascend",
       "tags": [
@@ -264,6 +265,7 @@
       "year": "2026",
       "category": "software-stack",
       "innovation": "Latest frontier models running on 910B via vLLM-Ascend",
+      "analysis": "What it is: 2026 年支持矩阵显示前沿开源模型已成建制跑在 910B 上——DeepSeek-V4 有定制算子、KV 池适配与 MTP 层 KV 分片投机解码;GLM-5 有性能优化 + W8A8C8 量化;Qwen3.5 支持(含 dense LoRA);W8A8 覆盖 Qwen3/DeepSeek/MiniMax 家族(M2.x 走 W8A8/QuaRot),MiniMax-M3 尚未列名。Why it matters: 推理侧支持通常先行、训练侧(verl/MindSpeed-RL)滞后——这份矩阵实际圈定了 NPU 上'可作 RL 底座'的模型集合。对 RL-on-NPU 的意义: 选 RL 底座应优先从矩阵内挑(Qwen/DeepSeek/GLM 系最稳);量化档位(W8A8 等)与训练侧精度的落差会引入训推失配,是一致性核查(align-probe)的必查项。",
       "summary": "Per the 2026 support matrix: DeepSeek-V4 is supported on 910B with custom operators, KV-pool adaptation, and separated MTP-layer KV-cache sharding for speculative decoding; GLM-5 has perf optimizations + W8A8C8 quant + optimized KV cache; Qwen3.5 is supported (incl. LoRA on dense models); W8A8 quant spans the Qwen3 / DeepSeek / MiniMax families (MiniMax-M2.x via W8A8/QuaRot). MiniMax-M3 is not yet listed by name. Inference support generally lands first; training-side (verl / MindSpeed-RL) trails.",
       "url": "https://docs.vllm.ai/projects/ascend/en/main/user_guide/support_matrix/supported_models.html",
       "tags": [
@@ -583,6 +585,7 @@
       "year": "2025",
       "category": "rl-on-ascend",
       "innovation": "Upstream open RLHF on Ascend via FSDP + vLLM-Ascend",
+      "analysis": "What it is: verl 上游对 Ascend 的官方适配——经 FSDP + vLLM-Ascend 验证了 SFT(Qwen2.5-0.5B)与 GRPO(Qwen2-7B、Qwen2.5-VL-3B)的 8/16 卡配置,并发布 DeepSeek-R1-Zero 复现配方。Why it matters: 这是最主流开源 RL 框架的 NPU 一手验证,同时约束也最清晰:无 FlashAttention(以 npu_fusion_attention 替代)、无 vLLM sleep mode,colocate 混合引擎被卡死。对 RL-on-NPU 的意义: 与 MindSpeed-RL 并列为任何 Ascend RL 基准必比的两条栈——一条上游开源、一条厂商原生;其 issue/discussion 线程也是数值漂移与显存争用问题最集中的一手素材来源,是本看板多张 challenge 卡片的出处。",
       "summary": "Validated SFT (Qwen2.5-0.5B) and GRPO (Qwen2-7B, Qwen2.5-VL-3B) on 8/16-NPU configs with a published DeepSeek-R1-Zero recipe. Key constraints: no FlashAttention (uses npu_fusion_attention) and no vLLM sleep mode yet, blocking the colocated hybrid engine.",
       "url": "https://github.com/volcengine/verl/issues/842",
       "tags": [
@@ -598,6 +601,7 @@
       "year": "2026-01",
       "category": "rl-on-ascend",
       "innovation": "Fully-async RL with a dedicated Ascend branch (stable ~Jan 2026)",
+      "analysis": "What it is: AReaL 的专用 ascend 分支(约 2026 年 1 月标记稳定)——完全异步架构把 rollout 与训练解耦(主线报告约 2.77 倍加速),rollout worker 持续生成、trainer 异步更新。Why it matters: 异步设计与 Ascend 的约束天然互补——sleep-mode/混合引擎缺失使 colocate 同步 RL 先天吃亏,而解耦架构本就不要求训推同卡。对 RL-on-NPU 的意义: 当前开源框架中对'绕开 sleep-mode'路线支持最直接的选项;配合 AReaL 2.0 把权重更新独立成服务、以及 vLLM-Ascend v0.22.1rc1 提供的 HCCL 权重传输后端,Ascend 上异步训推流水线的关键部件已经齐备,端到端打通是下一步最值得做的验证。",
       "summary": "Decouples rollout from training (~2.77x speedup) and ships an 'ascend' branch marked stable. Async design is especially attractive on Ascend, where the missing sleep-mode/hybrid-engine limits colocated synchronous RL.",
       "url": "https://github.com/inclusionAI/AReaL",
       "tags": [
@@ -613,6 +617,7 @@
       "year": "2025-09",
       "category": "rl-on-ascend",
       "innovation": "Multi-role Ray RL with a dedicated Ascend usage guide",
+      "analysis": "What it is: 阿里 ROLL 提供第一方 Ascend NPU 使用文档(与 NVIDIA、AMD 并列),多角色 Ray 架构覆盖 RLHF/RLVR 与多轮 agentic RL。Why it matters: 在 verl 之外,这是开源 RL 框架中 Ascend 支持故事最完整的之一——文档化的第一方支持意味着 NPU 用户不必自行摸索适配路径。对 RL-on-NPU 的意义: 多角色资源分配(actor/rollout/reward 等各自独立调度)与 NPU 上训推分离的现实约束契合,为 Ascend 集群上编排 agentic RL 提供了 verl 之外的第二条可行路径;其 Ray 编排层与底层 torch_npu/HCCL 组合的成熟度、以及与 vLLM-Ascend rollout 引擎的衔接质量,是后续跟踪的重点。",
       "summary": "Provides first-party Ascend NPU documentation (alongside NVIDIA and AMD), covering RLHF/RLVR and multi-turn agentic RL. One of the strongest open-framework Ascend stories next to verl.",
       "url": "https://github.com/alibaba/ROLL",
       "tags": [
@@ -628,6 +633,7 @@
       "year": "2025",
       "category": "rl-on-ascend",
       "innovation": "HF GRPO/DPO trainers run on Ascend via torch_npu",
+      "analysis": "What it is: Hugging Face TRL 经 Transformers/Accelerate 设备层继承 torch_npu 支持,910B 上经 vLLM-Ascend 跑通 GRPO 已获确认。Why it matters: 这是 Ascend 上门槛最低的 RL 入口——不需要 Megatron/Ray 重型基建,单机即可起步,适合算法验证与小模型实验。对 RL-on-NPU 的意义: 作为 NPU RL 的'第一公里'工具链意义重大——算法端新想法(loss 变体、采样策略、奖励设计)可先在 TRL-on-910B 小规模验证,再迁移到 verl/MindSpeed-RL 重型栈;TRL v1.7 系的 AsyncGRPO 与非 NVLink 硬件 colocate 修复(见 RL 页对应卡)对 HCCS 互联环境的适用性,是值得关注的衔接点。",
       "summary": "910B GRPO confirmed working via vLLM-Ascend; TRL inherits the Transformers/Accelerate device layer for NPU support. The easiest on-ramp for small-scale RL fine-tuning on Ascend.",
       "url": "https://github.com/huggingface/trl",
       "tags": [
@@ -643,6 +649,7 @@
       "year": "2025",
       "category": "rl-on-ascend",
       "innovation": "GRPO R1-Zero recipes demonstrated at both small and large scale",
+      "analysis": "What it is: R1-Zero 式 GRPO 复现已在 Ascend 两端落地——verl 提供单机/少节点的 'DeepSeek-R1-Zero on Ascend NPU' 配方,MindSpeed-RL 报告在 384 卡超节点上对 R1-MoE-671B 完成 RL。Why it matters: 小规模与前沿规模的双重实证说明 R1 式 RLVR 在 NPU 上不存在原理性障碍,剩下的是效率(MFU)与数值一致性问题。对 RL-on-NPU 的意义: 这是 NPU RL 事实上的参考负载(reference workload)——任何 Ascend RL 基准、精度对齐或吞吐优化都应以 R1-Zero 复现为公共基线;两条配方也分别锚定了 verl 与 MindSpeed-RL 两条栈的能力边界,便于横向比较开源与厂商原生路径的成熟度。",
       "summary": "verl added a 'DeepSeek-R1-Zero on Ascend NPU' recipe (single/few nodes) and MindSpeed-RL reports RL of the full R1-MoE-671B on a 384-NPU superpod. Both small-scale and large-scale R1-style reproductions exist on Ascend.",
       "url": "https://github.com/volcengine/verl/discussions/900",
       "tags": [
@@ -658,6 +665,7 @@
       "year": "2025-07",
       "category": "rl-on-ascend",
       "innovation": "Asynchronous streaming RL post-training framework",
+      "analysis": "What it is: 面向 Ascend 场景的异步流式 RL 后训练框架(2025-07 论文),针对同步/colocate RL 的吞吐上限做流式解耦设计——rollout 产出即流入训练侧,而非批次互等。Why it matters: 它代表'在 NPU 约束下把 RL 做高效'的研究前沿——sleep-mode/混合引擎缺失使同步 colocate 在 Ascend 上先天吃亏,流式异步是系统层面的绕行答案。对 RL-on-NPU 的意义: 与 AReaL ascend 分支同属异步路线的两个支点,一个偏系统研究、一个偏工程框架;其流式设计也是本看板关注的 staleness 稳定器(ESTR、Staleness–LR 标度律、GAC 等)的天然系统承载面——算法端与系统端在此汇合。",
       "summary": "Addresses the throughput limits of synchronous/colocated RL — directly relevant given Ascend's missing sleep-mode/hybrid-engine. Represents the research frontier of making RL efficient under NPU constraints.",
       "url": "https://arxiv.org/abs/2507.01663",
       "tags": [
@@ -688,6 +696,7 @@
       "year": "2025",
       "category": "challenge",
       "innovation": "Must swap in Huawei's npu_fusion_attention; FA3 not public",
+      "analysis": "What it is: 标准 flash-attn 包无法在 Ascend 安装,社区靠 PR 把华为 npu_fusion_attention(FA2 等价)接入 Transformers,且反复出现破损;FA3 对应的 flash_attn_npu 包未公开发布,保持 gated 状态。Why it matters: attention 是训练与 rollout 的最热路径,替代算子的语义/数值差异(softmax 计算顺序、混合精度累加)是 NPU 数值漂移的重要来源之一。对 RL-on-NPU 的意义: RL 对 logprob 一致性极度敏感,npu_fusion_attention 与 GPU FlashAttention 的数值差异应作为 align-probe 类工具的重点核查对象;FA3 gated 也意味着新世代 attention 的效率红利短期无法平移到 Ascend,稀疏注意力等替代降本路线的相对价值因此更高。",
       "summary": "The standard flash-attn package can't install on Ascend; community PRs wired npu_fusion_attention (FA2-equivalent) into Transformers, with recurring breakage. FlashAttention-3 for Ascend stayed gated as the required flash_attn_npu package wasn't publicly released.",
       "url": "https://docs.vllm.ai/projects/ascend/en/main/user_guide/feature_guide/flash_attention.html",
       "tags": [
@@ -703,6 +712,7 @@
       "year": "2025",
       "category": "challenge",
       "innovation": "Achieved throughput trails GPU and nominal peak",
+      "analysis": "What it is: verl 实测 RL 负载下 Ascend/GPU 吞吐比约 0.59(Qwen2.5-7B)、0.38–0.47(Qwen2.5-VL);整机口径约为 H100 的 60–70%。910B 算力约为 H100 的 60%,而显存带宽仅约 36%,带宽相对算力更为紧缺。Why it matters: 这组一手对比数字是 NPU RL 成本核算的现实锚点——纸面 TFLOPS 与实际 RL 吞吐之间存在巨大落差,且多模态负载差距更大。对 RL-on-NPU 的意义: 直接决定优化优先级——带宽敏感环节(KV cache、decode、权重同步)收益最大,量化 rollout、稀疏注意力、KV 压缩等'省带宽'手段在 Ascend 上的相对收益高于 GPU;也说明堆卡扩规模之前应先补单卡 MFU,否则成本劣势按比例放大。",
       "summary": "In verl RL workloads, Ascend-vs-GPU throughput was ~0.59 for Qwen2.5-7B and 0.38–0.47 for Qwen2.5-VL; whole 'all-in-one' boxes cited at ~60–70% of H100. The 910B has ~60% of H100 compute but only ~36% of its memory bandwidth, making it more compute-bound.",
       "url": "https://github.com/volcengine/verl/discussions/900",
       "tags": [

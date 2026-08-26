@@ -416,6 +416,7 @@
       "year": "2026-06",
       "category": "trend",
       "innovation": "RL over memory boosts agents' test-time learning",
+      "analysis": "Innovation: 把 RL 施加在外部记忆(memory)之上,让 agent 在测试期内于任务/episode 中持续改进,而不是只在训练期学习——是测试时学习(test-time learning)与 RL 的结合点。Performance: 论文报告增强了 LLM agent 的测试期学习能力(具体数字以论文为准)。对 RL-on-NPU 的意义: 与 TTRL 同属'把学习推向推理期'的路线;外部记忆的读写是数据结构层面的机制,不依赖训练端算子,若与 NPU 推理栈结合,可在不动训练基建的情况下获得部分自我改进收益——对训练资源受限、推理栈相对成熟的 Ascend 场景是低门槛的补充路径。",
       "summary": "Enhances LLM agents' test-time learning by doing RL over an external memory — letting an agent improve within a task/episode rather than only at train time.",
       "url": "https://arxiv.org/abs/2606.08656",
       "tags": [
@@ -432,6 +433,7 @@
       "year": "2026-04",
       "category": "trend",
       "innovation": "Frames agentic RL as a distinct paradigm vs single-turn RLVR",
+      "analysis": "Innovation: 2026 年综述,把 agentic RL 论证为与单轮 RLVR 不同的范式——LLM 从被动应答者转为主动智能体,系统梳理多轮信用分配、工具/环境交互、长程规划与奖励设计四条主线。Performance: 综述类工作,价值在于领域地图与问题框架而非数字结论。对 RL-on-NPU 的意义: 与 2025-09 的 Landscape 综述互为补充,可用于校准本看板 agentic RL 卡片的分类框架;其强调的多轮长程 rollout 正是 64GB 910B 显存与 sleep-mode 缺失下压力最大的负载形态,为 NPU 上优先移植哪类 agentic RL 能力(信用分配、异步 rollout、工具环境)提供选型参照。",
       "summary": "A 2026 survey arguing agentic RL turns LLMs from passive responders into proactive agents — covering multi-turn credit assignment, tool/environment interaction, long-horizon planning, and reward design. A useful map of the agentic-RL landscape.",
       "url": "https://arxiv.org/abs/2604.27859",
       "tags": [
@@ -447,6 +449,7 @@
       "year": "2026-03",
       "category": "framework",
       "innovation": "Serves the full multi-turn agent rollout lifecycle as an API",
+      "analysis": "Innovation: 把多轮 agent rollout 的完整生命周期(工具调用、环境步进、轨迹管理)封装为服务化 API——'Rollout-as-a-Service',训练器与 rollout 编排彻底解耦,直击 agentic RL 中 rollout 编排成为系统瓶颈的问题。Performance: 微软研究院系统工作,收益主要体现在可扩展性与训练器解耦(具体数字以论文为准)。对 RL-on-NPU 的意义: 与 AReaL 2.0 的微服务化同向,印证'rollout 独立成服务'正在成为 agentic RL 基建共识;对 Ascend 而言,服务化边界意味着 rollout 可放在 vLLM-Ascend 推理池、训练留在 MindSpeed/verl 侧,天然契合训推分离路线,绕开 sleep-mode 缺失的 colocate 限制。",
       "summary": "Scalable infrastructure for RL training of multi-turn LLM agents: exposes agentic rollouts (tool calls, environment steps) as a service so the trainer is decoupled from rollout orchestration — addressing the rollout bottleneck in agentic RL.",
       "url": "https://arxiv.org/abs/2603.18815",
       "tags": [
@@ -462,6 +465,7 @@
       "year": "2026-02",
       "category": "algorithm",
       "innovation": "Tames heavy-tailed importance weights from stale rollouts",
+      "analysis": "Innovation: 针对异步 RL 中陈旧样本导致 GRPO/REINFORCE 重要性权重呈重尾分布、梯度方差爆炸的问题,引入方差控制机制,使高异步度下的 off-policy 更新保持稳定。Performance: 定位为让异步 RL 在高 staleness 区间不牺牲收敛稳定性(论文口径,具体数字以原文为准)。对 RL-on-NPU 的意义: 与 ESTR、GAC、Staleness–LR 标度律同属 2026 年'让高异步度可用'的稳定器谱系——异步/训推分离是 Ascend 上绕开 sleep-mode 缺失的主路线,而方差控制只动 loss 端统计量、不依赖 CUDA 特性,移植到 MindSpeed-RL/verl-on-Ascend 的成本几乎为零。",
       "summary": "Async RL decouples rollout from updates for throughput, but stale samples give GRPO/REINFORCE heavy-tailed importance weights and high variance. This work adds variance control to keep off-policy/async RL stable at high asynchrony.",
       "url": "https://arxiv.org/abs/2602.17616",
       "tags": [
@@ -477,6 +481,7 @@
       "year": "2025-12",
       "category": "framework",
       "innovation": "Phase-level multiplexing to remove pipeline bubbles",
+      "analysis": "Innovation: 面向训推分离(disaggregated)RL 后训练的系统工作,在 AReaL/StreamRL/AsyncFlow 的解耦路线上更进一步——把 rollout 与训练两个阶段在分离的资源池间做 phase 级复用(multiplexing),消除阶段依赖造成的流水线气泡,同时对样本陈旧度加以约束。Performance: 定位为在不放大 staleness 的前提下提高分离式 RL 的整体资源利用率(具体数字以论文为准)。对 RL-on-NPU 的意义: 训推分离是 Ascend 上绕开 sleep-mode 缺失的主路线,但分离带来的互等气泡正是吞吐损失所在;phase 级复用思路与 AsyncFlow 的流式异步互补,是 NPU 集群上 rollout/train 资源池调度设计的直接参考。",
       "summary": "Builds on AReaL/StreamRL/AsyncFlow: multiplexes rollout and training phases across disaggregated resources to remove dependency bubbles while bounding sample staleness — directly relevant to NPU RL throughput.",
       "url": "https://arxiv.org/abs/2512.11306",
       "tags": [
@@ -492,6 +497,7 @@
       "year": "2026-01",
       "category": "algorithm",
       "innovation": "Makes GRPO robust to prompt/rollout distribution shift",
+      "analysis": "Innovation: 把组级分布鲁棒优化(GDRO)引入 GRPO——Rollout-GDRO 与 Prompt-GDRO 按最坏情况的 prompt/rollout 分布对组重加权,使训练不被数据异质或不均衡带偏。Performance: 论文报告在异质/失衡训练数据下推理鲁棒性提升(具体数字以论文为准)。对 RL-on-NPU 的意义: NPU 上 RL 的数据配比往往受限于可跑的任务与规模,分布失衡更常见;GDRO 只改组级加权逻辑、不新增前向开销与显存负担,是低成本的稳健性增强,可与 Train Less Learn More 的自适应采样在数据端组合使用,对 Ascend 上小规模、数据受限的 RLVR 实验尤其友好。",
       "summary": "Introduces Rollout-GDRO and Prompt-GDRO, which reweight groups toward the worst-case prompt/rollout distribution on top of GRPO, improving reasoning robustness when training data is heterogeneous or imbalanced.",
       "url": "https://arxiv.org/abs/2601.19280",
       "tags": [
@@ -736,6 +742,7 @@
       "year": "2025-07",
       "category": "algorithm",
       "innovation": "Sequence-level importance ratios & clipping — stabilizes MoE RL",
+      "analysis": "Innovation: 把 GRPO 的失稳归因于 token 级重要性权重的误用——其方差随序列长度增长,据此改为序列级重要性比率与序列级 clip,整条响应作为优化单元。Performance: Qwen 团队报告显著更稳,尤其缓解 MoE RL 的崩溃问题,并用于 Qwen3 的后训练。对 RL-on-NPU 的意义: MoE RL 的训推失配(路由漂移)在 NPU 上会叠加算子数值差异而放大,序列级比率天然对 token 级扰动更不敏感,是 Ascend 上跑 MoE RL 的首选 loss 形态之一;与 R3 类路由回放机制互补——一个在算法端钝化敏感度,一个在系统端消除失配源,两者都只涉及可移植的算法/记录层改动。",
       "summary": "Attributes GRPO's instability to mis-applied token-level importance weights whose variance grows with length. Sequence-level optimization is more stable, notably for MoE RL, and contributed to Qwen3.",
       "url": "https://arxiv.org/abs/2507.18071",
       "tags": [
@@ -751,6 +758,7 @@
       "year": "2025-06",
       "category": "algorithm",
       "innovation": "Clips IS-weights, not token updates — keeps pivotal low-prob tokens",
+      "analysis": "Innovation: 与 PPO/GRPO 裁剪 token 更新不同,CISPO 只裁剪重要性采样权重本身、保留所有 token 的梯度贡献,使 'Wait/Aha' 等低概率但关键的反思 token 不会被 clip 掉而失去更新。Performance: 报告较 DAPO 约 2 倍提速,支撑 MiniMax-M1 在 512 张 H800 上约三周完成完整 RL 训练。对 RL-on-NPU 的意义: 已被 AReaL 2.0 收录为内建 loss,说明其工程通用性;对 off-policy 偏差更宽容的权重裁剪也降低了对训推严格一致的依赖,在存在数值漂移的 Ascend 栈上是比标准 clip 更稳妥的候选目标函数,且移植只涉及 loss 端改动、成本极低。",
       "summary": "Bounds variance via importance-sampling-weight clipping while keeping every token's gradient contribution, so 'reflection' tokens (Wait, Aha) still update. ~2x speedup over DAPO; enabled M1's full RL run on 512 H800s in ~3 weeks.",
       "url": "https://arxiv.org/abs/2506.13585",
       "tags": [
@@ -1075,6 +1083,7 @@
       "year": "2025",
       "category": "framework",
       "innovation": "Thin Megatron↔SGLang glue — the RL stack behind GLM-4.5/4.6",
+      "analysis": "Innovation: 以最薄的抽象把 Megatron 训练直连 SGLang rollout,外加 Data Buffer 数据缓冲模块——刻意反'大而全框架'的极简设计,是 GLM-4.5/4.6 背后经生产验证的 RL 栈。Performance: 支撑 GLM 系 SOTA 发布;后续 v0.3.1 又把训推一致(top-p masking、R3 路由专家)做进框架(见对应卡片)。对 RL-on-NPU 的意义: 薄胶水意味着可替换面小——把 SGLang 换成 SGLang-on-Ascend、Megatron 侧换成 MindSpeed 的适配面比重型框架小得多;其 Data Buffer 与训推直连的结构也是在 NPU 上搭建最小可用 RL 流水线的合理蓝本,值得作为移植候选评估。",
       "summary": "Wires Megatron training directly to SGLang rollout with minimal abstraction plus a Data Buffer module, validated on SOTA GLM releases.",
       "url": "https://github.com/THUDM/slime",
       "tags": [
@@ -1240,6 +1249,7 @@
       "year": "2025-10",
       "category": "trend",
       "innovation": "Prioritized experience replay for RLVR (off-policy)",
+      "analysis": "Innovation: 把优先经验回放引入 RLVR——按正确率/熵把历史轨迹分桶,识别高价值经验并以混合 on/off-policy 目标复用,而非每步全量新采样。Performance: 报告较 on-policy RLVR 提升 +3.5/+7.6 分,并能稳定原本会崩溃的训练。对 RL-on-NPU 的意义: 与 PNPO 的多 epoch 复用、Train Less Learn More 的自适应采样同属'少生成、多利用'路线——rollout 是 NPU RL 墙钟与显存的大头,经验回放直接摊薄生成成本;回放缓冲属纯数据管理层机制,不触碰算子与并行策略,是 Ascend 上性价比最高的效率手段之一,也便于与异步架构的样本池自然结合。",
       "summary": "Buckets past trajectories by correctness/entropy and reuses high-value ones with a mixed on/off-policy objective. +3.5/+7.6 point gains over on-policy RLVR and stabilizes runs that otherwise collapse.",
       "url": "https://arxiv.org/abs/2510.02245",
       "tags": [
