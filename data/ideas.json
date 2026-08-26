@@ -1,6 +1,50 @@
 {
-  "updated": "2026-07-17",
+  "updated": "2026-08-26",
   "items": [
+    {
+      "title": "open-instruct / OlmoRL 的昇腾移植:全开放 RL 栈 × 国产硬件",
+      "pitch": "OLMo 3 的 OlmoRL(active sampling、token 级损失归一化、截断 IS、异步 in-flight 更新)是当前最完整的公开 RLVR 实现,但仅有 NVIDIA 路径。将 open-instruct 的 GRPO 管线移植到昇腾(vLLM-Ascend rollout + MindSpeed/torch-npu 训练),以 OLMo-3-7B 与 RL Zero 数据复现官方曲线,建立首个全开放、可审计的 RL-on-NPU 参考实现。",
+      "impact": 5,
+      "difficulty": 4,
+      "novelty": 4,
+      "why": "全开放代码 × 国产硬件是尚无公开工作的组合(D31);官方 WandB 曲线提供逐步对齐的 ground truth,align-probe(D13)与随机奖励负对照(D31)可全程使用;比 openPangu 路线的优势在于数据与曲线可审计,复现即可发表。",
+      "steps": [
+        "在 NVIDIA 单机复现 open-instruct 的 OLMo-3-7B RL Zero Math 官方曲线,固定全部超参作对照基线",
+        "替换 rollout 引擎为 vLLM-Ascend、训练后端为 torch-npu/MindSpeed,先跑通 SFT 再接 GRPO",
+        "逐步对齐:每 50 步与官方 WandB 曲线比 reward/entropy/KL,用 token 级 KL 监控训推失配",
+        "加入随机奖励负对照,确认昇腾侧增益同样无泄漏混杂;产出移植差异清单"
+      ],
+      "tags": [
+        "OLMo",
+        "open-instruct",
+        "Ascend",
+        "RLVR"
+      ],
+      "minimumExperiment": "8×910B 单机:OLMo-3-7B RL Zero Math 子集 200 步,曲线与官方 WandB 同窗对比",
+      "successMetric": "reward 曲线与官方 NVIDIA 基线趋势一致(相关系数>0.9),训推 token 级 KL 稳定;完整移植差异清单可独立成文"
+    },
+    {
+      "title": "国产模型自报分的第三方统一 harness 复跑",
+      "pitch": "LongCat-2.0(SWE Pro 59.5)、Qwen3.8-Max(OSWorld-Verified 86.1)、openPangu 等国产旗舰的 agent 基准分至今全部为厂商自报,无任何第三方统一 harness 复跑(D30 确认空白)。用 HAL 式统一 harness + 轨迹审计(Cursor 式作弊检查)复跑 3-5 个国产开源旗舰,产出首份可比的国产模型 agent 能力独立报告。",
+      "impact": 4,
+      "difficulty": 2,
+      "novelty": 4,
+      "why": "同模型跨 harness 分差 9.5-15pt 甚至 36pt(D29/D30),自报分与标准化分的差值本身即研究结论(Opus 4.8 厂商 scaffold 比 SEAL 标准化高 17.3pt 的国产版测量);工程门槛低(权重均开源、评测基建现成),结论无论正反皆可发表且对社区有公共品价值。",
+      "steps": [
+        "选定基准与 harness:SWE-bench Pro 公开集 + mini-swe-agent(或 HAL harness),固定温度与预算并全程披露",
+        "复跑 LongCat-2.0 / Kimi K3 / GLM / openPangu-Pro / Qwen(权重可得者),每模型 avg@4 并报告置信区间",
+        "轨迹审计:git 历史挖掘与外网检索类作弊逐条检查(Cursor 协议)",
+        "与厂商自报分对比,分解 harness 差/审计差/统计差三个来源"
+      ],
+      "tags": [
+        "evaluation",
+        "harness",
+        "domestic-models",
+        "SWE-bench"
+      ],
+      "minimumExperiment": "单模型试点:LongCat-2.0 在 SWE-bench Pro 公开集 100 题,统一 harness + avg@4 + 轨迹审计",
+      "successMetric": "产出带误差棒与审计记录的独立分数;与自报分差值可归因;方法协议可扩展到其余模型"
+    },
     {
       "title": "Agent KV 租约协议层:把\"我还会回来\"写成 agent 框架×推理引擎的标准握手(NPU 首发)",
       "pitch": "D26 核实:工具等待期 KV 换出的单集群原型已被连续占坑(Autellix 程序级抢占、TokenCake 事件驱动 offload、Continuum 按预测工具时长设 TTL、CacheWise reuse-aware 驱逐),但全部停在单集群研究原型——\"agent 框架向 serving 声明我还会回来\"的协议层(跨实例租约语义、计费与多租户隔离、与主流引擎的 API 标准化)仍无人定义。做协议层设计 + 在 vLLM-Ascend或SGLang 上参考实现,NPU 侧此方向完全空白。",
@@ -52,9 +96,10 @@
       "impact": 4,
       "difficulty": 2,
       "novelty": 4,
-      "why": "范式主干已成熟(整体主张=复现),但效率感知缝隙远未收敛,agent 场景尤其空(Dispatch 25 文献扫描)。研究目标与系统成本罕见同向:短轨迹直接省 rollout(D02 的 70%+ wall-clock),在 NPU 算力受限语境下双重收益。D22 的 compact filtering 与 D08 的\"reward 升+长度骤降\"监控信号是看板内的先行证据。工程门槛适中:2-4 张 A100/H100 或昇腾单节点即可全流程。",
+      "why": "范式主干已成熟(整体主张=复现),但效率感知缝隙远未收敛,agent 场景尤其空(Dispatch 25 文献扫描)。研究目标与系统成本罕见同向:短轨迹直接省 rollout(D02 的 70%+ wall-clock),在 NPU 算力受限语境下双重收益。D22 的 compact filtering 与 D08 的\"reward 升+长度骤降\"监控信号是看板内的先行证据。工程门槛适中:2-4 张 A100/H100 或昇腾单节点即可全流程。 基座更新:OLMo 3 RL Zero(D31)提供数据可审计+去污染+负对照的更干净起点,7B 复现 32-72 卡可及,消融结论不再受基座数据泄漏混杂。",
       "steps": [
         "1-2 周:verl + GSM8K + Qwen2.5-1.5B 复现 SFT→GRPO 基线,指标对齐公开数字,摸熟 rollout/奖励/权重同步管线",
+        "基座对照:同一长度奖励设计在 Qwen2.5-1.5B 与 OLMo-3-7B-RL-Zero 上各跑一遍,检验结论是否受基座污染影响",
         "2-4 周:注入长度奖励变量(绝对惩罚 vs 组内相对 vs 预算条件化),画成功率-长度帕累托,监控 reward 与长度双曲线防 hack",
         "带着实验困惑精读:InstructGPT→R1→DeepSeekMath GRPO→efficient reasoning RL/overthinking 近作→AReaL",
         "迁移到多步 agent 环境(tau-bench 或代码沙箱),验证结论保持性——简洁性被放大处往往有新东西",

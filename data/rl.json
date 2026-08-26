@@ -1,6 +1,23 @@
 {
-  "updated": "2026-08-13",
+  "updated": "2026-08-26",
   "items": [
+    {
+      "title": "OLMo 3 / OlmoRL(model flow 全开放的 RLVR 训练主干)",
+      "org": "AI2",
+      "year": "2025-11",
+      "category": "framework",
+      "innovation": "RLVR 从 Tülu 3 的收尾工序升级为训练主干:OlmoRL 工程包(active sampling、token 级损失归一化、无 KL、clip-higher、截断 IS、异步 in-flight 权重更新)全部开源;RL Zero 从 base 直训+激进去污染+随机奖励负对照",
+      "analysis": "Innovation:完整 model flow 开放——Dolma 3(9.3T 池)、Dolci 后训练数据、OLMo-core/open-instruct 代码、预训练每 1000 步 checkpoint、公开 WandB 曲线,Openness Index 89 分居首;Delta Learning DPO 以 chosen(Qwen3-32B)与 rejected(0.6B)的质量差为信号。Performance:1024 张 H100 上异步 RL 提速约 4×,32B Think 的 RL 从 15 天以上压至约 6 天;Think 32B 以约 1/6 训练 token 逼近 Qwen 3 32B(二手转述,provisional);7B RL 复现约 32-72 卡可及。对 RL-on-NPU 意义:效率感知 RL 等消融研究的更干净基座(数据可审计,RL Zero 负对照排除泄漏混杂);OlmoRL 组件是 MindSpeed-RL 语境最可借鉴的公开实现;open-instruct/OLMo-core 的昇腾移植为空白。详见 Dispatch 31。",
+      "url": "https://arxiv.org/abs/2512.13961",
+      "tags": [
+        "OLMo",
+        "RLVR",
+        "fully-open",
+        "OlmoRL",
+        "open-instruct"
+      ],
+      "confidence": "confirmed"
+    },
     {
       "title": "slime v0.3.1(训推一致内建化:top-p masking + R3 路由专家)",
       "org": "THUDM / Zhipu",

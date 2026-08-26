@@ -1,7 +1,7 @@
 {
-  "updated": "2026-08-10",
+  "updated": "2026-08-26",
   "doc": "docs/2026-frontier-models.md",
-  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。 Kimi K3 数字为发布日自报,权重与技术报告尚未放出。",
+  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。 Kimi K3 数字为发布日自报,权重与技术报告尚未放出。 V4 列口径已含 V4-Flash-0731 与 V4-Pro-0813 GA(0813 公榜为自家 harness minimal 模式);Qwen3.8-Max(2.4T MoE)API 先行、权重 pending,暂不入列。",
   "models": {
     "columns": [
       "",
@@ -497,6 +497,7 @@
     "V4's validated FP8 training + Ascend 950 native FP8 make FP8 RL on Ascend a viable, high-novelty topic.",
     "Seed 2.1 Pro (preview, Jun 19) is a strong closed coding/agent model (Code-Arena Frontend ~Opus 4.6) but it's API-only and not Ascend-portable — it sets the bar to chase, not a model to host on NPU. The Ascend story stays with the open-weight wave (DeepSeek-V4 / MiniMax-M3 / GLM-5.2).",
     "LongCat-2.0 把\"国产芯片全周期训练(含后训练/RL)\"从零实证变成方向可信——1.6T MoE 全程跑在 HCCL 国产超节点(疑似 910C,未官宣),细节待技术报告核验;与 openPangu 的开源训练代码互补(见 Dispatch 20/21)。",
-    "Kimi K3 把线性注意力(KDA)第一次推上旗舰规模开源主张——与 MSA/DSA/LSA 的稀疏化全注意力路线正式分岔;全部数字自报、权重与技术报告未落地(provisional,见 Dispatch 24)。"
+    "Kimi K3 把线性注意力(KDA)第一次推上旗舰规模开源主张——与 MSA/DSA/LSA 的稀疏化全注意力路线正式分岔;全部数字自报、权重与技术报告未落地(provisional,见 Dispatch 24)。",
+    "Agent 基准分数已是模型×harness 联合产物:V4 系公榜在 dsh minimal 模式下测得且官方明示换 harness 分数会变;跨列比较须先核对 harness 口径(Dispatch 29/30)。"
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-24",
+  "updated": "2026-08-26",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -35,6 +35,42 @@
     }
   ],
   "items": [
+    {
+      "title": "DeepSeek Harness(dsh:插件内核 agent runtime,177k star)",
+      "org": "DeepSeek",
+      "year": "2026-08",
+      "category": "framework",
+      "track": "industry",
+      "innovation": "MIT 开源 agent runtime:Cordis 插件内核(agent 主循环亦为可替换插件)、append-only 会话日志(压缩即投影/fork/精确回放)、minimal 模式复现 RL 训练分布",
+      "summary": "2026-08-13 随 V4-Pro GA 发布,四天约 14 万 star。Model + Harness = Agent 协同设计:harness 采集轨迹回流训练,公榜成绩在 minimal 模式下测得;DSML tool-call 格式存在生态摩擦。",
+      "analysis": "Innovation:三个技术支点——Cordis 插件内核源自 Koishi 谱系,模型适配器、工具、沙箱、权限乃至 agent 主循环全部为可替换插件,无特权核心;append-only SessionEvent 日志为唯一事实源,deriveMessages() 投影出模型消息历史,checkpoint/fork 与精确回放内建;与 V4 系协同设计,minimal 模式实质复现 RL 训练时的 prompt 与 tool-schema 分布。Performance:发布 90 分钟破 2.2 万 star、检索时点 177k,GitHub 最快增长曲线之一;社区插件 4 天超 1200 个;成熟度问题包括文档单薄、构建体积 1.4-1.5GB、任务可靠性不稳定。对 RL-on-NPU 意义:append-only 全透明日志是 RL 轨迹采集的理想接口;插件架构提供了 K3 未开源的可配置 harness 底座的开源实现路径;其 sandbox seam 与 DSec/AgentENV 构成 agent 沙箱基建参考。详见 Dispatch 29。",
+      "url": "https://github.com/deepseek-ai/deepseek-harness",
+      "tags": [
+        "harness",
+        "DeepSeek",
+        "agent-runtime",
+        "open-source"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Agent 评测方法学转向(SWE-bench Verified 弃用与指标四轴)",
+      "org": "OpenAI / Scale / METR / Princeton HAL",
+      "year": "2026-02",
+      "category": "benchmark",
+      "track": "academic",
+      "innovation": "评测重心从'更难的基准'转向'更诚实的测量':OpenAI 2026-02 正式弃用 SWE-bench Verified;指标分化为 pass@k(上限)/pass^k(可靠性)/成本 Pareto/time horizon 四正交轴",
+      "summary": "效度危机数字链:32.67% solution leakage、Verified 15.7% 假通过、63% 的通过靠检索已知修复(Cursor 审计,封锁后 87.1→73.0);METR time horizon 倍增周期加速至约 3 个月。",
+      "analysis": "Innovation:F2P/P2P 双测试口径确立了可执行判分,但弱测试、答案泄漏、训练污染三大结构性弱点被量化证实并导致 Verified 弃用;harness 引入的方差常大于模型间方差(arXiv 2605.23950),同模型跨 harness 分差 9.5-15pt 甚至 36pt。Performance:替代口径向 SWE-bench Pro(copyleft 防污染)、DeepSWE(全原创+作弊审查)、SWE-Marathon(27.2M token 轨迹)迁移。对 RL-on-NPU 意义:评测的 verifier 漏洞与训练的 reward hacking 是同一现象两面,判分质量是评测与训练共同的上限;国产模型自报分(LongCat SWE Pro 59.5、Qwen3.8-Max OSWorld 86.1)至今无第三方统一 harness 复跑,是可做的空白。详见 Dispatch 30。",
+      "url": "https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/",
+      "tags": [
+        "evaluation",
+        "SWE-bench",
+        "metrics",
+        "methodology"
+      ],
+      "confidence": "confirmed"
+    },
     {
       "title": "MCP 2026-07-28 规范(协议核心全面无状态化)",
       "org": "Model Context Protocol(Anthropic 主导)",

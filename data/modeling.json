@@ -1,6 +1,22 @@
 {
-  "updated": "2026-08-13",
+  "updated": "2026-08-26",
   "items": [
+    {
+      "title": "DeepSeek-V4-Pro-0813 GA(1M 双模式旗舰,与 dsh 同日发布)",
+      "org": "DeepSeek",
+      "year": "2026-08",
+      "category": "model-report",
+      "innovation": "V4 系旗舰正式版:1M 上下文、思考/非思考双模式;与 DeepSeek Harness 同日发布,公开 agent 基准声明在自家 harness minimal 模式下测得",
+      "analysis": "Official/provisional:2026-08-13 GA,官方称多项 Agent 评测接近 Claude Fable 5 水平(自报);V4 系 CSA+HCA 混合注意力与 mHC 残差,V4-Pro 1M 场景单 token 推理 FLOPs 约为 V3.2 的 27%、KV cache 约 10%(二手口径)。评测口径警示:公榜分数产生于 minimal 模式(复现 RL 训练分布),官方明示换 harness 结果会不同——harness 即分数的最新例证(Dispatch 29/30)。对 RL-on-NPU 意义:V4 已适配昇腾 950PR 推理(厂商自报提速 35 倍),950 超节点批量上线后的降价表态使'国模+国芯'进入商业定价联动。",
+      "url": "https://api-docs.deepseek.com/news/news260813/",
+      "tags": [
+        "DeepSeek-V4",
+        "1M-context",
+        "agent",
+        "harness"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "openPangu-2.0-Pro(505B/A18B 昇腾全栈训练旗舰兑现开源)",
       "org": "华为 (ascend-tribe / GitCode)",
