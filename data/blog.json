@@ -1,7 +1,21 @@
 {
-  "updated": "2026-08-25",
+  "updated": "2026-08-26",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-31-olmo3",
+      "title": "Dispatch 31 · 详解 OLMo 3 工作体系:model flow 全开放与可复现 RLVR 的天花板",
+      "subtitle": "体系详解篇(四路并行调研):AI2 的 model flow 主张——Dolma 3(9.3T 池可下载,三层漏斗配比全公开,为 D28 配比黑箱惯例唯一反例)、每 1000 步中间 checkpoint、公开 WandB 曲线、OLMoTrace 溯源,Openness Index 89 分居首。RL 侧:OlmoRL 工程包(active sampling/token 级损失归一化/无 KL/截断 IS/异步 in-flight,1024 H100 提速 4×)把 RLVR 从 Tülu 3 的收尾工序升级为训练主干;Delta Learning DPO(质量差即信号);RL Zero=激进去污染+随机奖励负对照,首个可做因果归因的公开 RLVR 试验台(呼应 D30 污染主题)。Think 32B 以 1/6 token 逼近 Qwen 3 32B;采用量对照悬殊(1480 万 vs Qwen 9.4 亿)。对 RL-on-NPU:D25 最小系统的基座升级、OlmoRL 移植价值、model flow=openPangu 应然形态。",
+      "date": "2026-08-26",
+      "tags": [
+        "OLMo-3",
+        "fully-open",
+        "RLVR",
+        "OlmoRL",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-31-olmo3.md"
+    },
     {
       "id": "dispatch-30-agent-eval",
       "title": "Dispatch 30 · SWE-bench 与 Agent 评测方法学:指标如何定义,又如何失效",

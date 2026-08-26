@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispatch 31 · 详解 OLMo 3 工作体系:model flow 全开放与可复现 RLVR 的天花板 · NPU Frontier Dispatch</title>
+  <meta name="description" content="体系详解篇(四路并行调研):AI2 的 model flow 主张——Dolma 3(9.3T 池可下载,三层漏斗配比全公开,为 D28 配比黑箱惯例唯一反例)、每 1000 步中间 checkpoint、公开 WandB 曲线、OLMoTrace 溯源,Openness Index 89 分居首。RL 侧:OlmoRL 工程包(active sampling/token 级损失归一化/无 KL/截断 IS/异步 in-flight,1024 H100 提速 4×)把 RLVR 从 Tülu 3 的收尾工序升级为训练主干;Delta Learning D" />
+  <link rel="canonical" href="https://lloo099.github.io/mission44/p/dispatch-31-olmo3.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Dispatch 31 · 详解 OLMo 3 工作体系:model flow 全开放与可复现 RLVR 的天花板" />
+  <meta property="og:description" content="体系详解篇(四路并行调研):AI2 的 model flow 主张——Dolma 3(9.3T 池可下载,三层漏斗配比全公开,为 D28 配比黑箱惯例唯一反例)、每 1000 步中间 checkpoint、公开 WandB 曲线、OLMoTrace 溯源,Openness Index 89 分居首。RL 侧:OlmoRL 工程包(active sampling/token 级损失归一化/无 KL/截断 IS/异步 in-flight,1024 H100 提速 4×)把 RLVR 从 Tülu 3 的收尾工序升级为训练主干;Delta Learning D" />
+  <meta property="og:url" content="https://lloo099.github.io/mission44/p/dispatch-31-olmo3.html" />
+  <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-31-olmo3.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-31-olmo3.png" />
+  <script>location.replace("https://lloo099.github.io/mission44/#blog/dispatch-31-olmo3");</script>
+  <meta http-equiv="refresh" content="0; url=https://lloo099.github.io/mission44/#blog/dispatch-31-olmo3" />
+  <style>body{font-family:system-ui,sans-serif;background:#0b0f17;color:#dfe7f5;max-width:720px;margin:80px auto;padding:0 20px;line-height:1.7}a{color:#6aa6ff}</style>
+</head>
+<body>
+  <h1>Dispatch 31 · 详解 OLMo 3 工作体系:model flow 全开放与可复现 RLVR 的天花板</h1>
+  <p><em>2026-08-26 · NPU Frontier Dispatch · OLMo-3 / fully-open / RLVR / OlmoRL / RL-on-NPU</em></p>
+  <p>体系详解篇(四路并行调研):AI2 的 model flow 主张——Dolma 3(9.3T 池可下载,三层漏斗配比全公开,为 D28 配比黑箱惯例唯一反例)、每 1000 步中间 checkpoint、公开 WandB 曲线、OLMoTrace 溯源,Openness Index 89 分居首。RL 侧:OlmoRL 工程包(active sampling/token 级损失归一化/无 KL/截断 IS/异步 in-flight,1024 H100 提速 4×)把 RLVR 从 Tülu 3 的收尾工序升级为训练主干;Delta Learning D</p>
+  <p><a href="https://lloo099.github.io/mission44/#blog/dispatch-31-olmo3">→ 阅读全文(RL-on-NPU Research Dashboard)</a></p>
+</body>
+</html>
