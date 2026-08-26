@@ -79,6 +79,7 @@
       "track": "industry",
       "innovation": "移除 initialize 握手与 Session-Id,协议核心无状态化,远程 server 可水平扩展",
       "summary": "07-28 修订版把 MCP 协议核心全面无状态化:移除 initialize 握手与 Session-Id,支持多轮往返、header 路由与可缓存的 tools/list,远程 server 从此可像普通 HTTP 服务一样水平扩展——agent 基建走向生产级。对 RL 训练侧的含义:工具环境可无状态复制,大规模并行 rollout 的工具调用基础设施成本显著下降。",
+      "analysis": "Innovation:07-28 修订版把 MCP 协议核心全面无状态化——移除 initialize 握手与 Session-Id,支持多轮往返、header 路由与可缓存的 tools/list,远程 server 从此可像普通 HTTP 服务一样水平扩展,是 MCP 从'会话期协议'走向生产级基础设施的关键一步。Performance:无状态化后工具端点可任意复制、由负载均衡器自由路由,消除了会话粘滞带来的扩展瓶颈;tools/list 可缓存进一步压低高频调用开销。对 RL-on-NPU 意义:大规模并行 rollout 的工具调用基础设施从此可按普通无状态服务运维——环境副本随并发数弹性伸缩,工具侧不再是异步 RL 吞吐的隐形瓶颈,自建训练管线对接 MCP 生态工具的成本显著下降。",
       "url": "https://blog.modelcontextprotocol.io/posts/2026-07-28",
       "tags": [
         "industry",
@@ -115,6 +116,7 @@
       "track": "academic",
       "innovation": "提出 horizon gap 概念,区分 long-horizon / long-context / long-term memory 三属性",
       "summary": "08-07 发布的大型综述:系统梳理 1547 篇文献,提出 horizon gap——模型单步能力与多小时长程可靠性之间的系统性缺口,并厘清 long-horizon(决策跨度)、long-context(输入长度)、long-term memory(跨会话记忆)三个常被混用的属性。为长程 agent 训练与评测(OSWorld 2.0 类基准)提供概念坐标系。",
+      "analysis": "Innovation:系统梳理 1547 篇文献,提出 horizon gap——模型单步能力与多小时长程可靠性之间的系统性缺口,并厘清 long-horizon(决策跨度)、long-context(输入长度)、long-term memory(跨会话记忆)三个常被混用的属性,给出概念坐标系。Performance:作为大型综述,其价值在覆盖面与概念澄清,与 OSWorld 2.0 的实测(最强系统长程任务仅 20.6%)互为印证:缺口是系统性的,而非个别基准的问题。对 RL-on-NPU 意义:三属性区分直接对应不同的训练投资方向——长程可靠性靠信用分配与环境规模,长上下文靠注意力与 KV 优化,跨会话记忆靠 memory 机制;规划训练管线时可据此拆解算力与工程投入,避免把三类问题混在一起解。",
       "url": "https://arxiv.org/abs/2608.06663",
       "tags": [
         "academic",
@@ -132,6 +134,7 @@
       "track": "academic",
       "innovation": "特权技能快照重打分 + Teacher Value Advantage 门控,把稀疏轨迹奖励稠密化到 token 级",
       "summary": "自蒸馏 reward shaping:用训练期特权技能的快照对轨迹重打分,经 Teacher Value Advantage 门控后作为 token 级 shaping 信号,直击稀疏轨迹奖励下的信用分配。ALFWorld 97.7% 峰值、终点比 GRPO 高 9.4 分,WebShop +5.5;与 SDAR(arXiv 2605.15155)同属自蒸馏稠密化路线,是长程 agentic RL「信用分配稠密化」趋势的代表作。",
+      "analysis": "Innovation:自蒸馏 reward shaping——用训练期特权技能的快照对轨迹重打分,经 Teacher Value Advantage 门控后作为 token 级 shaping 信号,把稀疏的轨迹级奖励稠密化到 token 级,不依赖外部 reward model。Performance:ALFWorld 97.7% 峰值、终点比 GRPO 高 9.4 分,WebShop +5.5;与 SDAR 同属自蒸馏稠密化路线,是'信用分配稠密化'趋势的代表作。对 RL-on-NPU 意义:token 级信用分配是长程 agentic RL 的最大痛点之一——跨 10–100+ 回合的 episode 级奖励几乎无信息;自蒸馏路线无需额外训练独立 critic 或 reward model,对显存与算力受限的集群更友好,是把稠密化信号落地到自建训练栈的候选算法。",
       "url": "https://arxiv.org/abs/2608.03223",
       "tags": [
         "academic",
@@ -150,6 +153,7 @@
       "track": "academic",
       "innovation": "108 个人类中位耗时 1.6 小时的真实工作流,把 computer-use 评测推进长程时代",
       "summary": "OSWorld 团队发布 2.0:108 个长程真实电脑使用工作流,人类完成中位约 1.6 小时;Claude Opus 4.7(最大思考预算)平均每任务需 318 次工具调用(1.0 仅 ~30 次),500 步预算下最强前沿智能体仅完成 20.6%。论文指出 Opus 4.8 在 OSWorld-Verified 的 83.5% 高分严重高估真实部署能力,评测覆盖 Claude、GPT-5.5、Qwen 3.7-Plus、MiniMax M3、Kimi 2.6 等七个模型家族。单任务数百次工具调用意味着 agentic RL 的 rollout 长度与沙箱环境需求量级跃升。",
+      "analysis": "Innovation:108 个人类中位耗时约 1.6 小时的真实电脑使用工作流,把 computer-use 评测从短程任务推进到长程时代,覆盖 Claude、GPT-5.5、Qwen 3.7-Plus、MiniMax M3、Kimi 2.6 等七个模型家族。Performance:Claude Opus 4.7(最大思考预算)平均每任务 318 次工具调用(1.0 版仅 ~30 次),500 步预算下最强前沿智能体也只完成 20.6%;论文明确指出旧榜 OSWorld-Verified 的 83.5% 高分严重高估真实部署能力。对 RL-on-NPU 意义:单任务数百次工具调用意味着 rollout 长度与沙箱环境需求按量级重排——训练侧的 generator 吞吐、上下文与 KV 管理、环境并发成本都要按新基线核算,长程可靠性取代单步分数成为训练目标的第一优先级。",
       "url": "https://arxiv.org/abs/2606.29537",
       "tags": [
         "academic",
@@ -253,6 +257,7 @@
       "track": "academic",
       "innovation": "首次把 hindsight credit assignment 引入 LLM agent 训练",
       "summary": "用 hindsight relabeling 做信用分配,直击长程稀疏延迟奖励:WebShop 较 GRPO +7.7%、ALFWorld +13.8%(暂定)。与 turn-level / 过程监督互补的新 CA 角度。",
+      "analysis": "Innovation:首次把 hindsight credit assignment 引入 LLM agent 训练——用 hindsight relabeling 事后重标注轨迹,把长程稀疏延迟奖励转成可学习的信用信号,与 turn 级方法、过程监督构成互补的新角度。Performance:WebShop 较 GRPO +7.7%、ALFWorld +13.8%(暂定口径)。对 RL-on-NPU 意义:hindsight 路线的吸引力在于'废轨迹再利用'——失败 rollout 经重标注仍能产生训练信号,等于变相提高昂贵 rollout 的样本效率;在集群 rollout 吞吐受限的前提下,这类提升单条轨迹信息量的算法与提升并发的系统工作同等值得投入,可与 ADRS、GraphGPO 等稠密化路线对照选型。",
       "url": "https://arxiv.org/abs/2603.08754",
       "tags": [
         "academic",
@@ -269,6 +274,7 @@
       "category": "framework",
       "track": "industry",
       "summary": "完全异步 RL 框架:把日常对话反馈转成训练信号来训练个性化 agent,支持大规模环境并行。不同于 verl/SkyRL 的可验证环境路线——从自然反馈学。",
+      "analysis": "Innovation:完全异步 RL 框架,把日常对话反馈转成训练信号来训练个性化 agent,支持大规模环境并行;与 verl/SkyRL 的可验证环境路线不同,走'从自然反馈学'的路。Performance:开源可用(Gen-Verse),定位是可验证奖励之外的补充路线,面向无 verifier 的真实交互场景。对 RL-on-NPU 意义:一方面提供全异步架构参考——trainer 与 generator 解耦是训练栈的共同演化方向;另一方面提示奖励来源的多元化:当任务无法程序化验证时,对话反馈类信号是可行替代,但其噪声与偏差控制需要额外机制,与 CM2 检查清单奖励、VeriEnv 自动造 verifier 等工作对照阅读,能拼出'可验证—半可验证—自然反馈'的完整奖励谱系。",
       "url": "https://github.com/Gen-Verse/OpenClaw-RL",
       "tags": [
         "industry",
@@ -286,6 +292,7 @@
       "track": "academic",
       "innovation": "All-Gather 集体 KV 复用 + Diff-Aware 块稀疏存储",
       "summary": "面向多智能体并发服务的 KV 共享:KV Collector 一次集体操作完成整轮复用,Diff-Aware Storage 把兄弟缓存编码为块稀疏 diff(压 11–17×),并发 agent 数较带前缀缓存的 vLLM ×2.7(暂定)。",
+      "analysis": "Innovation:面向多智能体并发服务的集体 KV 缓存共享——KV Collector 用一次 All-Gather 集体操作完成整轮复用,Diff-Aware Storage 把兄弟 agent 的缓存编码为块稀疏 diff 存储。Performance:缓存压缩 11–17×,并发 agent 数较带前缀缓存的 vLLM 提升 2.7×(暂定)。对 RL-on-NPU 意义:多智能体/并行 rollout 场景下,兄弟 agent 间存在大量共享前缀与上下文,KV 显存是并发数的第一瓶颈;而集体通信原语(All-Gather)恰是 NPU 超节点互联的强项,这类'以通信换显存'的设计在昇腾类硬件上有天然适配空间,是提升单集群 rollout 并发密度、压低多智能体训练服务成本的直接杠杆。",
       "url": "https://arxiv.org/abs/2604.03143",
       "tags": [
         "academic",
@@ -303,6 +310,7 @@
       "track": "academic",
       "innovation": "6M PR→10万实例 + 合成 F2P + DeepSeek 蒸馏 SFT",
       "summary": "论文《Immersion in the GitHub Universe》(arXiv 2602.09892)。真实 PR 大规模挖掘(23k 仓库/6M PR→10万实例,MEGAFLOW+阿里云沙箱出可验证镜像)+ unit-test-creator 合成 F2P + DeepSeek-V3.2 蒸馏 71k 轨迹;SFT Qwen3-30B-A3B → SWE-bench Verified 64%(SFT-only,暂定)。与 Scale AI 无关(同名)。",
+      "analysis": "Innovation:真实 PR 大规模挖掘管线——从 23k 仓库/6M PR 筛出 10 万可验证实例(MEGAFLOW+阿里云沙箱产出可验证镜像),辅以 unit-test-creator 合成 F2P 测试,再用 DeepSeek-V3.2 蒸馏 71k 条轨迹。Performance:SFT Qwen3-30B-A3B 达 SWE-bench Verified 64%(SFT-only,暂定)——高质量轨迹蒸馏在不做 RL 的情况下已能到相当水平。对 RL-on-NPU 意义:展示了'数据工厂'的完整开源配方:从真实 PR 到可验证环境镜像再到 token 级轨迹,是自建 SWE 训练数据管线可直接对标的路线;SFT-only 的强基线也提示'先蒸馏、后 RL'的两段式路径能省下大量昂贵的 rollout 算力,把 RL 留给蒸馏到不了的最后一段。",
       "url": "https://github.com/AweAI-Team/ScaleSWE",
       "tags": [
         "academic",
@@ -320,6 +328,7 @@
       "track": "academic",
       "innovation": "从自然语言 spec 从零生成整个仓库(长程,可 RL)",
       "summary": "ScaleSWE 的后续(arXiv 2606.10728):任务从「修 PR bug」转为 doc2repo——仅给 spec 从零造仓库。明确为长程 SFT & RL 环境(支持 rollout),4818 实例、DeepSeek-v4-Pro-High 蒸馏;Qwen3.5-35B-A3B → ~50% BeyondSWE-Doc2Repo(暂定)。是 ScaleSWE 走向 RL 的桥。",
+      "analysis": "Innovation:任务范式从'修 PR bug'转为 doc2repo——仅给自然语言 spec 从零生成整个仓库,天然长程,且明确设计为 SFT & RL 双用环境(支持 rollout);4818 实例,DeepSeek-v4-Pro-High 蒸馏。Performance:Qwen3.5-35B-A3B 达约 50% BeyondSWE-Doc2Repo(暂定)。对 RL-on-NPU 意义:这是 ScaleSWE 数据工厂走向 RL 的桥——doc2repo 的 rollout 跨度远超单 patch 修复,对训练栈的长程信用分配、上下文管理与沙箱吞吐都是更高强度的压力测试;其开源环境可直接作为自建长程 SWE RL 管线的现成任务源,免去从零造环境与 verifier 的上游成本,与 SWE-Gym/SWE-smith 构成难度递进的环境序列。",
       "url": "https://github.com/AweAI-Team/DeNovoSWE",
       "tags": [
         "academic",
@@ -337,6 +346,7 @@
       "track": "academic",
       "innovation": "统一 build/eval/train 的执行核 + 产 token 级 rollout(loss-mask)",
       "summary": "Apache-2.0 的 agent 执行框架(TaskRunner/AgentContext/AgentLoop/Scaffolds):Scale-SWE 跑在 search_swe scaffold + ACI 工具 + 反泄漏 bash blocklist;训练模式下 tool 观测 loss_mask=0、产 token 级轨迹+logprobs——即 71k 蒸馏轨迹的产出机制。",
+      "analysis": "Innovation:Apache-2.0 的 agent 执行/训练一体框架(TaskRunner/AgentContext/AgentLoop/Scaffolds),统一 build/eval/train;训练模式下 tool 观测 loss_mask=0,产出带 logprobs 的 token 级轨迹,并内建反泄漏 bash blocklist。Performance:是 ScaleSWE 71k 蒸馏轨迹的实际产出机制——ScaleSWE 跑在其 search_swe scaffold + ACI 工具之上。对 RL-on-NPU 意义:'执行框架与训练数据格式协同设计'正是 DeepSeek Harness 等工业方案的核心思路,AweAgent 给出了学术侧开源实现;loss mask、token 级 logprobs 这些细节决定轨迹能否直接喂进 SFT/RL 训练器,自建训练管线时可直接借用其轨迹 schema 与反泄漏机制,而不必重新发明。",
       "url": "https://github.com/AweAI-Team/AweAgent",
       "tags": [
         "academic",
@@ -371,6 +381,7 @@
       "track": "industry",
       "innovation": "含私有/copyleft 仓库抗污染 + 扩到全工程闭环",
       "summary": "Scale AI(SEAL)的 SWE 评测体系:SWE-bench Pro(1865 实例、含私有/copyleft 抗污染)与后续 SWE Atlas(扩展到 Codebase Q&A / 写测试 / 重构)。前沿模型已转向用它取代饱和的 Verified。(注:与 AweAI 的 ScaleSWE 同名但无关。)",
+      "analysis": "Innovation:用私有与 copyleft 仓库构建抗污染评测(1865 实例),后续 SWE Atlas 把范围从修 bug 扩到 Codebase Q&A、写测试、重构等全工程闭环。Performance:前沿模型已转向用它取代饱和且污染的 SWE-bench Verified——OpenAI 2026-02 正式弃用 Verified 后,Pro 成为主要替代口径之一。对 RL-on-NPU 意义:评测口径决定训练目标——在被污染的基准上刷分会系统性高估模型真实能力;自训模型的验收应尽早切到 Pro 类抗污染口径,且 copyleft/私有仓库的防泄漏思路同样适用于自建训练数据的隔离设计——评测的抗污染与训练的 reward hacking 防控本质上是同一件事的两面。",
       "url": "https://scale.com/blog/swe-bench-pro",
       "tags": [
         "industry",
@@ -689,6 +700,7 @@
       "track": "academic",
       "innovation": "把所有 rollout 聚合成状态转移图,按到目标的距离分配优势",
       "summary": "Beyond Trajectory-Level Attribution:用群体图结构做 step 级信用分配,能挖出失败轨迹里被埋没的有价值步骤,替代昂贵的树采样过程奖励。",
+      "analysis": "Innovation:把同一任务的所有 rollout 聚合成一张状态转移图,按节点到目标的距离分配优势,实现图结构的 step 级信用分配,能把失败轨迹中被埋没的有价值步骤挖出来。Performance:定位是替代昂贵的树采样过程奖励——不引入额外采样开销,只复用既有 rollout 群体的结构信息(NTU/Alibaba,arXiv 2605.26684)。对 RL-on-NPU 意义:与 ADRS、HCAPO 同属'信用分配稠密化'主线但取径不同——它把 GRPO 式群体采样的副产品(多条轨迹)变成结构化监督,等于零额外 rollout 成本换来 step 级信号;在 rollout 昂贵、生成吞吐受限的 NPU 集群上,这类'榨干既有轨迹'的算法性价比最高。",
       "url": "https://arxiv.org/abs/2605.26684",
       "tags": [
         "academic",
@@ -706,6 +718,7 @@
       "track": "academic",
       "innovation": "token/turn 级不确定性控制探索,重采样低信息轮次",
       "summary": "把多轮 agentic RL 的「训练崩溃」归因于低信息探索,用 token 级与 turn 级不确定性触发思考干预并重采样(ICML 2026 Spotlight)。",
+      "analysis": "Innovation:把多轮 agentic RL 的'训练崩溃'归因于低信息探索,用 token 级与 turn 级不确定性触发思考干预并重采样低信息轮次,让探索预算流向高信息区域。Performance:Amazon Science 出品,ICML 2026 Spotlight;核心贡献在训练稳定性而非单点分数——多轮 RL 训练崩溃是普遍的工程痛点。对 RL-on-NPU 意义:长程多轮训练一旦崩溃,损失的是数千卡时的 rollout 投入;不确定性引导的重采样把算力集中在有信息量的轮次上,既是稳定器也是采样效率优化,对预算受限的自建训练尤为实用,可与 ComputerRL 的 Entropulse 等抗熵崩技术对照——稳定性机制正在成为长程 agentic RL 栈的标配组件。",
       "url": "https://arxiv.org/abs/2605.02178",
       "tags": [
         "academic",
@@ -723,6 +736,7 @@
       "track": "academic",
       "innovation": "用检查清单二元标准替代可验证奖励",
       "summary": "针对无可验证奖励的真实多轮工具任务:稀疏赋奖 + 密集评判稳定训练。8B 模型在 τ²-Bench/BFCL-V4/ToolSandbox 显著提升。奖励工程向「无 verifiable」任务延伸。",
+      "analysis": "Innovation:用检查清单式二元标准替代可验证奖励——针对写不出 verifier 的真实多轮工具任务,把'任务是否完成'拆解成一组可判定的检查项,以稀疏赋奖+密集评判的组合稳定训练。Performance:8B 模型在 τ²-Bench、BFCL-V4、ToolSandbox 上显著提升,奖励工程由此向'无 verifiable'任务延伸。对 RL-on-NPU 意义:RLVR 的边界就是 verifier 的边界——大量真实业务任务无法程序化验证;检查清单是把'不可验证'降级为'半可验证'的工程化折中,构建成本远低于训练专用 reward model,适合垂直场景自建训练时快速起步,与 VeriEnv(自动造 verifier)、OpenReward(托管 verifier)构成三条互补的奖励供给路线。",
       "url": "https://arxiv.org/abs/2602.12268",
       "tags": [
         "academic",
@@ -740,6 +754,7 @@
       "track": "academic",
       "innovation": "LLM 即环境创建者:把真实网站克隆成可程序化验证的合成环境",
       "summary": "让模型把真实网站克隆成可执行、可程序化验证奖励的合成环境训练 Web Agent——自动生成确定性奖励,摆脱启发式/LLM 裁判与不安全的真实交互。",
+      "analysis": "Innovation:LLM 即环境创建者——让模型把真实网站克隆成可执行、可程序化验证奖励的合成环境,自动生成确定性奖励,摆脱启发式打分、LLM 裁判的噪声与直接操作真实网站的安全风险。Performance:Georgia Tech 出品,核心价值在把 Web Agent 训练的奖励从'模糊判断'变成'确定性验证',同时避免对生产网站的破坏性交互。对 RL-on-NPU 意义:环境与 verifier 的构建成本是 agentic RL 规模化的上游瓶颈,'用模型造环境'把这一成本从持续的人工工程降为一次性生成;克隆出的合成环境可无状态复制,天然适配大规模并行 rollout,是自建 Web/GUI 训练环境时值得优先验证的路线,与 ZeroGUI 自动出题同属'任务生成+奖励验证'新瓶颈的解法。",
       "url": "https://arxiv.org/abs/2603.10505",
       "tags": [
         "academic",
@@ -774,6 +789,7 @@
       "track": "industry",
       "innovation": "「RL 环境的 GitHub」——开放、社区化的环境平台",
       "summary": "一个开放、社区驱动的 RL 环境中心:私测期已有 30+ 研究者/公司贡献环境,目标把「环境规模」做成训练通用智能体的新 scaling 轴。配套 verifiers 框架、Prime Sandbox、NeMo Gym 集成。",
+      "analysis": "Innovation:定位'RL 环境的 GitHub'——开放、社区驱动的环境平台,配套 verifiers 框架(RLVR 标准接口)、Prime Sandbox 与 NeMo Gym 集成,目标把'环境规模+自演化轮次'做成训练通用智能体的新 scaling 轴。Performance:私测期已有 30+ 研究者/公司贡献环境,与 PRIME-RL 训练框架打通,形成从环境到训练的完整开源栈。对 RL-on-NPU 意义:环境已成模型规模、数据之后的第三个 scaling 维度——谁拥有环境,谁掌握 agentic 能力的上游;对自建训练而言,社区环境库+标准接口意味着不必为每个任务从零造环境,可把工程资源集中在 NPU 侧训练吞吐与算子适配上,环境从 Hub 拉取即用。",
       "url": "https://www.primeintellect.ai/blog/environments",
       "tags": [
         "industry",
@@ -791,6 +807,7 @@
       "track": "industry",
       "innovation": "训练-推理分离 + 陈旧策略步语义,跑 verifiers 环境",
       "summary": "Prime Intellect 的开源 agentic RL 训练框架:大规模异步、trainer-inference 分离、stale-policy 步语义,原生支持 verifiers 环境与 2500+ 开源环境。面向「为自家任务定制模型」的 RFT 工作流。",
+      "analysis": "Innovation:大规模异步 agentic RL 训练框架——trainer 与 inference 分离、显式的陈旧策略(stale-policy)步语义,原生支持 verifiers 环境与 2500+ 开源环境,面向'为自家任务定制模型'的 RFT 工作流。Performance:与 Environments Hub、verifiers、Prime Sandbox 构成 Prime Intellect 完整开源栈,是目前环境生态对接最广的异步训练框架之一。对 RL-on-NPU 意义:训推分离+陈旧容忍正是 NPU 训练栈的关键架构——generator 与 trainer 可异构部署,推理与训练硬件各司其职;显式的 stale-policy 语义把'异步度换吞吐'的代价摆上台面,决定了 off-policy 校正的设计空间,其接口与语义可作为自建异步 RL 系统的直接参照。",
       "url": "https://github.com/PrimeIntellect-ai/prime-rl",
       "tags": [
         "industry",
@@ -924,6 +941,7 @@
       "track": "academic",
       "innovation": "把 agentic RL 设计空间拆成 5 轴并给出可复用结论",
       "summary": "系统性「配方」:沿奖励塑形 / 模型规模 / 数据配比 / 算法 / 环境稳定性 5 轴拆解长程工具 RL。关键发现:奖励与算法 scale-dependent(小模型分阶段奖励+强探索,大模型简单稠密奖励即收敛);~1K 平衡难度样本是甜点。",
+      "analysis": "Innovation:把长程工具 RL 的设计空间系统拆成 5 轴——奖励塑形、模型规模、数据配比、算法、环境稳定性,逐轴给出可复用结论,把 agentic RL 从'手艺'推向'配方'。Performance:关键发现是奖励与算法 scale-dependent——小模型靠分阶段奖励+强探索,大模型用简单稠密奖励即可收敛;约 1K 条平衡难度样本是性价比甜点。对 RL-on-NPU 意义:这正是自建训练最缺的决策依据——算力受限时优先投数据质量(约 1K 平衡样本)而非数据量;模型档位决定奖励设计复杂度,换规模时奖励方案要随之调整;环境稳定性被单列为一轴,印证沙箱工程与算法同等重要,值得在 NPU 训练栈规划中占独立预算。",
       "url": "https://arxiv.org/abs/2603.21972",
       "tags": [
         "academic",
