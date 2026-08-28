@@ -98,6 +98,7 @@
       "track": "industry",
       "innovation": "1M 上下文/128K 输出/5 档 effort,旗舰价格砍半($5/$25),内置浏览与 5 层子代理嵌套",
       "summary": "07-24 发布:1M 上下文、128K 输出、5 档 reasoning effort,定价 $5/$25 每百万 token(旗舰半价),成为 Claude Code 默认模型;内置浏览、会话 fork 与最多 5 层子代理嵌套——把过去靠外部脚手架实现的 agent 运行时能力收进模型侧。「单位智能成本」竞争延续,长程 agent rollout 的成本与上下文基线再次重置(二手印证)。",
+      "analysis": "Innovation:1M 上下文、128K 输出、5 档 reasoning effort,并把过去靠外部脚手架实现的 agent 运行时能力收进模型侧——内置浏览、会话 fork 与最多 5 层子代理嵌套;旗舰定价砍半至 $5/$25 每百万 token。Performance:07-24 发布即成为 Claude Code 默认模型,'单位智能成本'竞争延续(能力口径为二手印证)。对 RL-on-NPU 意义:两点基线重置——其一,1M 上下文与多层子代理嵌套意味着长程 agent rollout 的上下文与嵌套调用量级继续抬升,训练侧的 KV 管理与轨迹长度预算需随之对齐;其二,旗舰半价再次压低用商用 API 跑 rollout/蒸馏的成本对标线,自建训练的每条轨迹成本核算要按新价格基准重排;'运行时内建'趋势还提示 harness 能力正被模型侧逐步吸收,训练时的脚手架设计应预判这一边界移动。",
       "url": "https://www.anthropic.com/news/claude-opus-5",
       "tags": [
         "industry",
@@ -224,6 +225,7 @@
       "track": "industry",
       "innovation": "真实工程任务连续 1000+ 次工具调用无人工干预",
       "summary": "Codex 升级 GPT-5.5、跑在 NVIDIA GB200 NVL72 上,演示真实软件任务连续 1000+ 工具调用无干预,Terminal-Bench 2.0 82.7%(暂定)。「自治时长」这一新指标的标志性数据点。",
+      "analysis": "Innovation:Codex 升级 GPT-5.5、跑在 NVIDIA GB200 NVL72 上,演示真实软件工程任务连续 1000+ 次工具调用无人工干预——'自治时长'这一新指标的标志性数据点。Performance:Terminal-Bench 2.0 82.7%(暂定);千次级连续工具调用把 coding agent 的自主跨度推进一个量级,与 OSWorld 2.0 的 318 次/任务共同确立长程新基线。对 RL-on-NPU 意义:1000+ 次工具调用对应的轨迹长度远超多数现有训练管线的默认假设——rollout 的上下文管理、沙箱会话存活时长、信用分配粒度都要按千步级重新设计;同时 GB200 NVL72 的部署细节说明前沿 agent 推理已深度绑定超节点互联硬件,NPU 侧要对标的正是这类'长自治+高吞吐'的推理形态,互联带宽与 KV 容量是关键短板项。",
       "url": "https://blogs.nvidia.com/blog/openai-codex-gpt-5-5-ai-agents/",
       "tags": [
         "industry",
@@ -240,6 +242,7 @@
       "category": "product",
       "track": "industry",
       "summary": "微软发布 Scout——常开个人智能体(含「带电脑操作的研究员」能力),经 Frontier 实验发布,可导航公开/受限/交互网页代为执行任务。信号:agent 产品从对话走向持久自治。",
+      "analysis": "Innovation:常开(always-on)个人智能体,含'带电脑操作的研究员'能力,可导航公开/受限/交互网页代为执行任务,经 Frontier 实验渠道发布。Performance:产品信号大于数字——微软把 agent 产品形态从'对话式'推向'持久自治',任务在后台长期运行,代表大厂对 agent 常驻化的判断。对 RL-on-NPU 意义:常开代理的到来意味着 agent 的实际运行分布转向长会话、持久任务,训练目标从单任务成功率扩展到跨会话可靠性——正对应 Horizon Gap 综述区分的 long-horizon 与 long-term memory 两条投资线;'导航受限/交互网页'的能力也提示训练环境需覆盖登录态与交互式页面,而非仅公开静态网页;产品侧的持久自治趋势为长程 RL 训练的必要性提供了需求端印证。",
       "url": "https://www.microsoft.com/en-us/microsoft-365/blog/2026/06/02/introducing-microsoft-scout-your-always-on-personal-agent/",
       "tags": [
         "industry",
@@ -416,6 +419,7 @@
       "track": "academic",
       "innovation": "四种造 bug 策略 + 「一 repo 一执行环境」做规模化",
       "summary": "把任意 Python repo 自动变成任务工厂(LM Rewrite / AST 改写 / PR Mirroring / Combine),只保留能把通过测试翻成失败的 patch 验证;产出 ~5 万任务 + 2.6 万 trajectory。可验证 SWE 任务规模化的关键。",
+      "analysis": "Innovation:把任意 Python repo 自动变成可验证任务工厂——四种造 bug 策略(LM Rewrite / AST 改写 / PR Mirroring / Combine),只保留能把通过测试翻成失败的 patch 作为有效任务,配合'一 repo 一执行环境'实现规模化。Performance:产出约 5 万可验证任务与 2.6 万条 trajectory,是可验证 SWE 任务规模化的关键工作。对 RL-on-NPU 意义:训练数据的瓶颈不在'任务数'而在'可验证任务数'——SWE-smith 的翻转测试验证标准保证每个任务自带确定性奖励信号,可直接用作 RLVR 训练源;'一 repo 一环境'的设计把沙箱镜像成本摊薄到任务级,是自建 SWE 训练管线扩数据时的首选配方之一,与 SWE-Gym(真实任务)、ScaleSWE(真实 PR 挖掘)构成互补的数据来源谱系。",
       "url": "https://github.com/SWE-bench/SWE-smith",
       "tags": [
         "academic",
@@ -449,6 +453,7 @@
       "track": "industry",
       "innovation": "rLLM + R2E-Gym + GRPO++ 的端到端开源 RL 栈",
       "summary": "从 Qwen3-32B 纯 RL 训上去的完整开源复现(GRPO++:clip-higher、无 KL、长度归一化),42.2% Pass@1(暂定)。搭 SWE agentic RL 的「最省力起点」参考栈。",
+      "analysis": "Innovation:从 Qwen3-32B 纯 RL 训练上去的完整开源复现——rLLM 训练框架 + R2E-Gym 环境 + GRPO++ 算法(clip-higher、去 KL 项、长度归一化),端到端全开源。Performance:SWE-bench Verified 42.2% Pass@1(暂定),给出了不依赖专有数据、纯 RL 路线在 32B 档位可达水平的公开参考点;其全原创数据+作弊审查口径也使它成为评测污染背景下的干净基线之一。对 RL-on-NPU 意义:这是搭建 SWE agentic RL 的'最省力起点'参考栈——GRPO++ 的三项算法修改可直接迁移到自建训练器;在 NPU 上先复现 DeepSWE 栈是验证训练管线端到端正确性的天然 milestone,对齐其结果后再叠加信用分配稠密化与异步优化,比一步到位自研配方风险小得多。",
       "url": "https://www.together.ai/blog/deepswe",
       "tags": [
         "industry",
@@ -466,6 +471,7 @@
       "track": "academic",
       "innovation": "用与 ground-truth patch 的序列相似度做奖励,绕开大规模执行",
       "summary": "不跑测试,而用与正确 patch 的序列相似度当 reward——免去为每个任务搭执行环境的成本,是 RL-for-SWE 奖励设计的另一条路线。",
+      "analysis": "Innovation:不跑测试,用与 ground-truth patch 的序列相似度作为奖励——绕开为每个任务搭执行环境的成本,是 RL-for-SWE 奖励设计中'免执行'路线的代表。Performance:核心贡献在奖励设计的成本-保真权衡:相似度奖励可近乎无限扩规模(任何带正确 patch 的样本都能用),代价是信号不如执行验证严格。对 RL-on-NPU 意义:执行沙箱是 SWE RL 最贵的基础设施——相似度奖励把奖励计算从'起容器跑测试'降为序列比对,rollout 吞吐不再受沙箱并发限制,适合作为大规模预热阶段的廉价奖励,再切换到执行验证做精修;'先相似度、后执行'的两段式奖励课程,是算力与沙箱资源受限的集群值得试验的组合,与 SWE-smith 的可验证任务工厂互为两端。",
       "url": "https://arxiv.org/abs/2502.18449",
       "tags": [
         "academic",
@@ -483,6 +489,7 @@
       "track": "industry",
       "innovation": "终端式编码代理 + 用真实 PR 做 RL 后训练的自有快模型",
       "summary": "xAI 的终端编码代理 Grok Build,模型 grok-code-fast-1 用真实 PR 做 RL 后训练,SWE-bench Verified 70.8%。第三家前沿实验室下场做「自有快模型 + 并行子代理 CLI」。",
+      "analysis": "Innovation:xAI 的终端式编码代理 Grok Build,模型 grok-code-fast-1 用真实 PR 做 RL 后训练——第三家前沿实验室下场做'自有快模型 + 并行子代理 CLI'。Performance:SWE-bench Verified 70.8%;'fast'定位说明编码代理的竞争维度已从纯分数转向延迟与并行可靠性。对 RL-on-NPU 意义:用真实 PR 做 RL 后训练已成前沿实验室的标配路线(与 ScaleSWE 的开源 PR 挖掘管线同构,后者提供了可对标的开源配方),再次印证'垂直定制>通用模型'——编码代理的护城河来自把 RL 后训练贴合自家 CLI 工作流;快模型+子代理并行的产品形态也提示训练目标应包含延迟约束下的能力保持,而非单纯追求最高分,这对中等规模自训模型是有利的竞争位。",
       "url": "https://x.ai/news/grok-code-fast-1",
       "tags": [
         "industry",
@@ -500,6 +507,7 @@
       "track": "industry",
       "innovation": "可接任意工具/私域的长程自主深研代理",
       "summary": "基于 Gemini 3.1 Pro 的自主深研代理,BrowseComp 85.9%(较 Gemini 3 Pro +~25 分),支持 MCP 工具。深研从「网页搜索器」升级为长程自主代理,靠 test-time compute 迭代检索。",
+      "analysis": "Innovation:基于 Gemini 3.1 Pro 的长程自主深研代理,可接任意工具与私域数据(支持 MCP),靠 test-time compute 迭代检索——深研从'网页搜索器'升级为长程自主代理。Performance:BrowseComp 85.9%,较 Gemini 3 Pro 提升约 25 分,是深研类任务的代际跃升。对 RL-on-NPU 意义:深研代理是'长程多轮搜索 RL'学术路线(如 RL for Long-Horizon Multi-Turn Search Agents)的产品化终点——检索/工具往返的多轮决策可训练性已被产品验证;MCP 接入意味着训练环境可直接复用标准化工具生态,降低自建搜索环境成本;约 25 分的代际提升说明该方向上 RL + test-time compute 的收益空间仍未饱和,深研是垂直自训中投入产出比较高的候选赛道。",
       "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/next-generation-gemini-deep-research/",
       "tags": [
         "industry",
@@ -517,6 +525,7 @@
       "track": "industry",
       "innovation": "本地优先 + 复用真实登录态 + 300 子代理蜂群",
       "summary": "基于 K2.6 的本地桌面代理:经 WebBridge 用真实登录态驱动浏览器,可调度多达 300 个子代理。代理从云端转向「本地优先 + 复用会话/cookie」(厂商口径)。",
+      "analysis": "Innovation:基于 K2.6 的本地优先桌面代理——经 WebBridge 复用真实登录态驱动浏览器,可调度多达 300 个子代理组成蜂群。Performance:厂商口径,待第三方验证;产品形态信号明确:代理从云端沙箱转向'本地优先 + 复用会话/cookie',绕开了登录墙这一 Web agent 的经典障碍。对 RL-on-NPU 意义:两点启示——其一,300 子代理的蜂群调度是 PARL 并行范式的产品化落地,多智能体高并发对推理侧 KV 共享(参见 TokenDance)与训练侧跨子代理信用分配提出直接需求;其二,'复用真实登录态'的运行环境与训练时的合成可验证环境存在分布差,如何在合成环境训练、在真实登录态环境泛化,是 computer-use RL 数据与环境设计要预留的缺口。",
       "url": "https://www.marktechpost.com/2026/06/12/moonshot-ai-launches-kimi-work-a-local-desktop-agent-reportedly-running-on-kimi-k2-6-with-a-300-sub-agent-agent-swarm/",
       "tags": [
         "industry",
@@ -534,6 +543,7 @@
       "track": "industry",
       "innovation": "RL 同时优化解题 rollout 与驱动它的 scaffold 本身",
       "summary": "开源编码模型族(9B/35B/397B):RL 不只学解题策略,还共同优化「脚手架」本身。397B SWE-bench Verified 82.4% / Pro 62.2%(厂商自报)。自改进 agentic RL 范式。",
+      "analysis": "Innovation:开源编码模型族(9B/35B/397B),RL 不只学解题策略,还共同优化驱动 rollout 的'脚手架'本身——自改进 agentic RL 范式,把 scaffold 从人工设计物变成学习目标。Performance:397B 版自报 SWE-bench Verified 82.4%、SWE-bench Pro 62.2%(厂商口径,待第三方复跑)。对 RL-on-NPU 意义:harness 方差研究(arXiv 2605.23950)显示同模型跨 harness 分差可达 9.5–15 分——scaffold 本身就是巨大的性能变量,把它纳入 RL 优化闭环等于把这部分方差转成可学习收益;对自建训练而言,这提示 scaffold 配置不应冻结,可作为搜索/优化空间的一部分与策略共同演化;9B/35B/397B 三档开源也为不同算力预算提供了可下载的起点。",
       "url": "https://www.marktechpost.com/2026/06/25/deepreinforce-releases-ornith-1-0-an-open-source-coding-model-family-that-learns-its-own-rl-scaffolds/",
       "tags": [
         "industry",
@@ -551,6 +561,7 @@
       "track": "industry",
       "innovation": "把 computer-use 评测推向 FreeCAD 等专业软件长程工作流",
       "summary": "长程专业领域电脑使用基准:最强模型(Gemini-3.1-pro)平均通过率仅 30.67%,暴露当前 GUI 代理在真实专业工作流上的天花板。",
+      "analysis": "Innovation:把 computer-use 评测推向 FreeCAD 等专业软件的长程工作流——从通用桌面操作进入专业领域深水区。Performance:最强模型(Gemini-3.1-pro)平均通过率仅 30.67%,暴露当前 GUI 代理在真实专业工作流上的明显天花板,与 OSWorld 2.0 的 20.6% 互为印证:在长程与专业双重维度上,前沿模型远未饱和。对 RL-on-NPU 意义:约 30% 的通过率意味着专业软件长程任务是训练收益最大的空白区之一——但同时也是环境构建最贵的:专业软件的沙箱镜像、状态捕获与结果验证器都比网页/终端复杂;选择该赛道自训需先解决'任务生成+奖励验证'的上游工程,VeriEnv/ZeroGUI 式自动化造环境思路能否迁移到专业软件,是立项前要回答的关键前置问题。",
       "url": "https://arxiv.org/abs/2606.11042",
       "tags": [
         "industry",
@@ -568,6 +579,7 @@
       "track": "industry",
       "innovation": "Gymnasium 风格、可共享、可插入训练栈的环境标准",
       "summary": "Meta 与 HF 联合推出 Gymnasium 风格的智能体环境标准与共享 Hub,可插入 TorchForge/verl/TRL 训练循环。把「环境」做成开放标准与生态层。",
+      "analysis": "Innovation:Meta PyTorch 与 Hugging Face 联合推出 Gymnasium 风格的智能体环境标准与共享 Hub——环境可共享、可复用,并可直接插入 TorchForge/verl/TRL 训练循环,把'环境'做成开放标准与生态层。Performance:大厂框架方与最大模型社区联手定标准,与 Prime Intellect Environments Hub、General Reasoning 的 OpenReward/ORS 构成环境标准化的三个竞争极。对 RL-on-NPU 意义:环境接口标准化直接决定自建训练栈的环境接入成本——Gymnasium 风格是 RL 社区最熟悉的抽象,兼容它意味着社区环境可低成本挂进自有 trainer;对 NPU 训练栈而言,尽早对齐 OpenEnv/verifiers 等主流接口、而非自造私有环境协议,才能在'环境即 scaling 轴'的时代持续享受生态红利并保持环境可迁移。",
       "url": "https://huggingface.co/blog/openenv",
       "tags": [
         "industry",
@@ -585,6 +597,7 @@
       "track": "industry",
       "innovation": "把可验证奖励环境变成托管 API + 把 MCP 扩成奖励标准",
       "summary": "用一个 API 提供 330+ RL 环境、450 万任务,并把 MCP 扩展为奖励标准(ORS),直接对接 Tinker/Slime 等训练栈。环境=「托管端点 + 课程/奖励原语」。",
+      "analysis": "Innovation:把可验证奖励环境变成托管 API——单一 API 提供 330+ RL 环境、450 万任务,并把 MCP 扩展为奖励标准(ORS),环境=托管端点+课程/奖励原语,直接对接 Tinker/Slime 等训练栈。Performance:450 万任务的托管规模把'环境供给'从自建工程变成可采购服务,与 OpenEnv、Environments Hub 分别代表托管、标准、社区三条路线。对 RL-on-NPU 意义:ORS 把奖励接口标准化到 MCP 之上,训练侧只需实现一次协议对接即可访问全部托管环境——对自建管线是显著工程杠杆;但托管模式意味着 rollout 数据出域、吞吐受制于服务方,对数据敏感或高并发训练更现实的用法是按 ORS 标准自托管环境——把标准与托管服务解耦使用,标准采纳、服务自建。",
       "url": "https://www.gr.inc/releases/introducing-openreward",
       "tags": [
         "industry",
@@ -602,6 +615,7 @@
       "track": "industry",
       "innovation": "把 agentic RL 拆成算法/执行/环境三层的可组合服务",
       "summary": "把智能体 RL 拆为算法、执行、环境交互三层的「RL 即服务」基础设施——从单体 pipeline 转向解耦/服务化。",
+      "analysis": "Innovation:把智能体 RL 拆为算法、执行、环境交互三层的'RL 即服务'基础设施——从单体 pipeline 走向解耦与服务化,各层独立演化、按接口组合。Performance:代表 agentic RL 系统架构的方向性转变,与 PRIME-RL 的训推分离、OpenRLHF 的异步化同属训练栈服务化主线。对 RL-on-NPU 意义:三层解耦对异构硬件尤其重要——执行层(rollout 推理)与算法层(训练)可分别部署在各自最适合的硬件上,环境层独立弹性伸缩;自建 NPU 训练栈采用同构的分层边界,能让训练器替换、环境接入、推理引擎升级互不牵连,也为将来接入 OpenReward 类托管环境或社区环境库预留了接口位。",
       "url": "https://github.com/open-tinker/OpenTinker",
       "tags": [
         "industry",
@@ -619,6 +633,7 @@
       "track": "industry",
       "innovation": "partial rollout(vLLM 暂停/恢复)+ 重要性采样校正",
       "summary": "主流开源 RLHF 框架新增 partial rollout 与 off-policy 重要性采样校正的全异步多轮 agent 训练——「部分 rollout + off-policy 修正」成为标配,异步 RL 走向生产成熟。",
+      "analysis": "Innovation:主流开源 RLHF 框架新增全异步多轮 agent 训练——partial rollout(vLLM 暂停/恢复)+ off-policy 重要性采样校正,长轨迹可切段生成、跨策略版本继续,而不必整条重跑。Performance:'部分 rollout + off-policy 修正'在主流框架标配化,标志异步 RL 从论文技巧走向生产成熟。对 RL-on-NPU 意义:长程 agent 任务的 rollout 时长方差极大,同步训练会让整批等最慢一条——partial rollout 配合重要性采样校正是把 generator 利用率提上去的关键机制,直接回应 trainer↔generator 吞吐匹配这一核心命题;vLLM 暂停/恢复的实现也给 NPU 推理引擎列出了对等的能力清单:KV 状态可挂起/恢复、生成可中断续跑,是自建异步训练栈必须补齐的基础设施。",
       "url": "https://github.com/openrlhf/openrlhf",
       "tags": [
         "industry",
@@ -683,6 +698,7 @@
       "category": "trend",
       "track": "industry",
       "summary": "访谈 18 位从业者梳理 RL 环境现状:实验室称将投入 > $10 亿,重心从数学转向真实任务;量化了支出与质量瓶颈。权威机构对环境市场的体系化盘点。",
+      "analysis": "Innovation:访谈 18 位从业者对 RL 环境市场做体系化盘点——量化了支出与质量瓶颈,确认实验室将投入超 10 亿美元、重心从数学题转向真实任务环境。Performance:权威第三方机构口径,为环境赛道的融资热(Deeptune 4300 万 A 轮、Mechanize 等专精供应商)提供了需求侧数据支撑。对 RL-on-NPU 意义:>$10 亿的环境投入意味着环境质量正成为前沿能力的隐形分水岭——只用免费公开环境自训,数据面就与头部实验室存在代差;务实路径是把有限预算集中在自己垂直场景的高保真环境上(呼应'垂直定制>通用模型'),通用面则靠 Environments Hub/OpenEnv 社区环境覆盖;该 FAQ 的支出与质量瓶颈数据可直接用于内部环境建设的立项论证。",
       "url": "https://epoch.ai/gradient-updates/state-of-rl-envs",
       "tags": [
         "industry",
@@ -772,6 +788,7 @@
       "track": "academic",
       "innovation": "API-GUI 范式 + 数千并行虚拟桌面在线 RL + Entropulse 抗熵崩",
       "summary": "把在线 RL 扩到上千并行桌面环境,AutoGLM-OS-9B 在 OSWorld 达 48.9%,用 Entropulse 解决长训练熵崩塌(ICLR 2026)。",
+      "analysis": "Innovation:API-GUI 混合范式 + 数千并行虚拟桌面上的在线 RL + Entropulse 抗熵崩机制——首次把 computer-use 的在线 RL 扩到千级桌面并发(ICLR 2026)。Performance:AutoGLM-OS-9B 在 OSWorld 达 48.9%,证明 9B 档模型经大规模在线 RL 可在 computer-use 上取得可观水平。对 RL-on-NPU 意义:三个直接可借鉴点——其一,数千并行虚拟桌面证明 GUI 环境并发可以工程化到该量级,为沙箱基建提供了规模锚点;其二,Entropulse 针对长训练熵崩塌,与 T²PO 的不确定性引导同属长程训练稳定性组件,应纳入自建训练栈的标配清单;其三,API-GUI 混合范式降低了纯像素操作的探索难度,是 NPU 上训练 computer-use 模型时值得优先采用的动作空间设计。",
       "url": "https://arxiv.org/abs/2508.14040",
       "tags": [
         "academic",
@@ -824,6 +841,7 @@
       "category": "framework",
       "track": "industry",
       "summary": "构建可验证奖励(RLVR)环境与评测的开源库——用代码执行/校验产生「不可作弊」的客观奖励,是 Environments Hub 的底层标准接口。",
+      "analysis": "Innovation:构建可验证奖励(RLVR)环境与评测的开源库——用代码执行/校验产生'不可作弊'的客观奖励,是 Environments Hub 的底层标准接口。Performance:作为 Prime Intellect 开源栈的接口层,向上承接社区环境贡献、向下对接 PRIME-RL 训练框架,环境与评测共用同一套 verifier 抽象。对 RL-on-NPU 意义:'训练与评测同源'是该设计最有价值的一点——训练奖励与验收评测用同一 verifier,消除了训练目标与评测口径不一致的系统性风险;执行校验产生的'不可作弊'奖励也是对抗 reward hacking 的第一道防线(判分质量是训练与评测共同的上限);无论是否采用 Prime 生态,'任务+判分器打包'的 verifier 抽象都值得作为自建环境接口的设计参照。",
       "url": "https://github.com/PrimeIntellect-ai/verifiers",
       "tags": [
         "industry",
@@ -841,6 +859,7 @@
       "track": "industry",
       "innovation": "用 RFT 把模型深度定制到自家 IDE 工作流",
       "summary": "Cursor 为其 IDE 专门后训练的 agentic 编码模型——「垂直定制 > 通用模型」的标志性案例:赢家用 post-training/RFT 把模型贴合具体工作流,而非用现成通用模型。",
+      "analysis": "Innovation:Cursor 为自家 IDE 专门后训练的 agentic 编码模型——用 RFT 把模型深度定制到具体 IDE 工作流,而非调用现成通用模型。Performance:'垂直定制>通用模型'的标志性商业案例:模型与产品工作流的深度耦合本身成为差异化护城河,而非单点基准分数。对 RL-on-NPU 意义:这是 RL 后训练商业价值的最直接证明——赢家不是拿到最大通用模型的,而是把后训练贴合自家工作流最深的;对拥有自有算力与垂直场景的团队,用 RFT/RL 把一个中档开源模型定制到特定工作流,可能比接入更强的通用 API 更有竞争力——这正是自建 RL-on-NPU 管线的核心商业论证,Composer One 提供了可直接引用的行业先例,xAI Grok Build、Ornith 等则从不同角度复证同一趋势。",
       "url": "https://cursor.com",
       "tags": [
         "industry",
@@ -858,6 +877,7 @@
       "track": "industry",
       "innovation": "Parallel Agent RL:训练模型分解并并行复杂任务",
       "summary": "Moonshot 的 Kimi Claw 主打 Agent Swarm,背后是新 RL 技术 PARL(Parallel Agent Reinforcement Learning)——训练模型把复杂任务拆解并并行执行。多智能体/并行是 agentic RL 的工业化方向之一(媒体口径)。",
+      "analysis": "Innovation:PARL(Parallel Agent Reinforcement Learning)——训练模型学会把复杂任务分解并并行执行,是 Kimi Claw Agent Swarm 的底层 RL 技术;任务分解与并行调度本身成为被训练的能力,而非人工编排的脚手架逻辑。Performance:媒体口径,技术细节未完全公开;与 Kimi Work 的 300 子代理蜂群构成从算法到产品的闭环。对 RL-on-NPU 意义:多智能体并行是 agentic RL 工业化的重要方向——训练出'会分解会并行'的模型后,rollout 时单任务会派生大量并发子代理,推理侧并发密度与 KV 共享需求陡增(TokenDance 类技术因此关键);训练侧的信用分配也要跨子代理进行,比单线程长程任务更复杂,是 G2PO/GiGPO 之后信用分配研究的下一个前沿场景。",
       "url": "https://press.airstreet.com/p/state-of-ai-may-2026",
       "tags": [
         "industry",
@@ -875,6 +895,7 @@
       "track": "industry",
       "innovation": "RL 训练的 computer use:OSWorld-Verified 72.5%",
       "summary": "Sonnet 4.6 在编码、computer use、长上下文、agent 规划上全面升级,OSWorld-Verified 达 72.5%(computer use 16 个月前刚出时仅 14.9%)。配套《2026 Agentic Coding Trends Report》是工业界 agentic 编码的风向标。",
+      "analysis": "Innovation:RL 训练的 computer use 能力——Sonnet 4.6 在编码、computer use、长上下文、agent 规划上全面升级,配套发布《2026 Agentic Coding Trends Report》作为工业界风向标。Performance:OSWorld-Verified 72.5%,而 computer use 能力 16 个月前刚发布时仅 14.9%——增长曲线陡峭。对 RL-on-NPU 意义:14.9%→72.5% 的 16 个月曲线是'RL 把会用电脑变成可训练能力'的最有力证据——computer-use 不是模型固有属性,而是训练投入的函数,这为在 NPU 集群上投入 GUI/桌面环境训练提供了收益预期锚点;但须与 OSWorld 2.0 的长程口径对照(最强系统仅 20.6%):Verified 高分不等于长程可靠,自训的目标口径应尽早向长程基准校准,避免在已近饱和的短程口径上重复投入。",
       "url": "https://resources.anthropic.com/hubfs/2026%20Agentic%20Coding%20Trends%20Report.pdf",
       "tags": [
         "industry",
@@ -891,6 +912,7 @@
       "category": "infrastructure",
       "track": "industry",
       "summary": "NVIDIA 技术博客给出用 RLVR 训练科学智能体的配方:让模型设计/运行实验、评估结果、朝科学指标优化;NeMo Gym 提供环境与工具集成。工业级 agentic RL 基础设施的一极。",
+      "analysis": "Innovation:NVIDIA 给出用 RLVR 训练科学智能体的完整配方——让模型设计/运行实验、评估结果、朝科学指标优化,NeMo Gym 提供环境与工具集成,是工业级 agentic RL 基础设施的一极。Performance:把 RLVR 从数学/代码扩展到科学实验场景,以科学指标本身作为可验证奖励。对 RL-on-NPU 意义:一方面,科学智能体展示了 RLVR 的可迁移性——凡有可计算指标的领域都能构造训练环境,为垂直场景选型提供模板;另一方面,NeMo Gym 与 GPU 软件生态深度绑定(Environments Hub 亦已与其集成),这是 NVIDIA 把 agentic RL 训练栈纳入软件护城河的动作——NPU 阵营需要建设对等的环境集成层,否则环境生态的硬件绑定会成为继算子生态之后新的迁移成本。",
       "url": "https://developer.nvidia.com/blog/how-to-train-scientific-agents-with-reinforcement-learning/",
       "tags": [
         "industry",
@@ -908,6 +930,7 @@
       "track": "industry",
       "innovation": "协议与基础设施收敛:MCP 破 9700 万安装",
       "summary": "2025-12 成立,锚定 Anthropic 的 MCP、OpenAI 的 AGENTS.md、Block 的 goose。MCP 在 2026-03 破 9700 万安装。agentic 生态从「各做各的」走向「共享协议 + 标准环境/工具接口」——RL 训练的环境标准化由此受益。",
+      "analysis": "Innovation:Linux 基金会 2025-12 成立 Agentic AI Foundation,锚定三个中立化资产——Anthropic 的 MCP、OpenAI 的 AGENTS.md、Block 的 goose,协议与基础设施从'各做各的'走向共享标准。Performance:MCP 于 2026-03 突破 9700 万安装,事实标准地位确立;基金会治理进一步降低单厂商控制风险。对 RL-on-NPU 意义:协议收敛对训练侧是重大利好——工具接口标准化(MCP)意味着训练环境的工具层可复用整个生态而非逐个自建,叠加 MCP 07-28 规范的无状态化,大规模并行 rollout 的工具基建成本被双重压低;AGENTS.md 的标准化让 harness 行为更可移植,有助缓解评测与训练中的 harness 方差问题;中立治理也使自建栈押注这些协议的长期风险可控。",
       "url": "https://modelcontextprotocol.io",
       "tags": [
         "industry",
@@ -924,6 +947,7 @@
       "category": "trend",
       "track": "industry",
       "summary": "行业分析:agentic RL 的工程焦点正落到「训练器与生成器吞吐匹配」——长 rollout 让 generator(推理)成为瓶颈,如何让二者不互相等待是异步 RL 系统的核心命题。直接呼应本看板的 rollout 瓶颈主线(Dispatch 02)。",
+      "analysis": "Innovation:SemiAnalysis 的行业分析,把 agentic RL 的工程焦点定位到 trainer↔generator 吞吐匹配——长 rollout 使 generator(推理)成为瓶颈,让二者不互相等待是异步 RL 系统的核心命题。Performance:与本看板 rollout 瓶颈主线(Dispatch 02)直接呼应,并与 OpenRLHF 的 partial rollout、PRIME-RL 的训推分离等工程实践相互印证。对 RL-on-NPU 意义:这是自建训练栈的第一性能问题——NPU 集群上 trainer 与 generator 的算力配比、异步度(陈旧策略容忍)与 off-policy 校正强度构成三角权衡;吞吐匹配视角提示容量规划应从'训练卡数'转为'训推配比':生成侧的推理优化(批处理、KV 管理)对 RL 端到端吞吐的贡献常大于训练侧优化,预算分配应据此倾斜。",
       "url": "https://newsletter.semianalysis.com/p/rl-systems-mind-the-gap-matching",
       "tags": [
         "industry",
@@ -960,6 +984,7 @@
       "track": "academic",
       "innovation": "面向多回合 agentic 任务的组-图策略优化",
       "summary": "为多轮 agentic 任务量身的组-图策略优化算法,改进跨回合的信用分配(2026-06 新出)。代表了 CA 走向 group/step 级的研究前沿。",
+      "analysis": "Innovation:面向多回合 agentic 任务的组-图策略优化(Group-Graph Policy Optimization)——在 GRPO 式组采样之上引入图结构,改进跨回合的信用分配。Performance:2026-06 新出,与 GiGPO(分层步级)、GraphGPO(状态转移图)共同构成信用分配走向 group/step 级的研究前沿。对 RL-on-NPU 意义:跨 10–100+ 回合的 episode 级奖励几乎无信息,信用分配粒度已成 agentic RL 的关键设计旋钮——组-图这类路线的共同优点是复用群体采样的既有 rollout、不引入额外采样开销,对 rollout 昂贵的 NPU 集群是性价比最高的一类稠密化方案;选型时可与 ADRS(自蒸馏 token 级)、HCAPO(hindsight 重标注)横向对比,按任务回合数与算力预算选择合适的 CA 粒度与实现复杂度。",
       "url": "https://arxiv.org/abs/2606.22995",
       "tags": [
         "academic",
