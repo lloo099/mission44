@@ -1,7 +1,33 @@
 {
-  "updated": "2026-08-26",
+  "updated": "2026-08-27",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-32-mindspeed-rl",
+      "title": "Dispatch 32 · 详解 MindSpeed-RL:昇腾官方 RL 框架的成绩单与谢幕",
+      "subtitle": "看板被引用最多的昇腾官方 RL 框架终获专篇,恰逢其谢幕:架构=MindSpeed 训练+vLLM-Ascend 生成(colocate/训推异构两形态、权重重切分、Partial Rollout);成绩单=论文吞吐 1.42-3.97×、384-NPU 超节点、DeepSeek-R1-671B(Preview)——昇腾能跑大规模 RL 的最正式官方证据。谢幕时间线:2026.4 宣布暂停→05-20 末次提交→README 亲自导流 verl 昇腾实践(官方放弃自研、押注社区框架的直接证据);三种解读均标注推断。遗产流向 verl 昇腾适配;D13 trainer 选型与 D19 三线互补表据此更新。",
+      "date": "2026-08-27",
+      "tags": [
+        "MindSpeed-RL",
+        "Ascend",
+        "RL-frameworks",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-32-mindspeed-rl.md"
+    },
+    {
+      "id": "dispatch-33-verl",
+      "title": "Dispatch 33 · 详解 verl:RL 后训练事实标准与昇腾的社区路线",
+      "subtitle": "与 D32 成对(官方谢幕、社区接棒):HybridFlow hybrid-controller 编程模型(多模型数据流的表达力×执行效率折中);v0.9.0(组织迁移 verl-project、23.2k star)——DeepSeek-V4 GRPO 端到端、mlite 后端、delta sharded checkpoint 2.4×、TIS 进主干(D27 IS 修正派框架化);生态平台:50+ 衍生与官方 vla/Tinker/Omni 系。核心节 verl-on-Ascend:独立 ascend_tutorial 文档体系、GRPO/DAPO/PPO/GSPO/SAPO 全覆盖、模型至 DeepSeek-V3 671B 与 Qwen3.5-122B、Atlas 800T A3 社区实践——D13 昇腾方案 trainer 选型正式更新为 verl-Ascend 主线。",
+      "date": "2026-08-27",
+      "tags": [
+        "verl",
+        "HybridFlow",
+        "RL-frameworks",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-33-verl.md"
+    },
     {
       "id": "dispatch-31-olmo3",
       "title": "Dispatch 31 · 详解 OLMo 3 工作体系:model flow 全开放与可复现 RLVR 的天花板",
