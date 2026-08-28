@@ -1,6 +1,68 @@
 {
-  "updated": "2026-08-13",
+  "updated": "2026-08-27",
   "items": [
+    {
+      "title": "950DT\"8 月上华为云\"核验:截至 08-27 无公开兑现证据",
+      "org": "华为云",
+      "year": "2026-08",
+      "category": "hardware",
+      "innovation": "6 月高调预告的 950DT 云上部署在承诺月末仍无上线公告、首批用户或训练数字;与软件层实锤(vLLM-Ascend 已支持 950 上 V4 端到端)形成公开性反差",
+      "analysis": "Innovation:核验结论——全网仍只有 2026-06 初华为云 INSPIRE 大会的厂商预告,无 8 月的开服公告;传闻的\"DeepSeek 依托 950DT 发 V4.2\"未发生。Performance:间接旁证为 vLLM-Ascend v0.23.0(08-16)合入 Ascend 950 上 DeepSeek V4 端到端支持,说明 950 系硬件在头部客户处真实运转,但华为选择不公开宣发。对 RL-on-NPU 意义:950DT(训练+decode 向)是 HiF8 训练与大规模 RL-on-950 的硬件前提,其公开可用时间直接决定 D27 圈出的 HiF8×RL 机会窗口何时可执行;要么延期、要么对首批客户静默开放,后续以华为云公告为准。",
+      "url": "https://www.trendforce.com/news/2026/06/08/news-huawei-brings-forward-ascend-950dt-deployment-to-august-deepseek-v4-2-seen-as-potential-early-adopter/",
+      "tags": [
+        "950DT",
+        "华为云",
+        "verification"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "CANN HiF8 算子开源兑现(amct 仓 hifloat8_cast)",
+      "org": "华为 CANN",
+      "year": "2026-08",
+      "category": "software",
+      "innovation": "HiF8 量化算法与 HiFloat8 Cast 算子源码开源于 CANN 社区 AMCT 仓:encode/decode 双向,A2 平台实测约 4GB/s 吞吐,兼容 A2/A3/昇腾 950",
+      "analysis": "Innovation:D27 追踪的关键验证点落地——HiF8 从论文格式(arXiv 2409.16626)与 GCC 团体标准走到可读源码,数值语义可逐行审计。Performance:A2 实测约 4GB/s 转换吞吐(厂商口径);CANN 全量算子承诺 9 月底前上 GitCode、加速库/图引擎/MindIE 12 月底,仍待验。对 RL-on-NPU 意义:HiF8 QAT/rollout 实验的软件前提已具备一半(转换算子在,训练 recipe 与 GEMM 路径待 950DT 硬件公开可用);与 align-probe(D13)配合可直接开展 HiF8 数值一致性测量。",
+      "url": "https://cann.csdn.net/6a86da9410ee7a33f29d3445.html",
+      "tags": [
+        "HiF8",
+        "CANN",
+        "开源",
+        "量化"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "vLLM-Ascend v0.23.0 正式版(950 上 DeepSeek V4 端到端)",
+      "org": "vLLM-Ascend 社区",
+      "year": "2026-08",
+      "category": "software",
+      "innovation": "对齐上游 vLLM v0.23.0;Ascend 950 上 DeepSeek V4 端到端支持(DSA attention、MTP、分段图执行、MXFP 量化),新增 GLM-5.2/Qwen3.5/3.6 与 Mamba 混合注意力前缀缓存、CPU/SSD offload",
+      "analysis": "Innovation:950 系芯片的推理软件栈先于硬件公开可用而成熟——DSA 稀疏注意力、MTP 投机与 MXFP 量化在 NPU 侧打通,是 D26/D27 讨论的注意力与数值路线在国产栈的落地实证。Performance:正式版(非 rc)发布节奏与上游 vLLM 保持同步,模型覆盖持续扩展。对 RL-on-NPU 意义:rollout 引擎侧对 950 就绪意味着 RL-on-950 的推理半边已可搭建;结合 verl 昇腾一等公民支持(ascend_tutorial),软件栈瓶颈进一步收窄到训练侧 kernel 与硬件公开可用性。",
+      "url": "https://github.com/vllm-project/vllm-ascend/releases",
+      "tags": [
+        "vLLM-Ascend",
+        "950",
+        "DeepSeek-V4",
+        "推理"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "七部委算力行动方案:国产化采购硬性红线(待正式文本)",
+      "org": "七部委",
+      "year": "2026-08",
+      "category": "policy",
+      "innovation": "《2026-2028 年算力基础设施建设行动方案》要求 2026-09 起央国企/党政机关新建智算中心整体国产化采购比例≥75%,财政全额出资项目 AI 加速卡国产占比≥80%,未达标暂停能耗指标审批",
+      "analysis": "Innovation:从补贴激励转向硬性比例约束+能耗审批挂钩,是国产算力需求侧最强的政策信号。Performance:细节来自二手解读源,正式文本未直接检索到,数字以官方发布为准(provisional)。对 RL-on-NPU 意义:若坐实,昇腾/寒武纪/摩尔线程的需求确定性大幅增强,RL-on-NPU 从技术可行性问题进一步变为工程必答题;与 8 月寒武纪/摩尔线程财报放量(既有卡)互为印证。",
+      "url": "https://zhuanlan.zhihu.com/p/2061116944804271960",
+      "tags": [
+        "政策",
+        "国产化",
+        "算力"
+      ],
+      "confidence": "secondary"
+    },
     {
       "title": "Atlas 950 超节点 WAIC 真机亮相(获 SAIL 奖;950DT 上云仍未兑现)",
       "org": "华为 (WAIC 2026)",
@@ -298,6 +360,7 @@
       "year": "2025",
       "category": "hardware",
       "innovation": "Dual-die flagship positioned against the H100",
+      "analysis": "What it is: 双 die 封装的昇腾旗舰,约 780–800 TFLOPS FP16、128GB HBM(聚合约 3.2TB/s),对标 H100——dense FP16 吞吐约达其 80%,但受制于较旧的 7nm 工艺与较慢显存,能效仍落后;规格出自分析师报道,应视为近似值(secondary)。Why it matters: 它是 CloudMatrix 384 超节点的基础芯片,代表 910B 之后、950 系之前国产训练算力的过渡主力。对 RL-on-NPU 的意义: 128GB 显存是相对 910B(64GB)最实质的升级——sleep-mode 缺失造成的训推显存争用在更大 HBM 下得到直接缓解,可承载更大的 colocate 模型或更长的 rollout;但其规格与供给均属二手口径,RL 实验规划仍应以 910B 为已验证基线、910C 为待实测的上行选项,并优先在 CM384 这类聚合形态中评估其价值。",
       "summary": "~780–800 TFLOPS FP16, 128 GB HBM (~3.2 TB/s aggregate), reaching ~80% of H100 dense FP16 throughput but trailing on efficiency (older 7nm, slower memory). The basis of CloudMatrix 384. Specs are from analyst reporting — treat as approximate.",
       "url": "https://www.trendforce.com/news/2025/03/13/news-huaweis-ascend-910c-takes-on-nvidia-as-chinas-ai-race-heats-up-more-alleged-details/",
       "tags": [
@@ -313,6 +376,7 @@
       "year": "2025-04",
       "category": "hardware",
       "innovation": "384× 910C supernode — answer to NVIDIA GB200 NVL72",
+      "analysis": "What it is: 384 颗 910C 组成的超节点,横跨 16 机柜、经 6,912 条 400G 光链路全互联,约 300 PFLOPS BF16 与 49TB HBM(约为 NVL72 的 2 倍算力、3.5 倍显存),代价是约 559kW 功耗、单位 FLOP 功耗约 2.3 倍(分析师口径)。Why it matters: 它把「以规模换单芯效率」的路线做成了实物——用聚合带宽与显存总量弥补单芯片工艺与能效差距,正面对标 GB200 NVL72。对 RL-on-NPU 的意义: 大规模训推分离 RL 恰好吃聚合资源——rollout 池与训练池可在同一超节点内划分,49TB 总 HBM 对长上下文 rollout 与大 MoE 都是实质空间;昇腾栈已在 384 卡超节点规模演示过前沿级 RL,CM384 因此是 950 SuperPod 落地之前「前沿规模 RL-on-Ascend」唯一的现实硬件底座。",
       "summary": "384 910C NPUs across 16 racks deliver ~300 PFLOPS BF16 and ~49 TB HBM (≈2x compute, ~3.5x HBM of NVL72), fully meshed via 6,912 400G optical links — but at ~559 kW and ~2.3x power-per-FLOP. Brute-force scale compensating for weaker per-chip efficiency.",
       "url": "https://newsletter.semianalysis.com/p/huawei-ai-cloudmatrix-384-chinas-answer-to-nvidia-gb200-nvl72",
       "tags": [
@@ -358,6 +422,7 @@
       "year": "8.0 → 9.0 (2024–2026)",
       "category": "software-stack",
       "innovation": "Ascend's full compute SDK — analogue of CUDA+cuDNN+NCCL",
+      "analysis": "What it is: 昇腾的完整计算 SDK——分层的驱动/运行时/库体系,包含 AOL 加速库、对标 NCCL 的 HCCL 集合通信库、OPP 算子包与图/离线引擎,地位相当于 CUDA+cuDNN+NCCL 的总和;华为已于 2025 年 8 月宣布昇腾软件栈全面开源。Why it matters: 整个 Ascend 生态(torch_npu、vLLM-Ascend、MindSpeed 系)都建立在 CANN 之上,其版本演进(8.0→9.0)与算子覆盖决定了上层一切能力的边界。对 RL-on-NPU 的意义: RL 栈的三大痛点全部落在 CANN 层——算子缺口需在 OPP/Ascend C 层补齐、训推权重同步依赖 HCCL 成熟度、数值漂移源于算子语义与累加顺序差异;开源承诺若充分兑现,社区将可直接审计并修补这些底层环节,是 RL-on-Ascend 基础设施中最值得跟踪的单点。",
       "summary": "Layered driver/runtime/libraries including AOL acceleration libs, the HCCL collective-comms library (≈NCCL), the OPP operator package, and graph/offline engines. Huawei announced a full open-source release of the Ascend software stack in August 2025.",
       "url": "https://www.hiascend.com/en/software/cann",
       "tags": [
@@ -433,6 +498,7 @@
       "year": "tracks PyTorch 2.x",
       "category": "training-framework",
       "innovation": "Official out-of-tree PyTorch backend exposing NPUs as a device",
+      "analysis": "What it is: 官方 out-of-tree PyTorch 后端,把 NPU 以 'npu' 设备暴露给 PyTorch,现有代码可近乎原样迁移,并提供 torch_npu.npu_fusion_attention 等融合算子作为 FlashAttention 替代,版本跟随 PyTorch 2.x。Why it matters: 几乎所有第三方 LLM/RL 框架(verl、MindSpeed、torchtune、LLaMA-Factory)的 Ascend 支持都建立在它之上——它是 PyTorch 生态通往 NPU 的唯一正门,其质量即整个移植生态的地板。对 RL-on-NPU 的意义: RL 框架移植的可行性与工作量直接由 torch_npu 的算子覆盖与语义保真决定;npu_fusion_attention 与 GPU FlashAttention 的数值差异是训推一致核查(align-probe 类)的重点对象,而它对 PyTorch 新特性的跟进速度,决定上游 RL 框架新功能在 Ascend 上的可用时滞。",
       "summary": "Lets existing PyTorch code run on Ascend via the 'npu' device and ops like torch_npu.npu_fusion_attention (the FlashAttention substitute). The foundation nearly all third-party LLM/RL frameworks (verl, MindSpeed, torchtune, LLaMA-Factory) build on.",
       "url": "https://github.com/Ascend/pytorch",
       "tags": [
@@ -523,6 +589,7 @@
       "year": "v0.7.3 → v0.18.0 (2025–2026)",
       "category": "inference",
       "innovation": "Official community plugin — de-facto open inference path",
+      "analysis": "What it is: vLLM 官方社区插件(华为深度参与),从 v0.7.3 演进至 v0.18.0 稳定版,在 Atlas A2/A3 上支持 dense/MoE/embedding/多模态模型与大规模专家并行,依赖 CANN 9.x + torch_npu,并紧密跟进 DeepSeek-V3/R1 等前沿模型。Why it matters: 它是 Ascend 上事实标准的开放推理路径,更是绝大多数 RL 框架在 NPU 上的 rollout/generation 引擎——推理栈的能力边界就是 RL rollout 的能力边界。对 RL-on-NPU 的意义: RL-on-Ascend 的地基组件:其模型支持矩阵圈定可用 RL 底座、量化档位影响训推一致,而 sleep-mode 缺口(见 challenge 卡)是它对 RL 最大的未竟事项;HCCL 权重传输、KV offload、context-parallel 等后续特性(见对应版本卡)都以此仓库为载体,是本看板跟踪密度最高的软件项目。",
       "summary": "Supports dense, MoE, embedding, and multimodal LLMs with large-scale Expert Parallelism on Atlas A2/A3; requires CANN 9.x + torch-npu and tracks DeepSeek-V3/R1 closely. Also the rollout/generation engine most RL frameworks use on Ascend.",
       "url": "https://github.com/vllm-project/vllm-ascend",
       "tags": [
@@ -681,6 +748,7 @@
       "year": "2025",
       "category": "challenge",
       "innovation": "Long-tail ops missing; manual Ascend C kernels required",
+      "analysis": "What it is: 移植 GPU 栈到 Ascend 的长尾算子缺口——自动转换仅覆盖约 65% 的 PyTorch 算子,aclNN/Ascend C 层缺少长尾算子,移植者需手写 kernel(host 侧 tiling + device kernel、无隐式缓存),FlashAttention 必须替换为 npu_fusion_attention。Why it matters: 算子覆盖是一切上层框架能力的地板——每个缺失算子都意味着回退到低效实现或整条路径不可用,是 CUDA→Ascend 移植工作量的主要构成。对 RL-on-NPU 的意义: RL 栈叠加训练、推理与算法三层算子需求(融合 loss、采样算子、新型 attention),长尾缺口在 RL 场景被成倍放大;手写替代 kernel 引入的语义差异又是数值漂移的源头之一,与一致性问题互为因果——AscendCraft 类自动 kernel 生成与 CANN 开源是本看板跟踪的两条解法路线。",
       "summary": "Auto-conversion covers only ~65% of PyTorch ops and the aclNN/Ascend C stack lacks long-tail operators, so porters hand-write kernels (host-side tiling + device kernel, no implicit caches). FlashAttention specifically must be replaced by npu_fusion_attention.",
       "url": "https://cs.nju.edu.cn/tianchen/lunwen/2025/asplos25-yuhang.pdf",
       "tags": [
@@ -760,6 +828,7 @@
       "year": "2025",
       "category": "challenge",
       "innovation": "Chinese-first docs, smaller community, parallel toolchain",
+      "analysis": "What it is: 昇腾生态成熟度短板的汇总——核心文档与论坛以中文社区为主,工具链是平行体系(msprof/msSanitizer/msDebug 而非 Nsight/cuda-gdb),HCCL 集合通信的实战锤炼弱于 NCCL;并有报道称 DeepSeek 未能在昇腾上完成稳定的 R2 训练,转回 NVIDIA 训练、昇腾仅用于推理(中等信源,secondary)。Why it matters: 工具与社区成熟度决定问题定位效率——同样的数值漂移或集合通信故障,在 NPU 上的排查成本远高于 GPU。对 RL-on-NPU 的意义: RL 是对生态要求最苛刻的负载——训推两栈同时在线、故障面叠加,HCCL 稳定性与调试工具的短板被成倍放大;DeepSeek R2 传闻(若属实)是「训练侧成熟度落后推理侧」的最重信号,也解释了为何现阶段 RL-on-Ascend 应优先采用已验证配方与较小规模,并把可复现诊断工具(align-probe 类)视为高杠杆投入。",
       "summary": "Core docs/forums center on the Chinese-language Ascend Community; you learn a parallel toolset (msprof, msSanitizer, msDebug) instead of Nsight/cuda-gdb, and hit HCCL collective-comm errors less battle-tested than NCCL. DeepSeek reportedly could not complete a stable R2 Ascend training run, switching back to NVIDIA for training while keeping Ascend for inference.",
       "url": "https://www.theregister.com/2025/08/14/dodgy_huawei_deepseek/",
       "tags": [

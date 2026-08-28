@@ -1,7 +1,7 @@
 {
-  "updated": "2026-08-26",
+  "updated": "2026-08-27",
   "doc": "docs/2026-frontier-models.md",
-  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。 Kimi K3 数字为发布日自报,权重与技术报告尚未放出。 V4 列口径已含 V4-Flash-0731 与 V4-Pro-0813 GA(0813 公榜为自家 harness minimal 模式);Qwen3.8-Max(2.4T MoE)API 先行、权重 pending,暂不入列。",
+  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。 Kimi K3 数字为发布日自报,权重与技术报告尚未放出。 V4 列口径已含 V4-Flash-0731 与 V4-Pro-0813 GA(0813 公榜为自家 harness minimal 模式);Qwen3.8-Max(2.4T MoE)API 先行、权重 pending,暂不入列。 Qwen3.8-Max 权重 08-12 已放(纯文本/thinking 强制/专有许可),自报 OSWorld 86.1 无第三方复跑。",
   "models": {
     "columns": [
       "",
@@ -10,6 +10,7 @@
       "GLM-5.2",
       "LongCat-2.0",
       "Kimi K3",
+      "Qwen3.8-Max",
       "DeepSeek-V3.2 (ref)"
     ],
     "rows": [
@@ -20,6 +21,7 @@
         "2026-06",
         "2026-07",
         "2026-07",
+        "2026-08(权重 08-12)",
         "2025-12"
       ],
       [
@@ -29,6 +31,7 @@
         "open weights",
         "1.6T / ~48B act",
         "2.78T 总参 / 104.2B 激活(16-896 极稀疏)",
+        "约 2.4T 总参 / 95B 激活",
         "671B MoE"
       ],
       [
@@ -38,6 +41,7 @@
         "1M*",
         "1M (native)",
         "1M(原生)",
+        "开源版非 1M(完全体 1M 为 API 专属)",
         "128K"
       ],
       [
@@ -47,6 +51,7 @@
         "GLM-5 lineage",
         "LSA(细节待报告)",
         "KDA 线性 3:1 Gated MLA + AttnRes,NoPE",
+        "未详(报告未拆解)",
         "DSA (token top-k on MLA)"
       ],
       [
@@ -56,6 +61,7 @@
         "MIT",
         "open weights",
         "权重已开源(报告 2607.24653)",
+        "专有 qwen3.8-max 许可(商用分成条款)",
         "open weights"
       ],
       [
@@ -65,6 +71,7 @@
         "—",
         "—",
         "$15",
+        "—",
         "—"
       ],
       [
@@ -74,6 +81,7 @@
         "partial",
         "训练即国产芯片(HCCL,疑似 910C 未官宣,推测)",
         "未适配(权重未放;线性注意力算子 CANN 缺口,推测)",
+        "未适配(推测)",
         "ready"
       ]
     ]

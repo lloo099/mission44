@@ -574,6 +574,7 @@
       "year": "2024-11",
       "category": "algorithm",
       "innovation": "Replaces the reward model with a deterministic verifier",
+      "analysis": "Innovation: 把 RLHF 目标函数施加到可自动判定对错的任务上——数学、指令约束等输出经确定性验证器检查,验证通过得 1、否则 0,以规则验证器取代 reward model,在 Tülu 3 流水线中被提出并命名。Performance: 免除了 reward model 的训练与部署成本,也从源头规避了 RM 被 hack 的风险,成为其后绝大多数 reasoning RL 工作的共同起点。对 RL-on-NPU 的意义: 奖励端只是规则判定、无需额外模型前向,显存与算子负担极小,天然适合 64GB 910B 等内存受限环境;作为 2025-26 RLVR 浪潮的源头范式,它也是 Ascend 上 GRPO/R1-Zero 类复现的默认奖励形态,是任何 NPU RL 基准绕不开的基础配方。",
       "summary": "RL with Verifiable Rewards applies the RLHF objective to checkable tasks (math, instruction constraints), giving reward 1 for verified-correct outputs and 0 otherwise. Introduced/named in the Tülu 3 pipeline, it underpins most subsequent reasoning-RL work.",
       "url": "https://arxiv.org/abs/2411.15124",
       "tags": [
@@ -589,6 +590,7 @@
       "year": "2024-02",
       "category": "algorithm",
       "innovation": "Leave-one-out baseline; unbiased, low-variance, no critic",
+      "analysis": "Innovation: 对同一 prompt 采样多条补全,每条的 baseline 取同组其余样本的平均奖励(leave-one-out),得到无偏、低方差且无需 critic 的多样本 REINFORCE 估计器,把 RLHF 的策略优化简化到最朴素的形态。Performance: 在 6.9B 规模上比调优后的 PPO 约快 3 倍、省约 70% 显存,证明去 critic 化在效果与成本上双赢。对 RL-on-NPU 的意义: 显存是 64GB 910B 上 RL 的首要约束,RLOO 免去 value 网络整份模型的显存,是与 GRPO 同谱系的轻量候选;其组内基线结构与 GRPO 一致,便于在 MindSpeed-RL/verl-on-Ascend 已有的组采样管线上低成本切换对照,适合作为 NPU 上算法端消融实验的基线之一。",
       "summary": "Each completion's baseline is the average reward of the other samples for the same prompt, giving a simple multi-sample REINFORCE estimator. Trains ~3x faster with ~70% less memory than tuned PPO at 6.9B scale.",
       "url": "https://arxiv.org/abs/2402.14740",
       "tags": [
@@ -712,6 +714,7 @@
       "year": "2025-03",
       "category": "algorithm",
       "innovation": "Removes GRPO length & std-norm biases that inflate response length",
+      "analysis": "Innovation: 诊断出 GRPO 目标函数中的优化偏差——长度归一与组内 std 归一会系统性奖励更长而非更好的响应,导致响应长度膨胀;去掉这两处偏置即得 Dr. GRPO,一个更 token 高效的修正版优化器。Performance: 配合极简 R1-Zero 配方,7B base 模型在 AIME 2024 达到 43.3%,以更短输出取得同等或更好的推理性能。对 RL-on-NPU 的意义: 响应长度直接决定 rollout 的 KV cache 占用与解码墙钟,而 rollout 正是 NPU RL 显存与时间的大头——抑制无谓的长度膨胀等于直接节省 NPU 上最贵的资源;该修正只改 loss 端归一化项、不涉及任何 CUDA 特性,在 Ascend RL 栈上移植成本几乎为零,适合作为 NPU GRPO 基线的默认修正项。",
       "summary": "Diagnoses an optimization bias in GRPO that rewards longer (not better) responses and fixes it for a more token-efficient optimizer. A minimalist R1-Zero recipe with the fix hits 43.3% on AIME 2024 with a 7B base.",
       "url": "https://arxiv.org/abs/2503.20783",
       "tags": [
@@ -727,6 +730,7 @@
       "year": "2025-04",
       "category": "algorithm",
       "innovation": "Value-based PPO for long-CoT with length-adaptive GAE",
+      "analysis": "Innovation: 在 GRPO 系去 critic 化浪潮中反向重申价值函数路线——面向长 CoT 的 value-based PPO,整合 DAPO/VC-PPO 的工程技巧,引入 Length-Adaptive GAE 与 Decoupled GAE 处理长序列优势估计,辅以正例 LM loss。Performance: Qwen2.5-32B 上约 5,000 步达到 AIME 2024 60.4 的 SOTA,说明长推理场景下精心设计的 critic 仍有信息增益。对 RL-on-NPU 的意义: critic 意味着额外一份模型的显存与前向开销,在 64GB 910B 上代价比 GPU 侧更沉重——VAPO 提示的取舍是「步数效率 vs 单步成本」:若其步数优势成立,总算力受限的 NPU 集群反而可能整体受益;但落地前需先确认 critic 训练在 NPU 数值漂移环境下的稳定性,适合作为 GRPO 系之外的对照路线纳入 Ascend RL 基准。",
       "summary": "Reasserts the critic paradigm for long reasoning, combining DAPO/VC-PPO tricks with Length-Adaptive and Decoupled GAE plus positive-example LM loss. Scores SOTA 60.4 on AIME 2024 on Qwen2.5-32B in ~5,000 steps.",
       "url": "https://arxiv.org/abs/2504.05118",
       "tags": [
@@ -774,6 +778,7 @@
       "year": "2025-05",
       "category": "algorithm",
       "innovation": "Prolonged RL uncovers genuinely new reasoning strategies",
+      "analysis": "Innovation: 主张延长 RL 训练(prolonged RL)能让模型发现 base 模型中原本不存在的新推理策略,而非仅放大既有行为;技术上以 KL 控制、参考策略定期重置与多样化任务套件稳定超长 RL 运行。Performance: 产出 Nemotron-Research-Reasoning-Qwen-1.5B,为「RL 能扩展推理边界」提供了正面证据,与 1-shot RLVR/Spurious Rewards 的「RL 只是激发潜能」一派形成关键对照。对 RL-on-NPU 的意义: 超长 RL 运行会放大一切系统性问题——数值漂移随步数累积、集群稳定性与故障恢复被反复考验,恰是 Ascend 栈的薄弱环节;其 KL 控制与参考策略重置属纯算法层稳定器、可直接移植,为 NPU 上的长周期 RL 实验提供了现成的稳定性配方。",
       "summary": "Stabilizes very long RL runs via KL control, reference-policy resetting, and a diverse task suite, showing prolonged RL expands reasoning boundaries rather than just amplifying base behaviors. Produced Nemotron-Research-Reasoning-Qwen-1.5B.",
       "url": "https://arxiv.org/abs/2505.24864",
       "tags": [
@@ -841,6 +846,7 @@
       "year": "2025-03",
       "category": "model",
       "innovation": "32B dense rivals 671B R1 via scaled RL with rule-based verifiers",
+      "analysis": "Innovation: 用规则验证器驱动的 scaled RL 从冷启动 checkpoint 出发,先在数学/代码上以 outcome verifier 训练、再接通用阶段,使 32B dense 模型达到 671B 级 DeepSeek-R1 的推理水平,并以 Apache 2.0 开源。Performance: 以远小的参数规模对齐 R1 级推理,是「中等规模 dense + 充分 RL」路线最有说服力的实证之一。对 RL-on-NPU 的意义: 32B dense 是 910B 集群上现实可负担的 RL 目标规模——无 MoE 路由的训推一致难题,dense 结构对算子覆盖的要求也最低;Qwen 家族在 vLLM-Ascend 支持最全(本卡标注 ascend ready),QwQ 的分阶段 verifier RL 配方因此是 Ascend 上复现前沿推理 RL 性价比最高的参照物之一。",
       "summary": "Applies scaled RL from a cold-start checkpoint, first on math/coding with outcome verifiers then a general stage. Matches DeepSeek-R1-class reasoning at 32B, released Apache 2.0.",
       "url": "https://qwenlm.github.io/blog/qwq-32b/",
       "tags": [
@@ -858,6 +864,7 @@
       "year": "2025-05",
       "category": "model",
       "innovation": "Unified thinking/non-thinking modes with a tunable thinking budget",
+      "analysis": "Innovation: 在同一模型内统一 thinking/non-thinking 两种模式并提供可调 thinking budget,由四阶段后训练流水线(长 CoT SFT → 推理 RL → 模式融合 → 通用 RL)实现;家族覆盖 0.6B–235B 的 dense 与 MoE。Performance: 技术报告特别指出,对小模型而言 strong-to-weak 蒸馏能以约 1/10 成本超过直接 RL——这对后训练预算分配是重要的实证信号。对 RL-on-NPU 的意义: 本卡标注 ascend ready(vLLM-Ascend 支持、W8A8),Qwen3 系是 NPU 上 RL 底座的默认候选谱系;其「小模型蒸馏优于 RL」的结论对算力受限的 Ascend 场景尤其有操作意义——小规模先蒸馏、把 RL 预算留给收益更高的中大规模;四阶段流水线也为 NPU 上组织后训练阶段提供了可直接套用的模板。",
       "summary": "Dense + MoE (0.6B–235B) integrate reasoning and fast modes in one model via a four-stage post-training pipeline (long-CoT SFT + RL + fusion + general RL). Notes strong-to-weak distillation beating RL at ~1/10 cost for small models.",
       "url": "https://arxiv.org/abs/2505.09388",
       "tags": [
@@ -892,6 +899,7 @@
       "year": "2025-06",
       "category": "model",
       "innovation": "Open hybrid (lightning-attention + MoE) reasoner trained with CISPO",
+      "analysis": "Innovation: 开源混合架构推理模型——lightning attention(线性注意力)与 MoE 结合,456B 总参/45.9B 激活、原生 1M 上下文,RL 端配套 CISPO(裁剪 IS 权重而非 token 更新)。Performance: 100K token 生成时长 CoT 的 FLOPs 约为 R1 的 25%;完整 RL 在 512 张 H800 上约三周(约 53.5 万美元)完成,是前沿规模 RL 成本最透明的公开数据点之一。对 RL-on-NPU 的意义: 线性注意力把 decode 成本从二次降为近线性,而 rollout 恰是 decode 密集负载——这类架构在带宽紧缺的 NPU 上理论收益更大;本卡标注 ascend partial(MiniMax 家族在 vLLM-Ascend 有 W8A8/QuaRot),lightning attention 算子在 Ascend 侧的覆盖情况是能否承接的关键,其公开的 RL 成本账目与 CISPO 配方对 NPU RL 预算规划亦有直接参考价值。",
       "summary": "456B total / 45.9B active, native 1M-token context; lightning attention makes long-CoT ~25% of R1's FLOPs at 100K tokens. Full RL on 512 H800s in three weeks (~$535K).",
       "url": "https://arxiv.org/abs/2506.13585",
       "tags": [
@@ -940,6 +948,7 @@
       "year": "2025-06",
       "category": "model",
       "innovation": "Ground-up async RL stack; strong reasoning from RL on text alone",
+      "analysis": "Innovation: Mistral 从零自建异步 RL 训练栈,Magistral Medium 仅用 RL(GRPO 基)从 Mistral Medium 3 训出、不依赖任何推理模型蒸馏,证明纯文本 RL 即可获得强推理;Small 版加冷启动蒸馏并以 Apache 2.0 开源。Performance: 其论文价值在于罕见地详细公开了工业级可扩展异步 RLVR 基建的设计细节,是同类系统论述中信息密度最高的之一。对 RL-on-NPU 的意义: 异步/训推分离是 Ascend 绕开 sleep-mode 缺失的主路线,Magistral 提供了「从零搭异步 RL 栈」的完整工业蓝图——权重同步、rollout 编排、staleness 处理等设计决策可直接对照到 NPU 场景;其「RL-only 不蒸馏」的结果也为 NPU 上无强教师模型可用时的后训练路线提供了信心。",
       "summary": "Magistral Medium trained by RL only (GRPO-based) on Mistral Medium 3; Small adds cold-start distillation (Apache 2.0). A rare detailed industrial account of scalable async RLVR infrastructure.",
       "url": "https://arxiv.org/abs/2506.10910",
       "tags": [
@@ -970,6 +979,7 @@
       "year": "2025-08",
       "category": "model",
       "innovation": "Hybrid reasoning MoE; ARC (agentic/reasoning/coding) post-training",
+      "analysis": "Innovation: 355B 总参/32B 激活的混合推理 MoE,单模型内置 thinking 与 direct 两种模式,后训练围绕 ARC(agentic/reasoning/coding)三能力组织——以专家模型迭代加 RL 的方式做能力融合,23T token 训练。Performance: 自报 AIME 2024 91.0%、SWE-bench Verified 64.2%;RLCS 训练法并延伸到 GLM-V 多模态,开源权重使其成为 agentic 后训练研究的重要底座。对 RL-on-NPU 的意义: 本卡标注 ascend partial——GLM 家族在 vLLM-Ascend 有支持(GLM-5 W8A8C8),4.5 属较旧世代;其意义更多在配方侧:ARC 三线并进的后训练组织方式与专家迭代融合路线,是 Ascend 上规划多能力 RL 后训练时可借鉴的结构模板,32B 激活规模也在 910B 集群可承受的范围内。",
       "summary": "355B total / 32B active MoE with thinking and direct modes, trained on 23T tokens with expert-model iteration + RL; 91.0% AIME 2024, 64.2% SWE-bench Verified. RLCS extends to multimodal in GLM-V.",
       "url": "https://arxiv.org/abs/2508.06471",
       "tags": [
@@ -1022,6 +1032,7 @@
       "year": "2024-05",
       "category": "framework",
       "innovation": "First Ray + vLLM RLHF framework; async agentic RL",
+      "analysis": "Innovation: 首个把 Ray + vLLM 组合成分布式 RLHF 方案的开源框架——Actor/Critic/Reward/Reference 四类模型经 Ray 分布到不同 GPU、DeepSpeed ZeRO-3 承载训练、vLLM 加速生成,支持 PPO/GRPO/REINFORCE++/DAPO 至 70B+ 规模,并扩展到异步 agentic RL。Performance: 作为早期确立「Ray 编排 + vLLM rollout」范式的框架,其架构被后续多个主流 RL 框架继承。对 RL-on-NPU 的意义: 本卡明确其 Ascend 支持状态为 WIP——相比 verl(已验证)与 ROLL(有第一方文档),OpenRLHF 是主流 RL 框架中 NPU 故事最不完整的一个,适配进度值得持续跟踪;其多模型分离部署的结构与 NPU 上训推分离的现实约束天然契合,一旦 vLLM-Ascend 后端接通,迁移路径相对清晰。",
       "summary": "Distributes Actor/Critic/Reward/Reference across GPUs on DeepSpeed ZeRO-3 + Ray + vLLM, supporting PPO/GRPO/REINFORCE++/DAPO at 70B+ scale. Ascend support is WIP.",
       "url": "https://github.com/OpenRLHF/OpenRLHF",
       "tags": [
@@ -1265,6 +1276,7 @@
       "year": "2025-03",
       "category": "trend",
       "innovation": "RL teaches interleaved multi-turn search within reasoning",
+      "analysis": "Innovation: 用 RL 教会模型在推理过程中自主交错发起多轮搜索查询——关键工程手段是把检索回来的 token 从 loss 中 mask 掉,只对模型自生成 token 计算策略梯度,从而稳定训练;检索时机与查询内容由任务奖励端到端塑造。Performance: Qwen2.5-7B 上较强 RAG 基线的 QA 准确率提升 41%,确立了「搜索行为可由 RL 习得」的范式。对 RL-on-NPU 的意义: 检索 token 掩码是 agentic RL 中处理工具返回内容的通用配方,属 loss 端数据处理、与硬件无关,可直接用于 Ascend 上的工具增强 RL;多轮搜索使 rollout 链路引入外部 IO 等待,天然契合异步 rollout 架构——这与 NPU 上绕开 sleep-mode 的训推分离路线同构,是 NPU agentic RL 合理的起步负载。",
       "summary": "The model autonomously issues search queries during reasoning, trained stably by masking retrieved tokens from the loss. +41% QA accuracy (Qwen2.5-7B) over strong RAG baselines.",
       "url": "https://arxiv.org/abs/2503.09516",
       "tags": [
@@ -1339,6 +1351,7 @@
       "year": "2025-04",
       "category": "trend",
       "innovation": "A single training example nearly matches thousands via RLVR",
+      "analysis": "Innovation: 证明单个训练样例的 RLVR 即可几乎追平数千样例——Qwen2.5-Math-1.5B 在 MATH500 上从 36.0% 升至 73.6%,且收益跨域泛化;分析显示效果主要由 policy-gradient loss 驱动。Performance: 与 Spurious Rewards 互为印证,构成「RLVR 主要在激发 base 模型潜能而非注入新能力」的最强证据链,直接动摇了「RL 数据越多越好」的默认假设。对 RL-on-NPU 的意义: 对算力受限的 Ascend 场景是重大利好——若极少样例即可兑现大部分 RLVR 收益,NPU 上的小规模 RL 实验(TRL-on-910B 级别)就足以验证配方,不必先建大集群;它也提示 NPU RL 基准设计应报告数据效率维度,并警惕把「激发潜能」误读为配方本身的能力增益。",
       "summary": "One example raises Qwen2.5-Math-1.5B MATH500 from 36.0% to 73.6% with cross-domain generalization. Strong evidence that RLVR largely elicits latent capability, driven mainly by the policy-gradient loss.",
       "url": "https://arxiv.org/abs/2504.20571",
       "tags": [
@@ -1354,6 +1367,7 @@
       "year": "2025-05",
       "category": "trend",
       "innovation": "Clip-Cov / KL-Cov prevent policy-entropy collapse",
+      "analysis": "Innovation: 把 RL 训练后期的性能饱和归因于策略熵坍缩,并给出机制解释——熵的变化由动作 log-prob 与优势的协方差驱动;据此提出 Clip-Cov 与 KL-Cov,对高协方差 token 施加裁剪或 KL 惩罚以维持探索。Performance: 成为被广泛引用的熵坍缩修复方案,为「何时该干预熵」提供了可计算的判据,而非笼统的熵正则项。对 RL-on-NPU 的意义: 熵坍缩是 GRPO 系长跑的共性病,与硬件无关但在 NPU 上更难察觉——数值漂移本身也会扰动熵统计,二者混淆会误导调参;Clip-Cov/KL-Cov 只涉及 loss 端逐 token 统计量,移植到 Ascend 成本极低,且其协方差判据可顺带作为训练健康度指标纳入 NPU RL 监控面板,与 align-probe 类一致性工具形成互补。",
       "summary": "Links performance saturation to entropy collapse via log-prob/advantage covariance and clips/penalizes high-covariance tokens to sustain exploration. A widely-cited entropy-collapse fix.",
       "url": "https://arxiv.org/abs/2505.22617",
       "tags": [
@@ -1369,6 +1383,7 @@
       "year": "2025-04",
       "category": "trend",
       "innovation": "Majority-vote pseudo-reward enables RL on unlabeled test data",
+      "analysis": "Innovation: 在无 ground truth 的测试数据上做 RL——对同一问题采样多条回答,以多数投票的自洽共识充当伪奖励,把 RLVR 的验证器替换为模型自身的一致性信号,训练全程无需标注。Performance: 仅用无标注测试数据即把 Qwen2.5-Math-7B 在 AIME 2024 的 pass@1 提升约 159%,展示了测试期自我提升的上限。对 RL-on-NPU 的意义: 免标注意味着 NPU 上可用任意领域数据直接起 RL 实验、绕开验证器工程;但多数投票要求每题采样大量回答,rollout 开销比标准 RLVR 更重——在 rollout 已是 910B 瓶颈的前提下,TTRL 类方法更依赖量化 rollout、投机解码等生成端加速;且伪奖励完全由模型自身输出分布决定,训推数值漂移会直接污染奖励信号,一致性核查在此类方法上的重要性被进一步放大。",
       "summary": "Estimates rewards at inference from self-consistency voting, needing no ground truth. Boosts Qwen2.5-Math-7B pass@1 on AIME 2024 by ~159% using only unlabeled test data.",
       "url": "https://arxiv.org/abs/2504.16084",
       "tags": [
