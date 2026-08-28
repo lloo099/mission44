@@ -1,14 +1,18 @@
 # RL-on-NPU Research Dashboard
 
 A lightweight, zero-build **research dashboard** for tracking the intersection of
-three fast-moving areas, so you can pick a concrete project to work on:
+four fast-moving fronts, so you can pick a concrete project to work on:
 
-1. **Reinforcement Learning for LLMs** — RLHF, GRPO, RLVR, DPO and successors, reasoning models, training frameworks.
-2. **Ascend / NPU ecosystem** — hardware (910B/910C), CANN, MindSpore/MindSpeed, vLLM-Ascend, and the state of RL-on-Ascend.
-3. **LLM modeling advances** — MoE, attention variants, long context, low-precision training that matter on memory-constrained NPUs.
+1. **Reinforcement Learning for LLMs** — GRPO/RLVR and successors, agentic RL, agent harnesses and evaluation methodology, training frameworks (verl / slime / prime-rl / MindSpeed-RL / open-instruct).
+2. **Ascend / NPU ecosystem** — hardware (910B/910C/950), CANN, MindSpeed, vLLM-Ascend, HiF8/HiF4 numerics, and the state of RL-on-Ascend.
+3. **LLM modeling advances** — MoE, attention routes (sparse / linear / hybrid), native multimodality, long context, low-bit training.
+4. **The open-model ecosystem** — from fully-open (OLMo model flow) to weights-only releases, with provenance discipline throughout.
 
-Plus a synthesized **Project Ideas** section with impact / difficulty / novelty ratings,
-and a **Live Papers** feed pulled from arXiv.
+Content: **32 in-depth dispatches + an architecture survey** (Blog tab, connected by an
+interactive 知识地图 / knowledge map), **250+ curated data cards** across four domain tabs,
+a synthesized **Project Ideas** section with impact / difficulty / novelty ratings, a **Live
+Papers** feed pulled daily from arXiv, and per-post **share snapshot pages** (`p/<id>.html`)
+with dedicated OG cards for link previews and search indexing.
 
 ## Quick start
 
@@ -58,9 +62,25 @@ data/
   ideas.json          # project ideas (synthesized)
   feed_pinned.json    # Live Papers — curated highlights (edit this)
   feed.json           # Live Papers — generated: pinned + fresh arXiv (do not hand-edit)
-scripts/fetch_arxiv.py
-.github/workflows/refresh-feed.yml   # daily auto-refresh of feed.json
+  agentic.json        # Agentic RL entries + trends (curated)
+  compare.json        # Overview frontier-model comparison table
+  blog.json           # blog index (32 dispatches + survey)
+  blog-map.mmd        # knowledge-map mermaid source (Blog tab)
+docs/
+  blog/dispatch-*.md  # the dispatches (mermaid diagrams render natively)
+  2026-h1-architecture-survey.md
+p/<id>.html           # per-post static share snapshots (generated)
+assets/og/<id>.png    # per-post OG share cards (generated)
+sitemap.xml           # generated; lists homepage + snapshots
+tools/validate_mermaid.mjs      # CI-grade mermaid syntax check for all posts
+scripts/fetch_arxiv.py          # Live Papers refresh
+scripts/build-share-pages.mjs   # regenerate OG cards + snapshots + sitemap
+.github/workflows/    # daily feed refresh · agentic refresh · share-page rebuild · CI
 ```
+
+New dispatch checklist: drop the markdown in `docs/blog/`, prepend an entry in `data/blog.json`,
+add the post to the knowledge map (`data/blog-map.mmd` + `MAP_CLUSTERS` in `js/app.js`), run
+`node tools/validate_mermaid.mjs docs/blog/<file>.md` and `node scripts/build-share-pages.mjs`.
 
 ## Editing content
 

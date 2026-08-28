@@ -500,6 +500,8 @@ table.cmp td.cmp-none { color: var(--bad-fg); }
 .map-cluster-name { font-size: 11.5px; color: var(--dim); min-width: 96px; }
 .map-chip { font-size: 11.5px; border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; color: var(--text-soft); text-decoration: none; transition: border-color .12s, color .12s; }
 .map-chip:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.map-chip-new { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.map-chip-new::after { content: "●"; font-size: 7px; vertical-align: super; margin-left: 3px; }
 
 .blog-index { display: grid; gap: 14px; max-width: 760px; }
 .blog-card { display: block; text-decoration: none; color: inherit; border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; background: var(--bg-2, rgba(255,255,255,.015)); transition: border-color .15s, transform .15s, background .15s; }

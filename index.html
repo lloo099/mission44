@@ -63,7 +63,8 @@
     <button class="tab" data-tab="ascend" role="tab" id="tab-ascend" aria-controls="ascend" aria-selected="false" tabindex="-1">Ascend / NPU</button>
     <button class="tab" data-tab="modeling" role="tab" id="tab-modeling" aria-controls="modeling" aria-selected="false" tabindex="-1">LLM Modeling</button>
     <button class="tab" data-tab="live" role="tab" id="tab-live" aria-controls="live" aria-selected="false" tabindex="-1">Live Papers</button>
-    <button class="tab" data-tab="training" role="tab" id="tab-training" aria-controls="training" aria-selected="false" tabindex="-1">Training Curves</button>
+    <!-- Training Curves tab hidden while data/curves.json has no real runs; direct link #training still works -->
+    <button class="tab" data-tab="training" role="tab" id="tab-training" aria-controls="training" aria-selected="false" tabindex="-1" hidden>Training Curves</button>
     <button class="tab" data-tab="arch" role="tab" id="tab-arch" aria-controls="arch" aria-selected="false" tabindex="-1">NPU 架构</button>
     <button class="tab" data-tab="timeline" role="tab" id="tab-timeline" aria-controls="timeline" aria-selected="false" tabindex="-1">时间线</button>
     <button class="tab" data-tab="blog" role="tab" id="tab-blog" aria-controls="blog" aria-selected="false" tabindex="-1">Blog</button>

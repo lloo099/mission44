@@ -204,12 +204,13 @@ async function wireBlog() {
     const m = id.match(/^dispatch-(\d+)/);
     return m ? "D" + m[1] : "综述";
   };
+  const newest = new Set(posts.slice(0, 3).map((p) => p.id)); // highlight the 3 latest posts
   mapEl.innerHTML = '<summary>🗺️ 知识地图 — ' + posts.length + ' 篇的主题脉络与阅读路径</summary>'
     + '<div class="blog-map-diagram"><div class="mermaid"></div></div>'
     + '<div class="blog-map-chips">' + MAP_CLUSTERS.map(([name, ids]) =>
       '<div class="map-cluster"><span class="map-cluster-name">' + escapeHtml(name) + "</span>"
       + ids.filter((id) => byId[id]).map((id) =>
-        '<a class="map-chip" href="#blog/' + escapeAttr(id) + '" title="' + escapeAttr((byId[id] || {}).title || id) + '">' + chipLabel(id) + "</a>").join("")
+        '<a class="map-chip' + (newest.has(id) ? " map-chip-new" : "") + '" href="#blog/' + escapeAttr(id) + '" title="' + escapeAttr((byId[id] || {}).title || id) + '">' + chipLabel(id) + "</a>").join("")
       + "</div>").join("") + "</div>";
   idx.parentNode.insertBefore(mapEl, idx);
   let mapLoaded = false;
