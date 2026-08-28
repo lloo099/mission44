@@ -362,6 +362,13 @@ D26 的结论"FP4 代差对国产栈最不利"需要细化为三层(以下为分
 - **D02/D09(维持)**:FP8 rollout 框架默认化与 Miles 统一管线的判断被本次调研进一步证实,新增 Jet-RL/QaRL/AIS 为两派谱系代表。
 - **新增待办**:两派(IS 修正 vs 数值对齐)头对头比较、FP8 优化器 × RL、低比特 agentic 训练,均为公开空白。
 
+## 8 · 跟进(2026-08-27):HiF8 算子开源兑现
+
+本文"下一步看什么"的两项已有结果:
+
+- **CANN HiF8 算子开源:已兑现。** HiF8 量化算法与 HiFloat8 Cast 算子源码开源于 CANN 社区 AMCT 仓(gitcode.com/cann/amct,路径 amct_ops/hifloat8_cast,提供 encode/decode,A2 平台实测约 4GB/s 吞吐,兼容 A2/A3/昇腾 950;[工程化文章](https://cann.csdn.net/6a86da9410ee7a33f29d3445.html))。第 6 节"CANN recipe 尚在宣布将开源阶段"的表述据此更新;CANN 全量算子承诺 9 月底前上 GitCode,仍待验。
+- **950DT"8 月上华为云":截至 08-27 无公开兑现证据。** 全网仍只有 6 月厂商预告,无上线公告、首批用户或训练数字;间接旁证是 vLLM-Ascend v0.23.0(08-16)已合入 Ascend 950 上 DeepSeek V4 端到端支持(DSA attention/MTP/MXFP 量化)——950 系硬件在头部客户处真实运转,但华为选择不公开宣发,与 6 月高调预告形成反差。HiF8 训练的第一份公开实践仍未出现。
+
 ## 下一步看什么
 
 1. **950DT 2026-08 云上部署**:HiF8 训练首次具备可运行硬件,关注首批公开训练数字与 CANN HiF8 recipe 的实际开源。
