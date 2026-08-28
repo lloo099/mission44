@@ -35,6 +35,8 @@ flowchart LR
         N22["D22 · DeepSWE 与 rLLM"]
         N29["D29 · DeepSeek Harness"]
         N31["D31 · OLMo 3 全开放体系"]
+        N32["D32 · MindSpeed-RL 谢幕"]
+        N33["D33 · verl 接棒"]
     end
     subgraph NPU ["昇腾落地"]
         N03["D03 · 昇腾 950"]
@@ -66,6 +68,8 @@ flowchart LR
     N29 -. "harness 即分数延伸" .-> N30
     N12 --> N30
     N20 -. "开放度光谱对照" .-> N31
+    N19 -. "官方线与社区线" .-> N32
+    N32 -. "谢幕与接棒" .-> N33
     N30 -. "去污染负对照" .-> N31
     N03 --> N13
     N20 -. "规模实证互补" .-> N21
