@@ -1,7 +1,21 @@
 {
-  "updated": "2026-08-27",
+  "updated": "2026-08-28",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-34-glm-5-3",
+      "title": "Dispatch 34 · GLM-5.2 到 5.3:同一基座上的后训练 scaling 范本",
+      "subtitle": "两代对照详解(承接 D06 的 GLM-5.2 深挖):GLM-5.3(08-14)基座与 5.2 完全相同(753B/A40B MoE、1M 上下文),全部提升来自后训练——长程环境规模扩大数十倍、类型扩到安全漏洞发现、时长增加;第三方 AA 智能指数 53→60 与 Kimi K3 并列开源第一(独立评分,自报跑分待复现)。训练栈=slime 异步 RL(全系共用)+ SAO with compaction(压缩片段上直接训练=上下文层训推一致)+ IndexShare(每 4 层共享 indexer,per-token FLOPs 降 2.9×)+ SFT 阶段 INT4 QAT 位级一致 kernel;与 D27 数值/量化两层合成完整训推一致三层。网络安全差异化主打(自报 2436 漏洞账本,仅 2% 公开)。GLM-5.3-Flash(320B-A18B,MIT)全程国产芯片训练;5.3 权重延期。",
+      "date": "2026-08-28",
+      "tags": [
+        "GLM-5.3",
+        "GLM-5.2",
+        "post-training-scaling",
+        "slime",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-34-glm-5-3.md"
+    },
     {
       "id": "dispatch-32-mindspeed-rl",
       "title": "Dispatch 32 · 详解 MindSpeed-RL:昇腾官方 RL 框架的成绩单与谢幕",

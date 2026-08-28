@@ -21,6 +21,7 @@ flowchart LR
         N21["D21 · LongCat-2.0"]
         N24["D24 · Kimi K3"]
         N28["D28 · 原生多模态两路线"]
+        N34["D34 · GLM 5.2 到 5.3"]
     end
     subgraph SWE ["SWE 与训练数据"]
         N12["D12 · SWE Agents 上手"]
@@ -64,6 +65,7 @@ flowchart LR
     N09 -. "slime 的下游" .-> N19
     N04 -. "注意力路线分岔" .-> N24
     N24 -. "连续对离散原生对照" .-> N28
+    N06 -. "同基座后训练续章" .-> N34
     N16 -. "自家 harness 之问的答案" .-> N29
     N29 -. "harness 即分数延伸" .-> N30
     N12 --> N30

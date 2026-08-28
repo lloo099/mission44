@@ -1,6 +1,22 @@
 {
-  "updated": "2026-08-27",
+  "updated": "2026-08-28",
   "items": [
+    {
+      "title": "GLM-5.3(同基座后训练 scaling,AA 指数与 K3 并列开源第一)",
+      "org": "智谱 / Z.ai",
+      "year": "2026-08",
+      "category": "model-report",
+      "innovation": "基座与 GLM-5.2 完全相同(753B/A40B MoE、1M 上下文),全部能力提升来自后训练 scaling——长程任务环境规模扩大数十倍、类型扩到安全漏洞发现、后训练时长增加;强制开启 thinking(low/high/max 三档)",
+      "analysis": "Innovation:一次难得的受控实验——固定基座只推 RL。训练栈 slime 异步 RL(GLM 全系共用)+ SAO with compaction(压缩片段上直接训练,使训练分布对齐生产推理=上下文层训推一致)+ IndexShare(每 4 层共享 indexer,1M 下 per-token FLOPs 降 2.9×)+ SFT 阶段 INT4 QAT 位级一致 kernel。Performance:第三方 Artificial Analysis 智能指数由 5.2 的 53 独立评为 60,与 Kimi K3 并列开源第一(Opus 5 领跑 63);自报 Terminal-Bench 3.0 由 4.6 至 28.3、DeepSWE v1.1 46.2 至 66.9、CyberGym 84.5(均厂商自跑未复现);网络安全账本自报 2436 漏洞但仅约 2% 公开、累计口径。对 RL-on-NPU 意义:D25'主干成熟、增量在后训练'的旗舰级实证;训推一致三层(数值 R3/量化 QAT/上下文 SAO)在单厂商栈全落地;GLM-5.3-Flash(320B-A18B,MIT)自称全程国产芯片训练,vLLM-Ascend 已有 5.2 教程、5.3 预期近即插即用。权重截至 08-28 未上 HF。详见 Dispatch 34。",
+      "url": "https://docs.z.ai/guides/llm/glm-5.3",
+      "tags": [
+        "GLM-5.3",
+        "post-training-scaling",
+        "MoE",
+        "cybersecurity"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "Qwen3.8-Max 权重放出(2.4T-A95B,有条件开放)",
       "org": "阿里 Qwen",
