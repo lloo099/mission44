@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-26",
+  "updated": "2026-08-31",
   "items": [
     {
       "title": "open-instruct / OlmoRL 的昇腾移植:全开放 RL 栈 × 国产硬件",
@@ -25,7 +25,7 @@
     },
     {
       "title": "国产模型自报分的第三方统一 harness 复跑",
-      "pitch": "LongCat-2.0(SWE Pro 59.5)、Qwen3.8-Max(OSWorld-Verified 86.1)、openPangu 等国产旗舰的 agent 基准分至今全部为厂商自报,无任何第三方统一 harness 复跑(D30 确认空白)。用 HAL 式统一 harness + 轨迹审计(Cursor 式作弊检查)复跑 3-5 个国产开源旗舰,产出首份可比的国产模型 agent 能力独立报告。",
+      "pitch": "LongCat-2.0(SWE Pro 59.5)、Qwen3.8-Max(OSWorld-Verified 86.1)、openPangu 等国产旗舰的 agent 基准分至今全部为厂商自报,无任何第三方统一 harness 复跑(D30 确认空白);GLM-5.3 权重 08-29 前后上 HF 后,其自报跳变(Terminal-Bench 3.0 4.6→28.3、CyberGym 84.5)成为最新可复跑对象(D34)。用 HAL 式统一 harness + 轨迹审计(Cursor 式作弊检查)复跑 3-5 个国产开源旗舰,产出首份可比的国产模型 agent 能力独立报告。",
       "impact": 4,
       "difficulty": 2,
       "novelty": 4,

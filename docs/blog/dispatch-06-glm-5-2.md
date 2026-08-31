@@ -266,6 +266,10 @@ flowchart TB
 3. **IndexShare 的机制细节**:与 DSA / MSA / CSA-HCA 的异同——值得单开一期详解。
 4. **以 GLM-5.2 为基座在昇腾上做 RL** 的首个端到端工作。
 
+## 跟进(2026-08-31)
+
+本篇的多个悬念已由后续发展回应,续章见 **D34(GLM-5.2 到 5.3)**:GLM-5.3(08-14)与 5.2 **基座完全相同**,全部能力提升来自后训练 scaling(AA 智能指数 53→60,与 Kimi K3 并列开源第一),权重已于 08-29 前后上 HF;IndexShare 与 INT4 QAT 在 5.3 延续,新增 SAO with compaction 构成上下文层训推一致;第 6 节关注的 vLLM-Ascend 适配已落地 GLM-5.2 官方教程(含 W4A8 量化版)。本篇作为 5.2 架构详解仍然有效,后训练演进部分以 D34 为准。
+
 ---
 
 *来源:GLM-5.2 评测/解析(theairankings、edenai、digitalapplied、apidog、lushbinary、bitsminds、techtimes、latent.space、Hacker News 等)、智谱/Z.ai 与 HuggingFace `zai-org/GLM-5.2`、GLM-5 技术报告(arXiv 2602.15763)、GLM-4.5 ARC(arXiv 2508.06471)、vLLM-Ascend 支持矩阵。数字均为厂商/媒体口径,provisional。相关卡片见本看板 LLM Modeling 标签页与 Overview 对比组件。*

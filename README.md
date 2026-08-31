@@ -8,7 +8,7 @@ four fast-moving fronts, so you can pick a concrete project to work on:
 3. **LLM modeling advances** — MoE, attention routes (sparse / linear / hybrid), native multimodality, long context, low-bit training.
 4. **The open-model ecosystem** — from fully-open (OLMo model flow) to weights-only releases, with provenance discipline throughout.
 
-Content: **32 in-depth dispatches + an architecture survey** (Blog tab, connected by an
+Content: **34 in-depth dispatches + an architecture survey** (Blog tab, connected by an
 interactive 知识地图 / knowledge map), **250+ curated data cards** across four domain tabs,
 a synthesized **Project Ideas** section with impact / difficulty / novelty ratings, a **Live
 Papers** feed pulled daily from arXiv, and per-post **share snapshot pages** (`p/<id>.html`)
@@ -64,7 +64,7 @@ data/
   feed.json           # Live Papers — generated: pinned + fresh arXiv (do not hand-edit)
   agentic.json        # Agentic RL entries + trends (curated)
   compare.json        # Overview frontier-model comparison table
-  blog.json           # blog index (32 dispatches + survey)
+  blog.json           # blog index (34 dispatches + survey)
   blog-map.mmd        # knowledge-map mermaid source (Blog tab)
 docs/
   blog/dispatch-*.md  # the dispatches (mermaid diagrams render natively)

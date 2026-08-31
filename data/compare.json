@@ -1,7 +1,7 @@
 {
-  "updated": "2026-08-27",
+  "updated": "2026-08-31",
   "doc": "docs/2026-frontier-models.md",
-  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。 Kimi K3 数字为发布日自报,权重与技术报告尚未放出。 V4 列口径已含 V4-Flash-0731 与 V4-Pro-0813 GA(0813 公榜为自家 harness minimal 模式);Qwen3.8-Max(2.4T MoE)API 先行、权重 pending,暂不入列。 Qwen3.8-Max 权重 08-12 已放(纯文本/thinking 强制/专有许可),自报 OSWorld 86.1 无第三方复跑。",
+  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。 Kimi K3 权重与技术报告(2607.24653)均已放出,AA 智能指数 60 为第三方独立评分。 GLM-5.3(08-14)与 5.2 同基座、全部提升来自后训练,AA 指数 60 与 K3 并列开源第一,权重 08-29 前后上 HF(详见 D34),本表 GLM 列仍以 5.2 为口径。 V4 列口径已含 V4-Flash-0731 与 V4-Pro-0813 GA(0813 公榜为自家 harness minimal 模式)。 Qwen3.8-Max 权重 08-12 已放(纯文本/thinking 强制/专有许可),自报 OSWorld 86.1 无第三方复跑。",
   "models": {
     "columns": [
       "",
@@ -80,7 +80,7 @@
         "partial",
         "partial",
         "训练即国产芯片(HCCL,疑似 910C 未官宣,推测)",
-        "未适配(权重未放;线性注意力算子 CANN 缺口,推测)",
+        "未适配(权重已放;线性注意力算子 CANN 缺口,推测)",
         "未适配(推测)",
         "ready"
       ]

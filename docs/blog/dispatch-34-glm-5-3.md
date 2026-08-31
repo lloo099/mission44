@@ -2,7 +2,7 @@
 
 *2026-08-28 · NPU Frontier Dispatch · GLM-5.3 / GLM-5.2 / post-training-scaling / slime / RL-on-NPU*
 
-> **TL;DR** — GLM-5.3(智谱/Z.ai,2026-08-14)是"后训练 scaling"叙事目前最干净的样本:**基座与 GLM-5.2 一字不动**(753B 总参 / 约 40B 激活 MoE,1M 上下文),全部能力提升来自 RL——长程任务环境规模扩大数十倍、环境类型从代码调试扩到安全漏洞发现、后训练时长显著增加。第三方 Artificial Analysis 智能指数由 5.2 的 53 升至 **60,与 Kimi K3 并列开源第一**(独立评分)。训练栈是 GLM 全系共用的 slime(异步 RL)+ SAO with compaction(在压缩片段上直接训练,使训练分布对齐生产推理分布)+ IndexShare(每 4 层稀疏注意力共享 indexer,1M 下 per-token FLOPs 降 2.9×)+ SFT 阶段 INT4 QAT 位级一致 kernel。网络安全为差异化主打(自报 2436 漏洞账本,仅约 2% 公开、累计口径)。权重截至 08-28 仍未上 HF(官方称次日),但先行的 GLM-5.3-Flash(320B-A18B,MIT)自称全程在国产芯片训练。
+> **TL;DR** — GLM-5.3(智谱/Z.ai,2026-08-14)是"后训练 scaling"叙事目前最干净的样本:**基座与 GLM-5.2 一字不动**(753B 总参 / 约 40B 激活 MoE,1M 上下文),全部能力提升来自 RL——长程任务环境规模扩大数十倍、环境类型从代码调试扩到安全漏洞发现、后训练时长显著增加。第三方 Artificial Analysis 智能指数由 5.2 的 53 升至 **60,与 Kimi K3 并列开源第一**(独立评分)。训练栈是 GLM 全系共用的 slime(异步 RL)+ SAO with compaction(在压缩片段上直接训练,使训练分布对齐生产推理分布)+ IndexShare(每 4 层稀疏注意力共享 indexer,1M 下 per-token FLOPs 降 2.9×)+ SFT 阶段 INT4 QAT 位级一致 kernel。网络安全为差异化主打(自报 2436 漏洞账本,仅约 2% 公开、累计口径)。**权重已落地 HF**([zai-org/GLM-5.3](https://huggingface.co/zai-org/GLM-5.3),见文末跟进);先行开源的 GLM-5.3-Flash(320B-A18B,MIT)自称全程在国产芯片训练。
 
 本篇性质:两代对照详解(D06 已深挖 GLM-5.2 的 DSA+IndexShare+effort level,本篇重点是 5.2→5.3 演进与后训练 scaling 方法),承接 D19(slime)、D22(SAO 单 rollout)、D27(INT4 QAT 训推一致)、D30(自报分待第三方复现)、D33(verl 对照)。
 
@@ -76,7 +76,7 @@ flowchart TB
 GLM 系在昇腾的适配已成体系(D06 语境中"GLM 适配昇腾曾是高成本人工适配",现已大幅前进):
 
 - **GLM-5.2 有官方 vLLM-Ascend 教程**([GLM5.2 部署页](https://docs.vllm.ai/projects/ascend/zh-cn/main/tutorials/models/GLM5.2.html)),含 W4A8 量化版(GLM-5.2-w4a8c8);GLM-5/5.1 教程与已知问题(EP+FULL graph 冲突、W4A8 MC2 精度)也已文档化。
-- **GLM-5.3 权重未放**,vLLM-Ascend 尚无 5.3 专门条目;因基座与 5.2 完全相同,权重放出后近乎即插即用(合理推断,官方未明说)。
+- **GLM-5.3 权重已放出**(见文末跟进),vLLM-Ascend 尚无 5.3 专门条目;因基座与 5.2 完全相同,预期近乎即插即用(合理推断,官方未明说)。
 - **最强信号来自 GLM-5.3-Flash**:320B-A18B、原生多模态、1M 上下文(此前匿名跑分的 "Ox Alpha"),已于 08-26 以 **MIT 许可**先行开源,官方强调其**完全在国产 AI 芯片上训练与运行**。这是智谱-昇腾链路深度打通的公开实证——与 D21(LongCat 全国产训练)、D31(OLMo 的 open-instruct 昇腾移植空白)对照,GLM-5.3-Flash 是"国产芯片全流程训练 + MIT 开源"的又一样本。
 
 ### 图 C · GLM 系发布节奏与昇腾链路
@@ -86,7 +86,7 @@ flowchart LR
     subgraph LINE ["GLM 5 系发布节奏 2026"]
         G5["GLM-5<br/>技术报告 2602.15763"]
         G52["GLM-5.2 · 06<br/>DSA+IndexShare<br/>1M 上下文·MIT"]
-        G53["GLM-5.3 · 08-14<br/>后训练 scaling<br/>权重延期至约 08-29"]
+        G53["GLM-5.3 · 08-14<br/>后训练 scaling<br/>权重 08-29 上 HF"]
         FLASH["GLM-5.3-Flash · 08-26<br/>320B-A18B·MIT<br/>全程国产芯片训练"]
         G5 --> G52 --> G53
         G53 -. "小号先行" .-> FLASH
@@ -109,17 +109,21 @@ flowchart LR
 
 1. **D06 更新**:GLM-5.2 专篇可补 5.3 的"同基座后训练"续章;IndexShare/INT4 QAT 在 5.3 延续,SAO with compaction 补入"上下文层训推一致",与 D27 的数值/量化两层合成完整的三层训推一致图景。
 2. **D27/D33 印证**:INT4 QAT 位级一致(量化层)、SAO(上下文层)、R3 路由回放(数值层)——GLM 系是训推一致三层解法在单一厂商栈内全部落地的样本;而 verl(D33)在框架层把 TIS 做成 IS 修正派的通用件,两者是"专用栈内建"与"通用框架件"的对照。
-3. **D30 印证**:5.3 的自报跑分(Terminal-Bench 3.0 跳变、CyberGym 84.5)与网络安全账本均待第三方统一 harness 复跑——正是 ideas.json"国产模型自报分第三方复跑"卡的新增对象;权重延期使复现窗口后移。
+3. **D30 印证**:5.3 的自报跑分(Terminal-Bench 3.0 跳变、CyberGym 84.5)与网络安全账本均待第三方统一 harness 复跑——正是 ideas.json"国产模型自报分第三方复跑"卡的新增对象;权重已落地,复现窗口开启。
 
-诚实边界:除 AA 智能指数 60 为独立评分外,本篇 GLM-5.3 的能力数字均为厂商自报;权重截至 08-28 未落地;昇腾即插即用为推断。
+诚实边界:除 AA 智能指数 60 为独立评分外,本篇 GLM-5.3 的能力数字均为厂商自报;昇腾即插即用为推断。
 
 ## 下一步看什么
 
-1. **权重落地与第三方复现**:约 08-29 的 HF 发布后,Terminal-Bench 3.0/DeepSWE 的跳变幅度与 CyberGym 84.5 能否被独立 harness 复现——后训练 scaling 叙事的真伪检验点。
+1. **第三方复现**:权重已上 HF(见跟进),Terminal-Bench 3.0/DeepSWE 的跳变幅度与 CyberGym 84.5 能否被独立 harness 复现——后训练 scaling 叙事的真伪检验点。
 2. **SAO with compaction 的论文级披露**:上下文层训推一致的机理若有独立论文,值得与 D27 数值层、D22 单 rollout 合并深挖。
 3. **GLM-5.3-Flash 的国产芯片训练细节**:320B 全程国产训练若有系统披露,是继 LongCat(D21)后的又一全国产训练样本。
 4. **effort level 强制 thinking 的评测口径影响**:默认 max 对成本-能力帕累托(D30 成本轴)的影响。
 
+## 跟进(2026-08-31)
+
+**权重已落地。** [zai-org/GLM-5.3](https://huggingface.co/zai-org/GLM-5.3) 与 [zai-org/GLM-5.3-Flash](https://huggingface.co/zai-org/GLM-5.3-Flash) 均已上线 HF,官方兑现"安全评估后开源"承诺。两点更新:其一,本篇"权重延期"相关表述已随之修订,第三方复现窗口正式开启——Terminal-Bench 3.0 跳变、CyberGym 84.5、漏洞账本三项自报数字进入可复跑状态;其二,Flash 模型卡确认为 GLM-5 系**首个原生多模态**成员(320B-A18B,MIT),官方表述其编程与 agentic 能力接近 Claude Opus 4.8——该对标为自报口径,同样待独立 harness 校验。昇腾侧 vLLM-Ascend 的 5.3 专门适配条目仍待观察。
+
 ---
 
-**来源与声明**:主循环调研 + 定向补充(2026-08-28)。主要来源:[GLM-5 技术报告 arXiv 2602.15763](https://arxiv.org/abs/2602.15763)、[Z.ai GLM-5.3 文档](https://docs.z.ai/guides/llm/glm-5.3)、[slime](https://github.com/THUDM/slime)、[Artificial Analysis GLM-5.3](https://artificialanalysis.ai/models/glm-5-3)、[Unite.AI 智能指数报道](https://www.unite.ai/glm-5-3-scores-60-on-artificial-analysis-intelligence-index-matching-kimi-k3/)、[vLLM-Ascend GLM5.2 教程](https://docs.vllm.ai/projects/ascend/zh-cn/main/tutorials/models/GLM5.2.html)、[LMSYS INT4 QAT 实践](https://www.lmsys.org/blog/2026-01-26-int4-qat/)、[kingy.ai 漏洞账本核查](https://kingy.ai/blog/glm-5-3-open-weight-cybersecurity-vulnerability-claim/) 等,文中逐处标注。除 AA 智能指数 60 为第三方独立评分外,GLM-5.3 的 benchmark 与漏洞账本均为厂商自报(provisional);权重截至 08-28 未上 HF;昇腾即插即用与两代对照的部分归因为本看板推断。
+**来源与声明**:主循环调研 + 定向补充(2026-08-28)。主要来源:[GLM-5 技术报告 arXiv 2602.15763](https://arxiv.org/abs/2602.15763)、[Z.ai GLM-5.3 文档](https://docs.z.ai/guides/llm/glm-5.3)、[slime](https://github.com/THUDM/slime)、[Artificial Analysis GLM-5.3](https://artificialanalysis.ai/models/glm-5-3)、[Unite.AI 智能指数报道](https://www.unite.ai/glm-5-3-scores-60-on-artificial-analysis-intelligence-index-matching-kimi-k3/)、[vLLM-Ascend GLM5.2 教程](https://docs.vllm.ai/projects/ascend/zh-cn/main/tutorials/models/GLM5.2.html)、[LMSYS INT4 QAT 实践](https://www.lmsys.org/blog/2026-01-26-int4-qat/)、[kingy.ai 漏洞账本核查](https://kingy.ai/blog/glm-5-3-open-weight-cybersecurity-vulnerability-claim/) 等,文中逐处标注。除 AA 智能指数 60 为第三方独立评分外,GLM-5.3 的 benchmark 与漏洞账本均为厂商自报(provisional);权重已于 08-29 前后上线 HF(跟进段);昇腾即插即用与两代对照的部分归因为本看板推断。

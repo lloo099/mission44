@@ -1,13 +1,13 @@
 {
-  "updated": "2026-08-27",
+  "updated": "2026-08-31",
   "items": [
     {
-      "title": "950DT\"8 月上华为云\"核验:截至 08-27 无公开兑现证据",
+      "title": "950DT\"8 月上华为云\"核验:截至 08-31 无公开兑现证据",
       "org": "华为云",
       "year": "2026-08",
       "category": "hardware",
       "innovation": "6 月高调预告的 950DT 云上部署在承诺月末仍无上线公告、首批用户或训练数字;与软件层实锤(vLLM-Ascend 已支持 950 上 V4 端到端)形成公开性反差",
-      "analysis": "Innovation:核验结论——全网仍只有 2026-06 初华为云 INSPIRE 大会的厂商预告,无 8 月的开服公告;传闻的\"DeepSeek 依托 950DT 发 V4.2\"未发生。Performance:间接旁证为 vLLM-Ascend v0.23.0(08-16)合入 Ascend 950 上 DeepSeek V4 端到端支持,说明 950 系硬件在头部客户处真实运转,但华为选择不公开宣发。对 RL-on-NPU 意义:950DT(训练+decode 向)是 HiF8 训练与大规模 RL-on-950 的硬件前提,其公开可用时间直接决定 D27 圈出的 HiF8×RL 机会窗口何时可执行;要么延期、要么对首批客户静默开放,后续以华为云公告为准。",
+      "analysis": "Innovation:核验结论——全网仍只有 2026-06 初华为云 INSPIRE 大会的厂商预告,无 8 月的开服公告(复核至 08-31,8 月窗口已过仍无公告);传闻的\"DeepSeek 依托 950DT 发 V4.2\"未发生。Performance:间接旁证为 vLLM-Ascend v0.23.0(08-16)合入 Ascend 950 上 DeepSeek V4 端到端支持,说明 950 系硬件在头部客户处真实运转,但华为选择不公开宣发。对 RL-on-NPU 意义:950DT(训练+decode 向)是 HiF8 训练与大规模 RL-on-950 的硬件前提,其公开可用时间直接决定 D27 圈出的 HiF8×RL 机会窗口何时可执行;要么延期、要么对首批客户静默开放,后续以华为云公告为准。",
       "url": "https://www.trendforce.com/news/2026/06/08/news-huawei-brings-forward-ascend-950dt-deployment-to-august-deepseek-v4-2-seen-as-potential-early-adopter/",
       "tags": [
         "950DT",
