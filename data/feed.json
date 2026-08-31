@@ -1,7 +1,7 @@
 {
-  "updated": "2026-08-30T11:57:46.386135Z",
+  "updated": "2026-08-31T13:57:15.569816Z",
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 48,
+  "count": 45,
   "pinned": 25,
   "items": [
     {
@@ -332,6 +332,136 @@
       ]
     },
     {
+      "title": "Learning to Use Tools: Reinforcement Learning for Tool-Integrated Mathematical Reasoning",
+      "org": "Minghui Xu +1",
+      "year": "2026-08-28",
+      "summary": "Current large language models (LLMs) increasingly benefit from external tool integration, especially for tasks requiring reliable computation and verification. Motivated by this, we study calculator tool calling for improving mathematical reasoning on the Countdown task. We first analyze reasoning f…",
+      "url": "http://arxiv.org/abs/2608.28447v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "VICT: Verifier-Instrumented Credit Tracing for Long-Horizon LLM Agent Reinforcement Learning",
+      "org": "Pengcheng Li +4",
+      "year": "2026-08-28",
+      "summary": "Fine-grained credit assignment is a central challenge in reinforcement learning for long horizon LLM agents. Standard objectives often train from programmatically verifiable terminal rewards by broadcasting each sparse outcome to every action in a trajectory. Existing methods typically seek finer cr…",
+      "url": "http://arxiv.org/abs/2608.28128v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "ContextLeak: Exfiltrating LLM Agent Context via Malicious Tools",
+      "org": "Yuqi Jia +5",
+      "year": "2026-08-28",
+      "summary": "Exfiltrating an LLM agent's runtime context -- such as the user prompt, execution trajectory, and tool list -- poses severe security and privacy risks to users. Such attacks can be carried out via malicious tools and typically require three conditions: (1) the agent selects the malicious tool for ta…",
+      "url": "http://arxiv.org/abs/2608.27800v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Program Learning with Verifiable Rewards: Symbolic Backpropagation for Post-Training LLMs",
+      "org": "Vishvesh Bhat",
+      "year": "2026-08-28",
+      "summary": "Post training a language model to reason means updating its weights. Supervised finetuning and reinforcement learning both place the acquired capability inside the model where it cannot be inspected cannot be checked step by step and cannot be moved to another model. We argue that for tasks whose in…",
+      "url": "http://arxiv.org/abs/2608.28421v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "HARTS: Efficient Agentic Reinforcement Learning for Hybrid-Attention Models over Arbitrary Rollout Trees",
+      "org": "Boyuan Meng +6",
+      "year": "2026-08-28",
+      "summary": "Agentic reinforcement learning (RL) often produces irregular rollout trees with shared histories. Training root-to-leaf trajectories independently recomputes these shared prefixes. Existing systems primarily target full-attention models and lack dense, differentiable hybrid-attention execution compa…",
+      "url": "http://arxiv.org/abs/2608.28158v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Synthetic Linguistic Agency: How an Embodied Mortal Agent Learns Linguistic Affordances through Consequential Social Experience",
+      "org": "Sixin Chen +1",
+      "year": "2026-08-28",
+      "summary": "Contemporary language models can converse fluently and influence human decisions, yet their exchanges do not enter a continuing, vulnerable life of their own. Linguistic-agency theory identifies this missing connection as linguistic agency and characterizes it through embodiment, linguistic particip…",
+      "url": "http://arxiv.org/abs/2608.27843v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "ReToolSQL: Agentic Reinforcement Learning for Robust Text-to-SQL",
+      "org": "Pratik Kakkar +4",
+      "year": "2026-08-28",
+      "summary": "Recent work has shown that reinforcement learning from execution feedback can substantially improve text-to-SQL performance, often enabling smaller models to match or exceed much larger systems. However, most existing approaches treat SQL generation as a single-turn task, limiting the model's abilit…",
+      "url": "http://arxiv.org/abs/2608.27796v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Training Communication-Efficient Mixture-of-Experts Language Models with Layer Re-Configuration",
+      "org": "Simeng Sun +1",
+      "year": "2026-08-28",
+      "summary": "When training Mixture-of-Experts (MoE) language models with expert parallelism, all-to-all token dispatch and combine collectives can consume a substantial fraction of end-to-end training time. In this work, we study communication-efficient MoE models (CE-MoE), in which we adopt a heterogeneous laye…",
+      "url": "http://arxiv.org/abs/2608.28511v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "A Method for Layer Bit-Width Allocation in LLM Quantization via Performance Maximization Under a Quality-Degradation Constraint",
+      "org": "Artem Safronov",
+      "year": "2026-08-28",
+      "summary": "This paper proposes a layer bit allocation method for Gemma-3-1B, formulating the problem as performance maximization (latency decrease) given a degradation budget constraint (allowable level of generation quality loss). This approach is different from time- and resource-consuming uniform layer quan…",
+      "url": "http://arxiv.org/abs/2608.28003v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "HyQuant: Hybrid-Precision Quantization for LLM Attention",
+      "org": "Jiatong Ding +11",
+      "year": "2026-08-28",
+      "summary": "Quantization has been widely adopted in LLM training and inference to reduce cost and improve efficiency. However, low-bit quantization of the \\emph{attention} module often introduces large errors at very low bit-widths, causing performance degradation. Existing methods mainly rely on smoothing tech…",
+      "url": "http://arxiv.org/abs/2608.27875v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
       "title": "TTPO: Test-Time Policy Optimization",
       "org": "Aozhe Wang +10",
       "year": "2026-08-27",
@@ -397,54 +527,15 @@
       ]
     },
     {
-      "title": "ProRetrieval: Learning to Orchestrate Hybrid Search via Executable Program Synthesis",
-      "org": "Chengsong You +19",
+      "title": "LongGuard: Mechanistic Analysis and Training-Free Mitigation of Long-Context Failure in Safety Guardrails",
+      "org": "Ziyang Chen +2",
       "year": "2026-08-27",
-      "summary": "Real-world retrieval often composes structured constraints with semantic intents over text and images through arbitrary Boolean logic. Existing hybrid pipelines such as reciprocal rank fusion or self-querying retrievers admit only a fixed form of composition, while recent reinforcement-learning retr…",
-      "url": "http://arxiv.org/abs/2608.27017v1",
-      "category": "rl-llm",
+      "summary": "Safety guardrails serve as the last line of defense against harmful inputs and outputs of large language models (LLMs), yet they are trained and evaluated almost exclusively on short text. We present LongGuard, a framework that evaluates, mechanistically analyzes, and mitigates long-context guardrai…",
+      "url": "http://arxiv.org/abs/2608.27580v1",
+      "category": "sparse-attention",
       "tags": [
         "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Reason in the Words You Speak: Idiolectal Paraphrasing Off-Policy Traces for Reasoning Distillation in VideoLLMs",
-      "org": "Ji Soo Lee +6",
-      "year": "2026-08-27",
-      "summary": "Recent large language models achieve strong performance on complex reasoning tasks, where reinforcement learning with Group Relative Policy Optimization (GRPO) has emerged as a leading paradigm for optimizing models on self-generated trajectories. However, the on-policy nature of GRPO bounds the mod…",
-      "url": "http://arxiv.org/abs/2608.26684v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Not Just Reason, Not Just Scan: Reinforcement Learning for Proactive Scientific Error Verification over Academic Paper",
-      "org": "Rongjin Li +5",
-      "year": "2026-08-27",
-      "summary": "Multimodal large language models (MLLMs) are increasingly capable scientific assistants, yet they remain far from fully autonomous research. This transition requires models to actively inspect academic papers, build global evidence views, and make traceable judgments without prespecified issues or e…",
-      "url": "http://arxiv.org/abs/2608.26596v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Behavior2Trip: Towards Personalized Travel Planning via User Behavior Trajectory",
-      "org": "Zihao Cheng +8",
-      "year": "2026-08-27",
-      "summary": "Travel planning agents assist users in generating personalized travel plans by modeling their individual preferences. Existing agents either rely on explicit user instructions or engage in multi-turn clarification to elicit user preferences. However, both approaches overlook the rich behavioral sign…",
-      "url": "http://arxiv.org/abs/2608.26807v1",
-      "category": "agentic-rl",
-      "tags": [
-        "live",
-        "agentic-rl",
+        "sparse-attention",
         "auto"
       ]
     },
@@ -475,32 +566,6 @@
       ]
     },
     {
-      "title": "SpeechGym: An Audio-Native Gym for Training Voice Agents via Reinforcement Learning",
-      "org": "Jiajun Fan +8",
-      "year": "2026-08-26",
-      "summary": "Voice agents must call tools and hold multi-turn dialogue entirely through speech, yet the dominant paradigm trains them in text. Existing frameworks either cascade TTS and ASR around a proprietary voice API, where gradients cannot flow and per-call cost makes on-policy reinforcement learning prohib…",
-      "url": "http://arxiv.org/abs/2608.26432v1",
-      "category": "agentic-rl",
-      "tags": [
-        "live",
-        "agentic-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "VISA: Agentic Self-Evolving Data Synthesis for Multimodal Instruction Following",
-      "org": "Min Zeng +7",
-      "year": "2026-08-26",
-      "summary": "Multimodal instruction-following models require training data that is accurate, diverse, verifiable, and challenging. Existing synthesis pipelines typically follow a one-pass generate-and-filter paradigm, discarding feedback from failed samples, verifier outcomes, and target-model errors. We present…",
-      "url": "http://arxiv.org/abs/2608.26013v2",
-      "category": "agentic-rl",
-      "tags": [
-        "live",
-        "agentic-rl",
-        "auto"
-      ]
-    },
-    {
       "title": "Reconstructing the Right Episode: Evaluating Interleaved Conversational Memory Beyond Long Context",
       "org": "Zhexi Feng +3",
       "year": "2026-08-26",
@@ -514,115 +579,11 @@
       ]
     },
     {
-      "title": "When Personality Meets Quantization: A Layer-wise MBTI Analysis of Quantized LLMs",
-      "org": "Yao Fu +5",
-      "year": "2026-08-26",
-      "summary": "Personality is increasingly important in large language models (LLMs), as it shapes users' trust, engagement, and emotional experiences. While the Myers--Briggs Type Indicator (MBTI) has emerged as a common framework for assessing LLMs' personality, existing studies focus primarily on full-precision…",
-      "url": "http://arxiv.org/abs/2608.25977v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Capacity Overflow: A Blind Spot for Backdoor Attacks in Vision MoE",
-      "org": "Xiaocheng Zou +3",
-      "year": "2026-08-26",
-      "summary": "Mixture-of-Experts (MoE) has become a prevalent paradigm for scaling Vision Transformers efficiently. To ensure computational scalability and prevent expert overload, Vision MoE architectures employ a capacity-bounded token dispatch mechanism, where each expert's processing budget depends on the inf…",
-      "url": "http://arxiv.org/abs/2608.25371v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Reading Is Not Using: Retrieval, Judgment, and the Design of AI Financial Research Workflows",
-      "org": "Miao Liu +1",
-      "year": "2026-08-25",
-      "summary": "Large language models (LLMs) are increasingly deployed as AI analysts to process financial disclosures and support AI-assisted investment decisions. Yet such systems are usually evaluated by what they can retrieve, not whether retrieved information affects their judgments. We identify a retrieval-in…",
-      "url": "http://arxiv.org/abs/2608.24842v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "FireRedAudio: A General-Purpose Audio Language Model with Decoupled Continuous Representations for Understanding and Generation",
-      "org": "Feiyu Shen +15",
-      "year": "2026-08-25",
-      "summary": "A unified audio model must recognize and understand linguistic, paralinguistic, and environmental information while supporting speech synthesis and editing. A key challenge is representation: understanding favors compact features suited to long-context modeling, whereas speech generation requires re…",
-      "url": "http://arxiv.org/abs/2608.24168v2",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "More GPUs or a Smaller Cache? Tensor Parallelism versus KV Compression for Memory-Bound LLM Serving",
-      "org": "Srikanta Datta Tumkur +7",
-      "year": "2026-08-25",
-      "summary": "When an LLM serving deployment runs out of KVcache room, there are two well-established ways out. Tensor parallelism shards the weights and the KV cache across two, four, or eight devices, buying memory headroom at the price of an all-reduce on every layer and a hardware bill that grows with the dev…",
-      "url": "http://arxiv.org/abs/2608.23962v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "PuzzleKV: Page-Wise Low-Rank Decomposition for KV Cache Compression",
-      "org": "Zizhong Wang +3",
-      "year": "2026-08-24",
-      "summary": "Long-context inference in large language models (LLMs) is increasingly limited by the memory required for the key-value (KV) cache. KV cache compression addresses this problem by reducing the storage cost of previous tokens. Among existing approaches, low-rank compression is particularly attractive …",
-      "url": "http://arxiv.org/abs/2608.23843v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
       "title": "Minima-KV: Retention-Preserving KV Cache Compression with Mixed-Format Paged Attention",
       "org": "Sergii Kozyrev +1",
       "year": "2026-08-24",
       "summary": "The key-value (KV) cache is a primary capacity and bandwidth bottleneck in long-context LLM serving. We present Minima-KV, a retention-preserving hierarchy for mixed-format paged attention. Recent and protected Anchor pages remain in FP8, while older non-anchor pages move to packed TQ3; every live-r…",
       "url": "http://arxiv.org/abs/2608.23834v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "Elastic KV Cache for LLM Serving:A Working Reclamation Mechanism, and Why Chunked Prefill Already Closes the Gap",
-      "org": "Sathishkumar Sivashanmugam",
-      "year": "2026-08-24",
-      "summary": "An LLM serving engine sizes its key-value (KV) cache once, at startup, permanently setting aside a reserve for the worst-case prefill activation. During decode-dominant phases that reserve sits idle, yet it cannot be handed to the KV pool because it is exactly the memory a large prefill needs. We as…",
-      "url": "http://arxiv.org/abs/2608.23658v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "TileMix: Tile-Centric Mixed-Precision Attention for LLM Inference Acceleration",
-      "org": "Hanzhi Zhang +6",
-      "year": "2026-08-18",
-      "summary": "Long-context prefill in large language models (LLMs) incurs substantial computation and memory traffic because dense self-attention computes quadratic query-key scores. Existing methods either use a uniform low-precision path or select token interactions, leaving spatial precision routing over hardw…",
-      "url": "http://arxiv.org/abs/2608.17336v1",
       "category": "fp8-lowprec",
       "tags": [
         "live",
