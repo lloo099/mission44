@@ -1,7 +1,21 @@
 {
-  "updated": "2026-08-31",
+  "updated": "2026-09-01",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-35-frontier-scan",
+      "title": "Dispatch 35 · 前沿全景扫描:模型分数收敛、Agent 方案定型与六个提前布局方向",
+      "subtitle": "三路并行 agent 调研汇总:①旗舰 AA 指数收敛(Opus 5 Max 63 / Fable 5 62 / GPT-5.6 Sol、Grok 4.6 61 / GLM-5.3、K3 60),开源架构共识转向小激活 MoE(Qwen3.8-Flash-Next 125B 激活 6B=Qwen4 预览),cyber 评估成发布关键路径(Astra 首触 Critical 暂停 RL 两周);②生产级 agent 配方定型五要件:orchestrator-worker(Cognition 共识翻转)、每 agent 一沙箱、上下文工程三板斧、验证外置(独立评估 agent)、MCP 无状态核心+A2A 1.0;③提前布局六方向按证据密度排名:RL 环境规模化(采购科目,Prime Intellect 1.3 亿 A 轮)>自进化 agent>rubric 奖励 RL(已进 GPT-5 管线)>世界模型 rollout(WM-R1 替代真实环境)>持续学习>自动化 AI 研发(研究实习生 2026-09 节点)。METR 16h 时限顶到评测上限。",
+      "date": "2026-09-01",
+      "tags": [
+        "frontier-scan",
+        "agent-stack",
+        "RL-environments",
+        "world-models",
+        "rubric-RL"
+      ],
+      "file": "docs/blog/dispatch-35-frontier-scan.md"
+    },
     {
       "id": "dispatch-34-glm-5-3",
       "title": "Dispatch 34 · GLM-5.2 到 5.3:同一基座上的后训练 scaling 范本",

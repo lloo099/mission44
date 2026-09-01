@@ -1,6 +1,54 @@
 {
-  "updated": "2026-08-26",
+  "updated": "2026-09-01",
   "items": [
+    {
+      "title": "Rubric/生成式奖励 RL(RaR 入 ICLR 2026,universal verifier 进旗舰管线)",
+      "org": "Scale AI 系 / OpenAI / 学界",
+      "year": "2026",
+      "category": "algorithm",
+      "innovation": "把 RLVR 的成功范式外推到主观域:Rubrics as Rewards(arXiv 2507.17746,ICLR 2026)以结构化 rubric 替代可验证信号;OpenAI 'universal verifier'(LLM 评审 LLM)被报道用于 GPT-5 训练,覆盖商业决策/创意写作等域",
+      "analysis": "Innovation:2026 年密集跟进——QUBRIC(查询-rubric 协同设计)、EvoRubric(自进化 rubric)、Open Rubric System(成对自适应 rubric 规模化);与自进化 agent 方向交叉(自生成验证替代人工标注)。判断:RLVR 之后最确定的路线,但 reward hacking 未解、'universal'含营销成分;rubric 评分器同时出现在训练(奖励)与产品(Anthropic Outcomes)两侧,评估器成为方案组件。对 RL-on-NPU 意义:生成式奖励把奖励计算变成推理负载,rollout 与奖励可同栈部署——对推理强的 NPU 集群是利好;奖励模型的训推一致(与被训模型共享量化方案)是延伸问题。详见 Dispatch 35。",
+      "url": "https://openreview.net/forum?id=c1bTcrDmt4",
+      "tags": [
+        "rubric-RL",
+        "generative-reward",
+        "RLVR",
+        "reward-hacking"
+      ],
+      "confidence": "provisional"
+    },
+    {
+      "title": "超长程信用分配综述(真实 agent 已达 100K-1M token,方法只验证到 5-30 轮)",
+      "org": "学界",
+      "year": "2026",
+      "category": "survey",
+      "innovation": "综述《From Reasoning to Agentic: Credit Assignment in RL for LLMs》(arXiv 2604.09459)指出核心断层:部署中的 agent 轨迹已达 100K-1M token、100+ 轮交互,而现有信用分配方法多只在 5-30 轮任务上验证",
+      "analysis": "Innovation:2026 年方法带包括 TRACE、Hindsight Credit Assignment、SOLAR-RL、ECHO(选择性轮次记忆)等;工业样本出现(双时限信用分配)。判断:多天任务的产品曲线(METR 16h+)真实且陡峭,但'多天任务怎么训'的方法论明显落后于部署现实——这是 D23 三难题中信用分配轴的最新量化表述,也是学术切入的高价值缺口。对 RL-on-NPU 意义:超长轨迹的 RL 训练受显存与序列并行约束最紧,与 D26 推理效率、D34 SAO compaction(压缩片段训练)是同一约束的不同解法。",
+      "url": "https://arxiv.org/abs/2604.09459",
+      "tags": [
+        "credit-assignment",
+        "long-horizon",
+        "survey",
+        "agentic-RL"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "WM-R1:世界模型替代真实环境做 GUI agent RL rollout",
+      "org": "学界",
+      "year": "2026-08",
+      "category": "algorithm",
+      "innovation": "用学习到的世界模型完全替代真实 Android 环境执行 RL rollout(arXiv 2608.27508),把环境交互成本从真实沙箱迁移到神经模拟器;同线工作含 MobileDreamer 与 MobileWorldBench(140 万三元组)",
+      "analysis": "Innovation:直击 agent RL 的环境交互成本瓶颈,与环境采购市场构成'买环境还是学环境'的路线对照。反向证据并存:agent 尚不能把世界模型当预见工具使用(arXiv 2601.03905),泛化到终端/浏览器环境未证明。对 RL-on-NPU 意义:世界模型 rollout 把环境交互变成纯推理负载——恰是 NPU 强项,若路线成立,昇腾集群可在不依赖 x86 沙箱基建的情况下自闭环 GUI agent RL;这为 D02 rollout 瓶颈增加第四条解法轴(算法/调度/数值之外)。",
+      "url": "https://arxiv.org/abs/2608.27508",
+      "tags": [
+        "world-model",
+        "rollout",
+        "GUI-agent",
+        "environment-cost"
+      ],
+      "confidence": "provisional"
+    },
     {
       "title": "OLMo 3 / OlmoRL(model flow 全开放的 RLVR 训练主干)",
       "org": "AI2",

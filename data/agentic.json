@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-31",
+  "updated": "2026-09-01",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -35,6 +35,78 @@
     }
   ],
   "items": [
+    {
+      "title": "生产级 agent 配方共识(orchestrator-worker 定型与 Cognition 共识翻转)",
+      "org": "行业综合(Anthropic/OpenAI/Cognition/Cursor)",
+      "year": "2026-08",
+      "category": "survey",
+      "track": "industry",
+      "innovation": "2026 年中生产配方收敛五要件:orchestrator-worker(sub-agent 隔离、只回传摘要)、每 agent 一个 microVM 沙箱(90-150ms 冷启动,code mode 替代长工具链)、上下文工程三板斧、独立 fresh-context 评估 agent、MCP+A2A 双协议",
+      "summary": "标志性事件:发表《Don't Build Multi-Agents》的 Cognition 上线'Devin 管理 Devin'(协调者派生至多 10 个隔离 VM 子会话),理由与当年反对理由同为上下文隔离;peer-to-peer 群聊式设计在生产中被放弃。",
+      "analysis": "Innovation:共识翻转但收窄——fan-out 仅用于可并行可验证任务;多 agent 约 15× token 消耗(Anthropic 口径)仍是约束。验证外置是最重要的新要件:自评在长会话中退化,rubric 评分器(Anthropic Outcomes 自报困难任务 +10pp)与外部 done 条件成为回路,与 D30'harness 即分数'互为镜像。对 RL-on-NPU 意义:sub-agent fan-out + 沙箱化 rollout 与 RL 训练的 rollout 架构同构,生产配方即训练环境设计的参考实现。详见 Dispatch 35。",
+      "url": "https://cognition.com/blog/dont-build-multi-agents",
+      "tags": [
+        "multi-agent",
+        "orchestration",
+        "sandbox",
+        "context-engineering"
+      ],
+      "confidence": "provisional"
+    },
+    {
+      "title": "MCP 无状态核心改版 + A2A 1.0(agent 互操作双协议落定)",
+      "org": "Anthropic / Linux 基金会",
+      "year": "2026-07",
+      "category": "infra",
+      "track": "industry",
+      "innovation": "MCP 2026-07-28 版为发布以来最大改版:无状态核心(去会话握手,服务器可水平扩展)、Tasks 扩展(轮询式任务)、MCP Apps 嵌入式 UI、OAuth/OIDC 硬化、12 个月弃用政策;A2A 1.0(04)入驻 Linux 基金会,150+ 组织、供应链/金融/保险生产使用,AP2 扩展做 agent 支付",
+      "summary": "格局定型:MCP 管工具、A2A 管跨 agent 协作、技能(Agent Skills)管懒加载能力;NSA/CISA 已发布 MCP 安全指南——协议进入监管视野。",
+      "analysis": "Innovation:无状态化解决 MCP 服务器规模化的最大工程障碍,Tasks 扩展补齐长任务原语。Performance:四个 Tier-1 SDK 已同步支持(官方口径)。对 RL-on-NPU 意义:训练环境若以 MCP 工具封装,无状态核心使环境服务可水平扩展——与 RL 环境规模化(D35 方向 #1)直接互补;协议标准化降低国产栈接入国际 agent 生态的成本。",
+      "url": "https://blog.modelcontextprotocol.io/posts/2026-07-28/",
+      "tags": [
+        "MCP",
+        "A2A",
+        "protocol",
+        "interoperability"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "METR Time Horizon 1.1:能力时限倍增约 3 个月,评测套件触顶",
+      "org": "METR",
+      "year": "2026-01",
+      "category": "benchmark",
+      "track": "academic",
+      "innovation": "228 任务套件测得 2024 年后 50% 成功率时限的倍增周期约 89-105 天(此前口径 7 个月);早期 Claude Mythos Preview 时限评为 16 小时以上(95% CI 8.5-55h)",
+      "summary": "套件中 16h+ 任务仅 5/228,METR 明确表示 16h 以上测量不可靠——旗舰能力已顶到测量上限,评测本身成为瓶颈。",
+      "analysis": "Innovation:时间视野是目前最被广泛引用的跨代能力刻度,1.1 版扩任务集并修订倍增估计。对看板意义:与 D30 时间跨度轴结论一致——'造更长的尺'(超长程评测)比刷分更稀缺;方案设计应假设一年内 agent 可靠时限再翻 4-8 倍。置信区间极宽(8.5-55h)提示单点数字不可过度解读。",
+      "url": "https://metr.org/blog/2026-1-29-time-horizon-1-1/",
+      "tags": [
+        "METR",
+        "time-horizon",
+        "evaluation",
+        "long-horizon"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "RL 环境规模化商业化(Prime Intellect 1.3 亿 A 轮与环境采购市场)",
+      "org": "Prime Intellect / Mechanize 等",
+      "year": "2026",
+      "category": "infra",
+      "track": "industry",
+      "innovation": "RL 环境成为独立采购科目:Prime Intellect A 轮 1.3 亿美元(ARR 超 1 亿,Environments Hub 定位'RL 环境的 Hugging Face');Anthropic 被报道讨论年 10 亿美元级环境采购;赛道约 50 家公司,数据标注厂商整体转型环境供应",
+      "summary": "环境正在替代语料成为竞争性数据轴——D35 六方向证据密度榜第一;验证 D23'环境与奖励工程'问题域与 GLM-5.3'数十倍长程环境'(D34)的投入逻辑。",
+      "analysis": "Innovation:'RL gym=虚拟办公室仿真'(Salesforce/Slack/Jira 类环境)是主流形态;judge agent 可解性预筛(D34)是质量控制通行做法。风险:同质化环境贬值速度快;世界模型 rollout(WM-R1 线)构成替代路线——买环境还是学环境是 RL 基建的路线选择。对 RL-on-NPU 意义:环境服务是纯 CPU/容器负载,与 NPU 训练集群解耦,国产集群做 RL 的环境侧无生态劣势。金额与采购意向均为媒体报道口径。",
+      "url": "https://www.pymnts.com/news/investment-tracker/2026/prime-intellect-raises-130-million-to-help-companies-train-ai-agents/",
+      "tags": [
+        "RL-environments",
+        "data-axis",
+        "funding",
+        "environment-engineering"
+      ],
+      "confidence": "provisional"
+    },
     {
       "title": "DeepSeek Harness(dsh:插件内核 agent runtime,177k star)",
       "org": "DeepSeek",
