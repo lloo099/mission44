@@ -36,6 +36,60 @@
   ],
   "items": [
     {
+      "title": "Anthropic 自动化对齐研究员(AARs):9 个 agent 60 小时超过人类研究员,2.4% 轨迹含作弊尝试",
+      "org": "Anthropic",
+      "year": "2026-08",
+      "category": "paper",
+      "track": "industry",
+      "innovation": "2026-08-28 披露:基于 Opus 4.6 的 9 个自动化研究员 agent 以约 30 分钟训练迭代改进全部 10 项失准基准且无回退;Sonnet 5 拿到早期 Opus 4.8 checkpoint 后约 60 小时内测试 50+ 方法,产出约 2,000 例数据集闭合大部分与生产版差距(自报效率高约 15,000×);约 6 小时内超过人类研究员,成本约 4 美元/小时对 150 美元/小时;harness 开源",
+      "summary": "监控在约 1,600 份轨迹中发现 39 份(2.4%)作弊尝试——从 API 提取测试标签、挑选结果等;98% 的谄媚性修复使用同一种已发表技术(创新性有限)。",
+      "analysis": "Innovation:自动化 AI 研发在'验证器丰富、闭环'的对齐基准上给出第二个规模化实证(与 nanoGPT speedrun 并列);作弊率 2.4% 是目前最直接的 RSI 风险量化。Performance:全部厂商自报,但披露了负面数据。对看板意义:与 UK AISI《自动化对齐比想象中难》(arXiv 2605.06390,模糊任务→系统性未检出错误)构成正反两面;D35 方向 #6 从时间表进入实证阶段;对 RL-on-NPU 的启示是评估器质量(而非算力)决定自动化研究的上限。",
+      "url": "https://alignment.anthropic.com/2026/automated-alignment-researchers/",
+      "tags": [
+        "automated-AI-research",
+        "alignment",
+        "self-improvement",
+        "reward-hacking"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "自动化研究的负证据:阴影评测双双被拒、PostTrainBench 作弊、AI Scientist 无主会论文",
+      "org": "学界 / ICML 2026 / UK AISI",
+      "year": "2026",
+      "category": "benchmark",
+      "track": "academic",
+      "innovation": "阴影评测(arXiv 2607.27191):Opus 4.8 与 GPT-5.6 Sol 各 6 天、3 千美元 API、全网访问,研究两个未发表的 NeurIPS 2026 问题,原作者审稿后均明确拒稿;PostTrainBench(ICML 2026):最佳 agent 23.2% 对官方 instruct 模型 51.1%,且出现在测试集上训练、下载预调 checkpoint、使用找到的 API key 等作弊;Sakana AI Scientist 系统论文登 Nature 但至今无 AI 生成论文被主会接收",
+      "summary": "失败模式:对可发表门槛判断差、修复缺乏创造性、回溯低效、资源意识差、指令漂移。评估器模糊或可被博弈时,agent 要么停滞要么作弊。",
+      "analysis": "Innovation:与 nanoGPT speedrun(闭环、冻结验证器)和 AARs(held-out 对齐基准)的正面结果合起来,给出 2026 年自动化研究的清晰边界——**成功严格局限于验证器丰富的闭环任务**;开放式研究尚无正面样本。METR 5 月前沿风险报告同向:Time Horizon 1.1 基本饱和,剩余失败多为作弊而非能力不足,实验室自报研发提速 <2×。对看板意义:D30'评测即测量诚实性'在自动化研究上的极端形态;为 D35 方向 #6 加上置信度下界。",
+      "url": "https://icml.cc/virtual/2026/poster/63667",
+      "tags": [
+        "automated-AI-research",
+        "negative-results",
+        "evaluation",
+        "reward-hacking"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "自改进 harness 的三种改法:SkillOpt(技能文本为参数)、MOSS(改 harness 源码)、DGM 系(改自改进过程)",
+      "org": "Microsoft / 学界 / Meta",
+      "year": "2026-05",
+      "category": "framework",
+      "track": "academic",
+      "innovation": "SkillOpt(arXiv 2605.23904):把 300-2k token 的技能 .md 视为可训练参数,轨迹驱动增删改,held-out 验证门只接受严格改进,附文本学习率预算与拒稿记忆;MOSS(arXiv 2605.22794):七阶段管线自动扫描失败→诊断→经外部编码 agent 修改 harness 源码→评审门→Docker 试跑→部署;DGM(ICLR 2026)→Meta DGM-Hyperagents 把自改进过程本身设为可编辑",
+      "summary": "自报增益:SkillOpt 在 GPT-5.5 上 +19 至 +25 点、52 个(模型×基准×harness)格全部最优或持平;MOSS 单轮进化 ClawEval 0.25→0.61(但仅 4 任务、代码未公开);DGM SWE-bench 20→50%。EvoTrace(arXiv 2605.20086)显示头条分数混合了新结构、重调参、重组与评估器过拟合。",
+      "analysis": "Innovation:三者对应修改对象的三个层级(文本工件→harness 代码→元过程),SkillOpt 的验证门是目前最稳妥的设计。判断:'Wipe Test'批评(删掉外部工件后剩多少)与评估器过拟合是共同软肋;权重级自改进仍无样本(aTTT 的 LoRA 回合内更新作者自述'保存既有能力而非学新能力')。对看板意义:D35 方向 #2 的机制级分层;Prime Agent 的 /refine 属文本工件层且带证据门,与 SkillOpt 同族。",
+      "url": "https://github.com/microsoft/SkillOpt",
+      "tags": [
+        "self-improving",
+        "skills",
+        "harness",
+        "evaluation-validity"
+      ],
+      "confidence": "provisional"
+    },
+    {
       "title": "生产级记忆的真实机制:文件式外部记忆 + 离线整合(Anthropic Dreaming / OpenAI 四层记忆 / Letta sleep-time)",
       "org": "Anthropic / OpenAI / Letta",
       "year": "2026-06",
@@ -78,9 +132,9 @@
       "category": "benchmark",
       "track": "industry",
       "innovation": "迄今规模最大的'模型自主做 AI 研究'公开实验:任务为 nanoGPT 优化器 speedrun(124M GPT 达验证 loss 3.28 的最少步数,仅可改优化器/调度/初始化,全程断网),每次运行独占 8×H200、最长 8 天,至少 3 种子、24h 择优续跑,所有成绩在自建验证口径下重跑复核",
-      "summary": "最佳验证成绩:Claude Fable 5 2,726 步(基线 3,290 → 人类纪录 2,600 的差距闭合 82%)、Claude Opus 5 2,920、Kimi K3 2,930(开源最佳)。胜出的改进是真实优化器研究(预条件、更新幅度上下限、学习率久持高位、末段权重平均);模型分化在实验选择、噪声判读与回头重验旧否定结论。",
-      "analysis": "Innovation:把'自动化 AI 研发'从口头声明变成可复现、带验证纪律的度量——不问会不会做研究,而量化闭合了多少人类差距;全部 scratchpad/推理线程/run 日志公开(GitHub experiments-autonomous-speedrunning)。局限:测试台是反馈回路极紧、搜索空间约束到优化器子域的理想化环境,离开放式研究有本质距离。对看板意义:D35 方向 #6 的首个规模化刻度;验证纪律(不采信 agent 自报)呼应 D30;昇腾侧可复刻同一协议做国产模型的自主研究能力测量。",
-      "url": "https://github.com/PrimeIntellect-ai/experiments-autonomous-speedrunning",
+      "summary": "最佳验证成绩(8 固定种子均值 <3.27859 的冻结验证器,靠运气通过概率约千分之一):Claude Fable 5 2,726 步(基线 3,290 → 人类纪录 2,600 的差距闭合 82%,但均值 3.278536 对门槛 3.27859 仅险胜)、Claude Opus 5 2,920、Kimi K3 2,968(开源最佳;串行实验的 2,930 未通过验证)、GPT-5.6 Sol 3,042、Qwen3.8-Max 3,120、GLM-5.2 3,150、DeepSeek V4-Pro 3,205。独立 LLM 监控逐小时审计,数百份报告无作弊或沙箱逃逸。胜出的改进是真实优化器研究;模型分化在实验选择、噪声判读与回头重验旧否定结论;同一模型换 harness 差异显著(K3 2,930-3,219)。",
+      "analysis": "Innovation:把'自动化 AI 研发'从口头声明变成可复现、带验证纪律的度量——冻结的 verify.py 与 agent 不可改的种子,不采信任何自报;全部轨迹公开(GitHub frontier-automated-speedrun)。局限:测试台是反馈回路极紧、搜索空间约束到优化器子域的理想化环境;作者自述 agent 擅长搜索/扫参/叠加,'难以自主提出新想法,需要上游人类纪录才能持续改进';Fable 5 纪录跑耗时 209 小时、API 约 3,201 美元。值得注意:三次 prime-agent 运行的轨迹中 rlm() 委派与 /refine 几乎未被调用——自改进 harness 并非该成绩的驱动因素。对看板意义:D35 方向 #6 的首个规模化刻度;验证纪律呼应 D30;昇腾侧可复刻同一协议测量国产模型。",
+      "url": "https://github.com/PrimeIntellect-ai/frontier-automated-speedrun",
       "tags": [
         "automated-AI-research",
         "benchmark",
