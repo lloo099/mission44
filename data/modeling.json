@@ -2,6 +2,22 @@
   "updated": "2026-09-01",
   "items": [
     {
+      "title": "权重级持续学习的两条原型线:Nested Learning/Hope 与稀疏记忆层微调",
+      "org": "Google Research;Meta FAIR 及独立复现",
+      "year": "2026",
+      "category": "architecture",
+      "innovation": "Nested Learning(arXiv 2512.24695,NeurIPS 2025)把模型视为多层嵌套优化问题,Continuum Memory System 以不同更新频率的 MLP 链推广'注意力=短期、FFN=长期',Hope=Titans 式长期记忆+CMS+自修改更新规则;稀疏记忆层微调(arXiv 2510.15103)在 1M 槽位记忆层上以 TF-IDF 选槽只更新 top-t,新知识获取相同时遗忘由全量微调的 89% 降至 11%",
+      "analysis": "Innovation:两条线是目前最清晰的'低遗忘权重更新'机制。Performance:Hope 仅在 340M-1.3B 验证,对 Titans/Gated DeltaNet 的领先为困惑度与 NIAH 上的小幅优势,Google 未公布 2026 后续或 Gemini 部署(常被引用的 Permuted-MNIST 结果来自第三方衍生论文);稀疏记忆微调已被两组独立小规模复现(Qwen-2.5-0.5B retrofit + KL 选槽,arXiv 2604.05248;MedMCQA,arXiv 2605.03229),但无 ≥7B、代码/agent 技能数据上的结果。判断:前沿实验室'2026 解决持续学习'的表态尚无对应机制或评测披露,产品层的学习全部落在记忆整合与 harness 设计。对 RL-on-NPU 意义:记忆层稀疏更新的显存与通信画像远轻于全量微调,是国产集群上做部署后更新实验的合理起点。",
+      "url": "https://research.google/blog/introducing-nested-learning-a-new-ml-paradigm-for-continual-learning/",
+      "tags": [
+        "continual-learning",
+        "memory-layers",
+        "Nested-Learning",
+        "sparse-finetuning"
+      ],
+      "confidence": "provisional"
+    },
+    {
       "title": "Qwen3.8-Flash-Next(125B MoE 仅激活 6B,Qwen4 架构预览)",
       "org": "阿里 Qwen",
       "year": "2026-08",

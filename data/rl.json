@@ -2,6 +2,54 @@
   "updated": "2026-09-01",
   "items": [
     {
+      "title": "TRACE 与 ECHO:turn 级信用分配的两条可复现路线(BrowseComp-Plus 大幅增益)",
+      "org": "Microsoft/UW-Madison;北大/百度",
+      "year": "2026-07",
+      "category": "algorithm",
+      "innovation": "TRACE(arXiv 2607.13988):以工具调用边界为状态转移,用冻结参考模型对标准答案的 log-prob 作状态价值,每轮奖励=该价值的 TD 变化——无 critic、无过程标注,冗余调用自动被伸缩抵消;ECHO(arXiv 2606.31650):每轮压缩为带来源索引的记忆记录,同一索引既重建策略上下文(prune to act)又把结果奖励只路由到支撑答案的轮次(trace to learn)",
+      "analysis": "Performance(均作者自报):TRACE 纯 RL 无 SFT 冷启动,Qwen3-4B 7.2→35.6、Qwen3-30B-A3B 8.4→42.6;ECHO 留出集 43.4% 对 GRPO 28.9%、滚动摘要 SUPO 36.1%,且轮数更少。判断:长程 agent RL 最可复现的进展在 turn 级信用分配而非新算法族;与工业披露呼应——GLM-5.2 因轨迹级优势模糊而重回 critic PPO,K3 的瓶颈在 partial rollout 与可恢复沙箱等系统层。对 RL-on-NPU 意义:两法均不依赖额外 critic 模型的前向/反向,显存画像友好;ECHO 的记忆索引与 SAO compaction(D34)同为'上下文管理进入训练分布'的实例。",
+      "url": "https://arxiv.org/abs/2607.13988",
+      "tags": [
+        "credit-assignment",
+        "long-horizon",
+        "agentic-RL",
+        "BrowseComp"
+      ],
+      "confidence": "provisional"
+    },
+    {
+      "title": "记忆增强 RL 谱系:从 MemAgent 到 Memory-R2 的 LoGo-GRPO 与 HiMPO",
+      "org": "字节 Seed/清华;LMU/华为/TUM 等",
+      "year": "2026",
+      "category": "algorithm",
+      "innovation": "让 agent 通过 RL 学会读写记忆:MemAgent(定长记忆逐块覆写,32K 训练泛化到 3.5M token QA);Mem-α(核心/情景/语义记忆工具,30K 训练泛化到 400K+);Memory-R2(arXiv 2605.21768)指出记忆使过去动作成为未来环境的一部分、轨迹级组内比较失效,提出 LoGo-GRPO=全局轨迹奖励+从同一中间记忆状态局部重采样;HiMPO(arXiv 2606.16285)以写入前后可恢复信息量为记忆写入定信用",
+      "analysis": "Innovation:问题被逐步形式化——记忆操作的信用分配是普通 GRPO 的盲区(组内轨迹起点不同),Memory-R2 的局部重采样与 HiMPO 的信息增益奖励是两种修正;Mem-T 的训练免费变体已达 LoCoMo 50.08 F1 超 Memory-R1/MemAgent。判断:数字均为作者自报、基座多在 4B-8B;但方向明确——记忆不再是外挂检索,而是策略的一部分并由 RL 塑形。对 RL-on-NPU 意义:记忆式 RL 用短窗口训练换长上下文泛化(32K→3.5M),对显存受限加速器是最直接的长程路线;LoGo-GRPO 的局部重采样增加 rollout 分叉,与 D26 前缀缓存/KV 复用主线相接。",
+      "url": "https://arxiv.org/abs/2605.21768",
+      "tags": [
+        "memory-RL",
+        "long-context",
+        "GRPO",
+        "credit-assignment"
+      ],
+      "confidence": "provisional"
+    },
+    {
+      "title": "JitRL 与 aTTT:部署期在线适应的两条路(训练免费 logit 修正 vs 回合内权重更新)",
+      "org": "学界(JitRL:ICLR/ICML 2026;aTTT:快手)",
+      "year": "2026",
+      "category": "algorithm",
+      "innovation": "JitRL(arXiv 2601.18510):非参数轨迹记忆检索相似状态、即时估计逐动作优势并加到冻结模型 logits——证明为 KL 约束策略优化的闭式解,无梯度更新;aTTT(arXiv 2607.03441):多轮回合内持续在自身轨迹上更新权重,以 token 级重加权抑制自训练重复漂移",
+      "analysis": "Performance(自报):JitRL WebArena 51.4% 对训练免费基线 ≤44%,WebArena-Lite 同基座超 WebRL 且计算 <3%;aTTT ALFWorld +5.0、SWE-bench Lite +4.9。判断:训练免费路线已接近可用,回合内权重 TTT 增益有限且需对抗漂移;TTT-E2E(2M 长度匹配全注意力且快 35×)属长上下文压缩而非跨会话知识积累。对 RL-on-NPU 意义:JitRL 把'适应'变成推理时的检索+加性偏置,零训练基建即可在 NPU 推理集群上部署,是国产栈上最低门槛的持续学习入口;权重级在线更新仍无前沿实验室机制披露。",
+      "url": "https://github.com/liushiliushi/JitRL",
+      "tags": [
+        "test-time-training",
+        "online-adaptation",
+        "continual-learning",
+        "WebArena"
+      ],
+      "confidence": "provisional"
+    },
+    {
       "title": "Rubric/生成式奖励 RL(RaR 入 ICLR 2026,universal verifier 进旗舰管线)",
       "org": "Scale AI 系 / OpenAI / 学界",
       "year": "2026",

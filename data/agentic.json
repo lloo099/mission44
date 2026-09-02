@@ -36,6 +36,24 @@
   ],
   "items": [
     {
+      "title": "生产级记忆的真实机制:文件式外部记忆 + 离线整合(Anthropic Dreaming / OpenAI 四层记忆 / Letta sleep-time)",
+      "org": "Anthropic / OpenAI / Letta",
+      "year": "2026-06",
+      "category": "infra",
+      "track": "industry",
+      "innovation": "三家产品级记忆殊途同归且均不更新权重:Anthropic Managed Agents 记忆=挂载进沙箱的目录(以文件/bash 工具读写,审计可导出),Dreaming=会话间定时离线任务(汇总近期 transcript 的纠错与模式→去重/剪枝/解矛盾→输出可审阅 diff);OpenAI ChatGPT 记忆=四层上下文(会话元数据/显式长期事实/对话摘要/滑窗)直接注入,无向量检索,Dreaming 定期重写用户摘要;Letta 以后台子 agent 重写记忆",
+      "summary": "厂商数字:Harvey 用 Dreaming 后任务完成率约 6×(基线为高度重复的失败模式);OpenAI 内部评测事实召回 41.5%→82.8%。第三方实证(Evo-Memory r≈0.72、arXiv 2604.27003)表明记忆收益与任务相似度强相关,稳定性-可塑性问题转移到检索层。",
+      "analysis": "Innovation:'持续学习'在 2026 产品层的实际形态是 transcript→可读文本的蒸馏与定期整合,而非权重更新;Dreaming 的可审阅 diff 设计把记忆变更纳入审计。Performance:记忆基准格局——Mem0 LongMemEval 93-94、Zep 时序知识图谱 +18.5%、Mastra 观察式记忆 94.87%,LoCoMo 存在配置争议。对看板意义:D35 方向 #5 的机制级落点;昇腾侧无任何特殊依赖(文件+调度),可直接复用;与 ECHO 等训练侧记忆索引方法形成推理/训练两侧的呼应。",
+      "url": "https://claude.com/blog/claude-managed-agents-memory",
+      "tags": [
+        "memory",
+        "continual-learning",
+        "context-engineering",
+        "Dreaming"
+      ],
+      "confidence": "self-reported"
+    },
+    {
       "title": "Prime Agent(自改进 RLM harness:上下文即变量、sub-agent 即函数调用)",
       "org": "Prime Intellect",
       "year": "2026-08",
