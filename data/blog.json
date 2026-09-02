@@ -3,6 +3,20 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-36-frontier-mechanisms",
+      "title": "Dispatch 36 · 提前布局方向的机制级深挖:环境轴、世界模型、持续学习与自动化研究的真实边界",
+      "subtitle": "D35 的机制级续篇(三路定向深挖):①环境轴已是带规格、价格与质检的基建——verifiers 规格(数据集+rollout+加权 rubric)、企业环境 2 万至 30 万美元/个、可解性预筛淘汰约 50%、SWE-bench Verified 28.5% 任务可被错误补丁通过且模型在可 hack 任务上 Pass@1 高 14 点、Anthropic 80 可 hack 环境实验 40% 回合 hacking——奖励可 hack 性成为环境设计一等公民;②世界模型 rollout 有了数字:WM-R1 全程世界模型内 RL(AndroidWorld 39.8 对 30.8)、Qwen-AgentWorld 397B-A17B 七域模拟 RL(SWE +11.5)、真实环境每 epoch 多 2.8 万美元,反面是 agent 主动模拟不到 1%;③持续学习产品层=文件式记忆+离线整合(Dreaming 可审阅 diff),权重层稀疏记忆微调遗忘 89%→11% 仅 1.3B 以下复现,JitRL 接近可用;④自动化研究边界:闭环验证器任务成立(speedrun 8 种子 p<0.001 验证、AARs 2.4% 作弊率),开放式研究全部失败(阴影评测拒稿、PostTrainBench 作弊);Prime Agent 源码级机制核实,/refine 仅改文本工件且在 speedrun 中几乎未用。",
+      "date": "2026-09-01",
+      "tags": [
+        "RL-environments",
+        "world-model-rollout",
+        "continual-learning",
+        "automated-research",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-36-frontier-mechanisms.md"
+    },
+    {
       "id": "dispatch-35-frontier-scan",
       "title": "Dispatch 35 · 前沿全景扫描:模型分数收敛、Agent 方案定型与六个提前布局方向",
       "subtitle": "三路并行 agent 调研汇总:①旗舰 AA 指数收敛(Opus 5 Max 63 / Fable 5 62 / GPT-5.6 Sol、Grok 4.6 61 / GLM-5.3、K3 60),开源架构共识转向小激活 MoE(Qwen3.8-Flash-Next 125B 激活 6B=Qwen4 预览),cyber 评估成发布关键路径(Astra 首触 Critical 暂停 RL 两周);②生产级 agent 配方定型五要件:orchestrator-worker(Cognition 共识翻转)、每 agent 一沙箱、上下文工程三板斧、验证外置(独立评估 agent)、MCP 无状态核心+A2A 1.0;③提前布局六方向按证据密度排名:RL 环境规模化(采购科目,Prime Intellect 1.3 亿 A 轮)>自进化 agent>rubric 奖励 RL(已进 GPT-5 管线)>世界模型 rollout(WM-R1 替代真实环境)>持续学习>自动化 AI 研发(研究实习生 2026-09 节点)。METR 16h 时限顶到评测上限。",
