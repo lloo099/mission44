@@ -36,6 +36,42 @@
   ],
   "items": [
     {
+      "title": "Prime Agent(自改进 RLM harness:上下文即变量、sub-agent 即函数调用)",
+      "org": "Prime Intellect",
+      "year": "2026-08",
+      "category": "framework",
+      "track": "industry",
+      "innovation": "MIT 开源、模型无关的 agent harness,两个核心抽象:RLM(Recursive Language Model)把上下文当变量、把 sub-agent 委派当持久 IPython REPL 内的 rlm() 函数调用;Continual Harness 把 prompt/技能/记忆/sub-agent 规格开放给 agent 自身 CRUD(/refine 做有证据的自我修订)",
+      "summary": "2026-08-05 发布(arXiv 2608.23552)。自报搭配 Claude Opus 5 在 ARC-AGI-3 得 95.5%(超人类专家基线 95.4%),九项长上下文评测六项超过 Claude Code 且 token 更少;明确不做沙箱,以用户权限执行代码。",
+      "analysis": "Innovation:与 DeepSeek Harness(dsh,D29)构成两极——dsh 以 append-only 日志为状态中心、为训推一致与精确回放优化;Prime Agent 以活的 Python kernel 为状态中心、为长任务 token 效率优化,代价是回放困难与评测口径随自改而漂移。Performance:全部为厂商自报,未见独立复现。对 RL-on-NPU 意义:'harness 即分数'的又一实证(同一 Opus 5 换 harness 即拉开差距);技能层自进化是 D35 方向 #2 的产品化样本;Prime 的商业闭环 环境 Hub → prime-rl → harness 使轨迹天然回流训练栈,与 dsh 同构但不绑模型。",
+      "url": "https://github.com/PrimeIntellect-ai/prime-agent",
+      "tags": [
+        "agent-harness",
+        "RLM",
+        "self-improving",
+        "Prime-Intellect"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "Measuring Autonomous AI Research(153 次自主运行 × 18 模型,nanoGPT speedrun 闭合 82% 人类差距)",
+      "org": "Prime Intellect",
+      "year": "2026-08",
+      "category": "benchmark",
+      "track": "industry",
+      "innovation": "迄今规模最大的'模型自主做 AI 研究'公开实验:任务为 nanoGPT 优化器 speedrun(124M GPT 达验证 loss 3.28 的最少步数,仅可改优化器/调度/初始化,全程断网),每次运行独占 8×H200、最长 8 天,至少 3 种子、24h 择优续跑,所有成绩在自建验证口径下重跑复核",
+      "summary": "最佳验证成绩:Claude Fable 5 2,726 步(基线 3,290 → 人类纪录 2,600 的差距闭合 82%)、Claude Opus 5 2,920、Kimi K3 2,930(开源最佳)。胜出的改进是真实优化器研究(预条件、更新幅度上下限、学习率久持高位、末段权重平均);模型分化在实验选择、噪声判读与回头重验旧否定结论。",
+      "analysis": "Innovation:把'自动化 AI 研发'从口头声明变成可复现、带验证纪律的度量——不问会不会做研究,而量化闭合了多少人类差距;全部 scratchpad/推理线程/run 日志公开(GitHub experiments-autonomous-speedrunning)。局限:测试台是反馈回路极紧、搜索空间约束到优化器子域的理想化环境,离开放式研究有本质距离。对看板意义:D35 方向 #6 的首个规模化刻度;验证纪律(不采信 agent 自报)呼应 D30;昇腾侧可复刻同一协议做国产模型的自主研究能力测量。",
+      "url": "https://github.com/PrimeIntellect-ai/experiments-autonomous-speedrunning",
+      "tags": [
+        "automated-AI-research",
+        "benchmark",
+        "nanoGPT-speedrun",
+        "Prime-Intellect"
+      ],
+      "confidence": "self-reported"
+    },
+    {
       "title": "生产级 agent 配方共识(orchestrator-worker 定型与 Cognition 共识翻转)",
       "org": "行业综合(Anthropic/OpenAI/Cognition/Cursor)",
       "year": "2026-08",

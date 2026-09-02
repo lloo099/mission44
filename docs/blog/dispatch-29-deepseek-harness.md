@@ -166,6 +166,10 @@ flowchart TB
 3. **第三方统一协议的跨 harness 测量**:K3 混训与 DeepSeek 单接口两条路线的实证对比,谁先做谁定义评测标准。
 4. **dsh 插件生态与 RL 工具链的交叉**:社区是否出现基于 dsh 的轨迹采集/RL 环境插件。
 
+## 跟进(2026-09-01):对照 Prime Agent
+
+Prime Intellect 于 08-05 开源的 [Prime Agent](https://github.com/PrimeIntellect-ai/prime-agent)(MIT,arXiv 2608.23552)为本篇的分析框架提供了另一极。两者同为 harness、同以轨迹回流训练栈为商业逻辑,但设计哲学相反:**dsh 以 append-only 日志为状态中心**(压缩=投影、精确回放、minimal 模式复现训练分布),为可审计与训推一致优化;**Prime Agent 以持久 IPython kernel 为状态中心**(RLM:上下文即变量、sub-agent 即 `rlm()` 函数调用),为长任务 token 效率优化,代价是回放困难。第二个分界是自改进:dsh 的插件由开发者替换,Prime Agent 把 prompt/技能/记忆开放给 agent 自身 CRUD——评测口径因此随自改漂移。第三,防过拟合路线相反:dsh 用"收窄"(单接口 + minimal 模式)保证分数可信,Prime Agent 用"增强"证明 harness 是能力放大器(自报搭配 Opus 5 在 ARC-AGI-3 得 95.5%、九项长上下文六胜 Claude Code)。两个结果合起来构成"harness 即分数"的完整论证:harness 既定义分数口径,也改变分数本身。Prime Agent 明确不做沙箱,与 D35 记录的"每 agent 一沙箱"生产共识相悖。
+
 ---
 
 **来源与声明**:两路定向调研(2026-08-21),主要来源:[deepseek-harness repo](https://github.com/deepseek-ai/deepseek-harness) 及其架构文档、[V4-Pro GA 公告](https://api-docs.deepseek.com/news/news260813/)、[HN 讨论](https://news.ycombinator.com/item?id=49285244)、[harness 分差论文 2605.23950](https://arxiv.org/abs/2605.23950)、[K3 技术报告 2607.24653](https://arxiv.org/abs/2607.24653)、[Codex agent loop](https://openai.com/index/unrolling-the-codex-agent-loop/)、[Hermes 架构](https://hermes-agent.nousresearch.com/docs/developer-guide/architecture)、[MCP 2026-07-28 规范](https://blog.modelcontextprotocol.io/posts/2026-07-28/)等,文中逐处标注。star 数随时间快速变化,以检索时点为准;DSML 细节来自第三方解析器与社区报告(非官方文档);标注(推断)处为本看板分析。
