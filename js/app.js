@@ -239,7 +239,7 @@ async function wireBlog() {
       return;
     }
     idx.innerHTML = visible.map((p) => `<a class="blog-card" href="#blog/${escapeAttr(p.id)}">
-      <div class="blog-card-date">${escapeHtml(p.date || "")}</div>
+      <div class="blog-card-date">${escapeHtml(p.date || "")}${p.read ? ' <span class="blog-card-read" title="有独立精读页">精读</span>' : ""}</div>
       <h3>${escapeHtml(p.title)}</h3>
       <p>${escapeHtml(p.subtitle || "")}</p>
       <div class="blog-card-tags">${(p.tags || []).map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
@@ -271,8 +271,9 @@ async function wireBlog() {
         + (newer ? '<a class="prev" href="#blog/' + escapeAttr(newer.id) + '"><span class="pn-label">← 更新一篇</span><span class="pn-title">' + escapeHtml(newer.title) + "</span></a>" : "<span></span>")
         + (older ? '<a class="next" href="#blog/' + escapeAttr(older.id) + '"><span class="pn-label">更早一篇 →</span><span class="pn-title">' + escapeHtml(older.title) + "</span></a>" : "<span></span>")
         + "</div>";
+      const readLink = p.read ? '<a class="read-link" href="' + escapeAttr(p.read) + '" title="独立长文精读页:逐点拆解、对照与原图解析">📖 精读版</a>' : "";
       post.innerHTML = '<div class="blog-topline"><a class="blog-back" href="#blog">← 所有 Dispatch</a>'
-        + '<span class="topline-right"><button class="share-btn" data-share="' + escapeAttr(p.id) + '" title="复制分享链接(带专属预览卡)">🔗 分享</button>'
+        + '<span class="topline-right">' + readLink + '<button class="share-btn" data-share="' + escapeAttr(p.id) + '" title="复制分享链接(带专属预览卡)">🔗 分享</button>'
         + '<span class="read-time">约 ' + mins + " 分钟读完</span></span></div>"
         + `<div class="prose blog-prose">${renderMarkdown(md)}</div>`
         + postNav

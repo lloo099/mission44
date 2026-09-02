@@ -122,7 +122,8 @@ for (const post of posts) {
 if (browser) await browser.close();
 
 /* sitemap */
-const urls = [`${BASE}/`, ...posts.filter((p) => p.id).map((p) => `${BASE}/p/${p.id}.html`)];
+const urls = [`${BASE}/`, ...posts.filter((p) => p.id).map((p) => `${BASE}/p/${p.id}.html`),
+  ...posts.filter((p) => p.read).map((p) => `${BASE}/${p.read}`)];
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`
   + urls.map((u) => `  <url><loc>${u}</loc></url>`).join("\n") + `\n</urlset>\n`;
 fs.writeFileSync(path.join(ROOT, "sitemap.xml"), sitemap);

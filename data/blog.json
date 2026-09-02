@@ -28,7 +28,8 @@
         "world-models",
         "rubric-RL"
       ],
-      "file": "docs/blog/dispatch-35-frontier-scan.md"
+      "file": "docs/blog/dispatch-35-frontier-scan.md",
+      "read": "reads/dispatch-35-frontier-scan.html"
     },
     {
       "id": "dispatch-34-glm-5-3",
