@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 08 精读版 · Agentic RL 入门</title>
+<meta name="description" content="从单轮 RLVR（一步 MDP）到跨 10–100+ 回合的 agentic RL（POMDP）：信用分配、工具集成推理、长 rollout 三大难题，框架地图，环境与奖励设计，以及超长 rollout 为何把昇腾显存痛点放大到极致——叙事 vs 证据逐节对照。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-08-agentic-rl.html">
+<meta property="og:title" content="Dispatch 08 精读版 · Agentic RL 入门">
+<meta property="og:description" content="从单轮 RLVR 到跨 10–100+ 回合的 agentic RL：信用分配、工具集成推理、长 rollout 三大难题，框架地图，环境与奖励设计，以及对 RL-on-NPU 的含义。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-08-agentic-rl.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-08-agentic-rl.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-08-agentic-rl">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-08-agentic-rl.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 08 · 精读版 · 2026-06-25</div>
+  <h1>Agentic RL 入门：从"会推理"到"会行动"</h1>
+  <p class="standfirst">Agentic RL 是 2026 的 RL 主线：把 LLM 从"被动生成序列"训练为"自主决策的智能体"。它与单轮 RLVR 的根本区别是时间尺度——单轮是一步 MDP，agentic 是跨 10–100+ 回合的 POMDP，整条轨迹通常达 10 万–50 万 token。本文把 D08 拆成范式定义、三个核心难题（信用分配、工具集成推理、长 rollout 系统开销）、框架地图、环境与奖励设计、对 RL-on-NPU 的含义五个层次，每节给出"叙事怎么说 / 证据是什么"两栏与本站判断；原图取自 GitHub 可达的框架与综述仓库。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D08</span>
+    <span>承接 D02 / D04 / D05 / D07</span>
+    <span>原图 3 张 · 本站图 5 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>什么是 Agentic RL</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>三个核心难题总览</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>信用分配：最困难的一环</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>TIR：从模仿到按结果优化</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>长 rollout 与异步</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>框架地图（2026）</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>环境、奖励与够用粒度</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>对 RL-on-NPU 的意义</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>总表：叙事 vs 证据</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>原文没给的东西</a></li>
+    <li><a href="#s11"><span class="tnum">11</span>判断与下一步</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">原文讨论的不是单个模型，而是一个<strong>范式</strong>。概括而言：<strong>从"奖励一段推理"变成"奖励一串行动"</strong>。单轮 RLVR（如 R1）是 prompt → 回答 → 奖励的一步 MDP，几千 token；agentic RL 是观察 → 动作 → 环境 → …的多回合 POMDP，10–100+ 回合、10 万–50 万+ token，每回合一次 LLM 调用 + 一次环境交互，信号是 episode 级奖励 + 大量中间步。由此带来三个核心难题：<strong>① 信用分配</strong>（episode 级奖励在上百回合里几乎没信息）、<strong>② 工具集成推理 TIR</strong>（学会"何时/如何/用哪个"工具，而非模仿 ReAct 脚本）、<strong>③ 长 rollout 的系统开销</strong>。一批框架（VerlTool、AgentRL、SkyRL-Agent、ProRL Agent、ARLArena）和综述正在把它工程化。对 RL-on-NPU 的结论是：超长 agentic rollout 把昇腾"无 sleep-mode + 64GB HBM"的显存痛点放大到极致——这恰恰让 async/解耦 rollout、量化 rollout、稀疏注意力（D02/D04/D05）在这里收益最大。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段：<strong>叙事怎么说</strong>（左栏，灰）/ <strong>证据是什么</strong>（右栏，橙）/ <strong>本站判断</strong>（下方色块）。数字按来源分三类标注：<span class="chip c-tp">第三方</span> 独立测量或综述归纳、<span class="chip c-vr">自报</span> 论文或框架作者口径、<span class="chip c-inf">推断</span> 本站分析。原文自称论文均为 arXiv 一手来源；原文中标 provisional 的选型表在本文保留同一标注。</p>
+  <p>一条贯穿全文的线索：<strong>三个难题不是并列的，而是互相放大的环</strong>——中间步质量影响工具选择，更多工具回合放大系统开销，异步 rollout 又改变 advantage 的计算时序。原文对 NPU 的全部判断都落在这个环的第三个节点（系统开销）上。</p>
+</div>
+
+<div class="formula">范式        单轮 RLVR：一步 MDP · 1 次生成 · 几千 token · 一个可验证奖励
+            Agentic RL：多回合 POMDP · 10–100+ 回合 · 10 万–50 万+ token · episode 奖励 + 中间步
+三难题      ① 信用分配（47 种方法，粒度 × 方法）  ② TIR / ARLT（何时 · 如何 · 用哪个）  ③ 长 rollout（重尾 · 显存 · 异步）
+框架        VerlTool · AgentRL · Agent-R1 · SkyRL-Agent · ProRL Agent · ARLArena · AgentV-RL
+NPU         10 万–50 万 token KV cache × 910B 64GB × 无 sleep-mode → 异步 / 量化 / 稀疏注意力收益最大   <span class="cmt">// align-probe 防跨回合漂移</span></div>
+
+<h2 id="s1"><span class="hnum">01</span>什么是 Agentic RL</h2>
+
+<p>原文用一张对照表给出定义。它把 LLM 从"passive sequence generator"重塑为"autonomous decision-maker"：<strong>自己决定何时调工具、调哪个、看了结果怎么继续</strong>——靠结果驱动（outcome-driven）而非模仿示范（imitation）。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:110px"></th><th>单轮 RLVR（如 R1）</th><th>Agentic RL</th></tr></thead>
+<tbody>
+<tr><td>形式</td><td>一步 MDP：prompt → 回答 → 奖励</td><td>多回合 POMDP：观察 → 动作 → 环境 → …</td></tr>
+<tr><td>轨迹</td><td>1 次生成</td><td>10–100+ 回合，每回合 LLM + 环境</td></tr>
+<tr><td>token</td><td>几千</td><td>10 万–50 万+</td></tr>
+<tr><td>信号</td><td>一个可验证奖励</td><td>episode 级奖励 + 大量中间步</td></tr>
+<tr><td>能力</td><td>推理</td><td>用工具、查资料、写代码、跑命令、纠错重试</td></tr>
+</tbody>
+<caption>原文的定义对照表：agentic RL 与单轮 RLVR 的差别在时间尺度与信号结构，而非算法族。</caption>
+</table>
+</div>
+
+<figure>
+  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-1.svg" alt="上：单轮 RLVR 一步 MDP（prompt → 一次生成 → 回答 → 一个可验证奖励）；下：Agentic RL 多回合 POMDP（观察 → 决策 → 动作 → 环境执行 → 返回新观察，整条轨迹 10 万–50 万 token → episode 级奖励 + 中间步）">
+  <figcaption><span class="fnum">图 1</span>单轮 RLVR（一步 MDP，上）与 Agentic RL（多回合 POMDP，下）：上方是一条直线链，下方是一个观察—决策—动作—环境的闭环，环境执行同时向"整条轨迹 10 万–50 万 token"输出，最终得到 episode 级奖励 + 大量中间步；虚线标注"时间尺度从一步扩到上百回合"。<span class="chip c-inf">本站图</span> 由原文第 1 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>看拓扑差别：上半部分没有回边，下半部分有一条"返回新观察"的回边。<strong>这条回边就是 agentic RL 全部难题的来源</strong>——有了回边，轨迹长度不再由一次生成决定而由环境交互次数决定（引出长 rollout），奖励与动作之间隔着任意多次循环（引出信用分配），而每次循环中的动作是工具调用（引出 TIR）。</p>
+    <p>再看下半部分从环境执行引出的第二条边：它不回到观察，而是指向"整条轨迹 10 万–50 万 token"。这提示轨迹是环境交互的累积产物，token 量与回合数正相关——这正是第 08 节 KV cache 巨大的直接原因。</p>
+  </div>
+</figure>
+
+<figure>
+  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-2.svg" alt="单回合内部：观察 → 决策 → 动作（调工具）→ 环境执行 → 返回新 observation；循环 10 至 100+ 回合后轨迹结束 → 最终 episode 级奖励 → 更新策略（结果驱动而非模仿示范）">
+  <figcaption><span class="fnum">图 2</span>Agentic 单回合的内部结构：一次 LLM 调用（观察 → 决策 → 动作）加一次环境交互（环境执行 → 返回新 observation），循环 10 至 100+ 回合后轨迹结束，得到最终 episode 级奖励，再以"结果驱动而非模仿示范"的方式更新策略。<span class="chip c-inf">本站图</span> 由原文第 2 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>这张图把图 1 下半部分的环再放大一层，重点在<strong>右侧那段虚线</strong>："循环 10 至 100+ 回合"之后才有"轨迹结束"，之后才有奖励。奖励与环之间隔了一整个虚线段——这是第 03 节"信号被稀释"的图示：一个标量要分摊回虚线段之前的全部回合。</p>
+    <p>最右侧"结果驱动而非模仿示范"是另一条虚线，连接奖励与策略更新。它说明 agentic RL 与 SFT 的分界不在环的结构（ReAct 式 SFT 也有同样的环），而在<strong>更新信号来自哪里</strong>：来自奖励（结果）还是来自示范轨迹（形式）。第 04 节的 TIR 讨论围绕这条虚线展开。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>Agentic RL 只是把 RLVR 套到多轮工具调用场景，算法（GRPO/PPO）不变，只是 prompt 更长、轨迹更长。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 原文的对照表显示，五个维度中形式（MDP → POMDP）、信号（单一可验证奖励 → episode 奖励 + 中间步）两项是结构性变化，不是量的差别；轨迹与 token 两项差两个数量级（几千 → 10 万–50 万+）。这些是综述（arXiv 2509.02547）归纳的范式特征，非某一实验的测量。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>"时间尺度"是原文选定的根本区别，本站同意：<b>形式与信号的变化都是时间尺度拉长的后果</b>。POMDP 的部分可观测性来自环境状态不完全暴露在上下文中，episode 奖励的稀疏来自回合数增加。因此讨论 agentic RL 的任何难题，都应先问"回合数是多少"——原文后文的"够用粒度"判断正是以回合长度为变量。</p>
+
+<h2 id="s2"><span class="hnum">02</span>三个核心难题总览</h2>
+
+<p>原文把难题归为三个。<strong>① 信用分配（Credit Assignment）——最困难的前沿</strong>：轨迹跨上百回合，只有最后一个 episode 级奖励，中间各步的贡献难以区分；2026 的一篇综述梳理了 <strong>47 种信用分配方法</strong>，按两维分类——粒度（token / segment / step / turn / multi-agent）× 方法（蒙特卡洛 / 时序差分 TD / 基于模型 / 博弈论 / 信息论）。<strong>② 工具集成推理（TIR）/ ARLT</strong>：从 ReAct 式"先想后做"的事后拼接，走向深度交织的多轮工具使用，RL 把范式从"模仿工具调用脚本"换成"按结果优化"。<strong>③ 长 rollout 的系统开销</strong>：一条 agentic 轨迹要跑几十次"生成 + 环境往返"，rollout 比单轮重得多、长尾更严重、显存占用急剧增长，所以 agentic RL 框架普遍选择<strong>异步 rollout</strong>。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-4.svg" alt="Agentic RL 三大核心难题：信用分配（episode 奖励几乎没信息 → 细粒度 advantage 分摊）、TIR/ARLT（从 ReAct 拼接到深度交织 → 按结果优化）、长 rollout 系统开销（长尾严重、显存剧增 → 异步解耦）；三者之间以虚线互相影响">
+  <figcaption><span class="fnum">图 3</span>三大难题与各自的对症方向：信用分配 → 细粒度 advantage 分摊；TIR/ARLT → 按结果优化工具使用；长 rollout → 异步解耦。三个难题之间有三条虚线：中间步质量影响工具选择、更多工具回合放大系统开销、异步 rollout 改变 advantage 计算时序。<span class="chip c-inf">本站图</span> 由原文第 4 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>三个子图内部各是一条"问题 → 对症"的短链，这部分只是复述定义。真正的信息在<strong>三条跨子图的虚线</strong>，它们构成一个有向环：C1 → C2 → C3 → C1。这意味着三个难题不能各自独立解决——解 C3 的手段（异步）会反作用于 C1（advantage 用新策略状态算、轨迹却在旧策略下生成）。</p>
+    <p>最值得注意的是 C3 → C1 这条边："异步 rollout 改变 advantage 计算时序"。它把系统层的决策（异步与否）与算法层的难题（信用分配）连在一起，是原文第 07 节"跨回合 advantage 计算需额外防范 train-inference 漂移"这一 NPU 判断的结构依据。读这张图时，应把它看作一个反馈系统而不是三个清单。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>三个难题中算法层的信用分配最重要，工具集成是 prompt 工程问题，系统开销靠加卡解决。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 原文明确把信用分配标为"最困难的前沿"与"agentic RL 能否扩到长程任务的瓶颈"，依据是综述归纳的 47 种方法仍无通用解法。<span class="chip c-inf">推断</span> 但原文同时指出 agentic RL 框架普遍选择异步 rollout——说明系统开销已迫使框架层做出架构选择，而不是可以加卡绕过的次要问题。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>三个难题的<b>成熟度不同</b>：系统开销已有共识解法（异步解耦），TIR 已有明确方法论（按结果优化替代模仿），信用分配仍是开放问题。这决定了 NPU 团队的切入顺序——先在系统层复现异步 + 量化（有标准答案），再在环境/奖励层做贡献（低门槛），信用分配层则以"够用粒度"的工程选型为主而非追求理论最优。</p>
+
+<h2 id="s3"><span class="hnum">03</span>信用分配：最困难的一环</h2>
+
+<p>在单轮 RLVR 里，信用分配几乎不成问题：一步 MDP，一个动作对应一个可验证奖励，梯度直接落在产生答案的 token 上。Agentic RL 改变了这一前提——一条轨迹跨 10–100+ 回合、通常达 10 万到 50 万 token，而奖励往往只在 episode 结束时给一个标量。问题立刻变成：这一个标量，要怎么公平地分摊回上百个回合、成千上万次 token 级决策？</p>
+
+<p><strong>信号被稀释。</strong>一个 episode 级奖励平摊到 100 个回合，每回合分到的平均信息量极低；真正决定成败的可能只是其中两三步关键决策（选错工具、漏了检索、在某分支走偏），其余 97 步要么无关、要么无实质贡献。但稀疏 outcome 奖励无法区分这些：它只知整条轨迹成功还是失败，不知贡献与失误各在哪一步。结果是大量正确中间步因最终失败被一起惩罚，大量平庸甚至有害步骤因最终成功被一起强化。回合越多，这种整体连带奖惩越严重，有效信噪比越低——这也是为什么综述要梳理多达 47 种方法：它本质是一个被反复研究但尚无通用解法的开放问题。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-3.svg" alt="核心难点（episode 奖励要分摊到上百回合）与两个分类维度：粒度维 token → segment → step → turn → multi-agent；方法维 蒙特卡洛 → 时序差分 TD → 基于模型 → 博弈论 → 信息论；两维相乘得到综述梳理的 47 种方法">
+  <figcaption><span class="fnum">图 4</span>信用分配的两维分类：粒度维（token → segment → step → turn → multi-agent）与方法维（蒙特卡洛 → 时序差分 TD → 基于模型 → 博弈论 → 信息论）相乘，覆盖综述梳理的 47 种方法。<span class="chip c-inf">本站图</span> 由原文第 3 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>两条纵向链各自是有序的：粒度维从细到粗，方法维大致从"无偏高方差"（蒙特卡洛）到"结构化先验"（博弈论、信息论）。<strong>两个维度的顺序方向不同</strong>——粒度越粗方差越小、定位越差；方法越靠右偏差越大、越依赖建模假设。47 种方法就是在这个二维空间中寻找不同的方差—偏差—定位折中。</p>
+    <p>这张图是概念网格，没有标出哪些格子拥挤、哪些格子空缺。要看实际分布，请对照图 5（综述配套仓库的谱系图）：那里能看到 agentic RL 方法集中在哪一行。</p>
+  </div>
+</figure>
+
+<figure>
+  <img src="img/dispatch-08-agentic-rl/orig-1.png" alt="LLM 强化学习信用分配方法谱系网格：纵轴粒度 Token / Segment / Step-Turn / Multi-Agent，横轴方法 Monte Carlo / TD-Value / LLM-as-Critic / Game-theoretic / Info-theoretic；蓝色为推理 RL 方法，红色为 agentic RL 方法，紫红为多 agent；灰色虚线箭头标注从左上到右下的演化趋势">
+  <figcaption><span class="fnum">图 5</span>信用分配方法谱系：纵轴粒度（Token / Segment / Step-Turn / Multi-Agent），横轴方法族（Monte Carlo / TD-Value / LLM-as-Critic / Game-theoretic / Info-theoretic）；蓝色为 Reasoning RL、红色为 Agentic RL、紫红为 Multi-Agent；灰色虚线箭头标注 Evolution trend。<span class="chip c-tp">第三方</span> 取自综述 <a href="https://arxiv.org/abs/2604.09459">arXiv 2604.09459</a> 的配套仓库（xxzcc/Awesome-Credit-Assignment-in-LLM-RL，assets/taxonomy.png）。注意该图的横轴第三列为 LLM-as-Critic，与原文所述"基于模型"表述不同，此处按图中标注读。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>先看颜色按行的分布：<strong>蓝色（推理 RL）集中在 Token 与 Segment 两行</strong>（VinePPO、RED、T-REG、SPO、TEMPO、SCAR），<strong>红色（agentic RL）几乎全部落在 Step/Turn 行</strong>（GiGPO、ArCHer、AgentPRM、SWEET-RL、HCAPO、CCPO、CARL、Turn-PPO、SORL、TARL、ITPO、LaRe 等）。这是对原文"长程任务上 turn 级常是性价比最优点"这一判断的经验佐证：研究社区在 agentic 场景下实际选择的工作粒度就是回合。</p>
+    <p>再看密度：Step/Turn 行是整张图最拥挤的一行，其中 TD/Value 列与 LLM-as-Critic 列的交叉处最密——这对应原文"TD 用自举逐步传播价值、信用能沿回合链回传"的描述，也说明用 LLM 做评审来补足价值函数难以训准的问题已成一个方法族。Multi-Agent 行只有四个条目（M-GRPO、LLM-MCA、QLLM、C3†），是谱系中最稀疏的一行。</p>
+    <p>最后看灰色虚线箭头：从左上（Token × Monte Carlo）指向右下（Multi-Agent × Info-theoretic）。它表达的趋势与原文一致——粒度从细到粗（因为 100+ 回合上 token 级信号被噪声主导），方法从采样估计走向结构化构造（原文所述"基于模型、信息论等方法被不断提出的原因"）。注意该图为综述作者的归纳，条目数与原文所述 47 种未必一一对应。</p>
+  </div>
+</figure>
+
+<p><strong>粒度的取舍是核心张力。</strong>采用较粗粒度（episode / turn 级）：信号强、统计稳（一个 turn 聚合内部所有 token 的贡献，优势估计噪声小），代价是定位差（知道整回合好坏，但无法区分回合内哪几个 token 起作用，梯度分散在整段上）。采用较细粒度（token 级）：定位准（理论上能精确到 token），但单 token 上有效信号极弱、方差极大、噪声主导，长程稀疏下往往是在拟合噪声、训练易失稳。step / segment 级居中。<strong>蒙特卡洛 vs TD 是长程下的方差—偏差权衡</strong>：MC 用整条轨迹真实回报，无偏但长轨迹上方差爆炸；TD 用自举逐步传播价值，方差小、信用能沿回合链回传，但引入偏差且极长程下偏差累积、价值函数本身难以训练准确。长程恰是两者各自最不利的区间——这正是基于模型、信息论等方法被不断提出的原因。</p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>粒度越细越好：token 级 advantage 理论上最精确，工程上只要算力够就应做到 token 级。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-inf">推断</span> 原文的论证：粒度每细一档，开销和方差均上升，收益可能为负；"够用粒度"是工程选择而非理论最优——问的是"这个任务的奖励稀疏度、回合长度、单步重要性分布，需要多细才能把信号传到位、又不被噪声淹没"。<span class="chip c-tp">第三方</span> 图 5 显示 agentic RL 方法在实践中集中于 Step/Turn 行，与该判断一致。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>原文把信用分配定性为"被反复研究但尚无通用解法的开放问题"，本站同意，并补一点：<b>47 种方法的存在本身就是"无通用解"的证据</b>——若有一种方法在长程上稳定占优，谱系不会持续扩张。对工程团队而言，这意味着不应等待理论收敛，而应以 turn 级为默认起点做任务特定的粒度选型（第 07 节的选型表）。</p>
+
+<h2 id="s4"><span class="hnum">04</span>TIR：从模仿 ReAct 到按结果优化工具</h2>
+
+<p>工具集成推理（TIR）是 agentic 能力的核心：模型要决定何时调工具、调哪个、怎么读返回、读完如何续推理。用模仿示范（SFT）和用 RL 按结果优化（ARLT），学到的是两种本质不同的东西。<strong>模仿学到的是"形式上接近工具使用"</strong>：SFT 在 ReAct 轨迹上做下一 token 预测，优化"复现示范的 token 分布"——该出现 <code>Action:</code> 的地方出现 <code>Action:</code>，工具名和参数格式正确、接近专家轨迹，但它优化的从来不是"调用是否真有用"。典型失败：格式正确但时机不当、查询通顺但检索不到关键信息、获得返回后不据结果调整（在空结果下仍继续生成无依据内容）、分布外情形不会自适应——因为它从未见过"调用出错之后如何补救"的样本。</p>
+
+<p><strong>RL 按结果优化学到的是"有效使用工具"</strong>：outcome-driven 信号不在乎轨迹像不像示范，只在乎最终有没有把任务做成。正因为信号绑在结果上，模型能学出 SFT 学不到的几类能力——<strong>何时调</strong>（信息不足时主动触发）、<strong>调哪个</strong>（在多工具间按预期收益选择）、<strong>看结果怎么续</strong>（据返回决定采纳、换查询、还是换工具重试）。这些是"对工具调用后果建模"的能力，而后果信息只存在于 outcome 奖励里，示范的 token 分布里没有。</p>
+
+<figure>
+  <img src="img/dispatch-08-agentic-rl/orig-2.png" alt="VerlTool 架构：左侧 Verl Workflow（LLM Actor，轨迹 q, a0, s, o0, a1, s, o1；Multi-turn Rollouts 与 Actor Update 循环；RL Alg GRPO/PPO），中间 Tool Server（Bash Terminal、Python Interpreter、Web Browser、Image Processing），右侧 Tool Thread（Load History Env → Tool Execution → Save History Env），底部返回 Observation / trajectory done? / valid action?">
+  <figcaption><span class="fnum">图 6</span>VerlTool 架构：左侧 Verl Workflow 中 LLM Actor 产出交织轨迹 q, a<sub>0</sub>, s, o<sub>0</sub>, a<sub>1</sub>, s, o<sub>1</sub>（a 为动作、s 为停止符、o 为观察），Multi-turn Rollouts 与 Actor Update 循环，RL 算法为 GRPO/PPO；动作 a<sub>1</sub> 经 Unified API Request &amp; Tool match 送入中间的 Tool Server（Bash Terminal、Python Interpreter、Web Browser、Image Processing 等），右侧 Tool Thread 负责 Load History Env → Tool Execution → Save History Env，底部返回 Observation / trajectory done? / valid action? 作为 o<sub>1</sub>。<span class="chip c-vr">自报</span> 取自 VerlTool 官方仓库 README（TIGER-AI-Lab/verl-tool，assets/imgs/verl_tool_architecture.png；论文 arXiv 2509.01055）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>先看左侧的轨迹条：q → a<sub>0</sub> → s → o<sub>0</sub> → a<sub>1</sub> → s → o<sub>1</sub>。<strong>动作与观察交织在同一条 token 序列里</strong>，而不是 ReAct 式"先想完再拼接"——这就是原文所说"从事后拼接走向深度交织的多轮工具使用"的物理形态。其中 o<sub>1</sub> 用虚线框表示，说明它在 actor 生成时尚未存在、要等工具返回后才填入：模型必须在不知道返回内容的情况下决定 a<sub>1</sub>，这正是"何时调、调哪个"需要按结果学习的原因。</p>
+    <p>再看中右两块：Tool Server 以统一 API 接多种工具，Tool Thread 负责加载与保存历史环境状态——即环境是有状态的（Load / Save History Env），一次调用的后果会影响后续调用。底部返回的三项（Observation / trajectory done? / valid action?）是环境给 RL 的全部信号：其中 valid action? 是一个即时的格式级信号，而任务成败仍要等 trajectory done。这对应原文"奖励稀疏让工具学习格外难"——图中没有任何一处给出"这次调用是否有用"的过程奖励，该信号需要另行设计（第 07 节的 agentic verifier / 过程奖励）。原文表格中 VerlTool 的关键点是"全异步 rollout，统一工具接口"，图中 Unified API 对应后者，前者未在此图中显示。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>工具调用靠 SFT 教格式即可，ReAct 轨迹足够多时模型自然学会用工具；RL 只是锦上添花。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-inf">推断</span> 原文的机制论证：SFT 优化的是与示范的相似度，"调用后果"信息只在 outcome 奖励里，示范的 token 分布中没有；因此"何时调、调哪个、看结果怎么续"三类能力原则上不能从模仿中学到。原文未给 SFT 与 ARLT 在具体基准上的对照数字。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>原文指出 TIR 的 RL 有一个反向风险：一条成功轨迹里 10 次工具调用真正起作用的或许只有 2 次，outcome 奖励却把 10 次一起强化；失败轨迹里某次关键调用其实是对的，也因后续走偏被一起惩罚——这会使模型习得<b>"过度调用工具""不甄别调用结果"</b>等不良策略。所以 TIR 的 RL 往往要配合更细的信用分配粒度（turn / step 级），或借 agentic verifier、过程奖励，把"这次调用是否有用"的信号从最终结果里剥离出来。这把第 03 节与第 04 节连成一体：TIR 的质量上限受信用分配粒度约束。</p>
+
+<h2 id="s5"><span class="hnum">05</span>长 rollout 与异步：同步模式受长尾阻塞的原因</h2>
+
+<p>Agentic rollout 的轨迹长度分布是<strong>重尾</strong>的：同批任务里大部分轨迹很短（几回合就终止），少数极长（反复调工具、反复试错，长达 10 万–50 万 token）。这个形状对系统吞吐是致命的。<strong>同步批生成会被最长的轨迹阻塞</strong>：经典 on-policy 同步流程是 rollout 整批 → 全部生成完（barrier）→ 算 advantage → 更新 → 下一批。只要一批里有一条要跑 100 回合，整批就得等它，先完成的几十条短轨迹对应的 NPU 算力就处于空闲等待。对昇腾这个痛点被放大：<strong>无 sleep-mode</strong>，空闲推理实例不能让出显存/被回收，等待期间资源被实际浪费；叠加 <strong>64GB 显存</strong>，超长 rollout 的 KV cache 本就紧张，长尾期间仍持续占用。</p>
+
+<p><strong>异步解耦通过分离生成和训练解决该问题</strong>：推理 server 持续产出轨迹，先完成先交付；trainer 从完成队列拉取已完成的轨迹组成 batch 即可更新，不等仍在运行的长轨迹。短轨迹完成后立刻被消费、推理实例立刻接新任务，长轨迹在后台继续运行而不阻塞其他部分，NPU 利用率显著回升。<strong>代价是 staleness 与 off-policy</strong>：一条轨迹开始生成时用 π<sub>old</sub>，等它（尤其长轨迹）跑完交给 trainer 时策略已更新过几次成 π<sub>new</sub>；轨迹越长、异步程度越高，staleness 越严重（长尾轨迹恰是最陈旧、又往往信息最丰富的困难样本）。所以异步并非没有代价，需配合重要性采样修正、限制最大 staleness、或对过旧轨迹降权。</p>
+
+<figure>
+  <img src="img/dispatch-08-agentic-rl/orig-3.png" alt="AgentRL 部署架构：左侧 Training Framework（Training 与 Rollout 两组实例，多个 Async agent loop：Start → History → Action → Observation 循环），中间 AgentRL Controller 转发 Start / Init Obs. / Action / Obs. & Reward，右侧 Env. deployment Framework（Hosts 上多个 Worker containers，每个含 Task 与 AgentRL Task Worker，管理 Ubuntu、MySQL 等 Task-Specific Environment）">
+  <figcaption><span class="fnum">图 7</span>AgentRL 的训练—环境分离架构：左侧 Training Framework 内 Training 与 Rollout 两组实例并存，多个 Async agent loop（Start → History → Action → Observation 循环）各自独立推进；中间 AgentRL Controller 在两侧之间转发 Start / Init Obs. / Action / Obs. &amp; Reward；右侧 Env. deployment Framework 在多台 Hosts 上以 Worker containers 运行 Task A / Task B 等任务，AgentRL Task Worker 管理 Ubuntu、MySQL 等 Task-Specific Environment。<span class="chip c-vr">自报</span> 取自 AgentRL 官方仓库 README（THUDM/AgentRL，docs/assets/deployment-framework.png；论文 arXiv 2510.04206）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>这张图是原文"异步解耦"与"多任务规模化"的工程形态。看三点。<strong>第一，左侧的 agent loop 是叠放的多层</strong>（Async agent loop 有多个副本）——每条轨迹各自循环 History → Action → Observation，不存在跨轨迹的 barrier，这就是原文所说"推理 server 持续产出轨迹，先完成先交付"。Training 与 Rollout 以虚线相连，表示两者是解耦的两组实例，训练消费已完成的轨迹。</p>
+    <p><strong>第二，中间的 Controller 是唯一的跨界通道</strong>：Start / Init Obs. / Action / Obs. &amp; Reward 四种消息，把 LLM 侧与环境侧完全隔开。这意味着环境可以独立扩缩容——右侧 Hosts 与 Worker containers 是叠放的多层，Task A、Task B 并列，对应原文表格中 AgentRL 的定位"多轮 × 多任务 RL 系统，规模化 agentic 训练"。</p>
+    <p><strong>第三，环境是真实容器</strong>（Ubuntu、MySQL），不是模拟器。这提示了长 rollout 的另一个成本来源：环境往返包含真实系统调用，回合时延不由 LLM 决定——这与原文"几十次生成 + 环境往返"的描述一致，也是第 07 节"模拟环境绕开真实环境的昂贵与不可复现"这条路线的对照面。图中未显示 staleness 控制机制（重要性采样修正或最大 staleness 上界），原文指出异步必须配合这些手段，读图时应把它视为缺省的部分。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>agentic rollout 只是更长的推理，加大 batch、加卡即可；同步 on-policy 最干净，应尽量保持同步。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-inf">推断</span> 原文的论证：轨迹长度分布重尾，同步 barrier 使整批耗时由最长轨迹决定，短轨迹对应算力空闲等待——加卡只会等比放大空闲。<span class="chip c-tp">第三方</span> 原文指出 agentic RL 框架"普遍选择"异步 rollout（VerlTool 全异步、AgentRL 异步 agent loop 见图 7）。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>原文的一个关键观察值得单独强调：<b>长尾轨迹恰是最陈旧、又往往信息最丰富的困难样本</b>。这意味着异步方案中"对过旧轨迹降权"的做法与"保留困难样本"的目标直接冲突——staleness 上界不能简单按年龄一刀切，需要考虑轨迹的信息量。这一张力与 D02 的"够用阈值"是同一问题在 agentic 场景的加强版，原文未给出解决方案。</p>
+
+<h2 id="s6"><span class="hnum">06</span>框架地图（2026）</h2>
+
+<p>原文列出七个框架与三篇综述入口。综述：<strong>《The Landscape of Agentic RL for LLMs》</strong>（<a href="https://arxiv.org/abs/2509.02547">arXiv 2509.02547</a>）、<strong>《From Reasoning to Agentic: Credit Assignment》</strong>（<a href="https://arxiv.org/abs/2604.09459">2604.09459</a>）、<strong>《Rethinking Agentic RL in LLMs》</strong>（<a href="https://arxiv.org/abs/2604.27859">2604.27859</a>，已在 RL 标签）。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:170px">框架</th><th>定位</th><th>关键点</th></tr></thead>
+<tbody>
+<tr><td><strong>VerlTool</strong>（ARLT）</td><td>verl 上的工具使用 agentic RL</td><td>全异步 rollout，统一工具接口（arXiv 2509.01055）</td></tr>
+<tr><td><strong>AgentRL</strong></td><td>多轮 × 多任务 RL 系统</td><td>规模化 agentic 训练（2510.04206）</td></tr>
+<tr><td><strong>Agent-R1</strong></td><td>工具环境下的多轮推理 RL</td><td>多轮 + 工具调用</td></tr>
+<tr><td><strong>SkyRL-Agent</strong></td><td>高效多轮 agent 训练</td><td>针对多轮的训练效率（2511.16108）</td></tr>
+<tr><td><strong>ProRL Agent</strong></td><td>Rollout-as-a-Service</td><td>把 agent rollout 生命周期做成 API（2603.18815；见 RL 标签卡）</td></tr>
+<tr><td><strong>ARLArena</strong></td><td>统一、稳定的 agentic RL</td><td>稳定性 + 统一环境（2602.21534）</td></tr>
+<tr><td><strong>AgentV-RL</strong></td><td>用 agentic verifier 扩奖励建模</td><td>奖励侧（2604.16004）</td></tr>
+</tbody>
+<caption>原文的框架地图。arXiv 编号来自原文来源列表；Agent-R1 原文未给编号。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>agentic RL 框架众多、互相替代，选一个最流行的即可。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-inf">推断</span> 七个框架的定位覆盖不同层：工具接口层（VerlTool）、多任务规模化（AgentRL）、训练效率（SkyRL-Agent）、rollout 服务化（ProRL Agent）、稳定性与统一环境（ARLArena）、奖励侧（AgentV-RL）。它们解决的是第 02 节三个难题的不同侧面，重叠度低于表面看起来的程度。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>七个框架中有六个直接或间接围绕第三个难题（系统开销与稳定性），只有 AgentV-RL 在奖励侧——<b>框架层的投入分布与原文"研究投入集中在算法、环境/奖励关注度低"的观察一致</b>。ProRL Agent 的 Rollout-as-a-Service 值得关注：把 rollout 做成 API 意味着 rollout 引擎与训练框架可以异构部署，这对"vLLM-Ascend 生成 + 其他框架训练"的 NPU 组合是有利的抽象。</p>
+
+<h2 id="s7"><span class="hnum">07</span>被低估的一环：环境、奖励与够用粒度</h2>
+
+<p>研究投入大多集中在<strong>算法</strong>上，而<strong>数据 / 环境 / 奖励设计</strong>关注度低得多——但它常常是上限所在。原文列出三条路线：<strong>可验证奖励（RLVR）</strong>——用单元测试、答案校验等自动信号，而非学一个奖励模型，agentic 场景下尤其稳；<strong>rubric-based + 模拟环境 + 合成任务</strong>——像《Mock Worlds, Real Skills》（arXiv 2601.22511）那样，用合成任务 + 模拟环境 + 评分量表训出小型 agent，绕开真实环境的昂贵与不可复现；<strong>agentic verifier</strong>——用智能体本身去做更细的奖励判定（AgentV-RL）。</p>
+
+<p>原文给出一张"够用粒度"选型表，把信用分配的四档粒度沿信号强度、定位精度、工程开销和适用场景摊开。原文明确标注：这是面向工程取舍的 <strong>provisional</strong> 速查，不是某篇论文的实验结论。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:110px">粒度</th><th>信号强度</th><th>定位精度</th><th>计算/工程开销</th><th>适用场景</th></tr></thead>
+<tbody>
+<tr><td><strong>episode 级</strong></td><td>最强（整条轨迹聚合，统计最稳）</td><td>最差（只知整体输赢）</td><td>最低（一个标量，几乎无额外结构）</td><td>短轨迹、回合少、单步同质；或仅作 baseline / 冷启动</td></tr>
+<tr><td><strong>turn 级</strong></td><td>强（每回合聚合，信号仍清晰）</td><td>中（能定位到"哪个回合"）</td><td>中（需按回合切轨迹、回传回合级 advantage）</td><td>长程多回合、工具调用稀疏、回合是天然决策单元——常见性价比最优点</td></tr>
+<tr><td><strong>step 级</strong></td><td>中（单步信号，开始变弱）</td><td>较高（能定位到具体动作/工具调用）</td><td>较高（需 step 级价值估计或过程奖励）</td><td>单步重要性差异大、需精确归因关键动作</td></tr>
+<tr><td><strong>token 级</strong></td><td>最弱（单 token 信号被噪声主导）</td><td>最高（理论上精确到 token）</td><td>最高（token 级 advantage，方差大、易不稳）</td><td>短程或奖励较稠密；长程稀疏下慎用</td></tr>
+</tbody>
+<caption>原文的"够用粒度"选型表（provisional）。信号强度与定位精度沿粒度反向变化，是取舍的核心。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>环境与奖励是数据工程，不是研究；有了好算法，奖励用 outcome 标量即可。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-inf">推断</span> 原文的判断：环境/奖励"常常是上限所在"；turn 级在长程任务上常是性价比最优点，理由是"回合"是天然决策单元——工具调用、推理转折、状态变化大多发生在 turn 边界上，turn 级恰在这个语义边界。<span class="chip c-tp">第三方</span> 图 5 中 agentic RL 方法在 Step/Turn 行的集中分布与此一致。选型表各格的定性描述为原文 provisional 判断，无实验数据支撑。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>原文对 turn 级的推荐逻辑是：比 episode 级细得足以把 outcome 信号定位到具体回合，又比 step / token 级粗得足以保持信号强度、抑制方差，工程上只需按回合切轨迹、回传回合级 advantage，不必维护脆弱的 token 级价值函数；某些任务里"单步"差异格外关键时，再局部下沉到 step 级。<b>在 NPU 上，跨回合 advantage 计算需额外防范 train-inference 漂移</b>：异步 rollout 的 staleness（轨迹在旧策略下跨多回合生成，advantage 却用新状态算）与 NPU 重写算子的数值路径不一致叠加，同一轨迹"生成时"和"训练时"算出的 logprob/价值对不上，跨回合回传时误差还沿回合链累积。工程对策是显式做 <b>align-probe</b>：在生成端和训练端对同一批输入比对 logprob/中间量，量化漂移并设阈值告警。</p>
+
+<h2 id="s8"><span class="hnum">08</span>对 RL-on-NPU 的意义</h2>
+
+<p>Agentic RL 几乎是为"放大昇腾痛点"量身定制的，但也因此<strong>最能体现前几期所述技术的价值</strong>。原文四点：<strong>超长 rollout = 显存痛点放大到极致</strong>——10 万–50 万 token 的多轮轨迹 KV cache 巨大，而昇腾 910B 单卡 64GB、无 vLLM sleep-mode，rollout 与 train 抢显存（见 NPU 架构页"RL 显存争用"视图），agentic 场景下这个矛盾最尖锐；<strong>前几期的技术在这里收益最大</strong>——异步/解耦 rollout（D02 的 VerlTool/AgentRL 同源思路）、量化 rollout（FP8/INT8，D02）、稀疏注意力 / KV 压缩（MSA/DSA/CSA-HCA/SWA，D04/D05/D07），每一项都直接降低 agentic rollout 的显存与时延；<strong>环境/奖励设计是 NPU 团队的低门槛切入点</strong>——可验证奖励 + 模拟环境算力轻、价值高，不必先解决大规模训练就能做出贡献；<strong>信用分配在 NPU 上还需额外防范一层</strong>——跨回合的 advantage 计算 + NPU 上重写的算子会叠加 train-inference 数值漂移，align-probe 在此同样适用。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-5.svg" alt="痛点放大链路：超长 agentic rollout（10 万至 50 万 token）→ KV cache 巨大 → 910B 仅 64GB HBM 且无 sleep-mode → rollout 与 train 抢显存；对症三项：异步或解耦 rollout、量化 rollout、稀疏注意力或 KV 压缩，共同指向缓解显存与长尾">
+  <figcaption><span class="fnum">图 8</span>痛点放大链路与对症技术：超长 agentic rollout（10 万至 50 万 token）→ KV cache 巨大 → 910B 仅 64GB HBM 且无 sleep-mode → rollout 与 train 抢显存；由此引出异步/解耦 rollout、量化 rollout（FP8/INT8）、稀疏注意力/KV 压缩三项前几期技术，共同指向"缓解显存与长尾"。<span class="chip c-inf">本站图</span> 由原文第 5 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左侧是一条四级因果链，注意<strong>三项对症技术接入链条的位置不同</strong>：异步/解耦与量化从链尾 L4（抢显存）引出，是对结果的缓解；稀疏注意力/KV 压缩以虚线从 L2（KV cache 巨大）引出，标注"直接压 KV 占用"，是对更上游原因的干预。位置越靠上游，理论上收益越大，但实现难度也越高——稀疏注意力需要模型架构配合，异步与量化只需系统层改动。</p>
+    <p>再看 F1 到 WIN 的虚线标注"不被最慢轨迹阻塞"：三项技术中只有异步同时缓解显存与长尾两个变量（另两项只压显存）。这与 D02 中 APRIL 的定位相似——凡能同时处理长尾的手段，在 agentic 场景下的价值高于其在单轮场景下的价值，因为 agentic 的长尾更重。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>agentic RL 对硬件的要求主要是算力，NPU 与 GPU 的差距在算力峰值；显存问题靠 TP/PP 切分解决。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 910B 单卡 64GB、无 vLLM sleep-mode 是硬件与软件栈现状。<span class="chip c-inf">推断</span> 原文的论证：10 万–50 万 token 轨迹的 KV cache 与 train 侧在同一份 HBM 上争用，是显存容量与释放机制问题而非算力问题；原文未给出 agentic rollout 在 910B 上的实测显存占用或 OOM 阈值。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>原文的核心论断是<b>"agentic RL 几乎是为放大昇腾痛点量身定制的，但也因此最能体现前几期技术的价值"</b>——这是一个双向判断：同一个特性（超长轨迹）既是风险也是前几期技术的最大应用场景。四条建议中，环境/奖励设计被单独标为"低门槛切入点"，理由是算力轻、价值高、不依赖大规模训练——本站认为这是四条中对 NPU 团队最具操作性的一条，因为它不受显存约束限制。</p>
+
+<h2 id="s9"><span class="hnum">09</span>叙事 vs 证据：一页总表</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:140px">主题</th><th style="width:230px">叙事怎么说</th><th>证据是什么 · 本站判断</th></tr></thead>
+<tbody>
+<tr><td>范式</td><td>RLVR 套到多轮场景，算法不变</td><td>形式（MDP → POMDP）与信号（单一奖励 → episode 奖励 + 中间步）是结构性变化；轨迹与 token 差两个数量级。根本区别是时间尺度</td></tr>
+<tr><td>难题排序</td><td>信用分配最重要，系统开销加卡解决</td><td>三难题构成互相放大的环（图 3）；成熟度不同：异步有共识解法，TIR 有方法论，信用分配仍开放</td></tr>
+<tr><td>信用分配</td><td>粒度越细越好</td><td>47 种方法、无通用解；粒度每细一档开销与方差均升；agentic 方法实际集中在 Step/Turn 行（图 5）</td></tr>
+<tr><td>TIR</td><td>SFT 教格式即可</td><td>SFT 学形式、RL 学后果；"何时调 / 调哪个 / 看结果怎么续"只能从 outcome 奖励学；但稀疏奖励会习得过度调用等不良策略，需配细粒度信用分配或过程奖励</td></tr>
+<tr><td>长 rollout</td><td>加大 batch、保持同步</td><td>重尾分布下同步 barrier 由最长轨迹决定；框架普遍选异步（VerlTool、AgentRL，图 6–7）；代价是 staleness，长尾轨迹最陈旧又最有信息</td></tr>
+<tr><td>框架</td><td>互相替代，选最流行的</td><td>七框架覆盖工具接口 / 多任务 / 效率 / rollout 服务化 / 稳定性 / 奖励侧，六个围绕系统难题、一个在奖励侧</td></tr>
+<tr><td>环境与奖励</td><td>数据工程，非研究</td><td>原文判断其"常常是上限所在"；RLVR、rubric + 模拟环境、agentic verifier 三条路线；NPU 团队低门槛切入点</td></tr>
+<tr><td>够用粒度</td><td>理论最优粒度存在</td><td>provisional 选型表；turn 级为长程默认起点（回合是天然决策单元），局部下沉 step 级</td></tr>
+<tr><td>NPU 位置</td><td>差距在算力峰值</td><td>10 万–50 万 token KV cache × 64GB × 无 sleep-mode 是显存问题；异步 / 量化 / 稀疏注意力在此收益最大（图 8）；跨回合 advantage 需 align-probe 防漂移</td></tr>
+</tbody>
+<caption>左栏是常见叙事，右栏是原文给出的证据与本站判断。原文数字（回合数、token 量、47 种方法）为综述归纳口径；选型表为 provisional。</caption>
+</table>
+</div>
+
+<h2 id="s10"><span class="hnum">10</span>原文没给的东西 / 未能核实的东西</h2>
+
+<p>以下是复现或引用时必须自行确定、或原文未给出数据与理由的项目：</p>
+
+<ul>
+<li><strong>"10 万–50 万 token"与"10–100+ 回合"的测量条件</strong>：原文为范式描述的典型量级，未给出具体任务集与统计口径；</li>
+<li><strong>47 种信用分配方法的清单</strong>：原文只给分类维度与总数，具体方法与各自适用区间需查综述 2604.09459；图 5 的条目数与"47"未必一一对应；</li>
+<li><strong>SFT 与 ARLT 的对照实验数字</strong>：原文的 TIR 论证为机制推理，未给任何基准上的对照结果；</li>
+<li><strong>够用粒度选型表各格的依据</strong>：原文明确为 provisional 工程判断，非实验结论；"turn 级为性价比最优点"无量化支撑；</li>
+<li><strong>七个框架的性能数字</strong>：原文只给定位与关键点，未给吞吐、稳定性或基准对比；Agent-R1 未给 arXiv 编号；</li>
+<li><strong>异步 staleness 的处理方案</strong>：原文列出重要性采样修正、最大 staleness 上界、过旧轨迹降权三类，未给参数与效果；"长尾轨迹最陈旧又最有信息"的张力原文未给解法；</li>
+<li><strong>agentic rollout 在 910B 上的实测显存占用</strong>：原文的"放大到极致"为定性判断，未给 OOM 阈值或占用曲线；</li>
+<li><strong>align-probe 的判据</strong>：可接受的 logprob/价值漂移量级与告警阈值，原文只给职责定义；</li>
+<li>本文原图 3 张分别取自综述配套仓库（xxzcc/Awesome-Credit-Assignment-in-LLM-RL）、VerlTool（TIGER-AI-Lab/verl-tool）与 AgentRL（THUDM/AgentRL）的 GitHub README；原文所引其余论文（2509.02547、2604.27859、2511.16108、2603.18815、2602.21534、2604.16004、2601.22511）的原图受网络代理限制未能获取。</li>
+</ul>
+
+<h2 id="s11"><span class="hnum">11</span>判断与下一步</h2>
+
+<div class="note">
+  <span class="ntitle">三条可以直接搬走的判断</span>
+  <p><strong>一、agentic RL 的一切难题都是"回合数"的函数。</strong>信号稀释程度、轨迹重尾程度、KV cache 规模、staleness 严重度全部随回合数单调上升。评估任何方法或框架时，先确认它验证过的回合数区间，再判断能否外推到 100+ 回合。</p>
+  <p><strong>二、turn 级是长程信用分配的默认起点，不是理论最优。</strong>它落在"思考—行动—观察"的天然语义边界上，信号够强、方差可控、工程开销中等；研究社区的实际选择（图 5 中 agentic 方法集中在 Step/Turn 行）与原文判断一致。需要精确归因关键动作时再局部下沉到 step 级。</p>
+  <p><strong>三、对 NPU 团队，环境与奖励设计是不受显存约束的切入点。</strong>可验证奖励、模拟环境、agentic verifier 三条路线算力轻、价值高；而系统层（异步 + 量化 + 稀疏注意力）的复现必须以 align-probe 为前置，因为跨回合 advantage 与重写算子叠加会放大 train-inference 漂移。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>读两篇综述</strong>（2509.02547 + 2604.09459）建立地图，再选一个框架（VerlTool / AgentRL）完成一个多轮工具任务 · <strong>在昇腾上复现一个多轮 agentic RL</strong>：量化 rollout + 异步，量化它对 64GB HBM 的缓解——这正是看板 Project Ideas 里"异步 off-policy RL"那条的 agentic 版 · <strong>信用分配的"够用粒度"</strong>：turn 级 vs step 级 vs token 级，在长程任务上哪一档性价比最高 · <strong>环境设计</strong>：把 MiMo Code / Terminal-Bench 这类 200+ 步任务做成可训练的 RL 环境。</p>
+</div>
+
+</main>
+
+<footer>
+  来源与声明：原文为 NPU Frontier Dispatch 08（2026-06-25），来源均为 arXiv——Landscape of Agentic RL（2509.02547）、Credit Assignment（2604.09459）、Rethinking Agentic RL（2604.27859）、VerlTool（2509.01055）、AgentRL（2510.04206）、SkyRL-Agent（2511.16108）、ProRL Agent（2603.18815）、ARLArena（2602.21534）、AgentV-RL（2604.16004）、Mock Worlds Real Skills（2601.22511）；相关卡片见看板 RL for LLMs 标签页。够用粒度选型表为原文 provisional 判断。原图取自各仓库 GitHub README，版权归原始仓库所有，此处仅作解析引用；本站图由原文 mermaid 预渲染。
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>

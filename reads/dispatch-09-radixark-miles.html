@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 09 精读版 · RadixArk 与 Miles</title>
+<meta name="description" content="逐节拆解 SGLang 核心团队的商业化公司 RadixArk 与其 RL 框架 Miles：RadixAttention、统一 FP8 流水线、Rollout Routing Replay 逐比特对齐 MoE 训推、同行对比、壁垒与风险、投资视角，以及 R3 对昇腾 MoE RL 的启发——朴素基线与它的做法双栏对照。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-09-radixark-miles.html">
+<meta property="og:title" content="Dispatch 09 精读版 · RadixArk 与 Miles">
+<meta property="og:description" content="逐节拆解 SGLang 核心团队的商业化公司 RadixArk 与其 RL 框架 Miles：RadixAttention、统一 FP8 流水线、Rollout Routing Replay 逐比特对齐 MoE 训推、同行对比、壁垒与风险、投资视角，以及 R3 对昇腾 MoE RL 的启发——朴素基线与它的做法双栏对照。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-09-radixark-miles.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-09-radixark-miles.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-09-radixark-miles">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-09-radixark-miles.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 09 · 精读版 · 2026-06-25</div>
+  <h1>RadixArk 与 Miles 精读：SGLang 团队的 RL 框架，与投资视角</h1>
+  <p class="standfirst">RadixArk 是 SGLang 核心团队的商业化公司：2026 年 1 月从开源项目 spin-out，约 $400M 估值（Accel 领投），5 月宣布 $100M 种子轮。两条产品线——推理引擎 SGLang（RadixAttention）与 RL 训练框架 Miles（从智谱 slime fork、共演化）。本文把 D09 的六节逐一拆开：每节先给"不看这家公司时的直觉做法"，再给它的实际做法，最后写清差在哪、原文给了什么证据、对 RL-on-NPU 意味着什么。核心是 Miles 的两项差异化——统一 FP8 流水线与 Rollout Routing Replay（R3）——以及它们为什么必须同时采用才能闭合 MoE 的训推一致性。估值 / 融资为媒体报道口径（provisional），全文非投资建议。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D09</span>
+    <span>主线：RL 后训练 · 训推一致 · FP8</span>
+    <span>原图 2 张 · 本站图 5 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>公司：SGLang 的商业化</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>技术优势：SGLang 与 Miles 栈</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>MoE 的训推失配为何更致命</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>R3：记录 - 回放路由</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>统一 FP8：一致性的另一半</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>同行对比</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>技术壁垒与风险</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>投资视角（非建议）</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>对 RL-on-NPU 的意义</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>总表：基线 vs Miles</a></li>
+    <li><a href="#s11"><span class="tnum">11</span>原文没给的东西</a></li>
+    <li><a href="#s12"><span class="tnum">12</span>判断与下一步</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">一家公司同时握住"推理"与"RL 后训练"两个基础设施入口：<strong>SGLang</strong> 以 RadixAttention（基数树自动 KV 前缀复用）在 prefix-heavy / agent 场景比 vLLM 快约 29% 至 6×；<strong>Miles</strong> 以 SGLang 做 rollout、Megatron 做训练，核心创新是<strong>统一 FP8 流水线</strong>（首个端到端 FP8 采样 + 训练）与 <strong>Rollout Routing Replay（R3）</strong>——把 MoE 专家路由在 SGLang 推理时记录、Megatron 训练时回放，做到逐比特对齐，根治 MoE RL 的 train-inference mismatch。对本看板：R3 正是"训推一致性"在 GPU 上的标准答案，而它能否移植到昇腾（SGLang-Ascend + MindSpeed）是 RL-on-NPU 的一道关键缺口。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段：<strong>朴素基线</strong>（左栏，灰）——不看这家公司、按直觉做推理引擎或 MoE RL 框架会怎么做；<strong>它的做法</strong>（右栏，橙）——RadixArk / Miles 实际怎么做；<strong>差在哪</strong>（下方色块）——差异的实质、原文是否给了证据或机理、对 RL-on-NPU 的含义。数字按来源分三类：<span class="chip c-tp">第三方</span> 媒体报道或独立对比；<span class="chip c-vr">自报</span> RadixArk / LMSYS 口径；<span class="chip c-inf">推断</span> 本站机理分析。原文标注 provisional、机理推断、非投资建议处全部保留。</p>
+  <p>贯穿全文的一条线索：<strong>MoE 的训推失配有两个正交维度</strong>——离散的专家路由与连续的数值通路。R3 固定前者，统一 FP8 对齐后者；只做其一，另一维度的漂移会让对齐失效。这也是昇腾移植的难点所在：两端路由与 FP8 原语都要重写，等于把两条漂移风险同时重新打开。</p>
+</div>
+
+<div class="formula">RadixArk 一页图
+  公司     2026-01 spin-out · 约 $400M 估值（Accel 领投）· 2026-05 $100M 种子轮 · 天使含 Intel CEO Lip-Bu Tan  <span class="cmt">// 媒体口径，provisional</span>
+  产品线一 SGLang：RadixAttention 基数树前缀复用 → 吞吐约 +29%（16.2k vs 12.5k tok/s），prefix-heavy RAG 上可达 6×
+  产品线二 Miles：SGLang（rollout）+ Megatron-LM（训练），从 slime fork 共演化
+  差异化   R3：记录 - 回放专家路由 → 离散维度逐比特一致
+           统一 FP8：采样与训练同一套量化 → 连续维度数值一致          <span class="cmt">// 两者正交，必须同时采用</span>
+  对昇腾   SGLang-Ascend + MindSpeed 能否复刻 R3 + 端到端 FP8 → 目前空白</div>
+
+<h2 id="s1"><span class="hnum">01</span>公司：SGLang 的商业化</h2>
+
+<p><strong>出身</strong>：SGLang 源自 LMSYS / 伯克利系开源，是"日均处理万亿 token"的推理引擎。2026-01 项目 spin-out 成 <strong>RadixArk</strong>，<span class="chip c-tp">第三方</span> 约 <strong>$400M 估值</strong>（TechCrunch）。<strong>融资</strong>：2026-05 宣布 <strong>$100M 种子轮</strong>，<strong>Accel 领投</strong>，天使含 <strong>Intel CEO Lip-Bu Tan</strong>。<strong>使命</strong>："Democratize Frontier AI Infrastructure" / "Ship AI for All"——做开放的前沿 AI 基础设施。<strong>时机</strong>：HuggingFace 的 TGI 在 2025-12 进入维护模式，SGLang 顺势成为主要开源替代；推理市场被各方称为 "battleground"。<strong>两条产品线</strong>：推理 = SGLang，RL 训练 = Miles。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-1.svg" alt="RadixArk 结构图：融资节点向下分出产品线一（SGLang，RadixAttention）与产品线二（Miles，SGLang rollout + Megatron 训练，从 slime fork），两条产品线分别通向基础设施入口一推理服务与入口二 RL 后训练；SGLang 以"rollout 复用同一引擎"指向 Miles">
+  <figcaption><span class="fnum">图 1</span>RadixArk 的两条产品线与两个基础设施入口。融资信息（约 $400M 估值、Accel 领投、$100M 种子轮、Intel CEO 天使）位于顶部；SGLang 与 Miles 之间的边标注"rollout 复用同一引擎"。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>看两个"入口"节点：推理服务与 RL 后训练，分别由两条产品线通向。多数基础设施公司只占其中一个；这张图的结构信息是<strong>一家公司同时坐在两个入口上</strong>。再看横跨两条产品线的那条边——SGLang 指向 Miles，标注"rollout 复用同一引擎"：这不是两条平行业务，而是同一引擎的两种用法——推理服务卖吞吐，RL 训练用它做采样。</p>
+    <p>这条边也是第 07 节"分发量构成竞争壁垒"的图示：SGLang 的采用量越大，Miles 的 SGLang 原生紧耦合越难被其他 RL 框架复制。顶部融资节点的数字全部为媒体报道口径，读图时应视为 provisional。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>开源推理引擎的商业化路径是单一的：做托管推理服务或企业版，与 RL 训练框架是两个不同公司的业务。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>推理（SGLang）与 RL 训练（Miles）两条产品线并举，rollout 复用同一引擎；<span class="chip c-tp">第三方</span> 约 $400M 估值、$100M 种子轮、Accel 领投、Intel CEO 天使；时机上承接 TGI 进入维护模式后的开源替代位置。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>入口数量</b>：基线占一个入口，RadixArk 占两个且以同一引擎打通。原文对此的证据是公司自述的两条产品线与媒体报道的融资事实；估值与融资金额均为 provisional。对 RL-on-NPU 的含义：推理引擎的硬件后端决定了 RL 框架的 rollout 侧能在哪些硬件上跑——SGLang 的 Ascend 后端成熟度因此同时是推理问题与 RL 问题（第 09 节）。</p>
+
+<h2 id="s2"><span class="hnum">02</span>技术优势：SGLang 与 Miles 栈</h2>
+
+<p><strong>SGLang（推理侧竞争壁垒）</strong>。RadixAttention：用基数树（radix tree）维护 KV cache 的 LRU，新请求来时做前缀匹配，命中就复用已算的 KV，不重算；对 prefix-heavy / RAG / 多轮 agent 工作负载收益巨大。性能：<span class="chip c-tp">第三方</span> 整体吞吐比"充分优化的 vLLM"高约 <strong>29%</strong>（16.2k vs 12.5k tok/s）；在唯一 prompt 批任务上差距趋零，在 prefix-heavy RAG 上可放大到 <strong>6×</strong>。定位：vLLM 赢在生态广度 / 社区 / 易用；SGLang 赢在前缀缓存、结构化输出、agent 工作流。</p>
+
+<p><strong>Miles（RL 训练框架）</strong>。栈 = SGLang（rollout）+ Megatron-LM（训练），从 slime（智谱框架，已用于 GLM-4.6 与大规模 MoE 训练）fork 而来。核心创新：<span class="chip c-vr">自报</span> <strong>统一 FP8 流水线</strong>——首个端到端 FP8 采样 + 训练，让训练和推理用完全相同的 FP8 量化逻辑，消除 MoE RL 里量化不一致导致的"RL 崩溃"；<strong>Rollout Routing Replay（R3）</strong>——在 SGLang 推理时记录 MoE 的专家路由决策，在 Megatron 训练时回放，专家选择逐比特对齐，根治 MoE 的 train-inference mismatch，是 Miles 最具技术难度的创新；<strong>INT4 QAT</strong>——量化感知训练，让 1TB+ 模型单机可部署；<strong>在线 draft 模型投机解码</strong>——rollout 提速 25%+；<strong>零拷贝权重同步</strong>（CUDA IPC）、<strong>partial rollout</strong>（多轮）、<strong>截断 + 掩码重要性采样</strong>（修正 off-policy 偏差）、<strong>多智能体协同训练</strong>、<strong>VLM + LLM 统一</strong>。支持 DeepSeek（R1 / V3 / V3.2）、Qwen、Llama、Gemma、GLM。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-2.svg" alt="Miles 技术栈：Rollout 采样侧 SGLang（记录 MoE 专家路由）→ 训推桥接核心（R3 路由回放、统一 FP8、零拷贝权重同步 CUDA IPC）→ 训练侧 Megatron-LM（支持 EP）；外围加速与稳定（INT4 QAT、在线 draft 投机解码、partial rollout、截断加掩码 IS、多智能体与 VLM 统一）以虚线覆盖桥接层；支持模型列表指向 SGLang">
+  <figcaption><span class="fnum">图 2</span>Miles 技术栈四层：rollout 采样侧、训推桥接核心创新、训练侧、外围加速与稳定。R3 与统一 FP8 从 SGLang 指向 Megatron，零拷贝权重同步反向从 Megatron 回传到 SGLang。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>看中间的桥接层：三个节点里两个是正向（R3、统一 FP8：SGLang → Megatron），一个是反向（零拷贝权重同步：Megatron → SGLang）。正向两条边传的是<strong>采样时刻的信息</strong>——专家选了谁、用的什么量化——目的是让训练侧重算 logprob 时与采样一致；反向那条边传的是新权重。整个 RL 循环的一致性问题全部集中在这个桥接层，这是 Miles 相对 verl / slime 差异化的位置。</p>
+    <p>外围层用虚线"覆盖采样与训练全程"，说明 INT4 QAT、投机解码、partial rollout、重要性采样修正等不是桥接层的组成部分，而是叠加在两侧引擎上的加速与稳定手段。其中"截断 + 掩码重要性采样"与 R3 的关系在第 04 节：R3 固定路由一致，不替代 off-policy 偏差修正，两者需叠加。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>推理引擎按请求独立计算 KV，多轮 agent 每轮重算前缀；RL 框架把 rollout 引擎与训练引擎当作两个独立组件，训练时重算 logprob 逼近采样分布，精度上各自选 BF16 或 FP8。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>SGLang 以基数树自动复用前缀 KV（<span class="chip c-tp">第三方</span> 约 +29%，RAG 上至 6×）；Miles 在两引擎之间加桥接层：<span class="chip c-vr">自报</span> R3 记录 - 回放路由、统一 FP8 端到端同一量化、CUDA IPC 零拷贝同步；外围叠 INT4 QAT（1TB+ 单机）、投机解码（+25%）、partial rollout、截断 + 掩码 IS、多智能体、VLM + LLM 统一。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>是否把训推一致性当作独立的系统层</b>。基线靠训练时重算，Miles 把一致性做成桥接层的两个组件。原文对 SGLang 性能给了第三方对比数字并注明场景边界（唯一 prompt 批任务差距趋零）；Miles 的各项为自报，且"首个端到端 FP8"是厂商口径。对 RL-on-NPU 的含义：桥接层的三个组件恰是第 09 节表中三个"关键缺口"——路由回放、端到端 FP8、零拷贝同步在昇腾上都待验证。</p>
+
+<h2 id="s3"><span class="hnum">03</span>MoE 的 train-inference mismatch 为何比 dense 更致命</h2>
+
+<p>RL（GRPO / PPO）的正确性依赖一个隐含假设：训练引擎对某条 rollout 重算出的策略分布，要和当初采样这条 rollout 时用的策略分布"足够接近"。重要性采样比 <code>r = π_new(a|s) / π_old(a|s)</code> 是整个梯度的核心权重——<code>π_old</code> 由 rollout 引擎（SGLang）在采样时给出，<code>π_new</code> 由训练引擎（Megatron）在前向时重算。只要这两个引擎对"同一 token 在同一上下文下"的 logprob 算得不一致，<code>r</code> 就会系统性失真，梯度方向被污染，轻则不收敛，重则 reward 崩溃（reward 表面上升但策略实际在退化）。</p>
+
+<p>对 <strong>dense 模型</strong>，两个引擎的实现差异表现为连续的小数值误差：kernel 不同、累加顺序不同、FP 精度不同，带来的是 logits 上 O(1e-3) 量级的扰动。softmax 是平滑函数，这种扰动平滑地传到 logprob，<code>r</code> 在 1.0 附近小幅抖动，再叠加 GRPO 常规的 clip / 截断，基本能被吸收。dense 的失配是"有界、连续、可控"的。</p>
+
+<p><strong>MoE 把一个离散、不连续的决策插进了前向路径</strong>：router（gating）对每个 token 算 gating logits，然后 top-k argmax 选出激活的专家集合。这一步是阶跃的——① <strong>router 数值的微小扰动会翻转专家选择</strong>：当某 token 第 k 名和第 k+1 名专家分数接近时，引擎间 O(1e-3) 的 router 差异就足以让 argmax 边界翻过去，token 被路由到不同的专家集合，这种翻转在每层、每 token 上独立发生；② <strong>专家翻转把"小数值误差"放大成"换了一条计算路径"</strong>——dense 下只是同一权重上的微小误差，MoE 下专家一旦翻转，token 过的是完全不同的 FFN 权重，logprob 漂移从 O(1e-3) 跳到 O(0.1) 甚至更大，且结构性、不可被 clip 当噪声吸收；③ <strong>漂移经重要性采样破坏梯度</strong>——<code>r = exp(logp_new − logp_old)</code>，漂移 0.3 让 <code>r</code> 偏离约 1.35×，漂移 1.0 就是 e 倍，这种和"哪些 token 翻转专家"相关的有偏信号让 GRPO 给出方向错误的梯度，逐层逐 token 累积成 RL 崩溃。模型越稀疏（激活占比越低、专家越多、router 边界越密），翻转越频繁，越致命——而前沿模型（DeepSeek-V3 / V3.2、Qwen3-MoE、GLM）几乎全是稀疏 MoE。</p>
+
+<div class="formula">失配的放大链（机理，推断）
+  dense   kernel / 累加顺序 / 精度差异 → logits 扰动 O(1e-3) → softmax 平滑传递 → r 在 1.0 附近抖动 → clip 可吸收
+  MoE     同样 O(1e-3) 的 router 扰动 → top-k argmax 边界翻转 → token 走不同 FFN 权重 → logprob 漂移 O(0.1)+
+          → r = exp(Δlogp)：Δ=0.3 → 约 1.35×；Δ=1.0 → e 倍 → 与"哪些 token 翻转"相关的有偏梯度 → 逐层逐 token 累积 → RL 崩溃
+  越稀疏（激活占比低 · 专家多 · router 边界密）→ 翻转越频繁  <span class="cmt">// 前沿模型几乎全是稀疏 MoE</span></div>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>训推失配是数值精度问题：两个引擎的 logprob 差 O(1e-3)，GRPO 的 clip 与截断能吸收；MoE 与 dense 的处理方式相同，多调一下 clip 范围即可。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>把失配拆成两类：dense 的连续小误差（有界、可控）与 MoE 的离散路由翻转（阶跃、结构性、不可被 clip 吸收）。后者把 O(1e-3) 的 router 差异放大为 O(0.1)+ 的 logprob 漂移，再经指数进入重要性比，形成方向错误的有偏梯度。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>对失配性质的判断</b>：连续误差可以当噪声处理，离散翻转不能。原文给出的是机理推导而非实测数字（漂移量级为示例性估算），这一限定应保留。对 RL-on-NPU 的含义是直接的：昇腾上重写 MoE 路由，kernel、累加顺序、tie-breaking 任一处不同，就在 gating 分数接近的 token 上翻转专家——这正是 align-probe 想量化的漂移（第 09 节）。</p>
+
+<h2 id="s4"><span class="hnum">04</span>R3：不重算路由，而是记录 - 回放路由</h2>
+
+<p>传统对齐手段是"<strong>训练时重算</strong>"：拿到 rollout 后训练引擎重跑前向、重算 logprob（乃至重算 gating）逼近 <code>π_old</code>。但这在 MoE 上有固有缺陷——训练引擎重算 gating 时，argmax 边界可能已经翻转，重算出的专家集合和采样时不是同一套。重算越精确，越是在用 Megatron 的 router 数值复现一个本属于 SGLang 的离散决策，而离散决策恰是不可复现的那部分。R3 换了思路：<strong>不重算路由，而是记录 - 回放路由。</strong></p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-3.svg" alt="R3 时序图：采样请求发起 rollout；SGLang 逐 token 生成时选择专家并把选中的专家记录到 Replay Buffer；返回采样序列；Buffer 保存完整专家路由决策；训练时回放同样的专家选择给 Megatron，Megatron 不重新路由、直接用回放的专家，专家选择与推理逐比特对齐，消除 MoE 训推失配">
+  <figcaption><span class="fnum">图 3</span>R3 时序：SGLang 在逐 token 生成循环内把每步选中的专家记录到 Replay Buffer；Megatron 训练走到 MoE 层时不用自己的 gating argmax，直接回放 Buffer 中的专家集合。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>看循环框内的两个动作："MoE 路由选择本 token 专家"与"记录该 token 选了哪些专家"——记录发生在采样循环内部、逐 token 进行，这意味着存储开销是每 token × 每层 × top-k 专家 id 的乘积，长序列、深层 MoE 下不可忽略。再看训练侧的自环："不重新路由 - 直接用回放的专家"：Megatron 的 gating 在训练时<strong>被旁路</strong>，这就是原文所说"要改训练前向"——MoE 层需支持外部注入专家选择。</p>
+    <p>最值得注意的是 Buffer 节点上的注释"保存完整专家路由决策"：它保存的是采样时刻的决策，不是训练当下的 on-policy 路由。<code>π_new</code> 用的是 <code>π_old</code> 的专家集合——对重要性采样这正是想要的，但读图时要意识到回放的是采样时刻的决策。图上没有出现的是数值通路：R3 只固定离散选择，连续数值误差交给统一 FP8（第 05 节）。</p>
+  </div>
+</figure>
+
+<p>采样阶段 SGLang 把每个 token 每层 MoE 的专家路由决策（选中专家 id / top-k 集合）随 rollout 落盘；训练阶段 Megatron 走到 MoE 层时不再用自己的 gating argmax，而是直接回放 SGLang 当初选的那套专家。这样 train 和 inference 走逐比特相同的专家路径，离散决策被固定、不再翻转；剩下的连续数值误差交给统一 FP8。R3 的核心是：<strong>把"不可复现的离散选择"从重算变成回放，只让"可复现的连续数值"留给数值对齐处理</strong>——这是它相对 verl / slime 真正差异化的地方。</p>
+
+<p>代价与边界（<span class="chip c-inf">推断</span> provisional，机理推断）：<strong>要存路由</strong>（每 token × 每层 × top-k 专家 id，长序列 + 深层 MoE 下开销不可忽略）；<strong>要改训练前向</strong>（Megatron MoE 层需支持"外部注入专家选择"旁路，侵入式、要兼容各种 EP）；<strong>回放的路由严格说不是训练当下的 on-policy 路由</strong>（<code>π_new</code> 用的是 <code>π_old</code> 的专家集合——对重要性采样这正是想要的，但要意识到回放的是采样时刻的决策）；<strong>与 partial rollout / staleness 正交</strong>：R3 固定路由一致，但不替代修正 off-policy 偏差的截断 + 掩码重要性采样，两者需叠加使用。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>训练时重算：训练引擎重跑前向，重算 logprob 乃至 gating，尽量逼近采样分布。重算越精确越好。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>记录 - 回放：SGLang 采样时落盘每 token 每层的专家集合，Megatron 训练时旁路自身 gating、直接回放。离散决策被固定，只把连续数值留给数值对齐。代价：存路由、改训练前向、回放的是采样时刻决策、需与截断 + 掩码 IS 叠加。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>对"可复现"的认识</b>：基线假定重算可以逼近一切，R3 承认离散决策不可复现、只能回放。原文对此给出的是机理论证，代价清单标注为机理推断（provisional），无实测开销数字。对 RL-on-NPU 的含义：R3 的全部价值建立在两端路由逐比特一致之上，昇腾上两端 router 都是重新实现的——这是第 09 节表中最关键的缺口。</p>
+
+<h2 id="s5"><span class="hnum">05</span>统一 FP8：一致性的另一半</h2>
+
+<p>R3 把离散路由固定为逐比特一致，但前向里还有<strong>连续数值通路</strong>——专家 FFN 的矩阵乘、attention、归一化。如果训练和推理在这条通路上用的 FP8 量化逻辑不同，即使专家选对了，logprob 照样会漂。量化不一致独立于路由就能破坏一致性：推理侧（SGLang）为吞吐用一套 FP8（scale 选取、per-tensor / per-channel / per-block 粒度、累加与反量化顺序、kernel），训练侧（Megatron）若用另一套 FP8 甚至 BF16，同一组权重和激活在两边算出的 logits 就有系统性偏差，经 softmax 进 logprob、进 <code>r</code>——和路由失配是同一根源的两条并行通道；而且 FP8 量化误差和 scale、激活分布相关，是<strong>有偏</strong>的，无法靠采样平均掉，长训练里累积成崩溃。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-4.svg" alt="两条链对照：旧做法——训练 FP8 与推理 FP8 量化逻辑不同 → 数值漂移 → MoE RL 崩溃；Miles 做法——端到端统一 FP8 → 采样与训练同一套量化 → 数值完全一致 → RL 稳定；旧做法以虚线"Miles 用统一量化根治"指向新做法">
+  <figcaption><span class="fnum">图 4</span>不一致（旧做法）与统一 FP8（Miles 做法）两条因果链。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>两条链的第一个节点决定了一切：上链是"量化逻辑不同"，下链是"同一套量化"。中间的"数值漂移"节点在上链是必然结果，在下链被"数值完全一致"替代。注意这张图讨论的漂移<strong>与第 03 节的路由翻转无关</strong>——即便路由全部对齐，量化不同仍会走上链。这就是原文所说"同一根源的两条并行通道"。</p>
+    <p>读这张图时要与图 3 合看：图 3 处理离散维度，图 4 处理连续维度。仅采用 R3：专家选对了但选中专家的 FFN 两边量化不同，logprob 仍漂移；仅采用统一 FP8：数值通路对齐了但 router 仍翻转专家，token 走错 FFN，此前的对齐失效。两者是失配的两个正交维度，必须同时采用，才能把 <code>π_new</code> 真正逼回 <code>π_old</code>。</p>
+  </div>
+</figure>
+
+<figure>
+  <img src="img/dispatch-09-radixark-miles/orig-2.png" alt="Miles 文档中的端到端 MXFP8 RL 配方数据流图：BF16 activation 与 BF16 weight 各量化为 row-wise 与 col-wise 的 1x32 block MXFP8 副本；row-wise 副本进入 Fprop，col-wise 副本进入 Wgrad 与 Dgrad；MXFP8 weight 一条虚线标注 to rollout；Wgrad 输出到 Optimizer states / FP32 master weight，再以虚线回到 BF16 weight；BF16 gradient 量化为 MXFP8 gradient 进入 Wgrad 与 Dgrad，Dgrad 输出虚线 to prev layer">
+  <figcaption><span class="fnum">图 5</span>Miles 文档中的端到端 MXFP8 RL 配方（Blackwell 上的低精度路线，属统一低精度流水线的后续形态）。BF16 激活与权重各被量化为两份 1×32 block 微缩放副本（row-wise / col-wise），分别供前向（Fprop）、权重梯度（Wgrad）与数据梯度（Dgrad）三类 GEMM 使用；优化器状态与主权重保持 FP32；量化后的权重经虚线 "to rollout" 直接供 rollout 使用。<span class="chip c-vr">自报</span> 取自 radixark/miles 仓库文档（docs/assets/images/low-precision/mxfp8-e2e.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>先找到那条标注 "to rollout" 的虚线：它从训练侧量化好的 MXFP8 weight（row-wise, 1×32 block）直接指向 rollout。这就是"统一"的图示——rollout 用的低精度权重与训练前向用的是<strong>同一份量化结果</strong>，而不是各自从 BF16 主权重独立量化一次。原文所说"采样与训练同一套量化逻辑"在这张图上体现为一条边，而非两个独立的量化步骤。</p>
+    <p>再看三个 GEMM 框的标注：Wgrad 与 Dgrad 写的是 "BF16 tensor core, FP32 acc"，Fprop 写的是 "NVFP4 tensor core, FP32 acc, row-scaled epilogue scaling"——文档把这张图放在 MXFP8 一节，但 Fprop 框沿用了 NVFP4 的标注，读图时以文档正文为准（正文说 MXFP8 用于 rollout、前向、权重梯度与数据梯度 GEMM，配置的张量保留 BF16）。所有 GEMM 均为 FP32 累加、优化器状态与主权重为 FP32——低精度只在 GEMM 输入上，这是量化误差"有偏但可控"的前提。这张图是 2026 年 Blackwell 硬件上的配方，与原文 2025-11 时点的 FP8 描述属同一原则的后续形态，不应据此推断原文时点的实现细节。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>推理侧为吞吐选 FP8，训练侧为稳定选 BF16 或另一套 FP8；两侧量化各自独立选择 scale 粒度、累加与反量化顺序、kernel。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p><span class="chip c-vr">自报</span> 首个端到端 FP8 采样 + 训练：两侧用完全相同的 FP8 量化逻辑。原文判断这是 Miles 相对 verl / slime 的另一处真差异化；NeMo-RL 也有 FP8 但绑 NVIDIA。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>量化是否被当作训推一致性的一部分</b>：基线把它当作两侧各自的性能选项，Miles 把它当作与路由对齐并列的一致性维度。原文给出的是机理论证（量化误差有偏、不可平均掉）；"首个"为厂商口径。对 RL-on-NPU 的含义：统一 FP8 与 Dispatch 02 / 03 的 FP8 RL、昇腾 950 原生 FP8 同向，但 NPU 的 FP8 数据通路与量化原语与 GPU 不同，要让两端 FP8 逐数值一致，工作量与可行性待验证（第 09 节）。</p>
+
+<h2 id="s6"><span class="hnum">06</span>同行对比</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:100px"></th><th><strong>SGLang</strong></th><th>vLLM</th><th>TGI</th></tr></thead>
+<tbody>
+<tr><td>核心技术</td><td>RadixAttention 前缀复用</td><td>生态广、PagedAttention</td><td>已进维护模式（2025-12）</td></tr>
+<tr><td>强项场景</td><td>prefix-heavy / RAG / agent</td><td>通用、社区最大</td><td>—</td></tr>
+<tr><td>商业体</td><td><strong>RadixArk 约 $400M</strong></td><td>Inferact 约 $800M</td><td>（HF）</td></tr>
+</tbody>
+<caption>推理引擎对比。估值为媒体报道口径（provisional）。</caption>
+</table>
+</div>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:90px">框架</th><th>出身</th><th>MoE / EP</th><th>FP8</th><th>差异点</th></tr></thead>
+<tbody>
+<tr><td><strong>Miles</strong></td><td>RadixArk（SGLang）</td><td>是，Megatron</td><td>端到端 + <strong>R3</strong></td><td>SGLang 原生 rollout、R3 逐比特对齐</td></tr>
+<tr><td>slime</td><td>智谱 THUDM</td><td>是</td><td>部分</td><td>Miles 的上游</td></tr>
+<tr><td>verl</td><td>字节（HybridFlow）</td><td>是</td><td>进行中</td><td>最广用、引擎中立</td></tr>
+<tr><td>NeMo-RL</td><td>NVIDIA</td><td>是</td><td>是（NeMo 生态）</td><td>绑定 NVIDIA 栈</td></tr>
+<tr><td>OpenRLHF</td><td>社区</td><td>较弱</td><td>—</td><td>易用、起步早</td></tr>
+</tbody>
+<caption>RL 后训练框架对比。关键判断：只有 Megatron 系（verl / slime / Miles / ROLL / NeMo-RL）能正确做专家并行（EP）——而前沿模型几乎都是稀疏 MoE，这让 Miles 的 MoE 专长高度契合需求。</caption>
+</table>
+</div>
+
+<figure>
+  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-5.svg" alt="Megatron 系（verl、slime、Miles、NeMo-RL、ROLL，能正确做 EP）与非 Megatron 系（OpenRLHF，MoE 较弱）两组；slime 以 fork 共演化指向 Miles；"前沿模型几乎都是稀疏 MoE"节点以"需要 EP 才能正确训练"指向 Megatron 系，以虚线"EP 缺位则难以承载"指向非 Megatron 系">
+  <figcaption><span class="fnum">图 6</span>RL 框架按能否正确做 EP 分组。前沿模型的稀疏 MoE 形态把需求推向 Megatron 系；Miles 在该组内以端到端 FP8 + R3 与 SGLang 原生 rollout 区别于 verl / slime；NeMo-RL 有 FP8 但绑定 NVIDIA 栈。<span class="chip c-inf">推断</span> 本站图，由原文第 5 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>这张图的分组标准只有一个：<strong>能否正确做专家并行</strong>。从"前沿模型几乎都是稀疏 MoE"出发的两条边给出了它为什么是分组标准——实线指向 Megatron 系（需要 EP 才能正确训练），虚线指向非 Megatron 系（EP 缺位则难以承载）。这与 Dispatch 12 框架表中"能正确做 EP 不是加分项而是必要条件"一致。</p>
+    <p>组内再看 Miles 的位置：它与 slime 之间是 fork 共演化的实线，说明 Megatron 系内的差异不在 EP 本身（都有），而在 EP 之上的一致性工程——R3 + 统一 FP8。NeMo-RL 节点同样有 FP8，区别在于绑定 NVIDIA 栈；这与第 07 节"栈依赖"风险和第 09 节的昇腾问题是同一件事的两面。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>RL 框架选型看易用性与社区规模；推理引擎选型看通用吞吐；MoE 支持是可后补的特性。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>以 EP 正确性为一级分组标准，只有 Megatron 系入围；组内以 R3 + 统一 FP8 为真差异化；推理侧以场景（prefix-heavy / agent）而非通用吞吐定位。vLLM 赢在生态广度，SGLang 赢在前缀缓存、结构化输出、agent 工作流。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>选型的第一性标准</b>：基线以易用性为先，本篇以 MoE 正确性为先。原文对同行的判断多为通行认知，verl 的 FP8 标"进行中"、slime 标"部分"，均需以各仓库最新状态为准。对 RL-on-NPU 的含义：昇腾栈的 RL 框架若要承接前沿 MoE，第一道门槛同样是 EP 正确性（MindSpeed 需提供等价 EP），第二道才是一致性工程。</p>
+
+<h2 id="s7"><span class="hnum">07</span>技术壁垒与风险</h2>
+
+<p><strong>壁垒</strong>：① 人才——做出 RadixAttention 的 SGLang 核心团队，系统工程深度难复制；② 分发量构成竞争壁垒——SGLang 日均万亿 token、是众多 RL 栈的 rollout 引擎，Miles SGLang 原生的紧耦合是其他框架无法提供的；③ R3 / 统一 FP8 的高难度工程——让 MoE 训推逐比特一致是高难度的工程，先发优势明显；④ 开源飞轮——开放 SGLang + Miles → 采用 → 企业版变现（Databricks / vLLM-Inferact 相同模式）。</p>
+
+<p><strong>风险</strong>：开源基础设施变现未验证——能否从"免费引擎"转为"盈利的企业产品"仍待验证；vLLM 生态更大、融资更多（Inferact $800M），社区与广度上 SGLang 仍追赶；巨头竞争——NVIDIA（NeMo-RL + 硬件捆绑）、各云厂自带推理服务、价格战导致推理商品化；栈依赖——深度绑定 Megatron / NVIDIA，对国产 NPU（昇腾）的支持是另一条战线；团队 / 项目的开源中国渊源（slime / THUDM 共演化），在部分企业 / 政府采购上可能成为考量。</p>
+
+<figure>
+  <img src="img/dispatch-09-radixark-miles/orig-1.png" alt="Miles 仓库的致谢图：六行组织标识，包括硬件与框架厂商、云与算力服务商、AI 初创公司、模型实验室与多所大学">
+  <figcaption><span class="fnum">图 7</span>Miles 仓库 README 的致谢图，标题为"在 Miles 上构建、为其贡献、与其协作的组织"，含硬件与框架厂商、云与算力服务商、agent 与环境类初创公司、多家模型实验室与多所大学的标识。<span class="chip c-vr">自报</span> 取自 radixark/miles 仓库（docs/assets/images/acknowledgment.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>这张图对应第 07 节壁垒②"分发量"与④"开源飞轮"：它展示的是<strong>与 Miles 有构建、贡献或协作关系的组织范围</strong>，横跨硬件厂商、云服务商、模型实验室、初创公司与高校——其中也包含上游 slime 与本篇第 06 节表内的同行生态成员。范围之广是开源飞轮"采用"一环的直观证据。</p>
+    <p>但要读出它<strong>不能证明什么</strong>："构建、贡献、协作"三种关系被并列展示，图上无法区分谁在生产中用 Miles 做真实 MoE 后训练、谁只是贡献过代码或提供算力。第 08 节的观察指标之一正是"Miles 被头部实验室用于真实 MoE 后训练的案例"——这张致谢图不是那个证据，它只说明生态接触面。图上也没有任何国产 NPU 厂商的标识，与第 07 节"对昇腾的支持是另一条战线"一致。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>开源基础设施公司的壁垒是代码本身；代码开源即无壁垒，风险主要是被复刻。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>壁垒在人才、分发量、高难度一致性工程的先发优势与开源飞轮四项，代码开源反而是飞轮的起点。风险集中在变现未验证、vLLM 生态与资金优势、巨头与商品化、NVIDIA 栈依赖、开源渊源的采购考量。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>壁垒的位置</b>：不在代码可见性，而在做出并维护 R3 / 统一 FP8 这类逐比特一致性工程的能力与 SGLang 的分发量。原文的壁垒与风险为分析性判断，无量化。对 RL-on-NPU 的含义：栈依赖既是 RadixArk 的风险，也是昇腾的机会——"对非 NVIDIA 硬件的支持进展"被原文列为观察指标。</p>
+
+<h2 id="s8"><span class="hnum">08</span>投资视角（非建议）</h2>
+
+<p><strong>看多</strong>：推理是当下增长最快的市场；SGLang 是开源前二的引擎；顶级团队 + Accel + Intel CEO 背书；$400M 估值相对 vLLM-Inferact 的 $800M 偏低；同时握住推理 + RL 训练两个入口；MoE 后训练是前沿方向而 Miles 在此最强。<strong>看空</strong>：基础设施开源变现难、毛利与议价权存疑；vLLM 生态 / 资金更雄厚；推理趋于商品化；高度依赖 NVIDIA 栈。<strong>可比公司</strong>：vLLM → Inferact（$800M）、Together / Fireworks / Baseten（推理云）、Databricks（开源 → 企业的范式）。<strong>观察指标</strong>：企业版 / 托管收入起量、SGLang 相对 vLLM 的采用份额、Miles 被头部实验室用于真实 MoE 后训练的案例、对非 NVIDIA 硬件（昇腾 / AMD）的支持进展。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>以估值对标同类公司：$400M 对 $800M 即"偏低"，据此形成判断。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>看多与看空并列，四项观察指标全部是可核实的事件（收入起量、采用份额、生产案例、非 NVIDIA 支持），而非估值比较；原文明示非投资建议，估值为媒体口径。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>四项观察指标中有两项与本看板直接相关：<b>Miles 被头部实验室用于真实 MoE 后训练的案例</b>决定 R3 + 统一 FP8 是否经过生产验证；<b>对昇腾 / AMD 的支持进展</b>决定第 09 节的缺口是否会由 RadixArk 自己填上。本节全部为研究综述，不构成投资建议。</p>
+
+<h2 id="s9"><span class="hnum">09</span>对 RL-on-NPU 的意义</h2>
+
+<p>两个直接启发。<strong>R3 就是"训推一致"在 GPU 上的标准答案</strong>：本看板反复提的 align-probe 想量化的正是 train-inference 的数值 / 路由漂移，Miles 的 R3 直接用"记录 - 回放路由"做到逐比特对齐——这是昇腾上做 MoE RL 时最该借鉴的机制（在 NPU 上重写 MoE 路由极易漂移）。<strong>统一 FP8</strong> 与 Dispatch 02 / 03 的 FP8 RL、昇腾 950 原生 FP8 完全同向。问题是：SGLang 的 Ascend 后端 + MindSpeed，能否复刻 Miles 的 R3 / 端到端 FP8？这是 RL-on-NPU 一道明确、可执行的工程缺口。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:130px">能力</th><th>GPU（Miles 现状）</th><th>昇腾（待验证）</th></tr></thead>
+<tbody>
+<tr><td>SGLang rollout</td><td>成熟，CUDA 后端为主路径</td><td>需走 SGLang 的 Ascend 后端；算子覆盖、性能、采样数值稳定性待验证</td></tr>
+<tr><td>Megatron 训练</td><td>成熟，Megatron-LM 原生</td><td>需对应 MindSpeed（Ascend 版 Megatron）；MoE / EP 实现是否对齐待验证</td></tr>
+<tr><td>R3 路由回放</td><td>已实现，SGLang 记录、Megatron 回放</td><td><strong>关键缺口</strong>：需在 Ascend SGLang 记录路由、MindSpeed 前向注入回放；两端 MoE 路由都得重写，极易引入漂移</td></tr>
+<tr><td>端到端 FP8</td><td>已实现，训练 / 推理共用同一 FP8 逻辑</td><td><strong>关键缺口</strong>：NPU FP8 数据通路 / 量化原语与 GPU 不同，要让两端 FP8 逐数值一致，工作量与可行性待验证</td></tr>
+<tr><td>零拷贝权重同步</td><td>CUDA IPC 实现</td><td>需 Ascend 等价的设备间共享内存 / IPC；能否零拷贝待验证</td></tr>
+<tr><td>EP 专家并行</td><td>Megatron 系原生支持</td><td>MindSpeed 需提供等价 EP；通信原语 / 分片与 Megatron 对齐情况待验证</td></tr>
+</tbody>
+<caption>机理层面的现状 / 待验证梳理（provisional，非实测、非投资建议）。</caption>
+</table>
+</div>
+
+<p>"在 NPU 上重写 MoE 路由极易漂移"的原因：R3 的全部价值建立在<strong>两端路由逐比特一致</strong>之上。换到昇腾，SGLang（Ascend 后端）和 MindSpeed 各自的 router 都是重新实现的——gating 矩阵乘 kernel、softmax / 归一化数值、top-k argmax 的 tie-breaking、FP 累加顺序，任一处与原 GPU 实现有别，就会在 gating 分数接近的 token 上翻转专家；而且要让回放真正等价，记录端选出的专家 id 必须能被回放端无歧义地复现同一套激活计算——两端只要 MoE 数值语义不统一，回放注入进去也只是"用对的专家 id 走了数值不同的 FFN"，路由对齐了、数值又漂回来。这恰好对应 align-probe 想量化的 train-inference 漂移：<strong>NPU 上重写路由，等于把这条漂移风险重新打开一遍</strong>。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>昇腾上做 MoE RL：先把 FP8 算子补齐，或先把 EP 跑通，单点突破后再谈一致性。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>单点（仅 FP8、或仅 EP）已有工作，但"路由回放 + FP8 一致"两部分同时闭环目前是空白。原文的结论：率先在昇腾同时实现这两项正交工作，即可补上 MoE RL 在国产算力上最困难的一环，这也是 align-probe 最应优先验证的方向。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>差在<b>是否同时闭合两个正交维度</b>。第 04–05 节的机理已说明单点无效：仅 R3 则 FFN 数值漂移，仅 FP8 则专家翻转。昇腾上的困难是叠加的——两端路由重写（离散维度重新打开）加 FP8 原语不同构（连续维度重新打开）。表中六行全部标待验证，原文为机理推断非实测；但缺口的位置是明确的，这使它成为一项可执行的工程目标而非开放问题。</p>
+
+<h2 id="s10"><span class="hnum">10</span>总表：朴素基线 vs Miles 的做法</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:120px">维度</th><th style="width:230px">朴素基线</th><th>它的做法 · 差在哪</th></tr></thead>
+<tbody>
+<tr><td>公司形态</td><td>一个入口：推理服务或企业版</td><td>推理 + RL 训练两入口，rollout 复用同一引擎；约 $400M / $100M 种子（媒体口径）</td></tr>
+<tr><td>推理引擎</td><td>按请求独立算 KV</td><td>RadixAttention 基数树前缀复用；约 +29%（16.2k vs 12.5k），RAG 至 6×，唯一 prompt 趋零（第三方）</td></tr>
+<tr><td>失配性质</td><td>数值精度问题，clip 可吸收</td><td>dense 连续可控 vs MoE 离散翻转 O(1e-3) → O(0.1)+，经指数进入 r，有偏梯度（机理）</td></tr>
+<tr><td>路由一致</td><td>训练时重算 gating</td><td>R3 记录 - 回放专家集合，旁路训练侧 gating；代价：存路由、改前向、回放为采样时刻决策、需叠加截断 + 掩码 IS</td></tr>
+<tr><td>数值一致</td><td>两侧各选精度</td><td>统一 FP8 端到端同一量化（自报"首个"）；与 R3 正交，必须同时采用</td></tr>
+<tr><td>同行分组</td><td>易用性与社区规模</td><td>EP 正确性为一级标准（Megatron 系）；组内以 R3 + FP8 差异化；NeMo-RL 有 FP8 但绑 NVIDIA</td></tr>
+<tr><td>壁垒与风险</td><td>代码开源即无壁垒</td><td>人才、分发量、一致性工程先发、开源飞轮；风险：变现未验证、vLLM $800M、商品化、NVIDIA 栈依赖、开源渊源</td></tr>
+<tr><td>对昇腾</td><td>单点补 FP8 或 EP</td><td>六项能力全部待验证；R3 与端到端 FP8 为关键缺口；两维同时闭环是空白，也是 align-probe 优先方向</td></tr>
+</tbody>
+<caption>左栏是不看这家公司时的直觉做法，右栏是原文核实到的做法与本站的差异判断。估值 / 融资为媒体报道口径（provisional），机理分析为推断，全文非投资建议。</caption>
+</table>
+</div>
+
+<h2 id="s11"><span class="hnum">11</span>原文没给的东西</h2>
+
+<p>以下是复现或引用时必须自行确认、原文未给出实测或仅为报道 / 自报口径的内容：</p>
+
+<ul>
+<li><strong>估值与融资</strong>——约 $400M、$100M 种子轮、Accel 领投、Intel CEO 天使，全部为 TechCrunch / BusinessWire / theaiinsider 等媒体报道口径（provisional）；</li>
+<li><strong>SGLang 对 vLLM 的性能数字</strong>——约 29%（16.2k vs 12.5k tok/s）与 RAG 上 6× 来自第三方对比（turion / particula / yottalabs 等），测试配置未在原文转录；</li>
+<li><strong>"首个端到端 FP8 采样 + 训练"</strong>——厂商口径，无独立核实；</li>
+<li><strong>R3 的存储与训练前向开销</strong>——原文的代价清单为机理推断（provisional），无实测数字；</li>
+<li><strong>logprob 漂移量级</strong>——O(1e-3)、O(0.1)、1.35×、e 倍均为机理示例性估算，非实测；</li>
+<li><strong>投机解码 +25%、INT4 QAT 1TB+ 单机</strong>——自报，条件未说明；</li>
+<li><strong>同行表中 verl FP8"进行中"、slime FP8"部分"</strong>——通行认知，以各仓库最新状态为准；</li>
+<li><strong>昇腾侧六项能力</strong>——全部标待验证，为机理层面梳理，非实测；</li>
+<li><strong>Miles 在头部实验室的生产 MoE 后训练案例</strong>——原文列为观察指标，图 7 的致谢图不能作为该证据；</li>
+<li>本篇原图两张均来自 radixark/miles 仓库（致谢图与 2026 年 MXFP8 配方图）；后者为原文时点之后的低精度路线文档，用于说明"统一量化"原则，不代表原文时点的 FP8 实现细节。LMSYS Miles 博客（2025-11-19）与 RadixArk 官网配图不可达。</li>
+</ul>
+
+<h2 id="s12"><span class="hnum">12</span>判断与下一步</h2>
+
+<div class="note">
+  <span class="ntitle">三条可以直接搬走的判断</span>
+  <p><strong>一、MoE 的训推失配不是精度问题，而是离散决策问题。</strong>router 的 top-k argmax 把 O(1e-3) 的引擎差异放大为换一条计算路径；clip 吸收不了结构性、有偏的漂移。任何在 MoE 上做 RL 的框架，若只靠训练时重算逼近采样分布，在稀疏度上升时会遇到同一失稳模式。</p>
+  <p><strong>二、一致性有两个正交维度，必须同时闭合。</strong>R3 固定离散路由，统一 FP8 对齐连续数值；仅做其一，另一维度会让对齐失效。评估任何"训推一致"方案时，先问它覆盖了哪一个维度、另一个维度由谁负责。</p>
+  <p><strong>三、昇腾上的缺口是明确且可执行的。</strong>SGLang-Ascend 记录路由 + MindSpeed 前向注入回放 + 两端 FP8 逐数值一致——三件事目前无一有公开工作同时完成。率先做到"路由回放 + FP8 一致"闭环，即补上 MoE RL 在国产算力上最困难的一环；align-probe 应以此为优先验证方向。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>企业版 / 托管收入起量</strong>：开源基础设施变现是否被验证 · <strong>SGLang 相对 vLLM 的采用份额</strong>：分发量壁垒是否持续 · <strong>Miles 被头部实验室用于真实 MoE 后训练的案例</strong>：R3 + 统一 FP8 的生产验证 · <strong>对非 NVIDIA 硬件（昇腾 / AMD）的支持进展</strong>：第 09 节六项待验证能力中哪一项先有公开工作。</p>
+</div>
+
+</main>
+
+<footer>
+  来源：RadixArk 官网 / 博客、TechCrunch / BusinessWire / theaiinsider（spinout、$400M、$100M 种子、Accel、Lip-Bu Tan）、LMSYS Miles 博客（2025-11-19）、github.com/radixark/miles 与 miles.radixark.com/docs、SGLang vs vLLM 对比（turion / particula / yottalabs 等）、HuggingFace async-RL 库综述。估值 / 融资为媒体报道口径，provisional；本篇为研究综述，非投资建议。图 5 与图 7 版权归 radixark/miles 仓库所有，此处仅作解析引用；其余五图为本站依原文 mermaid 渲染。
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 21 精读版 · LongCat-2.0 国产芯片训练闭环</title>
+<meta name="description" content="LongCat-2.0 官方来源校正版精读：1.6T/A48B、LSA 的 SI/CLI/HI、135B 5-gram、3-step MTP、5 万余片国产 AI ASIC 预训练、6D 并行与确定性算子、MOPD 多教师蒸馏——朴素基线 vs 它的做法逐节对照，配证据分级与原图解析。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-21-longcat-2.html">
+<meta property="og:title" content="Dispatch 21 精读版 · LongCat-2.0 国产芯片训练闭环">
+<meta property="og:description" content="LongCat-2.0 官方来源校正版精读：1.6T/A48B、LSA 的 SI/CLI/HI、135B 5-gram、3-step MTP、5 万余片国产 AI ASIC 预训练、6D 并行与确定性算子、MOPD 多教师蒸馏——朴素基线 vs 它的做法逐节对照，配证据分级与原图解析。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-21-longcat-2.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-21-longcat-2.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-21-longcat-2">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-21-longcat-2.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 21 · 精读版 · 2026-07-07（07-13 官方来源校正 · 08-13 跟进）</div>
+  <h1>LongCat-2.0：国产芯片前沿训练闭环的官方实证</h1>
+  <p class="standfirst">美团官方发布的 LongCat-2.0 是 1.6T 总参、每 token 激活约 48B 的 MoE，原生 1M 上下文。它不只给出"5 万卡国产芯片训练"的结论，还公开了 LSA 的 SI / CLI / HI 三种索引优化、135B 5-gram Embedding、6D 并行、Muon、512 路以上 context parallel、确定性算子和 MOPD 多教师在线蒸馏。但官方没有披露芯片厂商 / 型号，也没有披露 PPO / GRPO、reward、rollout 或 policy update。本文以 <a href="https://longcat.ai/blog/longcat-2.0/">官方发布页</a> 为主来源，逐节给出"不看发布页的朴素基线"与"LongCat 的做法"，并对每一项主张做证据分级：它是"前沿规模国产芯片预训练 + 后训练 + 部署"的强厂商实证，不是已公开验证的 RL-on-Ascend 证据。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D21</span>
+    <span>承接 D06（DSA）· 被 D24 / D28 / D34 引用</span>
+    <span>原图 1 张 · 本站图 2 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>重要性所在：一个重要例外</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>模型本体：LSA 的 SI / CLI / HI</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>N-gram Embedding 与 1M 上下文</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>训练系统：5 万卡、6D 并行与确定性</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>推理系统：从长上下文到 PD 分离</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>后训练：MOPD 确认了什么</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>评测与证据分级</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>跟进：LSA 技术报告落地</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>总表：基线 vs LongCat</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>原文没给的东西</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">本看板曾用"国产芯片做推理是真的，做训练更难且少有公开实证"概括行业状态。LongCat-2.0 让这句话需要加上一个重要例外：<strong>前沿规模</strong>（1.6T / 约 48B 激活）、<strong>完整链路</strong>（官方称 full training run 与 large-scale deployment 均构建在国产 AI ASIC 超节点上）、<strong>集群规模</strong>（预训练超过 5 万片国产算力芯片，MOPD 运行在数万卡集群）、<strong>系统细节</strong>（公开到并行维度、确定性算子、显存管理、长上下文训练、推理解耦和故障恢复）。但它仍不是可复现训练报告：训练代码、完整数据配方、MFU、故障率与第三方复现均未公开。此前媒体口径中的 HCCL、昇腾 910C、35T+ 总训练 token 和"后训练即 RL"均不再作为官方确认事实。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段：<strong>朴素基线</strong>（左栏，灰：不看发布页时的直觉做法）/ <strong>LongCat 的做法</strong>（右栏，橙）/ <strong>差在哪</strong>（下方色块：差异、官方是否给了理由或数字、对 RL-on-NPU 的含义）。数字按来源标注：<span class="chip c-vr">自报</span> 官方发布页口径（本篇全部性能与系统增益均属此类，self-reported / provisional）、<span class="chip c-tp">第三方</span> 独立来源（本篇没有）、<span class="chip c-inf">推断</span> 本站分析。</p>
+  <p>贯穿全文的一条线索：<strong>存在性证据与复现路径是两回事</strong>。官方给出了高具体度的存在性证据（国产芯片能支撑前沿规模完整训练），但尚未给出公共复现路径（训练代码、芯片身份、RL 配方）。LongCat-2.0 与本站的真实 910B 曲线应分开理解：前者是大规模国产 AI ASIC 训练 / 部署的官方系统案例，后者是明确标注 Ascend 910B 的公开硬件遥测证据，两者互补，不能相互替代。</p>
+</div>
+
+<div class="formula">LongCat-2.0 主链
+  数据      1M 长上下文数据 · 数千亿 token
+  预训练    超过 5 万片国产 AI ASIC · 6D 并行（TP/CP/EP/DP/PP + EMBP）· 512+ 路 CP · Muon · 确定性算子   <span class="cmt">// 吞吐 +35% 以上（自报）</span>
+  后训练    MOPD 多教师在线蒸馏（Agent / 推理 / 交互三组教师）· 数万卡集群              <span class="cmt">// RL 算法未披露</span>
+  模型      1.6T 总参 / 约 48B 激活 · LSA（SI/CLI/HI）· 135B 5-gram Embedding · 3-step MTP
+  部署      国产集群 · PD 分离（prefill CPP+SP · decode KVP+EP128）· 异步 EPLB
+  边界      芯片厂商 / 型号未披露 · PPO/GRPO/reward/rollout 未披露 · 无第三方复现</div>
+
+<h2 id="s1"><span class="hnum">01</span>重要性所在：一个重要例外</h2>
+
+<p>LongCat-2.0 的意义在于四点同时成立：
+<strong>前沿规模</strong>——1.6T 总参数、约 48B 激活的 MoE；
+<strong>完整链路</strong>——官方称 full training run 与 large-scale deployment 均构建在国产 AI ASIC 超节点上；
+<strong>集群规模</strong>——预训练使用超过 5 万片国产算力芯片，后训练的 MOPD 能力融合运行在数万卡集群；
+<strong>系统细节</strong>——公开到并行维度、确定性算子、显存管理、长上下文训练、推理解耦和故障恢复，而非仅提供一张发布会数字图。
+这仍不是一份可复现训练报告：训练代码、完整数据配方、MFU、故障率与第三方复现均未公开。更准确的结论是：官方给出了高具体度的存在性证据，但尚未给出公共复现路径。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-21-longcat-2/fig-1.svg" alt="LongCat-2.0 主链流程图：1M 长上下文数据数千亿 token → 预训练超过 5 万片国产 AI ASIC → 后训练 MOPD 多教师在线蒸馏 → LongCat-2.0 1.6T 总参约 48B 激活 → 国产集群部署 PD 分离 + KVP + EP128；证据边界注释指向后训练：厂商/型号未披露、RL 算法未披露">
+  <figcaption><span class="fnum">图 1</span>LongCat-2.0 的官方主链：1M 长上下文数据（数千亿 token）→ 预训练（超过 5 万片国产 AI ASIC）→ 后训练（MOPD 多教师在线蒸馏）→ 模型（1.6T 总参 / 约 48B 激活）→ 国产集群部署（PD 分离 + KVP + EP128）；虚线"证据边界"指向后训练节点：芯片厂商 / 型号未披露、RL 算法未披露。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>主链五个节点全部为官方口径，但<strong>证据边界的虚线只指向一个节点——后训练</strong>。这不是因为预训练与部署的证据更强（它们同样是自报、无第三方复现），而是因为后训练是本看板主线（RL-on-NPU）最需要、而官方披露最少的一环：预训练与部署至少给了并行维度、算子与架构，后训练只给了"多教师蒸馏"与"三组教师"，没有算法、reward、rollout 与曲线。</p>
+    <p>另一处值得看的是首尾两个节点之间的量级关系：输入端只说"数千亿 token 的 1M-context 数据"，此前媒体提到的 35T+ 总预训练 token 不在官方发布页中，本图未画；输出端部署参数（KVP、EP128）具体到并行度，说明<strong>推理侧的披露粒度高于训练侧</strong>——这一不对称贯穿全篇。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>国产芯片的公开实证止于推理部署与中小规模微调；前沿规模（万亿参数、万卡以上）的完整训练只有 CUDA 集群的公开案例，国产芯片训练以"传闻"或"发布会数字"形式出现。</p></div>
+  <div class="real"><h5>LongCat 的做法</h5>
+  <p>官方发布页明确：1.6T / 约 48B 激活 MoE 的完整训练与大规模部署都构建在国产 AI ASIC 超节点上，预训练超过 5 万片芯片，MOPD 在数万卡集群完成；并公开并行维度、确定性算子、显存管理、长上下文训练、推理解耦与故障恢复等系统细节。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差别在<b>从"结论"到"系统细节"</b>：以往国产芯片训练主张只有规模数字，LongCat 给出了可评估的系统设计。官方没有给的是复现路径——训练代码、数据配方、MFU、故障率与第三方复现。对 RL-on-NPU：这是"国产芯片能否支撑前沿规模完整训练"从抽象讨论到细节丰富的官方案例的转折，但芯片身份与 RL 配方未公开，它不能替代明确标注硬件的公开遥测证据。</p>
+
+<h2 id="s2"><span class="hnum">02</span>模型本体：参数、稀疏度与 LSA 的 SI / CLI / HI</h2>
+
+<p><strong>参数与稀疏度。</strong>1.6T 总参数、每 token 激活约 48B，激活比约 3%。相比前代 LongCat-Flash 的 560B / 动态约 27B，总参数扩大近 3 倍；ScMoE 和零计算专家仍出现在官方系统说明中，但发布页没有给出完整专家数与路由配置。
+<strong>LSA 已不再是"机制待确认"。</strong>官方把 LongCat Sparse Attention 描述为从 DeepSeek Sparse Attention 演进而来，核心问题是 DSA Lightning Indexer 的不连续索引访问与二次方评分开销。LSA 给出三项可独立开关的优化：
+<strong>Streaming-aware Indexing（SI）</strong>——把硬件对齐的连续访问与动态随机选择结合，将部分碎片化 HBM 访问变成可合并的顺序读取；
+<strong>Cross-Layer Indexing（CLI）</strong>——利用相邻层重要 token 分布的一致性，通过训练期跨层蒸馏让一次索引结果被多个连续注意力层复用；
+<strong>Hierarchical Indexing（HI）</strong>——先做 block 级近似召回，再在候选中做细粒度 token 选择；在 LongCat-2.0 中作为 training-free 插件，仅对部分超长上下文任务启用。
+LSA 还被扩展到 <strong>3-step MTP</strong>：Target 模型每两个连续层共享一次索引，三个 Draft step 则共用 Step 1 的索引结果——把稀疏索引成本与投机解码放进同一套系统设计里。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-21-longcat-2/fig-2.svg" alt="LSA 结构图：DSA Lightning Indexer 分出 SI（连续访问 + 动态选择）、CLI（跨层复用索引）、HI（block 粗召回 + token 精选）三支，汇入 LongCat Sparse Attention，再接 3-step MTP（Draft steps 共享索引）">
+  <figcaption><span class="fnum">图 2</span>LSA 的三项索引优化及其与 MTP 的衔接：从 DSA Lightning Indexer 出发，SI（连续访问 + 动态选择）、CLI（跨层复用索引）、HI（block 粗召回 + token 精选）三支汇入 LongCat Sparse Attention，再向下接 3-step MTP（Draft steps 共享索引）。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>三支的<strong>作用维度各不相同</strong>：SI 作用在访存模式（把不连续的 HBM 访问变成可合并的顺序读取），CLI 作用在层间（一次索引被多个连续层复用，摊薄索引开销），HI 作用在选择粒度（先 block 后 token）。它们分别回应 DSA Lightning Indexer 的两个核心问题——不连续索引访问（SI）与二次方评分开销（CLI、HI）——且可独立开关。</p>
+    <p>HI 在图中与 SI、CLI 并列，但在 LongCat-2.0 中的地位不同：它是 <strong>training-free 插件</strong>，仅对部分超长上下文任务启用，而 SI 与 CLI 是训练期内置（CLI 依赖训练期跨层蒸馏）。末端的 3-step MTP 节点说明索引复用不止跨层，还跨投机解码的 draft 步——Target 每两层共享一次索引、三个 Draft step 共用 Step 1 的索引，这是稀疏注意力与投机解码在系统层面的合并。与 D06 的 GLM-5.2 IndexShare（每 4 层共享 indexer）对照，CLI 是同一思路的另一实现。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>直接沿用 DSA：每层各自跑 Lightning Indexer，索引结果按 token 离散 gather，评分开销随长度二次方增长；投机解码的 draft 步各自重算索引。</p></div>
+  <div class="real"><h5>LongCat 的做法</h5>
+  <p>三项可独立开关的优化：SI 把碎片化 HBM 访问部分变为顺序读取；CLI 用训练期跨层蒸馏让一次索引服务多个连续层；HI 先 block 粗召回再 token 精选（training-free，仅超长任务启用）。3-step MTP 中 Target 每两层共享索引、Draft 三步共用 Step 1 索引。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差别在<b>把索引开销从"每层每 token"摊薄到"跨层、跨 draft 步、分级"</b>。官方给出了每项优化针对的问题（不连续访问、二次方评分），但 top-k、块大小、索引开销与 1M-context 消融未在发布页给出（第 08 节的技术报告补上了论文级确认）。对 RL-on-NPU：SI 针对的"碎片化 HBM 访问"正是 D06 讨论 DSA 落地时对国产芯片最不友好的部分，LSA 是在国产芯片约束下对稀疏注意力访存模式的一次改造（<span class="chip c-inf">推断</span>）；rollout 侧的 MTP 与索引复用直接关系 decode 吞吐。</p>
+
+<h2 id="s3"><span class="hnum">03</span>N-gram Embedding 与 1M 上下文</h2>
+
+<p><strong>N-gram Embedding。</strong>模型继承 LongCat-Flash-Lite 的 N-gram Embedding，n-gram size 设为 5，包含 135B 参数，约占 1.6T 总参的 8.4%。官方解释：标准 MoE 稀疏度已接近 97%，继续增加同量专家参数的边际收益较低；把参数放到与 MoE 正交的 N-gram 稀疏维度，还能降低大 batch decode 的显存 I/O。
+<strong>1M 上下文由训练获得。</strong>官方称预训练覆盖数千亿 token 的 1M-context 数据，并使用 512 路以上 all-gather context parallel。这里能确认的是长上下文训练量级；此前媒体提到的 35T+ 总预训练 token 不在本次官方发布页中，保留为 secondary / provisional，不再混入官方口径。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>要加参数就加专家或加层；长上下文靠位置编码外推或短期长文微调获得，训练时不实际覆盖 1M 序列。</p></div>
+  <div class="real"><h5>LongCat 的做法</h5>
+  <p>135B 参数放进与 MoE 正交的 5-gram Embedding 稀疏维度（约 8.4% 总参），理由是 MoE 稀疏度已近 97%、同量专家参数边际收益低，且可降低大 batch decode 显存 I/O；1M 上下文由数千亿 token 的 1M-context 预训练数据 + 512 路以上 all-gather CP 训练获得。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差别在<b>参数放在哪个稀疏维度</b>与<b>长上下文是训出来的还是外推出来的</b>。官方对 N-gram 给了理由（边际收益、显存 I/O），但未给 5-gram 的消融数字；1M 训练给了数据量级与并行度，未给总 token 数。对 RL-on-NPU：N-gram Embedding 需要专用并行维度（EMBP，第 04 节），是国产芯片训练系统中 6D 并行的来源之一；512 路以上 CP 意味着长上下文 RL 的 rollout 与训练都要在同等并行度下处理 1M 序列。</p>
+
+<h2 id="s4"><span class="hnum">04</span>训练系统：5 万卡、6D 并行与确定性</h2>
+
+<p>官方称预训练在超过 5 万片国产算力芯片上完成，系统优化相对朴素实现把训练吞吐提升<strong>超过 35%</strong>（<span class="chip c-vr">自报</span>）。关键路径：
+<strong>6D 并行</strong>——TP / CP / EP / DP / PP 之外增加 EMBP，专门并行 135B N-gram Embedding；
+<strong>物理超节点</strong>——每个超节点最多 48 台机器，节点内全互联高带宽、节点间使用 RoCE；官方自报超节点相对同规模实现额外提升约 30% 预训练吞吐；
+<strong>显存管理</strong>——ZeRO-1、选择性重计算、分配器层 OOM 自动卸载，并把 padding token 路由到零计算专家；
+<strong>Muon</strong>——围绕 TP、DP 状态去冗余和对称矩阵乘核做国产芯片专项优化；
+<strong>长上下文</strong>——512 路以上 context parallel，LSA top-k 索引与 KV all-gather 重叠，ScMoE 通信与并行分支计算重叠；
+<strong>确定性与可靠性</strong>——自研 Embedding / FA / LSA / MoE 确定性算子，规约使用二叉树分段累加，部分计算密集算子加入比特翻转检测，链路故障识别、切流和恢复无需人工介入。
+这些细节大幅提高了系统主张的可评估性，但不能反推出具体芯片：官方只写 <strong>AI ASIC / 国产算力芯片</strong>，没有出现 Ascend、910B / 910C 或 HCCL。芯片品牌与型号必须继续标记为 unknown。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>5D 并行（TP / CP / EP / DP / PP），Embedding 随 DP 复制；AdamW；节点间以太网或 IB 统一互联；非确定性规约，故障靠人工排查与重启。</p></div>
+  <div class="real"><h5>LongCat 的做法</h5>
+  <p>6D 并行加 EMBP 专门切分 135B N-gram Embedding；Muon 优化器做 TP / DP 状态去冗余与对称矩阵乘核的国产芯片专项优化；48 机超节点内全互联、节点间 RoCE（额外约 30% 吞吐，自报）；确定性算子 + 二叉树分段累加 + 比特翻转检测；链路故障自动识别、切流、恢复。整体吞吐较朴素实现 +35% 以上（自报）。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差别集中在<b>为国产芯片约束专门设计的三处</b>：EMBP（N-gram 参数的专用并行维度）、Muon 的专项核优化、确定性算子与比特翻转检测（可靠性）。官方给了两个吞吐数字（+35%、超节点 +30%）但均为自报，MFU 与故障率未给。对 RL-on-NPU 最重要的是<b>确定性算子</b>：RL 训练对训推数值一致的要求（D23）以确定性为前提，LongCat 自研 FA / LSA / MoE 确定性算子说明这一基础在国产芯片上已被厂商内部解决，但未开源，也无法反推芯片身份。</p>
+
+<h2 id="s5"><span class="hnum">05</span>推理系统：从长上下文到 PD 分离</h2>
+
+<p>推理侧同样围绕低显存容量、有限 HBM 带宽和互联带宽设计：
+Attention 使用 absorb 模式，让 indexer 与 MLA prolog 并行，并以 KVP 把 KV cache 切到多卡；
+ScMoE 利用加速器的显式控核能力分配 dense 与 MoE 流，让两个分支完整并行；
+通过 super kernel 降低启动开销，利用较大 L2 cache 预取权重；
+采用 prefill-decode 分离：prefill 使用多节点 CPP + SP，decode 使用 KVP + EP128；
+芯片内置 200 Gbps 网卡承担 layer-wise 的 PD 节点 KV-cache 传输，主机 RDMA 构建 KV-cache store；
+EPLB 的统计与分布计算异步化，并兼容 constrained decoding、multi-step scheduling 与 MTP。
+对 RL rollout 而言，KVP、PD 分离、MTP 和异步 EPLB 都是直接相关的推理基础设施信号；但它们仍是部署架构，不是训练算法或实验曲线。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>单机 TP 部署，KV cache 驻留在本卡；prefill 与 decode 混跑；EPLB 同步重算；MTP 与稀疏索引各自独立。</p></div>
+  <div class="real"><h5>LongCat 的做法</h5>
+  <p>KVP 把 KV cache 切到多卡；PD 分离（prefill 多节点 CPP + SP，decode KVP + EP128）；芯片内置 200 Gbps 网卡做 layer-wise KV 传输、主机 RDMA 建 KV store；ScMoE 用显式控核让 dense 与 MoE 分支并行；super kernel 与 L2 预取；EPLB 异步化并兼容 constrained decoding、multi-step scheduling、MTP。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差别在<b>把低显存、低 HBM 带宽、有限互联当作设计前提</b>而非缺陷：KVP 与 PD 分离都是用更多卡与更多传输换单卡显存与带宽。官方给了架构而未给吞吐或时延数字。对 RL-on-NPU：这是 D02 rollout 瓶颈在国产芯片上的部署侧答案——KVP 解 KV 显存、PD 分离与 EP128 解 decode 吞吐、MTP 加速 decode；"显式控核能力"与"芯片内置 200 Gbps 网卡"是发布页中最接近芯片特征的两处描述，但仍不足以确认厂商。</p>
+
+<h2 id="s6"><span class="hnum">06</span>后训练：MOPD 确认了什么，没有确认什么</h2>
+
+<p>官方披露的是 <strong>MOPD 多教师在线蒸馏</strong>。教师分成三组：
+<strong>Agent 能力专家</strong>——代码、办公、检索、复杂工具调用、多轮 API 参数解析与防循环；
+<strong>推理能力专家</strong>——数学、STEM、多跳知识推理和按难度自适应计算；
+<strong>交互体验专家</strong>——指令遵循、事实性幻觉抑制与安全边界。
+三组能力最终在数万卡国产集群上融合。这足以支持"国产芯片后训练已在前沿规模完成"的厂商主张，但<strong>不足以支持"RL-on-NPU 已公开验证"</strong>。发布页没有给出：PPO、GRPO 或其他 policy optimization 算法；reward model、verifier 或 advantage 计算；rollout engine、采样规模、轨迹调度或 policy / logprob 一致性；reward、KL、entropy、loss 等训练曲线。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>"后训练在国产芯片完成"即默认包含 RL（PPO / GRPO）在国产芯片上跑通，可作为 RL-on-NPU 的证据引用。</p></div>
+  <div class="real"><h5>LongCat 的做法 / 原文的读法</h5>
+  <p>官方只披露 MOPD 多教师在线蒸馏与三组教师，融合在数万卡国产集群；算法、reward、rollout、曲线全部缺席。原文的处理：把它记作"国产芯片后训练已在前沿规模完成"的厂商主张，明确不作为 RL-on-NPU 已公开验证的证据；MOPD 是否包含 RL 阶段列为下一步观察项。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差别在<b>"后训练"与"RL"不是同义词</b>：蒸馏可以不含任何 policy optimization。官方没有给理由说明为何不披露，也没有否认含 RL——这是本篇最重要的证据边界。对 RL-on-NPU：本看板的真实 910B 曲线与 LongCat 官方案例互补而不可替代；D24 记录的 K3 报告后来同样使用 MOPD 合并 9 个 effort 专家，说明多教师蒸馏合并已是旗舰后训练的常见环节，但其与 RL 的关系仍需按各家披露分别判断。</p>
+
+<h2 id="s7"><span class="hnum">07</span>评测与证据分级</h2>
+
+<p>官方 benchmark 为内部 harness 自测，主张优于部分闭源模型，待统一第三方复现；SWE-bench Pro 59.5 是原文跟进段唯一点名的分数（<span class="chip c-vr">自报</span>，无第三方复测）。以下为原文对全部主张的证据分级。</p>
+
+<figure>
+  <img src="img/dispatch-21-longcat-2/orig-1.png" alt="LongCat-2.0 官方六项基准柱状图：Terminal-Bench 2.1、SWE-bench Pro、SWE-bench Multilingual、FORTE、RWSearch、BrowseComp，对比 Gemini 3.1 Pro、GPT-5.5、Opus 4.6、Opus 4.7、Opus 4.8">
+  <figcaption><span class="fnum">图 3</span>LongCat-2.0 官方六项基准对比（2026-06-29 版）：每个面板从左至右为 LongCat-2.0（绿）、Gemini 3.1 Pro、GPT-5.5、Claude Opus 4.6、Opus 4.7、Opus 4.8；上排 Terminal-Bench 2.1、SWE-bench Pro、SWE-bench Multilingual，下排 FORTE、RWSearch、BrowseComp。<span class="chip c-vr">自报</span> 取自 meituan-longcat/LongCat-2.0 仓库 README（figures/longcat-pro-benchmark-charts-2026-06-29.svg，本站栅格化）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>先找 SWE-bench Pro 面板的绿柱——<strong>59.5</strong>，与原文跟进段点名的数字一致。同一面板中 Opus 4.8 为 69.2、Opus 4.7 为 64.3，LongCat 高于 Gemini 3.1 Pro（54.2）、GPT-5.5（58.6）与 Opus 4.6（57.3）。这张图的读法与原文"内部 harness 自测、待第三方复现"的定级一致：所有柱均为厂商自跑。</p>
+    <p>再看六个面板的<strong>相对位置模式</strong>：LongCat-2.0 的绿柱在六项中均不是最高——Terminal-Bench 2.1（70.8 对最高 78.9）、SWE-bench Multilingual（77.3 对 84.8）、FORTE（73.2 对 77.8）、RWSearch（78.8 对 85.3）、BrowseComp（79.9 对 85.9）——而是大致落在 Gemini 3.1 Pro 与 Opus 4.6 的区间。也就是说，官方图本身呈现的是"与上一代闭源旗舰同一刻度"，而非全面领先；原文对"优于闭源模型"这一主张定级为"内部 harness 自测，待统一第三方复现"，图中的实际数字支持保守读法。六项中 Terminal-Bench 2.1 与 SWE-bench Pro 与 D24 记录的 K3 六项基准名目部分重叠但版本不同（K3 为 Terminal-Bench 2.1 88.3、FrontierSWE 81.2），D24 已强调不可跨表比较。</p>
+  </div>
+</figure>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:330px">主张</th><th>当前结论</th></tr></thead>
+<tbody>
+<tr><td>1.6T / A48B、LSA、135B 5-gram、3-step MTP</td><td><strong>官方自报，细节明确</strong></td></tr>
+<tr><td>超过 5 万片国产 AI ASIC 完成预训练</td><td><strong>官方自报，无第三方复现</strong></td></tr>
+<tr><td>完整训练与部署构建在国产 AI ASIC 超节点</td><td><strong>官方自报，系统细节较充分</strong></td></tr>
+<tr><td>MOPD 多教师在线蒸馏运行在数万卡国产集群</td><td><strong>官方自报，算法配方未开源</strong></td></tr>
+<tr><td>芯片是昇腾 910C / 使用 HCCL</td><td><strong>未由官方页面确认</strong></td></tr>
+<tr><td>已完成 PPO / GRPO 等 RL-on-Ascend</td><td><strong>证据不足</strong></td></tr>
+<tr><td>官方 benchmark 优于闭源模型</td><td><strong>内部 harness 自测，待统一第三方复现</strong></td></tr>
+</tbody>
+<caption>原文第 6 节的证据分级。前四行为官方口径（自报程度不同），后三行为媒体或推断口径且官方未确认。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>把媒体口径（HCCL、910C、35T+ token、"后训练即 RL"）与官方口径混用；把官方 benchmark 图读作跨厂商排序。</p></div>
+  <div class="real"><h5>原文的做法</h5>
+  <p>以官方发布页为主来源做校正，媒体口径全部降级为 secondary / provisional 或"未由官方确认"；七项主张逐条定级；benchmark 记为内部 harness 自测。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>分级表的价值在于<b>把同一份发布里证据强度不同的主张分开</b>：架构与系统细节明确，规模数字自报无复现，芯片身份与 RL 配方缺席。这一方法与 D30"自报分待第三方复现"、D34 对 GLM-5.3 的处理一致。图 3 的实际数字说明官方 benchmark 的保守读法是"同一刻度"而非"全面领先"。</p>
+
+<h2 id="s8"><span class="hnum">08</span>跟进（2026-08-13）：LSA 技术报告落地</h2>
+
+<p>此前未发布的技术报告以《LongCat Sparse Attention》形式于 8 月初放出（<a href="https://arxiv.org/abs/2608.01662">arXiv:2608.01662</a>），第 02 节的 SI / CLI / HI 三类索引优化得到论文级确认：流式感知索引（HBM 合并访问）、跨层索引复用（跨层蒸馏摊薄索引开销）、层次化粗到细打分，主张对全注意力近无损且训练推理双提速。至此 LongCat-2.0 的证据链补上了"正式报告"一环；训练代码与芯片型号官宣仍缺，SWE-bench Pro 59.5 仍无第三方复测。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>发布页口径即最终口径；技术报告是否落地不影响对架构主张的采信。</p></div>
+  <div class="real"><h5>原文的做法</h5>
+  <p>把 LSA 三项优化从"官方自报、细节明确"升级为"论文级确认"（近无损、训推双提速为论文主张）；其余边界（训练代码、芯片型号、第三方复测）保持不变。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>证据链的补全是<b>局部的</b>：只有注意力架构一项从发布页升到论文，系统与后训练两块仍停在发布页口径。原文的先承诺后交付记录（技术报告最终落地）后被 D24 用作 K3 权重承诺的对照先例。</p>
+
+<h2 id="s9"><span class="hnum">09</span>总表：朴素基线 vs LongCat 的做法</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:130px">维度</th><th style="width:220px">朴素基线</th><th>LongCat 的做法 · 差在哪</th></tr></thead>
+<tbody>
+<tr><td>规模</td><td>—</td><td>1.6T 总参 / 约 48B 激活（约 3%），较 LongCat-Flash 560B / 约 27B 总参近 3 倍；专家数与路由配置未给</td></tr>
+<tr><td>稀疏注意力</td><td>直接沿用 DSA，每层各自索引</td><td>LSA：SI（访存顺序化）、CLI（跨层复用）、HI（block → token 分级，training-free 插件）；3-step MTP 中 Target 每两层共享、Draft 三步共用 Step 1 索引。技术报告 2608.01662 论文级确认</td></tr>
+<tr><td>参数放置</td><td>加专家或加层</td><td>135B 5-gram Embedding（约 8.4%），与 MoE 正交的稀疏维度；理由为 MoE 稀疏度已近 97%、降低大 batch decode 显存 I/O</td></tr>
+<tr><td>长上下文</td><td>外推或短期微调</td><td>数千亿 token 1M-context 预训练 + 512 路以上 all-gather CP；35T+ 总 token 为媒体口径，不采信</td></tr>
+<tr><td>并行</td><td>5D</td><td>6D：TP / CP / EP / DP / PP + EMBP；48 机超节点内全互联、节点间 RoCE（+约 30%，自报）；整体吞吐 +35% 以上（自报）</td></tr>
+<tr><td>优化器</td><td>AdamW</td><td>Muon，TP / DP 状态去冗余与对称矩阵乘核国产芯片专项优化</td></tr>
+<tr><td>可靠性</td><td>非确定性规约，人工排障</td><td>自研 Embedding / FA / LSA / MoE 确定性算子，二叉树分段累加，比特翻转检测，故障自动识别 / 切流 / 恢复</td></tr>
+<tr><td>推理</td><td>单机 TP，PD 混跑</td><td>KVP 多卡切 KV，PD 分离（CPP + SP / KVP + EP128），芯片内置 200 Gbps 网卡 layer-wise KV 传输，异步 EPLB 兼容 MTP</td></tr>
+<tr><td>后训练</td><td>默认含 RL</td><td>MOPD 多教师在线蒸馏（Agent / 推理 / 交互三组），数万卡国产集群；算法、reward、rollout、曲线全部未披露</td></tr>
+<tr><td>芯片身份</td><td>媒体口径 910C / HCCL</td><td>官方只写国产 AI ASIC，未出现 Ascend / 910B / 910C / HCCL；标记 unknown</td></tr>
+<tr><td>评测</td><td>跨厂商排序</td><td>内部 harness 自测，SWE-bench Pro 59.5 无第三方复测；官方图实际呈现为与上一代闭源旗舰同一刻度（图 3）</td></tr>
+</tbody>
+<caption>左栏为不看发布页时的直觉做法，右栏为官方发布页与技术报告口径及本站判断。全部性能与系统增益均为厂商自报（provisional）。</caption>
+</table>
+</div>
+
+<h2 id="s10"><span class="hnum">10</span>原文没给的东西</h2>
+
+<p>以下为官方未披露、原文明确标为待验证，或复现时必须自定的项目：</p>
+
+<ul>
+<li><strong>芯片厂商、型号、精度格式</strong>：官方只写 AI ASIC / 国产算力芯片；"显式控核能力"与"芯片内置 200 Gbps 网卡"是最接近芯片特征的描述，但不足以确认厂商；</li>
+<li><strong>训练代码、模型配置、完整数据配方</strong>：无公共复现路径；</li>
+<li><strong>MFU、故障率、能效</strong>：只有相对朴素实现的吞吐提升比例（+35% 以上、超节点 +约 30%），均为自报；</li>
+<li><strong>完整专家数与路由配置</strong>：ScMoE 与零计算专家出现在系统说明中，但发布页未给数字；</li>
+<li><strong>SI / CLI / HI 的 top-k、块大小、索引开销与 1M-context 消融</strong>：技术报告 2608.01662 给出论文级确认，具体消融数字原文未转述；</li>
+<li><strong>总预训练 token 数</strong>：媒体口径 35T+ 不在官方发布页，保留为 secondary / provisional；</li>
+<li><strong>后训练的 RL 成分</strong>：PPO / GRPO 等算法、reward model / verifier / advantage、rollout engine 与采样规模、policy / logprob 一致性、reward / KL / entropy / loss 曲线全部缺席；MOPD 是否包含 RL 阶段未知；</li>
+<li><strong>推理系统的吞吐与时延数字</strong>：只有架构描述；</li>
+<li><strong>benchmark 的第三方复现</strong>：SWE-bench Pro 59.5 及图 3 全部数字为内部 harness 自测；</li>
+<li><strong>公开 Ascend / 其他国产加速器推理或微调适配</strong>：是否落地未知；</li>
+<li>本页原图受网络代理可达性限制，取自 GitHub 托管的 meituan-longcat/LongCat-2.0 仓库 README（唯一一张非 logo 图）；官方发布页、arXiv 技术报告的原图未能获取。</li>
+</ul>
+
+<div class="note">
+  <span class="ntitle">三条可以直接搬走的判断</span>
+  <p><strong>一、存在性证据与复现路径要分开计分。</strong>LongCat-2.0 把"国产芯片能否支撑前沿规模完整训练"从抽象讨论推进到细节丰富的官方系统案例——6D 并行、确定性算子、KVP / PD 分离都具体到可评估；但训练代码、芯片身份与 RL 配方未公开，它是高价值的厂商实证，不是可复现的 RL-on-NPU 基准。</p>
+  <p><strong>二、"后训练在国产芯片完成"不等于"RL 在国产芯片完成"。</strong>官方披露的是 MOPD 多教师在线蒸馏，policy optimization 的任何要素都没有出现。引用 LongCat 作 RL-on-NPU 证据是过度解读；它与明确标注 Ascend 910B 的公开遥测曲线互补，不能相互替代。</p>
+  <p><strong>三、LSA 是稀疏注意力在国产芯片访存约束下的一次改造。</strong>SI 把碎片化 HBM 访问变为可合并顺序读取、CLI 跨层摊薄索引开销、HI 分级选择，且与 3-step MTP 共享索引——针对的正是 D06 讨论 DSA 时对国产芯片最不友好的不规则访存（推断）。技术报告 2608.01662 已给论文级确认，消融数字待读。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>训练代码、模型配置与完整技术报告</strong>是否发布 · <strong>芯片厂商、型号、精度格式、MFU、故障率与能效</strong>是否披露 · <strong>SI / CLI / HI 的 top-k、块大小、索引开销与 1M-context 消融</strong> · <strong>MOPD 是否包含强化学习阶段</strong>，若包含则看 rollout、reward、KL 和训练稳定性 · <strong>第三方统一 harness 下的代码、Agent 与长上下文复现</strong> · <strong>公开 Ascend / 其他国产加速器推理或微调适配</strong>是否落地。</p>
+</div>
+
+</main>
+
+<footer>
+  来源与声明：主来源 Introducing LongCat-2.0（longcat.ai/blog/longcat-2.0，2026-06-30），2026-07-13 按官方来源校正；架构前序参考 LongCat-Flash（arXiv 2509.01322）、LongCat-Flash-Lite（arXiv 2601.21204）；跟进来源 LongCat Sparse Attention 技术报告（arXiv 2608.01662，2026-08）。全文厂商数字均 self-reported / provisional；芯片厂商 / 型号、RL 算法与第三方复现状态均按"未披露 / 待验证"处理；此前媒体口径中的 HCCL、昇腾 910C、35T+ 总训练 token 和"后训练即 RL"不作为官方确认事实。原图取自 meituan-longcat/LongCat-2.0 仓库 README，版权归原始仓库所有，此处仅作解析引用。
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>

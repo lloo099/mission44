@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 33 精读版 · 详解 verl</title>
+<meta name="description" content="verl 如何成为 RL 后训练事实标准：HybridFlow hybrid-controller、三维后端矩阵、v0.9.0 与 TIS 进主干、verl-on-Ascend 成熟度盘点——朴素基线 vs 它的做法逐节对照，配两张原图与四张本站图解析。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-33-verl.html">
+<meta property="og:title" content="Dispatch 33 精读版 · 详解 verl">
+<meta property="og:description" content="verl 如何成为 RL 后训练事实标准：HybridFlow hybrid-controller、三维后端矩阵、v0.9.0 与 TIS 进主干、verl-on-Ascend 成熟度盘点——朴素基线 vs 它的做法逐节对照，配两张原图与四张本站图解析。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-33-verl.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-33-verl.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-33-verl">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-33-verl.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 33 · 精读版 · 2026-08-27</div>
+  <h1>详解 verl：RL 后训练事实标准与昇腾的社区路线</h1>
+  <p class="standfirst">verl（字节 volcengine 开源，现迁移至 verl-project 组织，Apache-2.0，23.2k stars）是 HybridFlow 论文的开源实现，已成为 RL 后训练的事实标准。本文按原文六节重组：事实标准如何形成、hybrid-controller 编程模型解决什么问题、三维后端矩阵与 v0.9.0 的四个亮点、TIS 进主干对 D27 两派之争的意义、衍生生态为何比核心更能说明平台地位、以及全篇核心——verl-on-Ascend 的成熟度盘点。每节固定给出"朴素基线"（不看论文的直觉实现）与"它的做法"两栏，再给出差异与对 RL-on-NPU 的含义。与 D32 成对：D32 记录官方谢幕，本篇记录社区接棒。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D33</span>
+    <span>与 D32 成对 · 承接 D09 / D12 / D13 / D18 / D19 / D22 / D23 / D27 / D31</span>
+    <span>原图 2 张 · 本站图 4 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>事实标准的形成</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>HybridFlow 编程模型</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>后端矩阵与 v0.9.0</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>TIS 进主干</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>生态平台：衍生层</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>verl-on-Ascend 成熟度盘点</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>昇腾侧仍缺什么</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>选型与看板结论更新</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>总表：基线 vs 做法</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>原文没给的与未能核实的</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">verl 的"事实标准"地位不是单一指标的结果，而是四组事实的叠加：<strong>规模与治理</strong>（23.2k stars、Apache-2.0、组织迁移至 verl-project 实现社区中立化）、<strong>头部采用</strong>（字节 Seed、阿里 Qwen、LMSys）、<strong>衍生生态</strong>（50+ 社区衍生）、<strong>看板出镜率</strong>（D09 到 D23 每一次框架名单在列）。其技术根基是 HybridFlow（<a href="https://arxiv.org/abs/2409.19256">arXiv 2409.19256</a>）的 hybrid-controller 编程模型：控制流集中表达、计算流分布执行。v0.9.0（2026-08-14）落地 DeepSeek-V4 GRPO 端到端、delta sharded checkpoint engine（较全量 NCCL broadcast 提速 2.4×）与 V1 PPO trainer；TIS 进主干把 D27 的 IS 修正派框架化。昇腾侧：独立文档体系、模型支持到 DeepSeek-V3 671B、六种并行齐备——在 MindSpeed-RL 谢幕（D32）后，verl-Ascend 成为昇腾 RL 的社区主线。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段：<strong>朴素基线</strong>（左栏，灰：不看论文、按直觉会怎么实现）/ <strong>它的做法</strong>（右栏，橙：verl 实际怎么做）/ <strong>差在哪</strong>（下方色块：差异、原文是否给了理由、对 RL-on-NPU 的含义）。数字按来源分三类标注：<span class="chip c-tp">第三方</span> 独立测量、社区公开脚本或多方一致；<span class="chip c-vr">自报</span> 仓库 README、release notes 与论文作者口径；<span class="chip c-inf">推断</span> 本站分析。原文的 provisional 声明适用于全文：stars、提速倍数、吞吐增益、模型支持列表以写作当日仓库与 release notes 为准，快速演进中随时可能过时。</p>
+  <p>一条贯穿全文的线索：<strong>把 RL 后训练定义为多模型数据流而非训练循环</strong>。这一定义解释了 verl 的算法面为何能快速扩张、后端矩阵为何能正交扩张、衍生项目为何选择加层而非 fork——也解释了昇腾适配为何可以作为"硬件维度"的一个取值进入矩阵而不触碰算法层。</p>
+</div>
+
+<div class="formula">verl 主线
+  治理      volcengine 孵化 → verl-project 中立组织（原仓库重定向）· Apache-2.0 · 23.2k stars
+  模型      HybridFlow hybrid-controller：控制流集中表达 × 计算流分布执行
+  矩阵      训练 FSDP / FSDP2 / Megatron（+ mlite） × rollout vLLM / SGLang / HF × 硬件 NVIDIA / AMD / Ascend
+  算法      PPO · GRPO · DAPO · GSPO · ReMax · RLOO · PRIME · DrGRPO …
+  v0.9.0    DeepSeek-V4 GRPO 端到端 · delta sharded checkpoint 2.4× · V1 PPO trainer · Muon · 全确定性复现
+  TIS       token / sequence / geometric × truncate-TIS / clip-CIS · FP8 rollout 吞吐 +44%   <span class="cmt">// D27 IS 修正派框架化</span>
+  昇腾      ascend_tutorial 五件套 · GRPO/DAPO/PPO/GSPO/SAPO · 1.7B–671B · DP/TP/PP/EP/SP/CP · Atlas 900 A2 / 800T A3</div>
+
+<h2 id="s1"><span class="hnum">01</span>事实标准的形成：四组事实构成证据链</h2>
+
+<p>verl 的"事实标准"地位由四组事实支撑，任何一组单独看都不充分，合在一起构成完整证据链。<strong>规模与治理</strong>：23.2k stars，Apache-2.0；更关键的是 2026 年从 volcengine 迁移至独立的 <strong>verl-project</strong> 组织（volcengine/verl 重定向），治理层面完成社区中立化——这与 vLLM/PyTorch 等基础设施项目的路径一致：单厂商孵化、中立组织托管，是"事实标准"从社区认知固化为治理结构的标志。<strong>头部采用</strong>：字节 Seed、阿里 Qwen、LMSys 均为直接用户；训出的模型包括 Seed-Thinking-1.5、Doubao-1.5-pro、Skywork-OR1——采用方横跨大厂旗舰与开源推理模型。<strong>衍生生态</strong>：50+ 社区衍生项目：rLLM（D22，可插拔后端含 verl）、SkyRL-Agent（D18，与 verl 互操作）、verl-agent 的 GiGPO、verl-tool（D12）等；官方系新增 verl-vla v0.1.0（VLA 后训练）、VeRL-Tinker、VeRL-Omni v0.2.0。<strong>看板出镜率</strong>：本看板从 D09 到 D23 的每一次框架名单，verl 都在：D09"只有 Megatron 系能正确做 EP"名单在列；D12 衍生生态；D18 互操作对象；D19 slime 生态位表中 verl 被标注为"最广用、引擎中立"；D22 rLLM 后端；D23 玩家矩阵中横跨多问题域。一个框架反复以"被对照的基准"身份出现，这本身即是事实标准的操作性定义。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-33-verl/fig-1.svg" alt="verl 生态位：治理演进、头部采用、50+ 衍生三个子图，以及看板出镜节点">
+  <figcaption><span class="fnum">图 1</span>verl 生态位：从单厂商项目到中立治理平台（原文图 A）。治理演进子图（volcengine 孵化 → verl-project 组织）向下分出头部采用与 50+ 衍生两个子图，虚线指向看板出镜记录。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>图的结构本身就是论证结构：<strong>治理节点 V1（verl-project 组织、23.2k stars）是唯一的出发点</strong>，头部采用（Seed / Qwen / LMSys / Skywork-OR1）与衍生（verl-agent、verl-tool；rLLM、SkyRL-Agent 互操作；官方系 verl-vla、VeRL-Tinker、VeRL-Omni）都从它引出。这表达的是原文的判断顺序——中立治理是采用与衍生得以持续的前提，而非结果。</p>
+    <p>最值得看的是那条虚线：从 V1 指向"看板出镜：D09·D12·D18·D19·D22·D23 每次名单在列"，标注"反复作为对照基准"。它把一个看似主观的指标（本看板的出镜率）转化为操作性定义——一个框架若在每一次对比中都以"被对照的基准"出现，事实标准的地位就不依赖任何一方的宣称。四组证据缺一不可：仅有 stars 是流量，仅有采用是私有工具，仅有衍生是接口，四者叠加才是标准。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>以 stars 数与大厂背书判断"事实标准"；框架归属于孵化厂商的组织，社区贡献者接受其治理。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p><span class="chip c-vr">自报</span> 23.2k stars、Apache-2.0；从 volcengine 迁移至独立 verl-project 组织，原仓库重定向。<span class="chip c-tp">第三方</span> 字节 Seed、阿里 Qwen、LMSys 直接采用（Seed-Thinking-1.5、Doubao-1.5-pro、Skywork-OR1）；50+ 社区衍生；D09–D23 每次框架名单在列，D19 标注"最广用、引擎中立"。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在于<b>把治理结构而非流量指标作为"事实标准"的判据</b>。原文给出的理由是与 vLLM/PyTorch 路径一致：单厂商孵化、中立组织托管。对 RL-on-NPU 的含义：中立治理下，昇腾/AMD 路径的提交可以由硬件厂商工程师持续供给而不依赖单一厂商意愿——这也是第 08 节"下一步看什么"中"多厂商提交比例"这一观察项的依据。</p>
+
+<h2 id="s2"><span class="hnum">02</span>HybridFlow 编程模型：控制流集中表达，计算流分布执行</h2>
+
+<p>verl 区别于脚本式 RL 框架的根本，在于它对问题的定义：RL 后训练不是"一个训练循环"，而是 <strong>actor/critic/reward/ref 多模型的复杂数据流</strong>。PPO 一步涉及四个模型的生成、打分、优势估计与更新，各模型的并行策略、显存占用、计算特征互不相同；把这套数据流写死在一份脚本里，意味着每换一次算法或并行配置都要重写调度逻辑。HybridFlow（<a href="https://arxiv.org/abs/2409.19256">arXiv 2409.19256</a>）给出的答案是 <strong>hybrid-controller 编程模型</strong>，它是两种既有范式的折中：<strong>single-controller</strong>——控制流集中在单点表达，数据流写起来像单机代码，表达力强，但把所有分发决策集中到一个控制器，大规模下调度开销不可接受；<strong>multi-controller</strong>——每个 worker 自带控制逻辑，执行效率高，但多模型数据流的全局逻辑被打散到各处，算法迭代成本高。hybrid-controller 的拆分是：<strong>控制流集中表达、计算流分布执行</strong>。算法作者在单控制器视角下描述"generate → reward → advantage → update"的数据流，框架把每个阶段编译为分布式 worker group 上的多控制器执行；并行策略（每个模型各自的 TP/PP/DP 配置）、模型放置（colocate 或分离）成为配置项而非代码结构。</p>
+
+<figure>
+  <img src="img/dispatch-33-verl/orig-1.png" alt="verl 架构图：上层 Single Controller RL Trainer 与 SFT Trainer，下层 Model Engine、Rollout Engine（AgentLoop 与 LLM Server）、TransferQueue 与 CheckpointEngine">
+  <figcaption><span class="fnum">图 2</span>verl 官方架构图：上层为 Single Controller RL Trainer（On policy / Full async / One-step-off-policy / VLA …）与 SFT Trainer；下层为 Model Engine（FSDP / Megatron-Core / VeOmni）、Rollout Engine（AgentLoop：SingleTurn / ToolAgent / SWEAgent；LLM Server：vLLM / SGLang / TensorRT-LLM）、TransferQueue 与两侧的 CheckpointEngine。红色标注区分 User responsibility 与 ML Infra responsibility。<span class="chip c-vr">自报</span> 取自 verl 官方 README（verl-project/verl-data，images/verl-arch.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>先看那条<strong>红色虚线</strong>：它把图分成上下两层，上层 Single Controller RL Trainer 就是正文所说的"控制流集中表达"——On policy、Full async、One-step-off-policy、VLA 是同一 trainer 抽象下的不同执行模式（对应第 03 节 V1 PPO trainer 统一 sync / colocate_async / separate_async 三种模式）。下层是"计算流分布执行"：Model Engine 一列列出训练后端（FSDP、Megatron-Core、VeOmni），LLM Server 一列列出 rollout 后端（vLLM、SGLang、TensorRT-LLM），两列彼此独立——这就是三维矩阵中"训练与 rollout 后端独立替换"的图形化表达。</p>
+    <p>再看红色虚线框出的 <strong>User responsibility</strong> 区域：它只覆盖 AgentLoop（SingleTurn / ToolAgent / SWEAgent），即用户需要自己写的只有 agent 交互逻辑；模型引擎、LLM 服务、TransferQueue、CheckpointEngine 均标为 ML Infra responsibility。底部两个 CheckpointEngine 之间的 broadcast/p2p 箭头与右侧的 cuda ipc 标注，是训推权重同步的位置——第 03 节 delta sharded checkpoint engine 的 2.4× 提速就发生在这条箭头上。对昇腾读者，需要替换的是 Model Engine 中的 Megatron 路径（经 MindSpeed 适配）、LLM Server 中的 vLLM（vllm-ascend）与 cuda ipc 对应的设备间通道。</p>
+  </div>
+</figure>
+
+<figure>
+  <img src="img/dispatch-33-verl/orig-2.png" alt="HybridFlow 驱动进程与 WorkerGroup、Resource Pool 关系图：Driver 对 Actor、Critic、Rollout、Reference Policy、Reward Model 五个 WorkerGroup 调用 API 并接收 Future，WorkerGroup 映射到三个 Resource Pool">
+  <figcaption><span class="fnum">图 3</span>HybridFlow 编程模型的驱动进程 / WorkerGroup / Resource Pool 三列：Driver Process 对 Actor、Critic、Rollout、Reference Policy、Reward Model 五个 WorkerGroup 逐个 Call API 并 Receive Future；Actor 与 Critic 映射到 Resource Pool 0（GPU 0–1），Rollout 映射到 Resource Pool 1（GPU 2–3），Reference Policy 与 Reward Model 映射到 Resource Pool 2（GPU 4–5）。<span class="chip c-vr">自报</span> 取自 verl 官方文档 hybrid_flow 页引用的社区仓库（eric-haibin-lin/verl-community，docs/driver_worker.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>三列对应 hybrid-controller 的三个层次。左列 <strong>Driver Process 是 single-controller</strong>：一条自上而下的时间轴，对每个 WorkerGroup 发出 Call API、收回 Future——算法作者在这里写"generate → reward → advantage → update"，看起来像单机顺序代码。中列 <strong>WorkerGroup 是 multi-controller</strong>：每个组内 Worker 0、Worker 1 各自执行，Driver 不介入组内的并行细节。右列 <strong>Resource Pool 是模型放置</strong>：Actor 与 Critic 共用 Pool 0、Reference Policy 与 Reward Model 共用 Pool 2，即 colocate；Rollout 独占 Pool 1，即分离。</p>
+    <p>最值得看的是 WorkerGroup 到 Resource Pool 的<strong>多对一箭头</strong>：它说明"哪些模型放在同一组卡上"是映射关系而非代码结构——改 colocate 与分离只需改映射，Driver 的数据流脚本不变。这正是正文所说"并行策略与模型放置成为配置项"的图形化证据，也是第 05 节衍生项目"在 hybrid-controller 之上加层而非 fork"得以成立的结构原因。图中示例为 6 GPU 三池，实际部署中池的划分与卡数均为配置。</p>
+  </div>
+</figure>
+
+<figure>
+  <img class="diagram" src="img/dispatch-33-verl/fig-2.svg" alt="hybrid-controller 拆分：single-controller 层的 RL 数据流脚本按四个阶段分发到 multi-controller 层的 rollout、reward 与 ref、critic、actor 四组">
+  <figcaption><span class="fnum">图 4</span>hybrid-controller：控制流与计算流的拆分（原文图 B）。上层 single-controller 的 RL 数据流脚本按生成、打分、优势估计、更新四阶段分发到 multi-controller 层的 rollout / reward 与 ref / critic / actor 四组；rollout 与 actor 之间以虚线标注权重同步（checkpoint engine）。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>与图 3 对照读：图 3 是官方的"进程视角"（Driver / WorkerGroup / Pool），本图是原文的"阶段视角"——四条实线箭头分别标注阶段一到四，把一条数据流脚本映射到四个 worker 组。<strong>四条箭头都从同一个 FLOW 节点发出</strong>，表示算法逻辑单点可读可改；四个目标组各自标注了独立配置项（actor 组"训练后端与并行策略独立配置"、rollout 组"vLLM·SGLang·HF"）。</p>
+    <p>虚线是全图的隐含成本：rollout 组与 actor 组之间的"权重同步 / checkpoint engine"。它不属于四个阶段中的任何一个，却在每一步都发生——这是 D02 rollout 瓶颈分析中的固定开销项，也是 v0.9.0 delta sharded checkpoint engine 2.4× 提速的着力点。右侧的 NOTE 节点"折中命题"以虚线指回 FLOW，提醒读者 hybrid-controller 并非无代价：single-controller 的表达力与 multi-controller 的执行效率是通过这层编译换来的。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>把 PPO 写成一个训练循环脚本：在同一进程里顺序调用生成、打分、优势估计、更新，各模型的并行配置与放置写死在脚本中；换算法或换并行策略时重写调度逻辑。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p><span class="chip c-vr">自报</span> 把 RL 后训练定义为 actor/critic/reward/ref 的多模型数据流；hybrid-controller 折中 single-controller（表达力强、大规模调度开销不可接受）与 multi-controller（执行效率高、全局逻辑打散）：控制流集中表达、计算流分布执行；每个模型的 TP/PP/DP 与 colocate/分离放置成为配置项。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异不在性能而在<b>问题定义</b>：脚本式框架把 RL 当训练循环，verl 把它当数据流。原文给出了明确的推理链：这一定义解释了 verl 的两个表征——算法覆盖可以快速扩张（PPO/GRPO/DAPO/GSPO/ReMax/RLOO/PRIME/DrGRPO 等，新算法只需改控制流），后端矩阵可以正交扩张（训练与 rollout 后端独立替换，不触碰算法层）。对昇腾的含义：硬件适配落在计算流层，算法层零改动——这是昇腾能在"硬件"维度进入矩阵而不需要分叉算法实现的结构原因。</p>
+
+<h2 id="s3"><span class="hnum">03</span>后端矩阵与 v0.9.0 的四个亮点</h2>
+
+<p>verl 的能力面是一个三维矩阵：<strong>训练后端</strong> FSDP / FSDP2 / Megatron，v0.9.0 新增 <strong>Megatron Lite（mlite）</strong>，支持 DeepSeek-V4/GLM-5/Kimi，附 256 卡 GRPO launcher；<strong>rollout 后端</strong> vLLM / SGLang / HF；<strong>硬件</strong> NVIDIA + AMD ROCm + Ascend NPU。算法层：PPO、GRPO、DAPO、GSPO、ReMax、RLOO、PRIME、DrGRPO 等；工程特性含 async rollout、多轮 agentic + tool calling、LoRA、Ulysses SP、EP 扩展到 671B、VLM 支持。<strong>v0.9.0（2026-08-14）</strong>的四个亮点：① <strong>DeepSeek-V4 GRPO 端到端</strong>：Megatron-Bridge + vLLM rollout + FP8/MXFP4 权重传输，把 D05 记录的旗舰 MoE 纳入开源 RL 可训练范围；② <strong>delta sharded checkpoint engine</strong>：训推权重同步只传增量分片，Qwen2.5-7B 上较全量 NCCL broadcast 提速 2.4×——权重同步是 D02 rollout 瓶颈分析中的固定开销项，此处直接削减；③ <strong>V1 PPO trainer 转默认</strong>：统一 sync / colocate_async / separate_async 三种执行模式于同一 trainer 抽象；④ Muon 优化器与 vLLM rollout 全确定性复现。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:140px">维度</th><th>覆盖</th></tr></thead>
+<tbody>
+<tr><td>训练后端</td><td>FSDP / FSDP2 / Megatron；v0.9.0 新增 Megatron Lite（mlite），支持 DeepSeek-V4 / GLM-5 / Kimi，附 256 卡 GRPO launcher</td></tr>
+<tr><td>rollout 后端</td><td>vLLM / SGLang / HF</td></tr>
+<tr><td>硬件</td><td>NVIDIA + AMD ROCm + Ascend NPU</td></tr>
+<tr><td>算法</td><td>PPO、GRPO、DAPO、GSPO、ReMax、RLOO、PRIME、DrGRPO 等</td></tr>
+<tr><td>工程特性</td><td>async rollout、多轮 agentic + tool calling、LoRA、Ulysses SP、EP 扩展到 671B、VLM 支持</td></tr>
+</tbody>
+<caption>三维后端矩阵与算法/工程特性面。数字与列表以 v0.9.0（2026-08-14）release notes 为准，快速演进中随时可能过时。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>训推权重同步用全量 NCCL broadcast，每步把完整权重从训练侧推到推理侧；同步、colocate 异步、分离异步各写一个 trainer；旗舰 MoE 用自定义脚本单独适配。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p><span class="chip c-vr">自报</span> delta sharded checkpoint engine 只传增量分片，Qwen2.5-7B 上较全量 NCCL broadcast 提速 2.4×；V1 PPO trainer 统一 sync / colocate_async / separate_async 于同一抽象并转默认；DeepSeek-V4 GRPO 端到端经 Megatron-Bridge + vLLM rollout + FP8/MXFP4 权重传输；Muon 优化器；vLLM rollout 全确定性复现。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>四个亮点各对应看板一条既有线索：DeepSeek-V4 端到端对应 D05 的旗舰 MoE；delta checkpoint 对应 D02 的固定开销项；V1 trainer 的三模式统一对应第 02 节"执行模式是配置项"；全确定性复现对应 D27 的数值对齐派。<b>2.4× 是在 Qwen2.5-7B 上测得的自报数字</b>，更大模型上的增量分片收益原文未给。对昇腾的含义：权重同步在 NPU 上依赖 HCCL 而非 NCCL，delta 方案的收益需在 NPU 侧重新测量。</p>
+
+<h2 id="s4"><span class="hnum">04</span>TIS 进主干：IS 修正派从论文技巧变成框架内建能力</h2>
+
+<p>这是原文第三节中最值得展开的一条。D27 曾把训推一致性问题划为两派：数值对齐派（让 rollout 与训练的数值严格一致）与 IS 修正派（承认分布差异、用 importance sampling 加权修正）。PR #3694 把后者框架化：rollout importance sampling 提供 <strong>token / sequence / geometric 三种聚合 × truncate-TIS / clip-CIS 两种模式</strong>的组合空间，并配专门文档页 Rollout Correction。生产验证已经就位：FP8 rollout + token 级 TIS 是 Qwen3 级 GRPO 的生产实践——rollout 吞吐 +44%，学习曲线与 BF16 对齐。结论：IS 修正派从论文技巧变成了框架内建能力，低精度 rollout 的收益可以在不牺牲收敛的前提下兑现。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-33-verl/fig-3.svg" alt="三维正交矩阵子图与 Rollout Correction 链路子图：FP8 rollout 到重要性采样权重到截断模式到策略更新，D27 两派节点虚线指向 IS 权重">
+  <figcaption><span class="fnum">图 5</span>三维后端矩阵与 TIS 修正链路（原文图 C）。左侧为训练后端—rollout 后端—硬件的三维正交矩阵；右侧为 Rollout Correction 链路：FP8 rollout（吞吐 +44%）→ 重要性采样权重（token / sequence / geometric 三聚合）→ truncate-TIS 或 clip-CIS → 策略更新（学习曲线对齐 BF16）；D27 两派节点以虚线指向 IS 权重节点。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>两个子图之间的实线箭头标注"训推分布差异"——这是全图的因果起点：<strong>只要训练后端与 rollout 后端是矩阵中两个独立取值，分布差异就结构性地存在</strong>，与具体后端无关。右侧链路是对这一差异的处理：FP8 rollout 引入更大的分布差异（换来 +44% 吞吐），重要性采样权重按三种聚合粒度计算，再经两种截断模式之一进入策略更新，最终学习曲线对齐 BF16。</p>
+    <p>看虚线：D27"数值对齐派 vs IS 修正派"节点指向 ISW 而非 FP8 或 UPD，标注"IS 修正派框架化 / PR 3694 进主干"——原文的判断是两派并非互斥（第 08 节：verl 同时提供 vLLM rollout 全确定性复现）。三聚合 × 两模式共 6 种组合是配置空间，原文只给出了 token 级 TIS + FP8 这一种组合的生产数字，其余组合的取舍原文未给。<strong>+44% 与"对齐 BF16"均为 GPU 侧结论</strong>，NPU 上尚无对应验证（第 07 节）。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>要求 rollout 引擎与训练引擎数值严格一致（同精度、同算子实现），把训推差异当作待消除的 bug；低精度 rollout 因破坏一致性而不采用。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p><span class="chip c-vr">自报</span> PR #3694 把 rollout importance sampling 框架化：token / sequence / geometric 三聚合 × truncate-TIS / clip-CIS 两模式，配 Rollout Correction 文档页；FP8 rollout + token 级 TIS 为 Qwen3 级 GRPO 生产实践，rollout 吞吐 +44%、学习曲线与 BF16 对齐；同时保留 vLLM rollout 全确定性复现。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在于<b>把训推分布差异当作可修正的量而非待消除的 bug</b>。原文给了生产证据（+44% 吞吐、曲线对齐 BF16）但未给不同聚合/截断组合的对比。对 RL-on-NPU 的含义是双重的：正面看，TIS 使低精度 rollout 的收益可以在框架内兑现，是 D27 低比特路线的直接依托；限制看，FP8 rollout 的数值一致性在 NPU 上未见验证——第 07 节将其列为昇腾侧第一缺口，第 08 节将其列为第一观察项。</p>
+
+<h2 id="s5"><span class="hnum">05</span>生态平台：衍生层比核心更能说明平台地位</h2>
+
+<p>判断一个框架是"工具"还是"平台"，标准不在其自身功能，而在多少项目选择在它之上构建。verl 的衍生层分三层：<strong>社区衍生</strong>——verl-agent（GiGPO）、verl-tool，D12 记录的 agentic 衍生，补 agent 训练与工具调用；<strong>互操作</strong>——SkyRL-Agent、rLLM，D18/D22：两个独立框架都把 verl 列为可插拔或可互操作后端；<strong>官方扩展</strong>——verl-vla v0.1.0、VeRL-Tinker、VeRL-Omni v0.2.0，VLA 后训练、轻量微调、全模态，官方以子项目而非主干膨胀的方式扩张。三层结构各有含义。社区衍生说明核心抽象可扩展——verl-agent/verl-tool 没有 fork 重写，而是在 hybrid-controller 之上加层。互操作说明中立性被同行承认——D19 slime 生态位表将 verl 标注为"最广用、引擎中立"，竞争框架把它当作事实接口而非对手。官方扩展说明主干纪律——VLA、全模态这类边界扩张放在子项目里，核心保持 LLM RL 后训练的聚焦。50+ 衍生的总量意味着：即使 verl 主干停止演进，其接口约定也已经成为社区资产。这是脚本式框架（无论多快）结构上无法达到的位置。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:110px">层</th><th style="width:260px">项目</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>社区衍生</td><td>verl-agent（GiGPO）、verl-tool</td><td>D12 记录的 agentic 衍生，补 agent 训练与工具调用；在 hybrid-controller 之上加层而非 fork 重写</td></tr>
+<tr><td>互操作</td><td>SkyRL-Agent、rLLM</td><td>D18 / D22：两个独立框架都把 verl 列为可插拔或可互操作后端；中立性被同行承认</td></tr>
+<tr><td>官方扩展</td><td>verl-vla v0.1.0、VeRL-Tinker、VeRL-Omni v0.2.0</td><td>VLA 后训练、轻量微调、全模态；官方以子项目而非主干膨胀的方式扩张，核心保持 LLM RL 后训练聚焦</td></tr>
+</tbody>
+<caption>verl 衍生层的三层结构。项目名与版本号以写作当日为准。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>以框架自身功能面（算法数、后端数、吞吐）判断平台地位；边界扩张（VLA、多模态）直接并入主干；需要定制时 fork 一份修改。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p><span class="chip c-tp">第三方</span> 社区衍生在 hybrid-controller 之上加层（verl-agent、verl-tool）；两个独立竞争框架（SkyRL-Agent、rLLM）把 verl 列为可互操作后端；D19 slime 生态位表标注"最广用、引擎中立"。<span class="chip c-vr">自报</span> 官方边界扩张以子项目形式（verl-vla、VeRL-Tinker、VeRL-Omni），主干保持聚焦；衍生总量 50+。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在于<b>判据从"它能做什么"换成"多少项目选择在它之上构建"</b>。原文给出的结构性理由是：加层而非 fork 说明抽象可扩展，竞争者互操作说明中立性被承认，子项目扩张说明主干纪律。对昇腾的含义：昇腾适配作为"硬件"维度进入 verl，一次适配即可被 50+ 衍生间接继承——这是 D32 中 MindSpeed-RL 自建路线结构上无法达到的覆盖面。</p>
+
+<h2 id="s6"><span class="hnum">06</span>verl-on-Ascend：昇腾支持成熟度盘点</h2>
+
+<p>本节是全篇核心，与 D32 直接成对。<strong>文档体系</strong>：独立的 docs/ascend_tutorial 目录：get_start / model_support / feature_support / dev_guide / faq 五件套，含<strong>精度对齐与性能调优专章</strong>。判断依据：文档结构是支持成熟度的先行指标——精度对齐专章的存在说明维护者面对过 NPU 数值差异的真实问题，而非仅跑通 demo。<strong>算法</strong>：GRPO / DAPO / PPO / GSPO / SAPO + one-step-off-policy + fully_async（实验态）。主流算法全覆盖，前沿执行模式已进入但未稳定。<strong>模型</strong>：Qwen2.5（7B/32B）、Qwen2.5-VL、Qwen3（1.7B–235B）、Qwen3-VL、Qwen3-Next-80B、Qwen3.5（27B/35B/122B）、<strong>DeepSeek-V3 671B</strong>。覆盖从 1.7B 到 671B，含 VLM 与新架构（Qwen3-Next 的混合注意力）。<strong>后端与并行</strong>：训练 FSDP/FSDP2 + Megatron（经 MindSpeed 适配）；推理 vLLM（vllm-ascend）+ SGLang；并行 DP/TP/PP/EP/SP/CP 六种齐备——对照 D09 的"只有 Megatron 系能正确做 EP"，EP 在昇腾侧同样经 MindSpeed-Megatron 路径可用。<strong>硬件与社区实践</strong>：Atlas 900 A2 PODc 与 800T A3；社区侧已有开发者在 Atlas 800T A3 用 verl + DAPO 完成 Qwen3-32B RL 并公开脚本——非官方、可复现的第三方实践，是支持成熟度的最强证据。<strong>与 D32 的接棒关系</strong>：MindSpeed-RL（昇腾官方 RL 框架）2026 年 4 月暂停、05-20 后零提交，README 亲自导流至 verl 昇腾实践。注意 MindSpeed 本体并未退场：verl 的昇腾 Megatron 路径正是经 MindSpeed 适配——官方从"自建 RL 框架"退到"为社区框架供适配层"，这是比谢幕本身更准确的描述。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-33-verl/fig-4.svg" alt="verl-Ascend 技术栈与 MindSpeed-RL 交接：官方谢幕子图导流至 verl 昇腾主线，技术栈子图列算法、训练、推理、并行、模型、硬件，指向社区实践与缺口">
+  <figcaption><span class="fnum">图 6</span>verl-Ascend 技术栈与 MindSpeed-RL 交接（原文图 D）。上方子图：MindSpeed-RL 官方框架（2026.4 暂停、此后零提交）以 README 虚线导流至 verl 昇腾主线；下方子图为 verl-Ascend 技术栈六层（算法、训练、推理、并行、模型、硬件），实线指向社区实践（Atlas 800T A3 DAPO 训 Qwen3-32B），虚线指向缺口。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>上方子图的<strong>虚线方向</strong>是全图最重要的信息：从 MindSpeed-RL 指向 verl，标注"README 导流至 verl 昇腾实践"——这是官方对社区的显式交接，而非社区对官方的替代。但要与下方子图的 TRAINB 节点合看："Megatron 经 MindSpeed 适配"说明 MindSpeed 本体仍在栈内，退场的是 MindSpeed-RL 这个 RL 框架层，保留的是 MindSpeed 这个训练适配层。</p>
+    <p>下方技术栈的箭头走向是 ALGO → TRAINB → PAR 与 INFB → PAR，即训练与推理两条路径在<strong>并行层汇合</strong>后再到模型与硬件——这与第 02 节"训练与 rollout 后端独立替换"一致，昇腾侧的两条外部适配链（MindSpeed、vllm-ascend）正好各占一条路径。两条出口值得对照：实线到 PRACTICE（第三方公开脚本，成熟度的最强证据），虚线到 GAP（NPU 侧 FP8 rollout 数值一致、fully_async 未稳定）。实线与虚线的差别就是"已验证"与"待补"的差别。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>硬件厂商自建 RL 框架以保证对自家硬件的最优适配；社区框架的 NPU 支持停留在"能跑通 demo"，无文档、无精度对齐、模型覆盖有限。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p><span class="chip c-vr">自报</span> 独立 ascend_tutorial 五件套含精度对齐与性能调优专章；GRPO/DAPO/PPO/GSPO/SAPO + one-step-off-policy + fully_async（实验态）；Qwen2.5 到 Qwen3.5-122B、DeepSeek-V3 671B、VLM 与 Qwen3-Next；FSDP/FSDP2 + Megatron（经 MindSpeed）；vllm-ascend + SGLang；DP/TP/PP/EP/SP/CP 六种；Atlas 900 A2 PODc 与 800T A3。<span class="chip c-tp">第三方</span> 开发者在 Atlas 800T A3 用 verl + DAPO 完成 Qwen3-32B RL 并公开脚本。MindSpeed-RL 2026.4 暂停、05-20 后零提交、README 导流至 verl。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在于<b>昇腾支持是"一等公民"式的矩阵取值而非分叉</b>：文档体系、671B 模型覆盖、六并行、第三方公开实践四项证据均已到位。原文对"成熟度"的判据给了明确理由：精度对齐专章说明面对过真实数值差异问题；非官方可复现实践是最强证据。对 D09"只有 Megatron 系能正确做 EP"的回应是 EP 在昇腾侧经 MindSpeed-Megatron 路径可用。接棒关系的准确表述是官方从"自建 RL 框架"退到"为社区框架供适配层"。第三方实践未经本看板独立复跑。</p>
+
+<h2 id="s7"><span class="hnum">07</span>昇腾侧仍缺什么</h2>
+
+<p>原文列出三项缺口。<strong>其一</strong>，FP8 rollout + TIS 的生产实践目前是 GPU 侧结论，NPU 上的 FP8 rollout 数值一致性未见对应验证；<strong>其二</strong>，fully_async 仍标注实验态；<strong>其三</strong>，一等公民支持的持续性依赖 vllm-ascend 与 MindSpeed 两条外部适配链的维护节奏。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>GPU 侧验证过的特性（FP8 rollout + TIS、fully_async）在 NPU 上同样可用；框架宣称支持某硬件即代表支持长期可持续。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p><span class="chip c-inf">推断</span> 原文明确划出三项缺口：NPU 侧 FP8 rollout 数值一致性无对应验证；fully_async 实验态；支持持续性取决于 vllm-ascend 与 MindSpeed 两条外部链的维护节奏。<span class="chip c-vr">自报</span> 提速与吞吐数字（2.4×、+44%）均为 GPU 侧自报。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>三项缺口的性质不同：第一项是<b>数值问题</b>（FP8 在 NPU 上的分布差异是否仍能被 TIS 修正到对齐 BF16），第二项是<b>稳定性问题</b>（异步模式对 D02 rollout 长尾的收益能否在 NPU 复现），第三项是<b>治理问题</b>（两条外部适配链不在 verl 主干控制之内）。三者恰好对应第 08 节的三个观察项。fully_async 等实验态特性的结论不构成生产建议。</p>
+
+<h2 id="s8"><span class="hnum">08</span>选型三分法与对看板结论的更新</h2>
+
+<p><strong>选型三分法</strong>：<strong>要生态与算法覆盖</strong>——选 verl：三维后端矩阵、最全算法面、50+ 衍生兜底，任何非标需求大概率已有衍生项目；<strong>要 SGLang 原生的生产验证路径</strong>——选 slime（D19）：生态位是 SGLang 深度绑定的生产框架，与 verl 的引擎中立定位互补而非竞争；<strong>要学术全开放可复现</strong>——选 open-instruct：D31 记录 OlmoRL 用 open-instruct 而非 verl 完成 1024 卡 RLVR，学术侧存在独立于 verl 的完整选择。</p>
+
+<p><strong>对看板既有结论的更新</strong>：① <strong>D13 昇腾 SWE-RL 方案的 trainer 选型正式更新</strong>：主线为 verl-Ascend——文档体系、671B 模型覆盖、六并行、第三方公开实践四项证据均已到位，MindSpeed-RL 路线随 D32 关闭；② <strong>D27 训推一致性两派的裁决推进一步</strong>：IS 修正派获得框架主干地位（TIS 进 verl 主干 + FP8 rollout 生产实践），数值对齐派仍是必要基础（verl 同时提供 vLLM rollout 全确定性复现），两派在同一框架内共存而非互斥；③ <strong>D19 生态位表维持有效</strong>：verl"最广用、引擎中立"的标注在组织中立化与 v0.9.0 之后进一步强化。</p>
+
+<div class="formula">选型三分法
+  要生态与算法覆盖            → verl          三维矩阵 · 最全算法面 · 50+ 衍生兜底
+  要 SGLang 原生生产验证路径  → slime（D19）   SGLang 深度绑定 · 与 verl 引擎中立互补
+  要学术全开放可复现          → open-instruct  OlmoRL 1024 卡 RLVR（D31）· 独立于 verl 的完整选择
+
+看板结论更新
+  D13 trainer 选型   MindSpeed-RL → verl-Ascend（四项证据到位；MindSpeed-RL 路线随 D32 关闭）
+  D27 两派裁决       IS 修正派获主干地位 · 数值对齐派仍是必要基础 · 同框架共存
+  D19 生态位表       "最广用、引擎中立"标注进一步强化</div>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>选一个"最好的"RL 框架用于所有场景；昇腾方案沿用官方框架；训推一致性两派择一。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p><span class="chip c-inf">推断</span> 按需求分三路：生态与算法覆盖选 verl，SGLang 原生生产路径选 slime，学术全开放选 open-instruct（D31 OlmoRL 1024 卡 RLVR 实例）。D13 trainer 主线更新为 verl-Ascend；D27 两派在同一框架内共存；D19 标注维持并强化。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>三分法的要点是<b>三者互补而非竞争</b>：slime 与 verl 的生态位差在引擎绑定深度，open-instruct 与 verl 的差在学术开放程度。对看板最重要的更新是 D13 的 trainer 选型：原方案的 MindSpeed-RL GRPO++ 路线随 D32 关闭，verl-Ascend 以四项证据接替；但第 07 节的三项缺口（FP8 一致性、fully_async、外部适配链）应同步写入 D13 的风险项。</p>
+
+<h2 id="s9"><span class="hnum">09</span>基线 vs 做法：一页总表</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:130px">主题</th><th style="width:230px">朴素基线</th><th>它的做法 · 差在哪</th></tr></thead>
+<tbody>
+<tr><td>事实标准</td><td>以 stars 与大厂背书判断</td><td>四组证据叠加：23.2k stars + verl-project 中立治理、Seed/Qwen/LMSys 采用、50+ 衍生、D09–D23 每次名单在列。治理结构是判据</td></tr>
+<tr><td>编程模型</td><td>PPO 写成单脚本训练循环</td><td>RL 后训练 = 多模型数据流；hybrid-controller 控制流集中表达、计算流分布执行；并行与放置成为配置项（图 2–4）。算法面与后端矩阵可正交扩张</td></tr>
+<tr><td>后端矩阵</td><td>训练与推理引擎绑定</td><td>训练 FSDP/FSDP2/Megatron（+ mlite）× rollout vLLM/SGLang/HF × 硬件 NVIDIA/AMD/Ascend；EP 扩展到 671B</td></tr>
+<tr><td>v0.9.0</td><td>全量 NCCL broadcast 同步；多 trainer</td><td>delta sharded checkpoint 2.4×（Qwen2.5-7B，自报）；V1 trainer 统一三模式；DeepSeek-V4 GRPO 端到端；Muon；全确定性复现</td></tr>
+<tr><td>训推一致</td><td>要求数值严格一致，不用低精度 rollout</td><td>TIS 进主干（PR #3694）：三聚合 × 两模式；FP8 rollout + token 级 TIS 吞吐 +44%、曲线对齐 BF16（GPU 侧自报，图 5）。两派同框架共存</td></tr>
+<tr><td>生态平台</td><td>以自身功能面判断</td><td>社区衍生加层、竞争框架互操作、官方子项目扩张；50+ 衍生使接口约定成为社区资产</td></tr>
+<tr><td>昇腾支持</td><td>厂商自建框架；社区框架仅跑通 demo</td><td>ascend_tutorial 五件套含精度对齐专章；五算法 + 两执行模式；1.7B–671B 含 VLM；六并行；Atlas 900 A2 / 800T A3；第三方公开 DAPO 训 Qwen3-32B（图 6）</td></tr>
+<tr><td>接棒关系</td><td>官方框架被社区替代</td><td>MindSpeed-RL 2026.4 暂停、05-20 后零提交、README 导流 verl；MindSpeed 本体作为 Megatron 适配层保留。官方从自建退到供适配层</td></tr>
+<tr><td>缺口</td><td>GPU 侧结论直接适用 NPU</td><td>NPU 侧 FP8 rollout 数值一致未验证；fully_async 实验态；依赖 vllm-ascend 与 MindSpeed 两条外部链</td></tr>
+<tr><td>选型</td><td>选一个最好的框架</td><td>verl（生态）/ slime（SGLang 生产）/ open-instruct（学术开放）三分互补；D13 trainer 主线更新为 verl-Ascend</td></tr>
+</tbody>
+<caption>左栏是不看论文的直觉实现，右栏是 verl 的实际做法与本站判断。凡写"自报"处为仓库 README、release notes 或论文作者口径。</caption>
+</table>
+</div>
+
+<h2 id="s10"><span class="hnum">10</span>原文没给的东西 / 未能核实的东西</h2>
+
+<p>以下为复现或引用时必须自行核实或补足的内容。原文的 provisional 声明：本篇数字（stars、提速倍数、吞吐增益、模型支持列表）以写作当日仓库与 release notes 为准，快速演进中随时可能过时；昇腾社区实践为第三方公开脚本，未经本看板独立复跑；fully_async 等实验态特性的结论不构成生产建议。</p>
+
+<ul>
+<li><strong>delta sharded checkpoint 2.4×</strong> 仅在 Qwen2.5-7B 上测得，更大模型（尤其 MoE）上的增量分片收益原文未给；NPU 侧 HCCL 路径无对应数字。</li>
+<li><strong>FP8 rollout +44% 与"学习曲线对齐 BF16"</strong> 为 Qwen3 级 GRPO 的 GPU 侧生产实践，具体模型规模、训练步数与对齐判据原文未给；NPU 上无对应验证。</li>
+<li><strong>TIS 三聚合 × 两模式的取舍</strong>：原文只给出 token 级 TIS + FP8 一种组合的数字，其余五种组合的对比未给。</li>
+<li><strong>mlite 与 256 卡 GRPO launcher 的性能数字</strong>原文未给，仅给支持范围（DeepSeek-V4 / GLM-5 / Kimi）。</li>
+<li><strong>昇腾侧的吞吐与精度数字</strong>：原文给出模型支持列表与并行覆盖，但未给任何昇腾上的吞吐、MFU 或精度对齐结果；第三方 Atlas 800T A3 DAPO 训 Qwen3-32B 的实践未经本看板独立复跑。</li>
+<li><strong>fully_async 与 one-step-off-policy 在昇腾上的稳定性</strong>：标注实验态，无收敛或吞吐数据。</li>
+<li><strong>"50+ 衍生"的统计口径</strong>原文未给（是否含 fork、是否含未维护项目）。</li>
+<li><strong>头部采用的具体使用范围</strong>（Seed / Qwen / LMSys 使用 verl 训练的是哪些阶段、多大规模）原文未给。</li>
+<li><strong>MindSpeed-RL 谢幕的原因</strong>本篇未展开，见 D32（三种解读均标注推断）。</li>
+<li>本文原图受限于网络代理可达性：架构图取自 verl 官方 README 引用的 verl-data 仓库，驱动进程/WorkerGroup 图取自官方 hybrid_flow 文档页引用的社区仓库；HybridFlow 论文原图（arXiv）、ascend_tutorial 文档无配图，其余以本站图补足。</li>
+</ul>
+
+<div class="note">
+  <span class="ntitle">三条可以直接搬走的判断</span>
+  <p><strong>一、"事实标准"的判据是治理结构与被对照频率，不是流量。</strong>verl-project 中立组织、50+ 衍生在 hybrid-controller 之上加层、竞争框架把它列为互操作后端、看板每次框架名单在列——四组证据叠加后，即使主干停止演进，接口约定也已是社区资产。</p>
+  <p><strong>二、把 RL 后训练定义为多模型数据流，是昇腾能以"矩阵取值"而非"分叉"进入的结构原因。</strong>控制流集中表达、计算流分布执行，硬件适配落在计算流层（MindSpeed 适配 Megatron、vllm-ascend 适配 rollout），算法层零改动；一次适配被 50+ 衍生间接继承。</p>
+  <p><strong>三、D13 昇腾方案的 trainer 主线更新为 verl-Ascend，但三项缺口应同步写入风险项。</strong>文档体系、671B 覆盖、六并行、第三方公开实践四项证据到位；NPU 侧 FP8 rollout + TIS 的数值一致性、fully_async 实验态、两条外部适配链的维护节奏，是性价比论证闭环前必须补的三块。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>NPU 侧 FP8 rollout + TIS 的首个公开复现</strong>——谁先在 Atlas 硬件上给出学习曲线对齐 BF16 的证据，昇腾 RL 的性价比论证即告闭环 · <strong>fully_async 在昇腾从实验态转正的时点</strong>——异步执行模式对 rollout 长尾（D02）的收益在 NPU 上能否复现 · <strong>verl-project 中立治理下的多厂商提交比例</strong>——昇腾/AMD 路径的 commit 是否由硬件厂商工程师持续供给，决定"一等公民"承诺的可持续性。</p>
+</div>
+
+</main>
+
+<footer>
+  来源与声明：verl 仓库（verl-project 组织）与 docs/ascend_tutorial 目录、HybridFlow 论文 <a href="https://arxiv.org/abs/2409.19256">arXiv 2409.19256</a>、v0.9.0 release notes（2026-08-14）、PR #3694 与 Rollout Correction 文档页、MindSpeed-RL README、本看板 D09/D12/D13/D18/D19/D22/D23/D27/D31/D32。Provisional 声明：本篇数字（stars、提速倍数、吞吐增益、模型支持列表）以写作当日仓库与 release notes 为准，快速演进中随时可能过时；昇腾社区实践为第三方公开脚本，未经本看板独立复跑；fully_async 等实验态特性的结论不构成生产建议。原图版权归各原始仓库所有，此处仅作解析引用。
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>

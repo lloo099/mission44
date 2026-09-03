@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 24 精读版 · Kimi K3 与线性注意力旗舰</title>
+<meta name="description" content="Kimi K3 首发解读与技术报告核对：KDA 谱系、3:1 混合、AttnRes、Stable LatentMoE、MXFP4 QAT、AgentENV 沙箱——朴素基线 vs 它的做法逐节对照，配原图解析。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-24-kimi-k3.html">
+<meta property="og:title" content="Dispatch 24 精读版 · Kimi K3 与线性注意力旗舰">
+<meta property="og:description" content="Kimi K3 首发解读与技术报告核对：KDA 谱系、3:1 混合、AttnRes、Stable LatentMoE、MXFP4 QAT、AgentENV 沙箱——朴素基线 vs 它的做法逐节对照，配原图解析。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-24-kimi-k3.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-24-kimi-k3.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-24-kimi-k3">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-24-kimi-k3.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 24 · 精读版 · 2026-07-17（跟进更新 2026-08-10）</div>
+  <h1>Kimi K3：线性注意力第一次成为开源旗舰的主力架构</h1>
+  <p class="standfirst">2026-07-16 月之暗面发布 Kimi K3——2.8T 极稀疏 MoE、KDA + AttnRes + Gated MLA + Stable LatentMoE 四组件、原生 1M 上下文。本文把首发解读与 08-10 技术报告落地后的逐项核对合并成一页：每一节先给"不看论文的朴素基线"，再给"K3 的做法"，然后指出差在哪、原文是否给了理由、对 RL-on-NPU 意味着什么。凡厂商自报、论文自报与本站推断分别标注；首发时标 provisional 的数字，报告落地后按报告口径更新。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D24</span>
+    <span>承接 D02 / D04 / D06 / D21 / D23，印证 D25 / D26 / D27</span>
+    <span>原图 2 张 · 本站图 4 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>发布了什么：事实清单</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>KDA 谱系：从 delta rule 到旗舰</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>3:1 混合与 NoPE 分工</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>四条注意力路线的分岔口</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>AttnRes 与 Stable LatentMoE</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>评测分数与定价怎么读</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>对 RL-on-NPU 的含义</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>报告落地：核对清单逐项对表</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>报告的七项系统侧收获</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>评测的最终口径</a></li>
+    <li><a href="#s11"><span class="tnum">11</span>总表：基线 vs K3</a></li>
+    <li><a href="#s12"><span class="tnum">12</span>原文没给的东西</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">到 K3 为止，本看板追踪的旗舰级"注意力降本"路线集齐四条：MiniMax MSA（D04）、GLM-5.2 DSA + IndexShare（D06）、LongCat-2.0 LSA（D21）都是<strong>稀疏化全注意力</strong>——保留 softmax 的计算形式，只挑部分 token 参与；K3 是唯一<strong>改掉状态更新方程本身</strong>的厂商。首发时全部机理判断以官方博客口径 + Kimi Linear 论文（arXiv 2510.26692）外推为准；08-10 技术报告（<a href="https://arxiv.org/abs/2607.24653">arXiv 2607.24653</a>，47 页）与权重同时落地，首发核对清单全部过账，且额外给 D25 / D26 / D27 三条主线各补了一块生产级证据。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段：<strong>朴素基线</strong>（左栏，灰：不看论文时的直觉实现）/ <strong>K3 的做法</strong>（右栏，橙）/ <strong>差在哪</strong>（下方色块：差异、原文是否给了理由、对 RL-on-NPU 的含义）。数字按来源标注：<span class="chip c-vr">自报</span> 官方博客或技术报告口径（评测分数为厂商自评 harness）、<span class="chip c-tp">第三方</span> 独立来源、<span class="chip c-inf">推断</span> 本站分析。首发时的 provisional 数字，若报告已确认则按报告口径写出；仍未确认的保留限定语。</p>
+  <p>贯穿全文的一条线索：<strong>线性注意力省下的成本，只有在 RL 范式下质量不失效时才对训练闭环有意义</strong>。D02 说明 rollout 占 RL 单步 wall-clock 70% 以上且 decode-bound，KDA 的 KV 减省与解码提速恰好命中这一痛点；而 Kimi Linear 论文的 RL scaling 主张，是"线性注意力能进 RL 训练"迄今最直接的证据。</p>
+</div>
+
+<div class="formula">K3 主线
+  ├ 架构     KDA（线性，无 KV cache）× 3 ＋ Gated MLA（NoPE）× 1 → 93 层 = 69 KDA + 24 MLA   <span class="cmt">// 报告确认</span>
+  │          AttnRes 跨深度检索 · Stable LatentMoE 16/896 · 激活 104.2B / 总参 2.78T
+  ├ 成本     KV cache 至多 −75%（论文） · 1M 解码至多 6.3×（自报）
+  ├ 后训练   MXFP4 QAT 从 SFT 起贯穿 · 预算控制 Reasoning Effort RL · 9 专家 MOPD 合并
+  └ 系统     partial rollout · 外部 KV 池 · AgentENV 沙箱 5,121 万箱 · KDA-aware 前缀缓存</div>
+
+<h2 id="s1"><span class="hnum">01</span>发布了什么：事实清单</h2>
+
+<p>2026 年 7 月 16 日，月之暗面（Moonshot AI）发布 Kimi K3（官方 tech blog：kimi.com/blog/kimi-k3）。公开口径的事实：<strong>2.8T 总参数</strong>，极稀疏 MoE——每 token 激活 16/896 个 routed experts，外加 shared experts（"Stable LatentMoE"层）；架构四件套 KDA + AttnRes + Gated MLA + Stable LatentMoE；原生视觉理解、1M token 上下文；KDA 在 1M 上下文下解码提速至多 6.3×（<span class="chip c-vr">自报</span>）；六项 benchmark（<span class="chip c-vr">自报</span>）：DeepSWE 67.5、FrontierSWE 81.2、Kimi Code Bench 2.0（内部）72.9、Terminal-Bench 2.1 88.3、Program Bench 77.8、SWE Marathon 42.0；定价 $3 / $15 每百万 token（输入/输出），对标 Claude Sonnet 价位档，API 已可用；权重承诺 2026-07-27 前放出，厂商主张这将是"3 万亿参数级的首个开源模型"；定位长程 coding、知识工作、推理。首发时官方未给出激活参数量的单一数字，原文明确拒绝引用第三方推算值。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-24-kimi-k3/fig-1.svg" alt="Kimi 线性注意力路线时间线：2025-10 Kimi Linear 论文，2026-07-16 K3 发布，07-27 前权重承诺，技术报告待发布；旁注兑现观察点">
+  <figcaption><span class="fnum">图 1</span>Kimi 线性注意力路线时间线：从 2025-10 Kimi Linear 论文与 48B-A3B 开源，到 2026-07-16 K3 发布、07-27 前权重承诺、技术报告待发布；下方两个"兑现观察点"分别对照 LongCat 先承诺后交付的先例（D21）与 benchmark 全部自报 provisional 的诚实边界。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>看主链四个节点之间的<strong>时间间隔</strong>：论文到旗舰发布是九个月，发布到权重承诺是 11 天，权重到技术报告在首发时没有日期。九个月是 Kimi 相对其他厂商的验证期（第 04 节）；11 天是"3 万亿级首个开源"这一主张的兑现窗口。</p>
+    <p>两条虚线是首发解读给自己划的边界：T3 → N1 提醒"承诺不等于交付"，但 LongCat 最终兑现了 MIT 权重，属于良性先例；T4 → N2 提醒所有数字在报告落地前按 provisional 处理。回看 08-10 的跟进（第 08 节），两个观察点都已闭合：权重开源兑现，报告 47 页落地。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>旗舰发布即以官方博客的 benchmark 数字与参数规模为准，把第三方推算的激活参数量当作事实引用，把"将开源"当作"已开源"。</p></div>
+  <div class="real"><h5>K3 的做法 / 原文的处理</h5>
+  <p>官方博客只给总参 2.8T、16/896 路由与四个组件名，激活参数量无单一数字；六项 benchmark 全为新一代名目。原文的处理是：数字全部标 provisional，激活量拒绝引用第三方推算，权重承诺标注为"尚未兑现"，与 D21 处理 LongCat-2.0 的方式一致。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差别在<b>把"官方口径"与"已确认事实"分层</b>。这一分层在 08-10 得到回报：激活参数量报告给出 104.2B（总参 2.78T），任何首发时引用的第三方推算都会与之不符；六项 benchmark 报告仍是厂商自评 harness，但披露了 harness、温度与 top-p，可复现性比博客口径强一档。事实清单本身的核心看点没有变：这是线性注意力第一次进入开源旗舰级模型的主力架构。</p>
+
+<h2 id="s2"><span class="hnum">02</span>KDA 谱系：从 delta rule 到旗舰落地</h2>
+
+<p>K3 选择 KDA 有一条清晰的谱系，落点是 2025 年 10 月的 Kimi Linear 论文（arXiv 2510.26692），配套开源 Kimi-Linear-48B-A3B-Instruct（HF 可下载）。递进链是 <strong>delta rule → Gated DeltaNet → KDA</strong>：经典线性注意力把上下文压进固定大小的矩阵状态 S，每步做 S ← S + v·kᵀ 式累加，只增不删，状态被旧信息污染；delta rule 改为"先擦后写"——用当前 key 检索出旧关联、减去、再写入新关联，对固定容量的记忆做定向覆写；Gated DeltaNet 加遗忘门，每 head 一个标量 α 控制整个状态矩阵的衰减速率，但粒度太粗；KDA 把门控做到 <strong>channel-wise</strong>——每个特征维度有独立遗忘率，追踪局部句法的维度可快速遗忘，保持长程绑定（如变量名与定义的关联）的维度可缓慢遗忘。代价是计算结构更复杂，所以 KDA 的另一半贡献是<strong>硬件高效的 chunkwise 算法</strong>：序列切块，块内矩阵乘并行、块间递推传递状态。</p>
+
+<figure>
+  <img src="img/dispatch-24-kimi-k3/orig-1.jpg" alt="Kimi Linear 架构图：左侧 N 个 KDA 块叠 1 个 MLA 块，每块含 Norm、注意力层、Norm、MoE；右上 MoE 细节含 shared experts 与 routed experts 及 Router；右下 KDA 细节含 Linear、Conv、L2 归一化与三路 σ 门控低秩分支">
+  <figcaption><span class="fnum">图 2</span>Kimi Linear 的层级结构与 KDA 内部：左列自下而上为 N× KDA 块与 1× MLA 块（每块 Norm → 注意力 → Norm → MoE，均带残差）；右上为 MoE 细节（绿色 Shared Expert 1…N<sub>s</sub> 全部参与，蓝色 Routed Expert 1…N<sub>r</sub> 由 Router 选择并加权）；右下为 KDA 内部（q/k 路径 Linear → Conv → 激活 → L2 归一化，v 路径 Linear → Conv，三路 σ 门控的低秩分支，输出经 Norm 与输出门相乘后再过 Linear）。<span class="chip c-vr">自报</span> 取自 MoonshotAI/Kimi-Linear 仓库 README（figures/arch.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>先看左列的 <strong>N× 与 1×</strong>：这就是"每 N 层 KDA 配 1 层 MLA"的混合堆叠，Kimi Linear 消融给出的 N = 3；K3 报告确认沿用（93 层 = 69 KDA + 24 MLA）。KDA 块与 MLA 块除注意力层外结构完全相同——MoE、Norm、残差一致——说明混合的代价只在注意力子层，其余训练系统无需为两种层分别处理。</p>
+    <p>再看右下 KDA 内部最值得注意的三个<strong>沙漏形低秩分支</strong>（带 σ 符号）：这是门控信号的来源，其中承载 channel-wise 遗忘率的门以低秩投影 + sigmoid 生成，这是 KDA 与 Gated DeltaNet 的差别在电路图上的位置——后者每 head 只需一个标量。q/k 路径末端的 L2 归一化与 v 路径的 Conv 是 delta rule 数值稳定所需的常规构件。右上 MoE 中 Router 旁的小柱状图表示路由权重分布，K3 的 16/896 极稀疏路由（第 05 节）作用在同一位置。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>线性注意力 = 固定状态矩阵累加，或至多加一个每 head 标量遗忘门（Gated DeltaNet）；训练时按 token 递推，吞吐受 recurrent 结构拖累。</p></div>
+  <div class="real"><h5>K3 的做法</h5>
+  <p>门控做到每特征维度独立（channel-wise），让记忆的每个存储位分别决定保留多久；配套 chunkwise 算法把计算主体组织成块内稠密矩阵乘。谱系来自 Kimi Linear 论文，K3 沿用并升格为 2.78T 旗舰主力层。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>从"整块记忆统一衰减速率"到"逐维精细记忆管理"是质的跨越，原文用变量名与定义绑定的例子给出了直觉理由，但精细门控的收益在多大程度上依赖 chunkwise 算法的效率，论文层面的消融原文未转述。对 RL-on-NPU 的直接含义在第 07 节：chunkwise 块内矩阵乘是 NPU cube 单元最擅长的形态，但 KDA 是新算子，CANN 生态中大概率没有现成实现（<span class="chip c-inf">推断</span>）。</p>
+
+<h2 id="s3"><span class="hnum">03</span>3:1 混合与 NoPE 分工</h2>
+
+<p>Kimi Linear 不是纯线性：每 3 层 KDA 配 1 层全注意力 MLA，消融显示 3:1 是吞吐 × 验证损失的最优点。更精巧的是分工：MLA 层用 <strong>NoPE（无位置编码）</strong>，位置信息和 recency bias 全部交给 KDA 层承担——KDA 的逐维遗忘门天然是一种数据依赖的位置衰减机制，全注意力层被解放出来做纯内容寻址的精确检索。工程收益：KV cache 至多减 75%（只有 1/4 的层需要 KV cache），1M 上下文解码吞吐至多 6×。论文最重的一条主张是<strong>三范式</strong>：短上下文、长上下文、RL scaling 三种范式下混合线性架构全都不输甚至超过全注意力基线——第三条是关键增量。从 48B-A3B 到 2.8T 规模跨约 60 倍，3:1 配比是否仍最优、KDA 是否有版本改动、MLA 是否仍是 NoPE，首发时全部待报告确认。</p>
+
+<figure>
+  <img src="img/dispatch-24-kimi-k3/orig-2.png" alt="Kimi Linear 性能与速度双面板图：左图为性能对解码加速比，右图为 TPOT 对解码长度，标注 4.8×、5.7×、6.3×">
+  <figcaption><span class="fnum">图 3</span>Kimi Linear 的质量-速度双面板：(a) 横轴为解码加速比（1× 至 4×），左纵轴 MMLU-Pro (4k)（星形，45–60），右纵轴 RULER (128k)（圆点，50–90），三点分别为 MLA、GDN-H、Kimi Linear；(b) 横轴为解码长度（4K 至 1M），纵轴 TPOT（ms），虚线为 MLA，实线为 Kimi Linear，红色箭头标注 256K / 512K / 1M 处的差距 4.8× / 5.7× / 6.3×。<span class="chip c-vr">自报</span> 取自 MoonshotAI/Kimi-Linear 仓库 README（figures/perf_speed.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>(a) 面板要读<strong>左上到右下的对角虚线</strong>：它代表"加速多少就掉多少分"的等价交换线。MLA 落在 1× 处（RULER 81.3，MMLU-Pro 47.2），Kimi Linear 与 GDN-H 落在约 4× 处，但两者的 RULER 圆点（84.3 与 80.5）都在虚线之上——即加速没有以长上下文检索质量为代价；MMLU-Pro 星形三者都在 1× 附近（51.0 / 47.9 / 47.2），短上下文 4k 下没有加速也没有掉分。这正是原文"短上下文、长上下文两范式不输"的图形表述。</p>
+    <p>(b) 面板要读<strong>曲线的形状差</strong>而非单点：MLA 的 TPOT 随解码长度加速上升（KV cache 线性增长导致每 token 读取量增长），Kimi Linear 近乎平缓（3/4 的层状态大小与长度无关）。三个红色箭头的比值 4.8× → 5.7× → 6.3× 随长度单调增大，说明差距会随上下文继续拉开。注意 K3 博客的"1M 解码至多 6.3×"与此图 1M 处的标注一致，即该数字沿用了 Kimi Linear 的口径；且 GDN-H 曲线在图例中但与 Kimi Linear 重叠，不可见。RL scaling 范式不在这张图里，原文强调它是三范式中最关键的一条，证据在论文正文而非 README。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>全部层替换为线性注意力以最大化省 KV；或者混合时每层都带 RoPE，线性层与全注意力层各自独立处理位置信息。</p></div>
+  <div class="real"><h5>K3 的做法</h5>
+  <p>3:1 混合（吞吐 × 验证损失最优点），MLA 层 NoPE，位置信息完全由 KDA 递归门控与衰减隐式承载；报告确认 K3 保留 3:1、保留 NoPE，并以此实现 <strong>1M 上下文零位置编码修改直接外推</strong>（渐进课程：预训练 8K → 64K，cooldown 256K → 1M）。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差别是<b>分工而非冗余</b>：两种层各承担所长——线性层承担位置与 recency，全注意力层做纯内容寻址。原文给出了 3:1 的消融依据（Kimi Linear 论文口径），但"2.8T 尺度有无重新消融"报告未见转述。对 RL 的含义：KV cache 至多减 75% 对应同显存下 rollout batch 翻倍以上的空间；三范式中的 RL scaling 主张是线性架构能进训练闭环的前提，K3 定位"长程 coding + 推理"等于在旗舰尺度上验证这条主张。</p>
+
+<h2 id="s4"><span class="hnum">04</span>四条注意力路线的分岔口</h2>
+
+<p>本看板追踪的旗舰级注意力降本路线已集齐四条：MSA（MiniMax-M3，D04）、DSA + IndexShare（GLM-5.2，索引器每 4 层复用，D06）、LSA（SI / CLI / HI，LongCat-2.0，D21）与 KDA 混合（Kimi K3）。前三家的共同哲学是<strong>保留 softmax attention 的计算形式，只选择部分 token 参与计算</strong>——注意力矩阵还是那个矩阵，只是变稀疏；KV cache 还在，只是访问模式变了，failure mode 与全注意力连续。Kimi 走的是<strong>改掉状态更新方程本身</strong>：KDA 层没有 KV cache，只有固定大小的矩阵状态，信息必须有损压缩进固定容量，靠遗忘门决定留什么，换来 KDA 层解码每 token 成本与上下文长度无关。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:140px">路线</th><th style="width:200px">代表</th><th style="width:140px">哲学</th><th>KV cache</th></tr></thead>
+<tbody>
+<tr><td>MSA</td><td>MiniMax-M3（D04）</td><td>稀疏化全注意力</td><td>仍在，被裁剪</td></tr>
+<tr><td>DSA + IndexShare</td><td>GLM-5.2，索引器每 4 层复用（D06）</td><td>稀疏化全注意力</td><td>仍在，被索引</td></tr>
+<tr><td>LSA（SI / CLI / HI）</td><td>LongCat-2.0（D21）</td><td>稀疏化全注意力</td><td>仍在，分层稀疏</td></tr>
+<tr><td><strong>KDA 混合</strong></td><td><strong>Kimi K3</strong></td><td><strong>线性注意力</strong></td><td><strong>KDA 层无 KV cache——3:1 配比下即 3/4 的层（报告已确认沿用 3:1）</strong></td></tr>
+</tbody>
+<caption>四条路线的分岔：前三条"存储全量、选择性读取"，显存随上下文线性增长（系数降低）；第四条"边读边压缩、只保留摘要"，KDA 层显存为常数。</caption>
+</table>
+</div>
+
+<figure>
+  <img class="diagram" src="img/dispatch-24-kimi-k3/fig-2.svg" alt="KDA 谱系图：delta rule 到 Gated DeltaNet 到 KDA 到 Kimi-Linear-48B-A3B 到 K3 旗舰，旁列 RL scaling 三范式证据；对照稀疏化全注意力路线 MSA、DSA+IndexShare、LSA">
+  <figcaption><span class="fnum">图 4</span>两条路线的谱系对照：上方为 Kimi 线性路线（delta rule → Gated DeltaNet → KDA → Kimi-Linear-48B-A3B → K3 旗舰，旁注三范式证据）；下方为稀疏化全注意力路线（MiniMax MSA、GLM-5.2 DSA + IndexShare、LongCat-2.0 LSA），并标注 MiniMax 曾在 M1 走 lightning attention 线性路线后在 M3 转向。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要读的是<strong>上下两栏之间只有一条虚线</strong>——K3 是唯一把线性注意力升格进旗舰的模型，其他三家彼此以实线相连（同一哲学的三种实现）。上栏 L2 → L3 的边标"细粒度化"，L4 → L5 标"升格进旗舰"，这两条边是谱系里的两次跃迁：前者是算法层的，后者是规模层的（约 60 倍）。</p>
+    <p>下栏 S1 的注释是全图最重要的反面证据：MiniMax 在 M1 用过 lightning attention 线性路线，后来在 M3 转回稀疏化。这说明"线性路线在旗舰上是否成立"此前有过否定先例；Kimi 与其他厂商的区别不在想法，而在九个月的验证期——L4 节点（开源 48B 模型）是这一验证期的实物证据。48B 的验证能否覆盖 2.8T 的风险面，是首发时最大的不确定性来源。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>降本就在全注意力内部做：裁剪、索引、分层稀疏，保守可控，任何 token 理论上仍可被精确检索。业界多数厂商选此路径，且线性路线有 M1 → M3 的回退先例。</p></div>
+  <div class="real"><h5>K3 的做法</h5>
+  <p>替换状态更新方程：KDA 层固定容量、有损压缩、遗忘门决定保留内容；用九个月（2025-10 论文 + 开源 48B → 2026-07 K3）在真实训练管线里验证与试错后再上旗舰。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>本质差异是<b>"存储全量、选择性读取"与"边读边压缩、只保留摘要"</b>。原文给出 Kimi 敢采用的两点理由：业界对线性架构精确检索、长程 recall 天花板与 RL 稳定性的普遍担心，Kimi 以验证期作答；其他厂商缺少验证积累。对 RL-on-NPU：稀疏路线的不规则 gather / scatter 访存恰是 D06 讨论 DSA 时的落地痛点，线性路线的块内稠密矩阵乘在形态上更友好（<span class="chip c-inf">推断</span>），但代价是算子生态空白。</p>
+
+<h2 id="s5"><span class="hnum">05</span>AttnRes 与 Stable LatentMoE：两个首发时只有名字的组件</h2>
+
+<p><strong>AttnRes（Attention Residuals）</strong>官方口径：让某层选择性检索更早深度的表征，而非以同样方式累积所有先前状态——改变信息沿模型深度的流动。首发时的推断（<span class="chip c-inf">推断</span>）：标准 residual stream 逐层累加，深层若需某个浅层的特定表征只能依赖其未被稀释；AttnRes 把"被动累加"改为"主动检索"，类似在深度方向做注意力 / 门控选择，对超深模型的梯度传播与特征复用有意义，并可能与 KDA 层的有损压缩互补。<strong>Stable LatentMoE</strong>：16/896 路由，激活比约 1.8%，加 shared experts 兜底。这一稀疏度放大三类难题：专家负载均衡、路由早期塌缩风险、<strong>训推一致</strong>——D23 讨论过，专家数越多、选择越稀疏，同样大小的 logit 扰动越容易翻转 top-k 边界上的专家。"Stable"与"Latent"暗示某种稳定化路由（<span class="chip c-inf">推断</span>）。报告落地后的答案见第 08 节。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-24-kimi-k3/fig-3.svg" alt="K3 公开口径架构图：KDA、AttnRes、Gated MLA 汇入混合堆叠，再进 Stable LatentMoE；能力面 1M 上下文、原生视觉、长程 coding；待确认项 AttnRes 机理、配比、激活参数量">
+  <figcaption><span class="fnum">图 5</span>K3 首发时的公开口径架构：KDA 与 Gated MLA 汇入"混合堆叠"（首发时配比未公布），AttnRes 以"跨深度检索"边接入，混合堆叠之后是 Stable LatentMoE；右侧能力面（1M 上下文、原生视觉、长程 coding / 知识工作 / 推理）；下方三个待技术报告确认项。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>这张图的价值在于<strong>三条虚线指向的三个空白</strong>：AttnRes 机理、KDA 与 MLA 配比、激活参数量。它们是首发解读给自己留的核对清单，也是衡量首发判断对错的刻度。对照第 08 节：三项分别被报告回答为"伪查询对 embedding 与所有前序 block 输出计算注意力权重"、"保留 3:1，93 层 = 69 + 24"、"104.2B"。</p>
+    <p>结构上注意 AttnRes 的边是从 A2 直接接入 MIX，而不是与 KDA / MLA 并列——它不是第三种注意力层，而是作用在<strong>深度方向</strong>的连接方式，与作用在<strong>序列方向</strong>的 KDA / MLA 正交。首发时"线性层压缩丢失的细节或可由浅层残差补回"的互补猜想，正是基于这一正交关系提出的，报告是否给出互补设计的证据原文未转述。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>标准 residual stream：第 N 层看到前面所有层输出的和；MoE 用常规 top-k 路由 + 辅助负载均衡损失，专家数在 64–256 量级。</p></div>
+  <div class="real"><h5>K3 的做法</h5>
+  <p>AttnRes：学习到的<strong>伪查询（pseudo-queries）</strong>对 embedding 与所有前序 block 输出计算注意力权重，跨深度选择性检索，推理时配两阶段 Block AttnRes kernel（报告口径）。MoE：896 个 routed experts 中激活 16 个，加 shared experts；报告披露负载均衡用 Quantile Balancing。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>AttnRes 把残差流从"被动累加"改为"主动检索"，首发的定性猜想方向正确，报告给出了形式（伪查询注意力）但原文未转述其消融收益。16/896 极稀疏是 K3 训推一致风险的放大器：路由翻转敏感性叠加线性注意力的双算子数值差异（第 07 节），本站判断 K3 的训推一致工程难度可能是本看板追踪过的模型里最高的一档（<span class="chip c-inf">推断</span>）。报告对此的回应是 MXFP4 QAT 让 rollout 与训练共用同一量化方案（第 09 节 ①）。</p>
+
+<h2 id="s6"><span class="hnum">06</span>评测分数与定价怎么读</h2>
+
+<p><strong>评测的三重折扣</strong>：其一，六项 benchmark 全部厂商自报、provisional、无第三方复现；其二，FrontierSWE、DeepSWE、SWE Marathon、Program Bench 是新一代基准体系，与旧 SWE-bench Verified <strong>不可跨表比较</strong>，Kimi Code Bench 2.0 为内部基准；其三，跨厂商不可比——D21 里 LongCat-2.0 自报 SWE Pro 59.5 与 K3 的 FrontierSWE 81.2 / DeepSWE 67.5 属不同分数体系，任何"K3 比 LongCat 高 X 分"都是错误比较。能读出的可靠信号只有一个：六项全是 coding / agentic 长程任务，配合 SWE Marathon 42.0 这种主动公布偏低分数的做法，官方叙事重心是<strong>长程 agent 工作负载</strong>。<strong>定价 $3 / $15</strong> 对标 Claude Sonnet 档而非折价：定价即定位；更重要的是成本结构——若 75% KV 减省与 6.3× 长上下文解码提速在生产 serving 中兑现，同样标价下长上下文请求的毛利结构会显著优于全注意力同行。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>把新基准分数与旧 SWE-bench Verified 或其他厂商自报数字并排比较；把定价解读为单纯的市场竞争信号。</p></div>
+  <div class="real"><h5>K3 的做法 / 原文的读法</h5>
+  <p>六项分数只用于判断<strong>叙事重心</strong>（长程 agent），不做跨表、跨厂商比较；定价读作架构红利向商业面的传导——线性注意力的成本优势可以选择不降价、转化为利润率或留作价格竞争空间。报告落地后自评口径：整体落后 Claude Fable 5 与 GPT-5.6 Sol，稳定领先其余开源与闭源模型（<span class="chip c-vr">自报</span>）。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差别在<b>把分数当叙事线索而非能力刻度</b>。原文给了三重折扣的完整理由，且引用 D21"新基准名目无锚点"的教训。"3 万亿级首个开源"在首发时是尚未兑现的厂商主张，07-27 是验证点；D21 记录的 LongCat 先承诺后交付属良性先例。是否放出、是否完整权重、许可证是什么，三问在首发时无答案——报告落地后前两问已闭合（"We release the full Kimi K3 model weights"），许可证条款原文未转述。</p>
+
+<h2 id="s7"><span class="hnum">07</span>对 RL-on-NPU 的含义</h2>
+
+<p><strong>KDA 精准打在 rollout 痛点上。</strong>D02 的结论：RL 单步 wall-clock 里 rollout 占 70% 以上且 decode-bound；长上下文 rollout 的显存主宰是 KV cache——batch size 被 KV cache 卡死，decode 吞吐决定整个 RL 迭代速度。逐项对照：KV cache 至多减 75%（同显存下 rollout batch 翻倍以上的空间），1M 解码至多 6.3×（<span class="chip c-vr">自报</span>，直接压缩 rollout wall-clock）。即便按七成兑现，对长程 agentic RL 的训练经济学也是结构性改善；再叠加 Kimi Linear 的 RL scaling 主张，推理降本与 RL 可训练两方面都有论文背书。<strong>NPU 亲和性</strong>（<span class="chip c-inf">推断</span>）：chunkwise 算法的块内稠密矩阵乘是 NPU cube 单元最擅长的形态，比稀疏注意力的不规则 gather / scatter 友好得多；但 KDA 是新算子，chunkwise 训练 kernel 与逐 token recurrent 解码 kernel 在 CANN 生态里大概率都没有现成实现，CUDA 侧至少有 Kimi Linear 开源实现可参考。<strong>新的训推一致风险面</strong>（<span class="chip c-inf">推断</span>，承 D23）：训练 / prefill 走 chunkwise 并行算子，解码走逐 token recurrent 算子，两者数学等价、浮点不等价；误差沿固定大小状态逐 token 累积，序列越长（上限 1M）漂移越远，是 rollout 分布与训练分布的系统性偏差来源。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-24-kimi-k3/fig-4.svg" alt="RL 含义因果链：rollout 占 wall-clock 70% 以上且 decode-bound，KV cache 是显存主宰，KDA 命中痛点，更长 horizon 或更大 batch 可行；Kimi Linear RL scaling 证据背书；风险面为 chunkwise 与 recurrent 双算子的训推一致">
+  <figcaption><span class="fnum">图 6</span>K3 对 RL 的因果链：R1（rollout 占单步 70% 以上、decode-bound，D02）→ R2（长上下文 rollout 中 KV cache 是显存主宰）→ R3（KDA 命中痛点：KV 至多 −75%、1M 解码至多 6.3×）→ R4（同等显存下更长 horizon 或更大 rollout batch 可行）；R5（Kimi Linear 的 RL scaling 证据）为 R4 提供可行性背书；X1 为新风险面——chunkwise 训练算子与逐 token 解码算子的数值偏差。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>链条的每一个箭头对应一个可核对的数字来源：R1 → R2 来自 D02 的测量，R3 的两个数字分别来自论文（−75%）与 K3 自报（6.3×），R5 来自 Kimi Linear 论文。<strong>R4 是这条链上唯一没有直接测量支撑的节点</strong>——它是前三者的推论，"按七成兑现也是结构性改善"是原文对推论的保守折算。</p>
+    <p>最值得看的是 R4 → X1 的虚线"代价与风险"：收益与风险源自同一个设计——KDA 层用固定大小状态替代 KV cache，因此既省显存，也让训练态（chunkwise）与解码态（recurrent）成为两套实现。08-10 报告证明这个风险面真实存在并已给出工程解（第 09 节 ⑥：投机解码下 KDA 状态无法回滚，以只缓存草稿投影输入、片上重建被接受前缀状态解决），首发把它列为预警是正确的。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>全注意力旗舰做长程 agentic RL：rollout batch 被 KV cache 卡死，1M 上下文解码 TPOT 随长度加速上升；训推一致风险主要在 MoE 路由与算子实现差异。</p></div>
+  <div class="real"><h5>K3 的做法</h5>
+  <p>3/4 的层无 KV cache、解码成本与长度无关；RL 系统用 partial rollout、外部 KV 池（KDA 状态与 MLA 块同生命周期迁移）、按 KV 压力动态限流的 rollout 调度器，把单个 1M 上下文 RL 实验控制在数百 GPU（报告口径，第 09 节 ③）。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>K3 把 D02 识别的两个瓶颈（显存与 decode 吞吐）同时压低，代价是新增一个训推一致风险面。原文给出了因果链但明确标注 NPU 亲和性与风险面为推断、官方未提及。对 RL-on-NPU 参与者，这是<b>"架构形态友好、算子生态空白"</b>的组合：机会与工程量并存；报告落地后，KDA kernel 与 CANN 的距离成为"开源权重已就位"之后唯一的主要障碍。</p>
+
+<h2 id="s8"><span class="hnum">08</span>报告落地：核对清单逐项对表（2026-08-10）</h2>
+
+<p>技术报告（<a href="https://arxiv.org/abs/2607.24653">arXiv 2607.24653</a>，《Kimi K3: Open Frontier Intelligence》，47 页）已发布，权重开源兑现（报告明言 "We release the full Kimi K3 model weights"）。以下为报告口径（一手来源，不再标 provisional，但评测分数仍是厂商自评 harness）。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:220px">首发解读留下的问题</th><th>报告答案</th><th style="width:180px">首发判断对错</th></tr></thead>
+<tbody>
+<tr><td>是否沿用 Kimi Linear 的 3:1 配比？</td><td><strong>保留</strong>：每 block 3 层 KDA + 1 层 Gated MLA，全模型 93 层 = 69 KDA + 24 MLA</td><td>猜想成立</td></tr>
+<tr><td>激活参数量？</td><td><strong>104.2B</strong>（总参 2.78T；对比 K2 的 1.04T / 32.6B）</td><td>首发拒绝引用第三方推算是对的</td></tr>
+<tr><td>AttnRes 机理？</td><td>学习到的<strong>伪查询</strong>对 embedding 与所有前序 block 输出计算注意力权重，跨深度选择性检索；推理配两阶段 Block AttnRes kernel</td><td>"跨深度选择性检索"定性方向正确</td></tr>
+<tr><td>位置编码？</td><td><strong>NoPE</strong>——位置信息全由 KDA 递归门控与衰减隐式承载，1M 上下文零位置编码修改直接外推（预训练 8K → 64K，cooldown 256K → 1M）</td><td>与 Kimi Linear 的 NoPE 分工一脉相承</td></tr>
+<tr><td>其余组件</td><td>SiTU-GLU 激活函数、Quantile Balancing 负载均衡、Per-Head Muon 优化器、MoonViT-V2 原生视觉（401M）；cosine decay 击败 WSD（各自调最优超参后比较）</td><td>报告披露比博客口径多一整层</td></tr>
+<tr><td>对 K2 的提升</td><td>架构 + 数据 + 配方合计 <strong>scaling 效率约 2.5×</strong>（scaling law 曲线口径）</td><td>新信息</td></tr>
+</tbody>
+<caption>首发核对清单与报告答案对照。全部为报告自述口径（<span class="chip c-vr">自报</span>）。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>旗舰技术报告通常只给架构总览与 benchmark，混合配比、激活参数、位置编码方案、优化器与调度器选择等细节靠社区逆向权重推断。</p></div>
+  <div class="real"><h5>K3 的做法</h5>
+  <p>报告把首发解读留下的六项全部给出确数或形式：配比、激活量、AttnRes 形式、NoPE 外推课程、激活函数 / 负载均衡 / 优化器 / 视觉编码器，以及对 K2 的 scaling 效率倍数；harness、温度、top-p 也全部披露。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>首发解读的核心判断全部成立：3:1 配比保留、"线性注意力升格旗舰"成立、风险面真实存在。值得单独指出的是 NoPE 外推——<b>位置信息完全交给 KDA 的门控与衰减</b>，使 1M 上下文不需要任何位置编码修改，这是第 03 节分工设计在旗舰尺度的直接收益。本站的 compare.json K3 列（现有列：DeepSeek-V4 / MiniMax-M3 / GLM-5.2 / LongCat-2.0 / DeepSeek-V3.2(ref)）至此可以按 2.78T / 104.2B 补齐。</p>
+
+<h2 id="s9"><span class="hnum">09</span>报告的七项系统侧收获：一份报告印证四期内容</h2>
+
+<p>报告几乎给本看板每条主线都补了一块生产级证据。<strong>① MXFP4 QAT 贯穿后训练</strong>：从 SFT 阶段起做 QAT，MoE 专家权重 MXFP4、激活 MXFP8，非专家组件保高精度；RL 期间 rollout 与训练共用同一量化方案，原文 "eliminating the train-inference mismatch"。含义：D27"训练末段 QAT 成万亿 MoE 新默认"再添旗舰案例且从 INT4（K2 Thinking）升级到 MXFP4；4-bit 分歧中 Kimi 选择开放 MX 标准而非 NVFP4，继 gpt-oss、DeepSeek UE8M0 之后 MX 阵营再添一家；数值对齐派拿到 4-bit 级生产实证。<strong>② 预算控制的 Reasoning Effort RL</strong>：每问题关联初始 token 预算 b<sub>0</sub>(x)（冷启动模型估计），轨迹总 token 超过 τ·b<sub>0</sub>(x) 直接把任务奖励改写为 −1；τ 按域分阶段退火（先 max-budget 再收紧出 high / low 档）；agentic 任务的 T(y) 计入推理轨迹 + 工具调用参数累计输出；Agentic GRM（锦标赛式二元比较）引入冗长度预算，输出超 σ·ℓ<sub>0</sub> 自动判负；三域 × 三档 effort 训出 9 个专家再 MOPD 合并。<strong>③ Agentic RL 系统</strong>：同步框架 + partial rollout 扩展（λ 比例完成即推进优化，暂停轨迹入队下轮续跑；per-token 正则容忍跨迭代极端 off-policy）；co-located 设计把单个 1M 上下文 RL 实验控制在数百 GPU；外部 KV 池（闲置前缀 write-back 到 CPU DRAM，KDA 状态与 MLA 块同生命周期迁移；训练态权重 / 优化器下放 NVMe）；rollout 自动限流调度器按 KV 压力动态控并发；引用模型不驻显存、借策略模型 FP32 梯度 buffer 分块流式前向。</p>
+
+<p><strong>④ AgentENV 沙箱开源</strong>（<a href="https://github.com/kvcache-ai/AgentENV">github.com/kvcache-ai/AgentENV</a>）：Firecracker microVM 沙箱系统；增量 checkpoint 133ms / resume 49ms；Pause / Resume——模型推理等待可占沙箱生命周期 98%，暂停期零内存零 CPU；Fork 用于无副作用判分；OverlayBD + P2P 秒级万箱启动，内存超卖 6.5×；训练 + 评测共创建 <strong>51,219,741 个沙箱、1,505,678 个镜像</strong>。这既证实 D23"沙箱是主导成本"，也回应 D26 第六层"工具等待期资源怎么办"——K3 的答案是暂停 microVM 而非换出 KV。<strong>⑤ KDA-aware 前缀缓存与机队调度</strong>：混合架构双缓存（MLA 逐 token 分页 vs KDA 定长递归状态）统一进同一分页池；512-token 细粒度 hash 块与稀疏 KDA checkpoint（对齐会话轮边界）解耦，任意 512 边界可复用前缀；机队级 cache-aware affinity scheduling（典型 coding 请求：400K 前缀 + 仅 4K 增量，命中与 miss 差几个数量级）+ budget-based admission control。<strong>⑥ KDA × 投机解码的回滚问题</strong>：MTP 层微调成 EAGLE-3 式 draft（直接优化接受率的 LK 损失）；KDA 递归状态原地更新导致草稿被拒后无法回滚，解法是只缓存草稿 token 的投影输入、片上重建被接受前缀的状态（与同期 ReplaySSM 思路重合），验证时延随验证 token 数亚线性增长。<strong>⑦ 统一白盒 RL 环境</strong>：agent harness 拆成可配置模块（工具接口 / 系统提示 / 上下文管理 / skills / 记忆 / 子 agent），可实例化 Kimi Code、Claude Code、Codex、OpenClaw、Hermes 等主流 harness 并动态混合训练，回应 D12 / D22 语境的"scaffold 绑定"问题。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>后训练用 BF16，量化在发布前一次性做 PTQ；RL 对输出长度不做预算约束，靠 KL 或长度惩罚软控制；沙箱按任务常驻，工具等待期资源空转；前缀缓存按 token 分页只适用于全注意力；投机解码假设 KV cache 可回滚；harness 固定为自家一套。</p></div>
+  <div class="real"><h5>K3 的做法</h5>
+  <p>SFT 起 MXFP4 QAT、rollout 与训练同量化；超预算轨迹奖励直接改写为 −1，9 个 effort 专家 MOPD 合并；沙箱 Pause / Resume 零资源占用，5,121 万箱；KDA 状态按 512-token 边界稀疏 checkpoint 与 MLA 页统一入池；投机解码片上重建前缀状态；harness 模块化、多套混合训练。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>七项收获的共同点是<b>把首发时的风险面逐一变成投产组件</b>：训推失配用同量化消灭（①），verbose reward hacking 用硬预算封顶（②），沙箱成本用暂停而非换出解决（④），线性状态不可回滚用重建解决（⑥）。原文的判断：它同时是 D25（预算控制 RL）、D26（agent-aware serving）、D27（MXFP4 QAT 训推一致）三篇的生产级印证，一份报告支撑四期内容。对 RL-on-NPU 而言，①与⑥最关键：4-bit 级训推一致的生产实证降低了"量化层"这一维度的不确定性，但 KDA 双算子与 MXFP4 kernel 在 CANN 侧仍是空白。</p>
+
+<h2 id="s10"><span class="hnum">10</span>评测的最终口径与首发判断的复盘</h2>
+
+<p>报告自评（effort = max，<span class="chip c-vr">自报</span>）：K3 整体落后 Claude Fable 5 与 GPT-5.6 Sol，稳定领先其余开源与闭源模型；DeepSWE 67.5（v1.1；mini-SWE-agent harness 下 67.3）、Terminal-Bench 2.1 88.3、GPQA Diamond 93.5、HLE-Full 43.5 / 56.0（无 / 有工具）。首发"新基准体系不可跨表比"的警示保持不变，但报告把 harness、温度、top-p 全部披露。悬置项收窄为两条：第三方复测评测分数；2.8T / MXFP4 权重在非 NVIDIA 硬件（昇腾）上的适配路径。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>以官方博客单一分数判断模型位次，不区分 harness；报告落地后仍以博客的六项数字为口径。</p></div>
+  <div class="real"><h5>K3 的做法 / 原文的读法</h5>
+  <p>报告口径给出相对位次（落后两家闭源旗舰、领先其余）与 harness 差异（DeepSWE 67.5 与 mini-SWE-agent 下 67.3 并列给出）；原文据此把悬置项收窄，而不是宣布分数已确认。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差别在<b>可复现性升了一档，但复现本身尚未发生</b>。原文的结论是首发核心判断全部成立，报告超出预期的部分在系统侧。对本看板的意义：K3 是"线性注意力能否承载旗舰级 agentic RL"的第一次全尺度实验，权重与报告双双落地后，这个问题的答案已可由第三方检验。</p>
+
+<h2 id="s11"><span class="hnum">11</span>总表：朴素基线 vs K3 的做法</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:140px">维度</th><th style="width:230px">朴素基线</th><th>K3 的做法 · 差在哪</th></tr></thead>
+<tbody>
+<tr><td>注意力方程</td><td>全注意力或稀疏化全注意力，KV cache 仍在</td><td>KDA 线性层（channel-wise 门控 + chunkwise）替换状态更新方程，3/4 的层无 KV cache。存储全量 vs 边读边压缩</td></tr>
+<tr><td>混合配比</td><td>纯线性，或每层带 RoPE 各自处理位置</td><td>3:1 KDA:MLA，MLA 用 NoPE，位置全由 KDA 承载；报告确认 93 层 = 69 + 24，1M 零位置编码修改外推</td></tr>
+<tr><td>残差流</td><td>逐层累加</td><td>AttnRes：伪查询对 embedding 与所有前序 block 输出做注意力，跨深度选择性检索</td></tr>
+<tr><td>MoE 稀疏度</td><td>64–256 专家常规 top-k</td><td>16/896（约 1.8%）+ shared experts，Quantile Balancing；路由翻转敏感性放大训推一致风险（推断）</td></tr>
+<tr><td>规模</td><td>—</td><td>总参 2.78T / 激活 104.2B（K2：1.04T / 32.6B）；scaling 效率约 2.5×（自报）</td></tr>
+<tr><td>评测读法</td><td>跨表、跨厂商并排比较</td><td>六项全为新基准且自报，只读叙事重心（长程 agent）；报告披露 harness / 温度 / top-p</td></tr>
+<tr><td>定价</td><td>折价换份额</td><td>$3 / $15 对标 Sonnet 档；架构红利可转化为长上下文毛利</td></tr>
+<tr><td>量化</td><td>BF16 训练，发布前 PTQ</td><td>SFT 起 MXFP4 QAT（专家权重 MXFP4、激活 MXFP8），rollout 与训练同方案；选择开放 MX 标准</td></tr>
+<tr><td>长度控制</td><td>KL / 长度惩罚软控制</td><td>超 τ·b<sub>0</sub>(x) 奖励改写为 −1；GRM 冗长度预算；9 个 effort 专家 MOPD 合并</td></tr>
+<tr><td>RL 系统</td><td>同步 rollout，KV 常驻显存</td><td>partial rollout、外部 KV 池、限流调度器；单个 1M RL 实验数百 GPU</td></tr>
+<tr><td>沙箱</td><td>常驻容器，等待期空转</td><td>AgentENV microVM：Pause / Resume、Fork、内存超卖 6.5×；5,121 万箱、150 万镜像</td></tr>
+<tr><td>Serving</td><td>逐 token 分页前缀缓存</td><td>KDA 状态按 512-token 边界稀疏 checkpoint 与 MLA 页统一入池；机队级 cache-aware 调度 + admission control</td></tr>
+<tr><td>投机解码</td><td>假设 KV 可回滚</td><td>KDA 状态不可回滚 → 只缓存草稿投影输入、片上重建前缀状态；EAGLE-3 式 MTP draft</td></tr>
+<tr><td>NPU 落地</td><td>稀疏注意力的不规则访存是痛点（D06）</td><td>chunkwise 块内矩阵乘形态友好，但 KDA 双算子与 MXFP4 kernel 在 CANN 侧无现成实现（推断）</td></tr>
+</tbody>
+<caption>左栏为不看论文时的直觉实现，右栏为 K3 报告与博客口径及本站判断。报告口径均为厂商自述；标"推断"处为本站分析。</caption>
+</table>
+</div>
+
+<h2 id="s12"><span class="hnum">12</span>原文没给的东西</h2>
+
+<p>以下为复现或独立评估时需要自定或另行核实的项目——原文明确指出未公开、未给理由，或属自报未复现：</p>
+
+<ul>
+<li><strong>六项 benchmark 与报告自评分数的第三方复现</strong>：全部为厂商自评 harness，截至原文发稿无独立复测；FrontierSWE / DeepSWE 等新基准体系无跨厂商锚点；</li>
+<li><strong>6.3× 解码提速与 75% KV 减省在生产 serving 中的兑现程度</strong>：前者为 K3 自报（与 Kimi Linear README 图中 1M 处标注一致），后者为论文口径；</li>
+<li><strong>2.8T 尺度是否重新消融 3:1 配比</strong>：报告确认保留，但是否在旗舰尺度重做吞吐 × 验证损失消融原文未转述；</li>
+<li><strong>AttnRes 与 KDA 有损压缩的互补设计</strong>：首发猜想，报告给出伪查询形式，互补关系是否成立原文未转述；</li>
+<li><strong>Stable LatentMoE 中 "Stable" 与 "Latent" 的具体含义</strong>：原文推断为稳定化路由，报告披露了 Quantile Balancing，其余机理未转述；</li>
+<li><strong>开源权重的许可证条款</strong>：报告确认放出完整权重，许可证条款原文未记录；</li>
+<li><strong>预算控制 RL 的具体超参</strong>：τ 的各域取值与退火节奏、σ 的取值、b<sub>0</sub>(x) 估计方式的细节；</li>
+<li><strong>非 NVIDIA 硬件适配信号</strong>：报告无 KDA kernel 在 CANN / 昇腾侧的实现或计划，vLLM / SGLang 对 KDA 混合架构的支持进度原文亦未记录；</li>
+<li>本页原图受网络代理可达性限制，取自 GitHub 托管的 Kimi-Linear 仓库 README；K3 仓库 README 与 AgentENV README 仅含 logo 类图片，K3 技术报告的原图未能获取。</li>
+</ul>
+
+<div class="note">
+  <span class="ntitle">三条可以直接搬走的判断</span>
+  <p><strong>一、线性注意力对 RL 的价值取决于 RL 范式下质量是否失效，而不是省了多少 KV。</strong>D02 的 rollout 瓶颈使 KDA 的 −75% KV 与 6.3× 解码在训练经济学上是结构性的，但前提是 Kimi Linear 论文的 RL scaling 主张在 2.8T 尺度成立；K3 定位长程 coding + 推理，等于把这条主张放到旗舰尺度上验证，报告与权重落地后第三方可检验。</p>
+  <p><strong>二、K3 的收益与风险源自同一个设计。</strong>固定大小状态替代 KV cache，既让解码成本与长度无关，也让训练态（chunkwise）与解码态（recurrent）成为两套实现，叠加 16/896 路由的翻转敏感性。报告以 MXFP4 同量化、投机解码片上重建前缀状态等工程解回应，说明这一风险面真实且可控——但每一项都是新算子。</p>
+  <p><strong>三、对 RL-on-NPU，K3 是"形态友好、生态空白"的组合。</strong>chunkwise 块内稠密矩阵乘比稀疏注意力的不规则访存更贴合 NPU cube 单元（推断）；但 KDA 双算子、MXFP4 kernel、Block AttnRes kernel 在 CANN 侧均无现成实现。开源权重已就位后，KDA kernel 与 CANN 的距离是唯一的主要障碍。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>第三方复现与独立评测</strong>：六项自报 benchmark 与报告自评有无第三方完成复现，FrontierSWE / DeepSWE 等新基准体系有无跨厂商锚点 · <strong>生态适配信号</strong>：vLLM / SGLang 对 KDA 混合架构的支持进度，CANN / NPU 侧有无 chunkwise + recurrent 双算子的实现动向——这直接决定 K3 对 RL-on-NPU 参与者是机会还是无法落地的设想 · <strong>2.8T / MXFP4 权重在昇腾上的适配路径</strong> · <strong>compare.json K3 列</strong>按报告确数补齐。</p>
+</div>
+
+</main>
+
+<footer>
+  来源与声明：官方发布博客 kimi.com/blog/kimi-k3（2026-07-16）；Kimi K3 技术报告 arXiv 2607.24653（2026-08，47 页）；Kimi Linear 论文 arXiv 2510.26692（2025-10）及配套开源 Kimi-Linear-48B-A3B-Instruct；AgentENV 仓库 github.com/kvcache-ai/AgentENV；第三方首发报道 simonwillison.net、marktechpost（2026-07-16/17）；本看板既有内容 D02 / D04 / D06 / D21 / D23 / D25 / D26 / D27。K3 的全部 benchmark 分数、6.3× 解码提速、KV cache 减省比例均为厂商自报或论文自报，未经第三方复现；标注"推断"的段落为本站分析性外推，非官方口径。原图取自 MoonshotAI/Kimi-Linear 仓库 README，版权归原始仓库所有，此处仅作解析引用。
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>

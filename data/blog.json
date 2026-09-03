@@ -14,7 +14,8 @@
         "automated-research",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-36-frontier-mechanisms.md"
+      "file": "docs/blog/dispatch-36-frontier-mechanisms.md",
+      "read": "reads/dispatch-36-frontier-mechanisms.html"
     },
     {
       "id": "dispatch-35-frontier-scan",
@@ -43,7 +44,8 @@
         "slime",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-34-glm-5-3.md"
+      "file": "docs/blog/dispatch-34-glm-5-3.md",
+      "read": "reads/dispatch-34-glm-5-3.html"
     },
     {
       "id": "dispatch-32-mindspeed-rl",
@@ -56,7 +58,8 @@
         "RL-frameworks",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-32-mindspeed-rl.md"
+      "file": "docs/blog/dispatch-32-mindspeed-rl.md",
+      "read": "reads/dispatch-32-mindspeed-rl.html"
     },
     {
       "id": "dispatch-33-verl",
@@ -69,7 +72,8 @@
         "RL-frameworks",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-33-verl.md"
+      "file": "docs/blog/dispatch-33-verl.md",
+      "read": "reads/dispatch-33-verl.html"
     },
     {
       "id": "dispatch-31-olmo3",
@@ -83,7 +87,8 @@
         "OlmoRL",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-31-olmo3.md"
+      "file": "docs/blog/dispatch-31-olmo3.md",
+      "read": "reads/dispatch-31-olmo3.html"
     },
     {
       "id": "dispatch-30-agent-eval",
@@ -96,7 +101,8 @@
         "metrics",
         "benchmark-methodology"
       ],
-      "file": "docs/blog/dispatch-30-agent-eval.md"
+      "file": "docs/blog/dispatch-30-agent-eval.md",
+      "read": "reads/dispatch-30-agent-eval.html"
     },
     {
       "id": "dispatch-29-deepseek-harness",
@@ -109,7 +115,8 @@
         "Cordis",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-29-deepseek-harness.md"
+      "file": "docs/blog/dispatch-29-deepseek-harness.md",
+      "read": "reads/dispatch-29-deepseek-harness.html"
     },
     {
       "id": "dispatch-28-native-multimodal",
@@ -137,7 +144,8 @@
         "quantization",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-27-low-bit-training.md"
+      "file": "docs/blog/dispatch-27-low-bit-training.md",
+      "read": "reads/dispatch-27-low-bit-training.html"
     },
     {
       "id": "dispatch-26-inference-efficiency-map",
@@ -150,7 +158,8 @@
         "agent-serving",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-26-inference-efficiency-map.md"
+      "file": "docs/blog/dispatch-26-inference-efficiency-map.md",
+      "read": "reads/dispatch-26-inference-efficiency-map.html"
     },
     {
       "id": "dispatch-25-efficiency-aware-agent-rl",
@@ -177,7 +186,8 @@
         "MoE",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-24-kimi-k3.md"
+      "file": "docs/blog/dispatch-24-kimi-k3.md",
+      "read": "reads/dispatch-24-kimi-k3.html"
     },
     {
       "id": "dispatch-23-agentic-rl-problem-map",
@@ -217,7 +227,8 @@
         "MoE",
         "post-training"
       ],
-      "file": "docs/blog/dispatch-21-longcat-2.md"
+      "file": "docs/blog/dispatch-21-longcat-2.md",
+      "read": "reads/dispatch-21-longcat-2.html"
     },
     {
       "id": "dispatch-20-openpangu",
@@ -244,7 +255,8 @@
         "GLM",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-19-slime.md"
+      "file": "docs/blog/dispatch-19-slime.md",
+      "read": "reads/dispatch-19-slime.html"
     },
     {
       "id": "dispatch-18-prime-rl-vs-skyrl",
@@ -362,7 +374,8 @@
         "KV-cache",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-10-radixattention.md"
+      "file": "docs/blog/dispatch-10-radixattention.md",
+      "read": "reads/dispatch-10-radixattention.html"
     },
     {
       "id": "dispatch-09-radixark-miles",
@@ -375,7 +388,8 @@
         "Miles",
         "investment"
       ],
-      "file": "docs/blog/dispatch-09-radixark-miles.md"
+      "file": "docs/blog/dispatch-09-radixark-miles.md",
+      "read": "reads/dispatch-09-radixark-miles.html"
     },
     {
       "id": "dispatch-08-agentic-rl",
@@ -388,7 +402,8 @@
         "credit-assignment",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-08-agentic-rl.md"
+      "file": "docs/blog/dispatch-08-agentic-rl.md",
+      "read": "reads/dispatch-08-agentic-rl.html"
     },
     {
       "id": "dispatch-07-mimo-v2-5",
@@ -414,7 +429,8 @@
         "benchmarks",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-06-glm-5-2.md"
+      "file": "docs/blog/dispatch-06-glm-5-2.md",
+      "read": "reads/dispatch-06-glm-5-2.html"
     },
     {
       "id": "dispatch-05-deepseek-v4",
@@ -427,7 +443,8 @@
         "DeepSeek-V4",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-05-deepseek-v4.md"
+      "file": "docs/blog/dispatch-05-deepseek-v4.md",
+      "read": "reads/dispatch-05-deepseek-v4.html"
     },
     {
       "id": "dispatch-04-minimax-msa",
@@ -440,7 +457,8 @@
         "MiniMax M3",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-04-minimax-msa.md"
+      "file": "docs/blog/dispatch-04-minimax-msa.md",
+      "read": "reads/dispatch-04-minimax-msa.html"
     },
     {
       "id": "dispatch-03-ascend-950",
@@ -466,7 +484,8 @@
         "async-RL",
         "Ascend"
       ],
-      "file": "docs/blog/dispatch-02-rollout-bottleneck.md"
+      "file": "docs/blog/dispatch-02-rollout-bottleneck.md",
+      "read": "reads/dispatch-02-rollout-bottleneck.html"
     },
     {
       "id": "dispatch-01-seed-2-1",
@@ -479,7 +498,8 @@
         "RL-on-NPU",
         "analysis"
       ],
-      "file": "docs/blog/dispatch-01-seed-2-1.md"
+      "file": "docs/blog/dispatch-01-seed-2-1.md",
+      "read": "reads/dispatch-01-seed-2-1.html"
     },
     {
       "id": "survey-2026-h1-architecture",

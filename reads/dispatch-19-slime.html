@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 19 精读版 · slime</title>
+<meta name="description" content="逐节拆解 THUDM / Z.ai 的 SGLang 原生 RL 框架 slime：三模块 + Data Buffer 中枢、参数直通的零封装税、同步与 fully_async 双路径、生态位与昇腾移植缺口——朴素基线与它的做法双栏对照，配官方架构原图与五张本站图解析。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-19-slime.html">
+<meta property="og:title" content="Dispatch 19 精读版 · slime">
+<meta property="og:description" content="逐节拆解 THUDM / Z.ai 的 SGLang 原生 RL 框架 slime：三模块 + Data Buffer 中枢、参数直通的零封装税、同步与 fully_async 双路径、生态位与昇腾移植缺口——朴素基线与它的做法双栏对照，配官方架构原图与五张本站图解析。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-19-slime.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-19-slime.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-19-slime">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-19-slime.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 19 · 精读版 · 2026-06-29</div>
+  <h1>slime 精读：GLM 全家桶背后的 SGLang 原生 RL 框架</h1>
+  <p class="standfirst">slime 是 THUDM / Z.ai（智谱）开源的 SGLang 原生 RL post-training 框架（Apache-2.0，7.2k stars），官方自述是 GLM-4.5 → 5.2 六代旗舰背后的生产 RL 引擎。本文把 D19 的七节正文逐一拆开：每节先给"不看这个仓库时的直觉实现"，再给 slime 的实际做法，最后写清差在哪、原文是否给了理由、对 RL-on-NPU 意味着什么。骨架是三模块 + Data Buffer 中枢、零封装税的参数直通、同步与 fully_async 双路径；结尾把昇腾移植缺口精确圈定在训练引擎、推理引擎、权重同步三点。所有规格均为仓库 / 博客口径（provisional）。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D19</span>
+    <span>承接 D02 / D06 / D09 / D12 / D18</span>
+    <span>原图 1 张 · 本站图 5 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>定位：GLM 背后的 RL 引擎</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>三模块与 Data Buffer 中枢</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>Buffer：灵活数据生成接口</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>SGLang-native 与参数直通</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>从同步到全异步</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>生态位：五框架对照</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>对 RL-on-NPU 的意义</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>总表：基线 vs slime</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>原文没给的东西</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>判断与下一步</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">slime 的架构核心是<strong>三模块 + Data Buffer 中枢</strong>：Megatron 训练与 SGLang 推理连成一套系统、拒绝碎片化为三套割裂组件，数据面经 Buffer 中转解耦，权重同步走独立通道。设计原则是<strong>零封装税</strong>——SGLang 每个参数经 <code>--sglang-</code> 前缀直通，Megatron 并行 / 优化器 / checkpoint 参数原样保留，hackability 优先。但真正让它与众不同的不是 benchmark，而是生产记录：<span class="chip c-vr">自报</span> 官方自述它是 GLM-4.5 → 5.2 六代旗舰背后的生产 RL 引擎。同步基线之外有 fully_async 全异步路径（Multi-Task Rollout Orchestrator、PD 分离、Delta Weight Sync）；Miles（RadixArk）是其企业级下游发行版。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段：<strong>朴素基线</strong>（左栏，灰）——不看这个仓库、按直觉搭一个 RL 后训练框架会怎么做；<strong>它的做法</strong>（右栏，橙）——slime 实际怎么做；<strong>差在哪</strong>（下方色块）——差异的实质、原文是否给了理由、对 RL-on-NPU 的含义。数字按来源分三类：<span class="chip c-tp">第三方</span> 独立测量或多方一致；<span class="chip c-vr">自报</span> 仓库 / 博客口径（原文一律标 provisional）；<span class="chip c-inf">推断</span> 本站分析。原文声明：吞吐 / 加速比类指标官方未公开数字，本文一律不引用。</p>
+  <p>贯穿全文的一条线索：<strong>Buffer 中枢把硬件相关性压缩到三个点</strong>。Buffer 的读写契约、数据生成接口、同步 / 异步调度策略全部不碰硬件，于是昇腾移植的工作量可以精确圈定在训练引擎（Megatron → MindSpeed）、推理引擎（SGLang Ascend 后端）、权重同步通道（NCCL 语义 → HCCL / CANN）——每一点都有具体障碍，但范围是清楚的。</p>
+</div>
+
+<div class="formula">slime 一页图
+  Training（Megatron）  ←── 读 batch ──  Data Buffer  ←── 写轨迹 + reward / verifier ──  Rollout（SGLang + router）
+        │                                    ▲  math · code · search · tools · sandboxes · verifiers · environments · multi-agent
+        └───── 权重同步通道（独立于数据面）─────────────────────────────────────────────▶ SGLang
+  同步路径：写完一批读一批    fully_async：两侧各自全速跑 + Multi-Task Rollout Orchestrator  <span class="cmt">// 切换的是策略，不是接口</span>
+  硬件相关点：训练引擎 · 推理引擎 · 权重同步通道  <span class="cmt">// Buffer 中枢与 agentic 工作流层硬件无关</span></div>
+
+<h2 id="s1"><span class="hnum">01</span>定位：GLM 全家桶背后的 RL 引擎</h2>
+
+<p>slime 是 THUDM / Z.ai（智谱）开源的 LLM post-training 框架，官方定位：<strong>for RL scaling</strong>。<span class="chip c-vr">自报</span> 仓库口径（provisional）是 Apache-2.0、7.2k stars / 1k forks，官方给出的两大核心能力是"高性能训练"与"灵活数据生成"——前者对应 Megatron 训练侧，后者对应 SGLang rollout 侧。</p>
+
+<p>真正让 slime 与众不同的是一行官方自述：<strong>slime 是 GLM-4.5 / 4.6 / 4.7 / GLM-5 / 5.1 / 5.2 六代旗舰背后的 RL 框架</strong>（<span class="chip c-vr">自报</span> provisional，官方口径）。这件事的信息量远超吞吐数字。RL 后训练框架的真正考验从来不在 demo，而在生产：一个 753B / 40B 激活的 MoE（GLM-5.2，见 Dispatch 06）要跑长周期的 RL，期间权重同步、rollout 长尾、reward 服务、checkpoint 恢复任何一环故障都会造成直接损失。能连续支撑六代旗舰模型的迭代，意味着这套系统在自身即最高要求用户的压力下被反复验证——这是玩具框架和生产框架的分界线。</p>
+
+<p>开源自家生产 RL 栈是清晰的生态策略：模型权重开源之后，让社区用同一套工具在 GLM 系模型上做 RL，等于把"GLM + slime + SGLang"组合为一条默认路径。支持模型列表（provisional）也印证了这个策略——GLM 系之外覆盖 Qwen（2.5 / 3 / 3MoE / 3Next / 3.5 / 3.6）、DeepSeek（V3 / V3.1 / R1）、Llama 3，即主流开源 MoE / Dense 全家桶。配套的公开叙事有两篇：lmsys.org 的愿景博客《slime: An SGLang-Native Post-Training Framework for RL Scaling》（2025-07-09）与 v0.1.0 release《Redefining High-Performance RL Training Frameworks》（均 provisional）。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>评价一个开源 RL 框架看三样：star 数、benchmark 吞吐、论文复现是否成功。验证止于"能跑通某篇论文的实验"，框架的生产可靠性由用户在生产中自行发现。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>slime 的核心分量不在吞吐数字（官方未公开，本文不引用），而在<strong>自身即最高要求用户</strong>：<span class="chip c-vr">自报</span> 六代旗舰（含 753B / 40B 激活的 GLM-5.2）的 RL 在其上生产运行。开源它是把"GLM + slime + SGLang"设为默认路径的生态策略；支持列表覆盖 Qwen、DeepSeek、Llama 3 全家桶。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>验证方式</b>：基线的验证是论文复现，slime 的验证是所属公司将旗舰模型的生产构建其上。原文对这一判断的依据只有官方自述（provisional），没有第三方可核实的生产记录——这是引用时必须保留的限定。但即便打折，"生产 RL 引擎公开可得"这一事实对 RL-on-NPU 仍有直接价值：它给出了一个千亿级 MoE 长周期 RL 的完整参考实现，而非论文规模的示例。</p>
+
+<h2 id="s2"><span class="hnum">02</span>三模块架构：以 Data Buffer 为中枢的解耦</h2>
+
+<p>slime 的架构声明里最具立场的一句是：不把系统碎片化为"trainer、rollout 服务、agent 框架"三套割裂组件，而是把 Megatron 训练与 SGLang 推理直接连起来。落到结构上是三个模块：<strong>Training（Megatron）</strong>从 Data Buffer 读数据训练，每步训练后把参数同步给 rollout 模块；<strong>Rollout（SGLang + router）</strong>生成新数据（含 reward / verifier 输出）写入 Data Buffer；<strong>Data Buffer</strong> 是两者之间的桥梁，统一管理 prompt 初始化、自定义数据与 agentic 工作流的接入接口。</p>
+
+<figure>
+  <img src="img/dispatch-19-slime/orig-1.png" alt="slime 官方架构图：左上 data buffer 与右上 custom rollout generation 双向交换 init prompt 与 custom data；data buffer 向下把 train data 送给 megatron（四张 GPU）；megatron 向右 update weights 到两台 sglang server（各两张 GPU），sglang router 位于其上；custom rollout generation 与 router 之间标注 any custom data generation">
+  <figcaption><span class="fnum">图 1</span>slime 官方架构图。左侧红色为 megatron 训练组（4 GPU），右侧绿色为 sglang router 下挂两台 sglang server（各 2 GPU），上方黑框为 data buffer 与 custom rollout generation；箭头标注 send init prompt / recv custom data / send train data / update weights from distributed/tensor。<span class="chip c-vr">自报</span> 取自 THUDM/slime 仓库 README（imgs/arch.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>先数图上有几种箭头。<strong>数据面</strong>是黑色细箭头：data buffer 向 custom rollout generation 发 init prompt、收回 custom data，再把 train data 向下送给 megatron；<strong>权重面</strong>是那条最粗的横向箭头 "update weights from distributed/tensor"，从 megatron 直接指向 sglang server——它不经过 data buffer。这就是原文所说"数据流经 Buffer 中转，权重同步走独立通道"的图示：两个平面在图上物理分离。</p>
+    <p>再看右上角 "any custom data generation" 的双向箭头：它连接 custom rollout generation 与 sglang router，说明任意自定义数据生成（多轮工具调用、沙箱、verifier）在图上只是 rollout generation 与推理服务之间的一段往返，产出统一回到 data buffer。megatron 框内的 4 张 GPU 与 sglang 侧两台 server 各 2 张 GPU 是示意性的资源划分，图上没有任何数字表示比例——训推资源如何配比，这张图不回答。颜色的含义是资源归属：红色是训练资源，绿色是推理资源，黑色是不占加速卡的控制与数据模块——第 07 节"Buffer 中枢硬件无关"的判断在这张图上有直观对应。</p>
+  </div>
+</figure>
+
+<figure>
+  <img class="diagram" src="img/dispatch-19-slime/fig-1.svg" alt="三模块架构：Training（Megatron）、Rollout（SGLang 加 router）、Data Buffer 中枢三个子图；Buffer 向 Training 输出训练数据，Rollout 向 Buffer 写入生成数据，Training 以虚线向 SGLang 同步权重">
+  <figcaption><span class="fnum">图 2</span>三模块与两条流。数据流为实线（Buffer → Training 读取；Rollout → Buffer 写入含 reward / verifier 的生成数据），权重流为虚线（Training → SGLang，每步训练后同步参数）；Buffer 内列出 prompt 初始化、自定义数据、agentic 工作流统一接口三项职责。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>与图 1 对照读：官方图强调资源（GPU 归属），本站图强调<strong>契约</strong>。看 Buffer 框的两条实线——一条向左（训练侧只从 Buffer 读 batch），一条从右侧进入（rollout 侧只向 Buffer 写轨迹）。两侧引擎彼此没有任何直接的数据边，这就是原文所说的两条契约：训练侧只对 Buffer 编程，rollout 侧只对 Buffer 编程。</p>
+    <p>唯一绕过 Buffer 的边是虚线权重流。它是这张图上硬件耦合最深的一条边——第 07 节会指出 Delta Weight Sync 大概率依赖 NVIDIA 侧通信语义（推断，待核），迁移到 HCCL 更可能是重实现。所以看这张图时，实线部分是移植时可以原样保留的，虚线部分是移植的难点。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>trainer 与 rollout 在数据面点对点耦合：trainer 需要知道 rollout 的批组织方式、采样时序、失败重试语义；rollout 需要知道 trainer 什么时候要数据、要多少、什么格式。两侧的每一次演进都是对方的破坏性变更——想从同步切异步、想换推理引擎、想在中间插一个 agent 循环，都要同时改两侧。核心难以修改，只能在外层再封装一层，最终演化为三套割裂组件。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>Data Buffer 做成数据面的中枢，契约收敛为两条：训练侧只对 Buffer 编程（读 batch），rollout 侧只对 Buffer 编程（写轨迹 + 附带 reward / verifier 信号），外加一条独立的权重同步通道。官方说的"直接连起来"指训推收在一套系统内，数据流仍经 Buffer 中转。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>耦合点的数量</b>：基线有 N 个隐式契约，slime 只有两条显式契约加一条独立通道。原文给出的理由是三个自然成立的好处：数据生成变成可插拔的（第 03 节）；同步 / 异步是 Buffer 两侧的调度策略而非架构重写——同步就是"写完一批读一批"，异步就是"两侧各自全速跑"，切换的是策略不是接口（第 05 节）；故障域隔离——rollout 的沙箱崩溃、verifier 超时均被隔离在 Buffer 之前，训练侧看到的永远是干净的数据流。本质上是在 RL 系统里最不稳定的部分（环境交互、数据生成）与最昂贵的部分（大规模训练）之间加了一层阻抗匹配。对 RL-on-NPU 的含义在第 07 节兑现：这层阻抗匹配恰好也是硬件边界。</p>
+
+<h2 id="s3"><span class="hnum">03</span>Data Buffer 中枢：灵活数据生成的统一接口</h2>
+
+<p>"灵活数据生成"作为官方两大核心能力之一，落地就在 Data Buffer 的自定义数据生成接口上：math / code / search / tools / sandboxes / verifiers / environments / multi-agent，全部通过同一接口接入。agentic 工作流无论多复杂——多轮工具调用、沙箱执行、多智能体协作——最终产出的就是写进 Buffer 的轨迹（含 RLVR 的 reward / verifier 输出），训练侧无需任何修改。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-19-slime/fig-2.svg" alt="八个可插拔数据生成组件（math、code、search、tools、sandboxes、verifiers、environments、multi-agent）汇入 Data Buffer 统一接口；Buffer 向 SGLang 下发生成任务并接收 RLVR 奖励回流；PD Disaggregation 与 External Rollout Engines 以虚线作用于 SGLang；Buffer 向 Training 输出训练数据">
+  <figcaption><span class="fnum">图 3</span>Data Buffer 作为统一接口：左侧八个数据生成组件全部汇入同一入口，Buffer 与 SGLang 之间是"下发生成任务 / RLVR 奖励回流"的往返，PD Disaggregation 与 External Rollout Engines 两个系统特性在 rollout 侧以虚线生效，训练数据单向流向 Megatron。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>数一下汇入 Buffer 的边：八条，全部指向同一个节点，没有任何一条绕到 Training 那一侧。这是"训练侧无需任何修改"的图示——不论新增的是一个 verifier 环境还是一个多智能体工作流，训练侧看到的边只有右侧那一条"训练数据"。</p>
+    <p>再看 Buffer 与 SGLang 之间的往返：下行是生成任务，上行是"RLVR 奖励回流——reward 与 verifier 输出"。奖励信号在图上属于 rollout 侧产出、经 Buffer 转交，而非训练侧计算——这决定了 reward 服务的故障域在 Buffer 之前。最后看两条虚线（PD Disaggregation、External Rollout Engines）：它们只作用于 SGLang 节点，不触及 Buffer 或组件层，说明推理侧的系统优化对上层接口是透明的，细节留到第 05 节的异步语境。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>每种任务类型（数学、代码、搜索、工具调用）各写一套 rollout 逻辑并各自对接 trainer；新增一个 verifier 环境意味着改 trainer 的数据加载与 rollout 的调度两处；RL 算法研究者与 agent 工作流开发者在同一份代码里互相阻塞。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>八类数据生成（math / code / search / tools / sandboxes / verifiers / environments / multi-agent）通过同一接口接入 Buffer；agentic 工作流的最终产出是写进 Buffer 的轨迹（含 reward / verifier 输出）。为训练新增一个 verifier 环境，编写一个数据生成组件接入即可；更换 GRPO 的分组策略属于训练侧改动，rollout 组件毫无感知。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>两类开发者是否被接口隔开</b>：基线里算法改动与环境改动在同一处代码互相干扰，slime 把两者隔在 Buffer 两侧各自迭代。原文给出的理由是接口设计本身（同一接口、训练侧不改），没有给出接入一个新组件的代价数字。对 RL-on-NPU 的含义：这一层完全是 Python 侧的数据契约，与加速卡无关——昇腾栈若要承接 agentic RL 负载，可直接吸收这套接口设计（第 07 节）。</p>
+
+<h2 id="s4"><span class="hnum">04</span>SGLang-native 与参数直通：hackability 作为设计原则</h2>
+
+<p>slime 自称 SGLang-native，这个"native"有非常具体的含义（<span class="chip c-vr">自报</span> provisional，仓库口径）：<strong>你装的那个 SGLang 支持的每一个参数，都可以通过 <code>--sglang-</code> 前缀直通传入</strong>；Megatron 侧同样直通——并行策略、优化器、checkpoint 相关的全部参数原样保留。这是一个反主流的设计选择：两个成熟系统（Megatron 的训练能力、SGLang 的 serving 能力）的<strong>全部</strong>表面积直接暴露给用户，框架自己只做粘合与调度。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-19-slime/fig-3.svg" alt="上半部分为其他框架路线：独立 Trainer、胶水接口层一、独立 Rollout 服务、胶水接口层二、独立 Agent 框架串联，两个胶水层指向训推两套参数语义、配置来回翻译；下半部分为 slime 路线：Megatron 训练与 SGLang 推理直连并经 Data Buffer 回流，Megatron 侧参数直通与 --sglang- 前缀直通分别以虚线接入">
+  <figcaption><span class="fnum">图 4</span>两条路线对照。上：三套独立组件之间隔着两层胶水接口，训推两套参数语义需来回翻译；下：slime 把 Megatron 与 SGLang 收在一套系统内（直连同步权重、数据经 Buffer 回流），两侧参数分别以直通方式接入。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>看上半部分的两个胶水层节点：它们各自有一条虚线指向同一个问题节点"训推两套参数语义、配置来回翻译、维护成本高"。胶水层的数量与翻译成本成正比——这是原文所说"封装层名义上是简化，实际是能力裁剪"的结构化表述：每多一层胶水，底层系统的一部分表面积就被挡在外面。</p>
+    <p>下半部分的两条虚线（Megatron 侧参数直通、<code>--sglang-</code> 前缀直通）不经过任何中间节点，直接接到引擎上。这是"零封装税"的图示：框架不在参数层做任何转换。代价也可以从图上读出——两条直通线意味着用户面对的是两个引擎各自完整的配置面，没有中间层拦截错误组合。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>封装层：从底层系统里挑一个子集包成自己的配置项，名义上是简化，实际是能力裁剪。用户想调整一个封装层未暴露的参数，只能修改框架源码或提 issue 等待下个版本；上游发布新特性后需等待框架适配。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>零封装税：SGLang 支持的每个参数经 <code>--sglang-</code> 前缀直通，Megatron 的并行 / 优化器 / checkpoint 参数原样保留。采样侧改 temperature 调度、constrained decoding、radix cache 开关，训练侧为新 MoE 调 EP / PP / TP 组合、换优化器配置，全部在命令行层面完成；上游新特性第一时间可用。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>谁承担复杂度</b>：封装层由框架承担并裁剪能力，直通由用户承担并保留全部能力。原文对代价的说明同样明确：<b>使用门槛较高</b>——使用者需同时理解 Megatron 的并行语义和 SGLang 的 serving 参数，配置面巨大，没有封装层拦截错误组合。slime 实际上是在筛选用户：它假设用户是能理解 Megatron 报错的工程师，而非期望开箱即用的入门者。对目标场景（千亿级 MoE 的生产 RL）这个假设成立，选型时需明确。对 RL-on-NPU 的含义：直通原则本身硬件中立，但直通的对象若换成 MindSpeed 与 SGLang Ascend 后端，暴露出来的就是那两套系统的配置面与成熟度。</p>
+
+<h2 id="s5"><span class="hnum">05</span>从同步到全异步：Agent-Oriented Design</h2>
+
+<p>slime 提供两条路径（<span class="chip c-vr">自报</span> provisional，仓库口径：同步主路径 + <code>examples/fully_async</code>），同时提供两条路径本身是合理的工程判断。<strong>同步路径</strong>是简单正确的基线：每步训练后把参数同步给 rollout，rollout 用最新权重生成下一批数据。on-policy 性质干净，调试和归因容易，算法研究首选。问题是吞吐——Dispatch 02 给过量化背景：rollout 通常占整个 RL 迭代 70% 以上的时间，且长尾严重（一批里最慢的几条 agentic 轨迹决定了整批的等待时间）。同步意味着昂贵的训练集群在 rollout 长尾期间空转。</p>
+
+<p><strong>全异步路径</strong>对应 Agent-Oriented Design 博客（《An Asynchronous and Decoupled Framework for Agentic RL》）：经中央 <strong>Multi-Task Rollout Orchestrator</strong> 解耦推理与训练引擎，跨多种 agentic 负载做高吞吐联合训练。训练不再等 rollout，rollout 不再等训练，Orchestrator 负责在多个 agentic 任务之间调度生成容量。代价是 staleness——异步生成的数据来自旧权重，off-policy 程度需由算法侧（Dispatch 02 提到的 TIS / MIS 一类重要性修正）承担。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-19-slime/fig-4.svg" alt="左侧同步路径三节点循环：Megatron 训练一步、同步权重给 SGLang、rollout 生成新一批数据；右侧全异步路径：多个 agentic 负载汇入中央 Multi-Task Rollout Orchestrator，Orchestrator 分别向推理引擎与训练引擎供给，训练引擎以虚线 Delta Weight Sync 异步更新推理引擎；同步路径以虚线演进至异步路径">
+  <figcaption><span class="fnum">图 5</span>同步路径（一步一环的闭环）与全异步路径（fully_async 示例）。异步侧的中心是 Multi-Task Rollout Orchestrator：N 个 agentic 负载汇入，Orchestrator 分别调度推理请求与供给训练数据，训练引擎经 Delta Weight Sync 异步更新推理引擎。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左侧闭环三个节点首尾相接，任何一个节点没完成，下一个不能开始——这就是"训练集群在 rollout 长尾期间空转"的结构原因。右侧没有闭环：训练引擎与推理引擎之间只有一条虚线（Delta Weight Sync），而且是异步的；两者与 Orchestrator 之间是各自独立的边。<strong>右侧图上没有任何一条边要求另一条边先完成</strong>，这就是"训练不再等 rollout，rollout 不再等训练"。</p>
+    <p>Orchestrator 节点上方汇入的 N 个 agentic 负载是"跨多种 agentic 负载联合训练"的图示——它在多个任务之间调度生成容量，而非为单一任务服务。代价在图上是隐含的：训练引擎发出的数据请求得到的是旧权重生成的样本，staleness 没有画出来，需要算法侧承担。两侧共享同一套模块与接口，这是 Buffer 中枢设计的直接收益。</p>
+  </div>
+</figure>
+
+<p>围绕异步路径还有三个系统特性（均 provisional），各自对应一个具体痛点：<strong>PD Disaggregation</strong>——prefill 和 decode 分资源部署，agentic 负载的特征是反复的长上下文 re-prefill（每轮工具调用返回都要重新预填），和 decode 的算力特征完全不同，分开部署才能各自打满；<strong>Delta Weight Sync</strong>——大 MoE 每步全量权重同步成本过高，对 GLM-5.2 这个量级（753B 参数）的模型，每步把全量权重推给所有 rollout 实例是不可接受的带宽开销，增量同步把成本降到"只传变化的部分"；<strong>External Rollout Engines</strong>——分离式 serving，rollout 引擎可以完全外置，生成容量独立于训练集群伸缩，甚至可以复用既有的推理集群。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>只提供同步 on-policy 循环；异步需要重写数据流与调度；prefill 与 decode 混部；每步全量同步权重；rollout 引擎与训练集群同构部署、同步伸缩。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>同步主路径 + <code>examples/fully_async</code> 双路径共存，共享同一套模块和接口；异步侧由 Multi-Task Rollout Orchestrator 跨多任务调度生成容量；PD Disaggregation 分资源；Delta Weight Sync 增量同步；External Rollout Engines 分离式 serving。取舍留给用户：要正确性走同步，要吞吐走 fully_async。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>异步是否需要重写架构</b>：基线里异步是另一套系统，slime 里异步是 Buffer 两侧的调度策略。原文给出了每个系统特性对应的痛点（re-prefill、753B 的带宽、生成容量伸缩），但没有给任何吞吐或 staleness 的数字——原文明确说 Orchestrator 路径"目前只有设计叙事、没有公开数字"。对 RL-on-NPU 的含义：三个系统特性中 PD 分离与外置 rollout 引擎是部署形态问题、硬件中立；Delta Weight Sync 则落在权重同步通道上，是移植的难点（第 07 节）。</p>
+
+<h2 id="s6"><span class="hnum">06</span>生态位：slime vs verl vs prime-rl vs SkyRL-Agent vs Miles</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:80px">维度</th><th>slime</th><th>verl</th><th>prime-rl</th><th>SkyRL-Agent</th><th>Miles</th></tr></thead>
+<tbody>
+<tr><td>出身</td><td>THUDM / Z.ai（智谱）</td><td>字节跳动（通行认知，provisional）</td><td>Prime Intellect（通行认知，provisional）</td><td>Sky Computing 系（provisional）</td><td>RadixArk，built on slime</td></tr>
+<tr><td>定位</td><td>GLM 全家桶的生产 RL 框架，开源给生态</td><td>社区通用 RL 后训练框架（通行认知，provisional）</td><td>全栈异步优先的 RL 框架</td><td>后端无关的 agent 训练层（Dispatch 18）</td><td>slime 的企业级下游发行版</td></tr>
+<tr><td>训练后端</td><td>Megatron（直通，EP 正确，Dispatch 12）</td><td>FSDP / Megatron 双后端（通行认知，provisional）</td><td>自带 trainer（三组件之一，Dispatch 18）</td><td>不绑定，接底层框架</td><td>Megatron（随 slime 上游）</td></tr>
+<tr><td>推理后端</td><td>SGLang（原生，参数直通）</td><td>vLLM / SGLang（通行认知，provisional）</td><td>自带 inference 组件（Dispatch 18）</td><td>不绑定</td><td>SGLang（更深集成）</td></tr>
+<tr><td>异步</td><td>同步 + fully_async 双路径（Orchestrator）</td><td>以同步为主、异步演进中（provisional）</td><td>全栈三组件异步为默认（Dispatch 18）</td><td>取决于底层后端</td><td>随 slime，另有 R3（Dispatch 09）</td></tr>
+<tr><td>差异化</td><td>SGLang-native 直通、Data Buffer 中枢、GLM 六代生产验证</td><td>编程模型与广泛社区生态（通行认知，provisional）</td><td>异步为第一性设计</td><td>agent 工作流层与训练后端解耦</td><td>R3 + 统一 FP8、LoRA、TITO、低精度、运维 / 部署支持</td></tr>
+<tr><td>许可</td><td>Apache-2.0</td><td>Apache-2.0（provisional）</td><td>开源（许可待核）</td><td>开源（许可待核）</td><td>开源（随上游口径，待核）</td></tr>
+</tbody>
+<caption>五框架生态位对照。verl、prime-rl、SkyRL-Agent 各行的"通行认知 / 许可待核"条目尚未逐项复核，选型前请核对原仓库。</caption>
+</table>
+</div>
+
+<figure>
+  <img class="diagram" src="img/dispatch-19-slime/fig-5.svg" alt="slime 节点向下指向 GLM 生产记录链（GLM-4.5 → 4.6 → 4.7 → 5 → 5.1 → 5.2，753B 总参 40B 激活），向右以 fork 共演化指向 Miles，向下以虚线同赛道对照指向 verl、prime-rl、SkyRL-Agent 三个同类节点">
+  <figcaption><span class="fnum">图 6</span>slime 的三类关系：生产记录（六代 GLM 旗舰链，官方自述）、派生（Miles 从 slime fork 共演化，企业特性与 R3 + 统一 FP8 差异化）、同赛道对照（verl、prime-rl、SkyRL-Agent 非派生关系）。<span class="chip c-inf">推断</span> 本站图，由原文第 5 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>三种边的线型不同，含义不同。指向 GLM 链的实线是"官方自述：背后的 RL 框架"——这是<strong>自报</strong>关系，图上六个节点连成一条时间序列，终点 GLM-5.2 标注 753B / 40B 激活，是 slime 承载过的最大规格。指向 Miles 的实线是 fork 共演化——代码层面的派生关系。指向 verl / prime-rl / SkyRL-Agent 的是虚线——仅对照，无派生。</p>
+    <p>读这张图最重要的一点是<strong>五者不在同一层竞争</strong>：verl 是生态广度的默认选项，prime-rl 把全异步做成第一性原理并全栈自持，SkyRL-Agent 只做后端无关的 agent 层。slime 的独特组合是三件事的交集——SGLang 原生、GLM 六代生产验证、Miles 的上游——图上分别对应右侧参数直通（未画出，见图 4）、下方 GLM 链、右侧 Miles 节点。Miles 节点内列出的企业特性（更深 SGLang 集成、运维与部署、LoRA、TITO、低精度训练、R3 + 统一 FP8）是"选 slime 还是选 Miles"的分界。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>五个开源 RL 框架是同一赛道的竞品，按 star 数与 benchmark 排一个序即可选型；上下游关系可忽略。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>五者分层：verl 是"默认选项"；prime-rl 全栈三组件异步自持；SkyRL-Agent 只做 agent 层可架在任何 trainer 上；slime 的独特组合是 SGLang 原生 × GLM 六代生产验证 × Miles 上游；Miles 从 slime fork 共演化、与上游保持对齐，以 R3 和统一 FP8 差异化，再叠企业特性。要社区上游和最新特性选 slime，要企业化交付和低精度路线选 Miles——发行版关系而非竞品。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>选型题的维度</b>：基线是一维排序，slime 的生态位要在"层次 + 上下游"两个维度上定位。原文重提 Dispatch 12 框架表的一个细节：slime 归在 Megatron 系、"能正确做 EP"——对 MoE 时代的 RL 这不是加分项，而是必要条件。对 RL-on-NPU 的含义：昇腾栈若参照这张表定位 MindSpeed-RL，需要回答的是同样的两个维度——它在哪一层、它与哪个上游对齐。</p>
+
+<h2 id="s7"><span class="hnum">07</span>对 RL-on-NPU 的意义</h2>
+
+<p>先说一个信源纪律层面的推论。slime 训练侧绑定 Megatron——纯正的 NVIDIA 栈——这本身就是本看板架构综述第 4 条纪律（"GLM 完全在昇腾训练、零 NVIDIA"是误传）的佐证：GLM-5 一手技术报告的训练基建引用 Megatron-LM，训练硬件从未明示；而 GLM 全家桶的 RL 引擎公开地跑在 Megatron 上。用二手转述去推"全昇腾训练"，在一手证据面前不成立。</p>
+
+<p><strong>移植路径存在但每一段都有缺口。</strong>训练侧的对应关系是 Megatron → MindSpeed（昇腾的 Megatron 适配层），概念映射清楚，但 slime 依赖的 Megatron 特性（尤其 EP 相关）在 MindSpeed 侧的覆盖度需要逐项核对；推理侧 SGLang 有 Ascend 后端，但成熟度待验证（本看板既有判断）——昇腾栈上更成熟的是 vLLM-Ascend / MindSpeed-RL 这条线。难度最高的可能是权重同步通道：Delta Weight Sync 这类特性大概率建立在 NVIDIA 侧通信语义（NCCL 一类）之上（<span class="chip c-inf">推断</span>，待核），迁移到 HCCL / CANN 上更可能是重实现而非修改配置。</p>
+
+<p><strong>有利的一面是 Data Buffer 中枢本身硬件无关。</strong>Buffer 的读写契约、自定义数据生成接口、同步 / 异步调度策略，全都不碰硬件。理论上换掉两侧引擎（Megatron → MindSpeed、SGLang → 昇腾后端），中枢和 agentic 工作流层原样保留。硬件相关性被这个架构压缩到了三个明确的点：训练引擎、推理引擎、权重同步通道——移植工作量可以精确圈定，这远优于整个框架与 CUDA 深度耦合的形态。</p>
+
+<div class="formula">slime → 昇腾：三个硬件相关点与各自的障碍
+  训练引擎     Megatron → MindSpeed        概念映射清楚；slime 依赖的 Megatron 特性（尤其 EP）在 MindSpeed 侧覆盖度需逐项核对
+  推理引擎     SGLang → SGLang Ascend 后端  后端存在，成熟度待验证；昇腾栈更成熟的是 vLLM-Ascend / MindSpeed-RL 一线
+  权重同步     Delta Weight Sync → HCCL     大概率建立在 NCCL 一类语义之上（推断，待核）→ 更可能是重实现而非改配置
+  硬件无关     Data Buffer 中枢 · 数据生成接口 · 同步/异步调度策略 · agentic 工作流层  <span class="cmt">// 原样保留</span>
+  Miles → 昇腾 = 上述架构移植 + 低精度数值路线移植（统一 FP8 · 低精度训练 · 新硬件优化）  <span class="cmt">// 两部分成本分开评估</span></div>
+
+<p><strong>对 MindSpeed-RL 的借鉴意义</strong>在于设计而非代码：三模块 + Buffer 中枢的解耦、参数直通的 hackability 原则、同步 / 异步双路径共存，这三条都是硬件中立的架构决策，昇腾栈的 RL 框架完全可以吸收。反过来，如果 MindSpeed-RL 想承接 agentic RL 负载，slime 的 Multi-Task Rollout Orchestrator 是现成的参考答案。<strong>与 Miles 移植缺口的关系</strong>（接 Dispatch 09 的表）：Miles 的差异化恰恰落在硬件敏感区——统一 FP8、低精度训练、新硬件优化。把 Miles 路线搬到 NPU，等于在 slime 移植缺口之上再叠一层低精度算子适配（昇腾的 FP8 支持路径与 NVIDIA 不同构，<span class="chip c-inf">推断</span>，待核）。slime → NPU 是架构移植问题，Miles → NPU 是架构移植 + 数值路线移植的双重问题——评估 RL-on-NPU 可行性时，这两部分成本需分开评估。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>把一个 CUDA 栈上的 RL 框架搬到昇腾，是整体性的重写：框架各处与 CUDA 深度耦合，移植工作量难以圈定；GLM 由 slime 承载、GLM 在昇腾上训练，因此 slime 天然适配昇腾。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>slime 训练侧公开绑定 Megatron（NVIDIA 栈），是"GLM 全昇腾训练"为误传的一手佐证。移植缺口精确圈定为三点：Megatron → MindSpeed（EP 覆盖待核）、SGLang Ascend 后端（成熟度待验证）、权重同步通道（NCCL 语义 → HCCL，推断为重实现）。Buffer 中枢、数据生成接口、调度策略、agentic 工作流层硬件无关，原样保留。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>差在<b>移植是否可圈定</b>：基线是全局重写，slime 的架构让工作量收敛到三个点。原文对三点的困难程度给了排序（权重同步最难）但两处标注推断、待核——这是引用时必须保留的限定。信源纪律层面的推论是本节最硬的一条：<b>GLM 的 RL 引擎公开跑在 Megatron 上</b>，这个一手事实对任何"GLM 零 NVIDIA"的二手转述构成直接反证。对 MindSpeed-RL 的借鉴应取设计（三模块解耦、参数直通、双路径）而非代码；Orchestrator 是承接 agentic 负载的现成参考。</p>
+
+<h2 id="s8"><span class="hnum">08</span>总表：朴素基线 vs slime 的做法</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:120px">维度</th><th style="width:230px">朴素基线</th><th>slime 的做法 · 差在哪</th></tr></thead>
+<tbody>
+<tr><td>验证方式</td><td>论文复现、star 数、benchmark 吞吐</td><td>自身即最高要求用户：六代 GLM 旗舰（含 753B / 40B 激活）的生产 RL（自报，provisional）；吞吐数字官方未公开</td></tr>
+<tr><td>数据面结构</td><td>trainer 与 rollout 点对点耦合，N 个隐式契约</td><td>Data Buffer 中枢，两条显式契约 + 独立权重通道；可插拔、同步 / 异步为策略、故障域隔离</td></tr>
+<tr><td>数据生成</td><td>每种任务各一套 rollout 逻辑并各自对接 trainer</td><td>八类组件经同一接口接入 Buffer；训练侧无需修改；算法研究者与工作流开发者隔在两侧</td></tr>
+<tr><td>参数暴露</td><td>封装层挑子集，能力裁剪，等框架适配</td><td>零封装税：<code>--sglang-</code> 直通 + Megatron 参数原样保留；代价是门槛高、无错误组合拦截</td></tr>
+<tr><td>同步 / 异步</td><td>只有同步；异步需重写</td><td>同步主路径 + fully_async 共享同一套模块；Orchestrator 跨多任务调度；PD 分离、Delta Weight Sync、External Rollout Engines</td></tr>
+<tr><td>生态位</td><td>五框架一维排序</td><td>分层：verl 默认选项、prime-rl 全栈异步、SkyRL-Agent agent 层、slime 三交集、Miles 企业发行版；Megatron 系"能正确做 EP"是 MoE RL 的必要条件</td></tr>
+<tr><td>昇腾移植</td><td>全局重写，工作量难圈定</td><td>三点：Megatron → MindSpeed（EP 待核）、SGLang Ascend（成熟度待验证）、权重同步（推断为重实现）；Buffer 与工作流层硬件无关。Miles → NPU 需另加数值路线移植</td></tr>
+<tr><td>信源纪律</td><td>GLM 由 slime 承载 → 全昇腾训练</td><td>slime 训练侧公开绑定 Megatron，是"GLM 零 NVIDIA"为误传的一手佐证</td></tr>
+</tbody>
+<caption>左栏是不看这个仓库时的直觉实现，右栏是原文核实到的 slime 做法与本站的差异判断。所有规格为仓库 / 博客口径（provisional），标注推断处为本看板分析。</caption>
+</table>
+</div>
+
+<h2 id="s9"><span class="hnum">09</span>原文没给的东西</h2>
+
+<p>以下是复现或选型时必须自行确认、原文未给出数字或理由、或仅为自报口径的内容：</p>
+
+<ul>
+<li><strong>任何吞吐 / 加速比数字</strong>——官方未公开，原文一律不引用；fully_async 路径在多任务 agentic 负载下的实际吞吐与 staleness 代价只有设计叙事；</li>
+<li><strong>GLM 六代生产记录的细节</strong>——"背后的 RL 框架"是官方自述（provisional），训练规模、周期、故障恢复记录均未披露，无第三方核实；</li>
+<li><strong>星数、支持模型列表、特性清单</strong>——7.2k stars / 1k forks 与模型覆盖均为检索时点的仓库口径，以官方最新文档为准；</li>
+<li><strong>Delta Weight Sync 的实现细节</strong>——增量同步的粒度、触发条件与依赖的通信原语未在原文来源中说明；"建立在 NCCL 一类语义之上"为推断，待核；</li>
+<li><strong>PD Disaggregation 与 External Rollout Engines 的资源配比</strong>——官方架构图（图 1）只给示意性的 GPU 划分，无比例数字；</li>
+<li><strong>参数直通的错误组合后果</strong>——原文指出无封装层拦截，但没有给出典型失败案例；</li>
+<li><strong>同类框架各行的"通行认知 / 许可待核"条目</strong>——verl、prime-rl、SkyRL-Agent 的出身、后端、许可未逐项复核；</li>
+<li><strong>昇腾侧三个缺口的量化</strong>——MindSpeed 对 slime 所需 Megatron 特性（尤其 EP）的覆盖度、SGLang Ascend 后端成熟度、HCCL 上权重同步的重实现成本，均未量化；昇腾 FP8 支持路径与 NVIDIA 不同构为推断，待核；</li>
+<li>本篇原图仅一张（仓库 README 架构图）；lmsys.org 博客与 Agent-Oriented Design 博客的配图因网络代理不可达，未能获取。</li>
+</ul>
+
+<h2 id="s10"><span class="hnum">10</span>判断与下一步</h2>
+
+<div class="note">
+  <span class="ntitle">三条可以直接搬走的判断</span>
+  <p><strong>一、Buffer 中枢是把硬件边界画清楚的设计。</strong>训练侧只读 Buffer、rollout 侧只写 Buffer、权重走独立通道——三条契约让硬件相关性收敛到训练引擎、推理引擎、权重同步三个点。评估任何 RL 框架的昇腾移植成本，先看它的数据面是否有这样一个中枢；没有的话，移植就是全局重写。</p>
+  <p><strong>二、同步与异步应是同一套接口上的两种调度策略。</strong>slime 的 fully_async 与同步主路径共享全部模块，切换的是策略而非架构。MindSpeed-RL 若要承接 agentic 负载，应先确认自己的架构允许这种切换，再考虑 Orchestrator 一类的调度器——后者是现成的参考答案，前者是前提。</p>
+  <p><strong>三、一手证据优先于二手转述。</strong>GLM 的 RL 引擎公开跑在 Megatron 上，GLM-5 技术报告的训练基建引用 Megatron-LM、训练硬件从未明示——"GLM 完全在昇腾训练"的说法在一手证据面前不成立。做 RL-on-NPU 的可行性论证时，不能以此为据。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>fully_async 的大规模实测</strong>：Orchestrator 路径在多任务 agentic 负载下的实际吞吐与 staleness 代价，等社区或官方放出可复算的 benchmark · <strong>slime 上昇腾的可行性验证</strong>：MindSpeed 对 EP 等特性的覆盖核对、SGLang Ascend 后端的成熟度、HCCL 上权重同步通道的重实现成本——三个缺口哪个先被填上 · <strong>Miles 与 slime 的功能回流</strong>：R3、统一 FP8、TITO 会不会部分回流上游，直接影响"选 slime 还是选 Miles"的边界 · <strong>GLM-5.2 之后的迭代</strong>：下一代 GLM 旗舰若继续由 slime 承载，关注仓库随之落地的新系统特性——过往模式是自家旗舰的需求先变成 slime 的功能（推断）。</p>
+</div>
+
+</main>
+
+<footer>
+  来源与 provisional 声明：本文事实基于 GitHub THUDM/slime 仓库 README（Apache-2.0）、lmsys.org 博客《slime: An SGLang-Native Post-Training Framework for RL Scaling》（2025-07-09）与 v0.1.0 release《Redefining High-Performance RL Training Frameworks》、Agent-Oriented Design 博客《An Asynchronous and Decoupled Framework for Agentic RL》，以及本看板 Dispatch 02 / 06 / 09 / 12 / 18 的既有事实。所有规格（星数、支持模型列表、特性清单、GLM 六代战绩）均为仓库 / 博客口径，标记 provisional，以官方最新文档为准；吞吐 / 加速比类指标官方未公开数字，本文一律不引用。verl、prime-rl、SkyRL-Agent 相关行的"通行认知 / 许可待核"条目尚未逐项复核，选型前请核对原仓库。图 1 版权归 THUDM/slime 仓库所有，此处仅作解析引用；其余五图为本站依原文 mermaid 渲染。
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>
