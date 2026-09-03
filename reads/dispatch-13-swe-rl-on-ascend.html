@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 13 精读版 · 昇腾 SWE Agentic RL 最小原型</title>
+<meta name="description" content="单节点 8×910B 上的 SWE agentic RL 方案设计：环境与二元奖励、rollout 与 observation masking、MindSpeed-RL + GRPO++、解耦异步、四个昇腾特有的坑与 align-probe，逐节对照 CUDA 默认做法与昇腾现状。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-13-swe-rl-on-ascend.html">
+<meta property="og:title" content="Dispatch 13 精读版 · 昇腾 SWE Agentic RL 最小原型">
+<meta property="og:description" content="单节点 8×910B 上的 SWE agentic RL 方案设计：四个昇腾特有的坑、align-probe 与阈值的自我修正、M0–M3 里程碑。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-13-swe-rl-on-ascend.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-13-swe-rl-on-ascend.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-13-swe-rl-on-ascend">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-13-swe-rl-on-ascend.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 13 · 精读版 · 2026-06-26</div>
+  <h1>在昇腾上搭一个 SWE Agentic RL 最小原型：方案设计逐层拆解</h1>
+  <p class="standfirst">把 D12 的 SWE agentic RL 配方落到单节点 Atlas 800T A2（8× 910B）、7B 量级的可完整运行原型：环境（R2E-Gym-Subset + 节点 CPU 上的 Docker 沙箱 + F2P/P2P 二元奖励）、rollout（mini-swe-agent + vLLM-Ascend + observation masking）、trainer（MindSpeed-RL + GRPO++）、解耦异步（per-trajectory + staleness 有界）。本文逐节给出"CUDA 世界的默认做法"与"昇腾上的现状"两栏，重点拆解四个昇腾特有的坑与 align-probe 的阈值设计，并保留看板后续对该阈值的自我修正。本篇为方案设计（proposal），非已验证结果。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D13</span>
+    <span>承接 D02 / D08 / D10 / D12，被 D22 / D23 / D27 引用</span>
+    <span>原图 2 张 · 本站图 5 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>目标与非目标</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>为何用 SWE 压测昇腾</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>总体架构：五部件</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>环境与奖励：二元 + 预过滤</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>Rollout 与 observation masking</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>Trainer 与算法选型</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>解耦异步 vs 同步 GRPO</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>昇腾特有的四个坑</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>align-probe 与阈值的自我修正</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>里程碑 M0–M3</a></li>
+    <li><a href="#s11"><span class="tnum">11</span>预期对照表（provisional）</a></li>
+    <li><a href="#s12"><span class="tnum">12</span>评测、验收与风险回退</a></li>
+    <li><a href="#s13"><span class="tnum">13</span>总表：CUDA 默认 vs 昇腾现状</a></li>
+    <li><a href="#s14"><span class="tnum">14</span>原文没给的东西与未能核实的东西</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">这是一份可直接执行的设计，不是一份实验报告。它把 D12 的 SWE agentic RL 配方压到<strong>单节点 8× 910B、7B 量级</strong>的最小可运行规模，目标不是刷 SWE-bench 榜单，而是<strong>把昇腾特有的四个瓶颈量化出来并给出缓解</strong>：无 sleep-mode 的显存争用、train/infer 的 logprob 一致性、长 rollout 的显存与上下文、沙箱容器的并行成本。全篇所有数字均为目标值或定性预期，标注为 provisional，真实数字以 M2/M3 实测回填。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段：<strong>CUDA 世界的默认做法</strong>（左栏，灰：成熟 GPU RL 栈的既有路径）/ <strong>昇腾上的现状</strong>（右栏，橙：本方案在 910B 上的选型与已知约束）/ <strong>差在哪</strong>（下方色块：差异、原文是否给了理由、对 RL-on-NPU 的含义）。来源分三类：<span class="chip c-tp">第三方</span> 独立测量或多方一致、<span class="chip c-vr">自报</span> 官方或作者口径、<span class="chip c-inf">推断</span> 本站分析。<strong>本篇为方案设计（proposal），非已验证结果；具体超参与吞吐需实跑确定。</strong></p>
+  <p>贯穿全文的一条线索：<strong>SWE agentic 让"长度"这一维度同时作用于吞吐、显存、数值三条主线</strong>。轨迹越长，尾部越主导 step 时间、KV 越挤占训练预算、logprob 误差越沿序列累积——三条主线在同一个负载上耦合，这正是把它选作压测负载的理由。</p>
+</div>
+
+<div class="formula">最小原型的栈
+  ├ 数据      R2E-Gym-Subset 或 SWE-Gym-Lite → 预过滤后的合法实例
+  ├ 环境      节点 CPU 上的 Docker 沙箱 · F2P/P2P 测试 · 二元奖励 0 或 1   <span class="cmt">// 禁网、固定 seed、超时</span>
+  ├ 推理池    mini-swe-agent（bash-only）+ vLLM-Ascend server            <span class="cmt">// NPU 子集</span>
+  ├ 训练池    MindSpeed-RL（Megatron 系）+ GRPO++                        <span class="cmt">// 另一个 NPU 子集</span>
+  └ 异步      per-trajectory 拉取 · staleness 有界 · weight sync 回流</div>
+
+<h2 id="s1"><span class="hnum">01</span>目标与非目标</h2>
+
+<p><strong>目标</strong>：在单节点 8× 910B 上，用 GRPO 把一个 7B 编码模型在 SWE 任务上从基线训出可测量的提升；把昇腾特有的瓶颈量化出来并给出缓解；产出一张 GPU vs NPU 的吞吐 / 显存 / 一致性对照表。<strong>非目标</strong>：刷 SWE-bench 榜单、上 32B/MoE、多节点超大规模——这些是原型完成后的扩展。<strong>选择该负载的原因</strong>：SWE rollout 长且重（30–50 轮、分钟级容器），是昇腾显存与异步痛点的放大器，最能暴露问题、也最能体现前面各期方法的价值。</p>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>原型阶段以"跑出一个能上榜的分数"为目标：选最容易出分的任务与最大可负担的模型，系统指标（显存峰值、一致性、沙箱吞吐）等出问题再补测。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-inf">推断</span> 本方案把目标函数换成"把瓶颈量化出来"：7B、单节点、可完整运行为硬约束；产出物是 GPU vs NPU 的系统对照表，而非榜单名次。刷榜、32B/MoE、多节点被显式列为非目标。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在于原型阶段的产出物定义。原文给的理由是路径依赖：昇腾侧的四个坑若不先量化，规模一上去就无法归因。<b>本站判断：</b>这一取舍决定了后文所有的验收口径——每个里程碑的验收都是系统指标而非分数，这在国产栈的首个 agentic RL 闭环上是正确的次序。</p>
+
+<h2 id="s2"><span class="hnum">02</span>SWE agentic RL 是压测昇腾最严苛负载的原因</h2>
+
+<p>若仅需为 910B 选择一个能快速产出结果的 RL 任务，数学题（GSM8K 风格）或短对话偏好成本更低：单轮、定长、奖励即时。本方案选择 SWE agentic，因为它同时暴露昇腾在 RL 训练里最薄弱的几个环节，是一种刻意的压测。机理上有三层放大：</p>
+
+<div class="formula">放大层 1  长尾 rollout 把"尾部"变成主导项
+           30–50 轮是常态，轮次分布重尾：多数任务 15 轮内收敛，少数卡在 40+ 轮
+           同步 GRPO 一个 step 要等整组（8–16 条）跑完 → step 时间由组内最慢轨迹决定
+           <span class="cmt">// 这不是均值问题，是 P99 问题：尾部一拉长，NPU 在 rollout 阶段大量空转等 CPU 沙箱回包</span>
+放大层 2  显存放大器：rollout 引擎与权重 / KV 长期共存
+           无 sleep-mode 前提下，vLLM-Ascend 权重 + 长轨迹 KV 与 Megatron 侧参数、优化器状态、梯度、激活争夺同一张 64GB 卡
+           agentic 多轮每轮重新拼接历史（observation + thought + action）→ context 单调增长，KV 随轮次爬升而非常数
+放大层 3  train/infer 数值一致性在异构算子下被持续考验
+           逐 token logprob 误差沿序列累积；同一段 token 在不同轮次被反复 re-encode
+           NPU 与 GPU 的算子实现差异在短序列上可能无害，在 30+ 轮长序列上放大成可观的分布漂移</div>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>先用数学或短对话任务把 RL 管线跑通（单轮、定长、奖励即时），agentic 长程负载留到管线稳定之后；长度带来的问题由成熟栈的既有机制（sleep-mode、成熟 loss mask、确定性核）吸收。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-inf">推断</span> 刻意选最严苛的负载先跑：SWE agentic 使"长度"同时作用于吞吐（P99 尾部）、显存（KV 随轮次爬升）、数值（误差沿序列累积）三条主线，而这三条恰是昇腾栈最薄弱的环节。本节及以下均为方案设计层面的预期分析，非实测结论（provisional）。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异是"先易后难"与"直取最难"的次序之争。原文给了明确理由：三条主线在同一负载上耦合，用简单负载跑通的管线无法预测长程负载下的表现，等于要验两次。<b>本站判断：</b>代价是原型周期更长、失败模式更多；收益是四个坑的量化结果可直接复用到后续所有 agentic 任务。这一选择与 D23 后来的判断一致——沙箱工程与一致性才是复现难度的主项。</p>
+
+<h2 id="s3"><span class="hnum">03</span>总体架构：五部件与三方解耦</h2>
+
+<p>关键原则：<strong>推理（rollout）与训练分到不同 NPU 子集</strong>，沙箱容器跑在<strong>节点的 CPU</strong> 上（测试执行不需要 NPU）。trainer 周期性把新权重 sync 回推理 server；解耦异步下，trainer 拉<strong>已完成</strong>的轨迹，staleness 有界。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-1.svg" alt="总体架构图：数据任务池、节点 CPU 上的 Docker 沙箱环境、NPU 推理池、NPU 训练池，以及它们之间的动作、奖励、轨迹与权重回流">
+  <figcaption><span class="fnum">图 1</span>总体架构五部件：数据-任务池（R2E-Gym-Subset / SWE-Gym-Lite → 预过滤后的合法实例）、环境（节点 CPU 上的 Docker 沙箱 → F2P/P2P 测试 → 二元奖励）、推理池（mini-swe-agent + vLLM-Ascend，NPU 子集）、训练池（MindSpeed-RL + GRPO++，另一 NPU 子集），以及 per-trajectory 轨迹流与 weight sync 回流。<span class="chip c-inf">推断</span> 本站图，据原文第 2 节 mermaid 图绘制。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>看四个框的<strong>硬件归属</strong>：环境框标注"节点 CPU"，推理池与训练池分别标注"NPU 子集"。这条划分是整个方案的第一原则——测试执行不需要 NPU，把沙箱放在 CPU 上，NPU 的两个子集之间才不必在同一时间片争同一份显存预算。</p>
+    <p>再看边的类型：实线是每轮都发生的高频交互（动作 bash 命令下发、reward 回传），虚线是低频或旁路的（per-trajectory 拉取、trajectory token + reward 入 trainer、weight sync 回流）。高频实线全部落在"推理池 ↔ 环境"之间，这就是第 08 节坑 4 的图形表述：NPU 与 CPU 沙箱之间的往返次数远多于 NPU 与 trainer 之间的，沙箱吞吐因此可能才是真实瓶颈。</p>
+  </div>
+</figure>
+
+<figure>
+  <img src="img/dispatch-13-swe-rl-on-ascend/orig-1.png" alt="verl 架构图：上方为单控制器 RL Trainer 的四种模式，下方为 Model Engine、AgentLoop、LLM Server、TransferQueue 与 CheckpointEngine，并以红框标出用户责任与 ML Infra 责任的边界">
+  <figcaption><span class="fnum">图 2</span>verl 的架构分层：顶部 Single Controller RL Trainer 提供 On policy / Full async / One-step-off-policy / VLA 四种模式；底部 Model Engine（FSDP、Megatron-Core、VeOmni）与 Rollout Engine（AgentLoop 的 SingleTurn / ToolAgent / SWEAgent + LLM Server 的 vLLM / SGLang / TensorRT-LLM）经 TransferQueue 交换数据，CheckpointEngine 以 broadcast/p2p 做权重同步；红色标签划出 "User responsibility" 与 "ML Infra responsibility" 的边界。<span class="chip c-vr">自报</span> 取自 verl 官方仓库 README（volcengine/verl，verl-project/verl-data 内 images/verl-arch.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>把它与图 1 叠起来看：本方案的五部件在这张图上几乎逐一对应——Model Engine 的 Megatron-Core 对应昇腾侧的 MindSpeed-RL，LLM Server 的 vLLM 对应 vLLM-Ascend，AgentLoop 里的 SWEAgent 对应 mini-swe-agent 位置，TransferQueue 对应 per-trajectory 的完成轨迹队列，CheckpointEngine 对应 weight sync。<strong>这说明本方案采用的不是自创架构，而是 CUDA 侧已经收敛的三方解耦形态</strong>（verl-Ascend 正是原文列出的备选 trainer）。</p>
+    <p>最值得看的是那两个红色标签的位置：<strong>User responsibility 框住的是 AgentLoop（agent 逻辑）</strong>，ML Infra responsibility 指向 CheckpointEngine（权重同步）。这条责任线解释了移植的成本结构——agent 逻辑与任务定义是用户侧、硬件无关的，需要重做的是红线以下的基础设施侧。顶部四种 trainer 模式中的 "Full async" 与 "One-step-off-policy"，正是第 07 节讨论的解耦异步在成熟栈里的现成形态。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>训练与推理 colocate 在同一批 GPU 上，靠 sleep-mode 在 train 阶段换出推理引擎的权重与 KV；三方解耦（训练 / 推理 / 环境）与中央调度已由 verl 等成熟栈内建，用户只写 agent 逻辑。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-inf">推断</span> 无 sleep-mode 可假设，因此把解耦从"性能优化"提升为"第一原则"：rollout 与 train 分到不同 NPU 子集，沙箱跑在节点 CPU；trainer 拉已完成轨迹、staleness 有界；weight sync 优先零拷贝或 host 中转。架构可直接借用（图 2），需自建的是基础设施侧的适配。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>同样是解耦，动机不同：CUDA 侧解耦是为了消除 bubble，昇腾侧解耦首先是为了绕开显存争用（第 08 节坑 1）。原文明确把解耦列为坑 1 的"第一杠杆"。<b>本站判断：</b>架构层可迁移、算子层不可迁移，这一分界在图 2 的责任线上有直观对应；对 NPU 团队而言，现在即可采用的是架构与沙箱工程经验，需要自己补的是红线以下部分。</p>
+
+<h2 id="s4"><span class="hnum">04</span>环境与奖励：二元奖励 + 预过滤</h2>
+
+<p><strong>任务源</strong>：首选 <strong>R2E-Gym-Subset</strong>（程序化生成、无需人写 issue/test、镜像规整），或 <strong>SWE-Gym-Lite</strong>（真实但小）。规模化阶段再上 <strong>SWE-smith</strong>（一 repo 一执行环境，适合批量）。<strong>沙箱</strong>：每个任务一个预构建 Docker 镜像，跑在节点 CPU 上；<strong>禁网、固定 seed、超时</strong>；维持 <strong>warm pool</strong> + 复用容器降 cold-start。</p>
+
+<figure>
+  <img src="img/dispatch-13-swe-rl-on-ascend/orig-2.png" alt="R2E-Gym 数据集统计表与仓库分布环形图：左表比较各数据集是否有 repo、是否可执行及实例数，右图为 R2E-Gym Subset 4578 个实例在各仓库上的占比">
+  <figcaption><span class="fnum">图 3</span>R2E-Gym 的数据集统计（左，Table 1）与 R2E-Gym-Subset 的仓库分布（右，Table 2）：左表按"是否有 repo / 是否可执行 / 实例数"对比 APPS（10,000）、R2E（246）、SWE-Bench train（19,008，不可执行）、SWE-Gym Raw（66,894，不可执行）、SWE-Bench test（2,294）、SWE-Gym（2,438）与 R2E-Gym-Subset（4,578）、R2E-Gym（8,135）；右图为该 4,578 个实例在 pandas 31.5%、numpy 17.1%、pillow 13.5%、orange3 10.5%、aiohttp 6.5%、tornado 5.7%、scrapy 4.7%、pyramid 4.1%、datalad 3.9%、coveragepy 2.4% 上的分布，且与 SWE-Bench 无仓库重叠。<span class="chip c-vr">自报</span> 取自 R2E-Gym 官方仓库 README（R2E-Gym/R2E-Gym，assets/docs-env-stats-v1.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左表要看的是<strong>"Executable?" 这一列，而不是实例数</strong>。SWE-Gym Raw 有 66,894 条却不可执行，SWE-Bench train 有 19,008 条同样不可执行——对本方案而言这些条目全部不可用，因为二元 F2P/P2P 奖励的前提是任务能在沙箱里真跑起来。可执行行里 R2E-Gym-Subset 的 4,578 是本方案首选任务源的规模，也解释了为何原型阶段无须更大的池子。</p>
+    <p>右图对第 04 节的预过滤有一层额外含义：<strong>分布高度集中</strong>——pandas 与 numpy 两个仓库合计接近一半。这意味着沙箱镜像的复用率高（预构建与 warm pool 的收益更大，对应坑 4），但也意味着任务多样性受限，held-out 评测时需要注意仓库层面的分布偏移。图注中"与 SWE-Bench 无仓库重叠"是抗污染的关键性质，与第 12 节"不应将已被污染的 Verified 作为唯一指标"呼应。</p>
+  </div>
+</figure>
+
+<p><strong>奖励是二元的</strong>——F2P（fail-to-pass）与 P2P（pass-to-pass）同时满足给 <strong>1.0</strong>，否则给 <strong>0.0</strong>；format/parse 惩罚；超时 = 0。不采用更"丰富"的奖励（部分测试通过比例、编辑距离、LLM 打分），原因有二：其一，<strong>稠密奖励在 SWE 上几乎都是可被 hack 的代理指标</strong>——"通过测试数占比"会奖励那些注释掉断言、改测试而非改实现的轨迹；LLM-judge 引入第二个待对齐的分布，且在昇腾上需额外维护一个推理服务。二元 F2P/P2P 是<strong>任务定义本身</strong>，不是代理，hack 它即等价于真正修复 bug。其二，<strong>代价是奖励极度稀疏</strong>，所以必须靠<strong>组采样（8–16）+ GRPO 的组内相对优势</strong>来制造梯度信号：一组里哪怕只有 1–2 条过了，组内归一化也能把"相对更好"的方向抽出来。这也是选 GRPO 而非 PPO 的配套理由——稀疏二元奖励下，组内 baseline 比学一个 value head 更稳。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-2.svg" alt="预过滤与奖励判定流程图：候选实例分别跑 golden patch 与 empty patch，两个判定汇合成是否干净 FAIL→PASS，留下的任务进入池并在 rollout 后按 F2P/P2P 判 1.0 或 0.0">
+  <figcaption><span class="fnum">图 4</span>预过滤与奖励判定：候选实例先用 golden patch 跑一遍（应当全 PASS）、再用 empty patch 跑一遍（应当 FAIL），两个判定都通过且干净呈现 FAIL→PASS 的任务才进入任务池；池内任务 rollout 产出 patch 后，按"F2P 全过且 P2P 不退化"判 reward 1.0 或 0.0。<span class="chip c-inf">推断</span> 本站图，据原文第 3 节 mermaid 图绘制。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>图的上半部分是<strong>入池前的一次性检查</strong>，下半部分是<strong>每次 rollout 的常规判定</strong>——两者容易混淆，但成本量级完全不同：前者每个任务只跑两次（golden / empty），后者每条轨迹都跑一次。三个菱形判定中的任何一个为"否"都汇入同一个丢弃节点，这个"或"的结构说明预过滤的标准是保守的：宁可丢掉可用任务，也不让不确定任务进池。</p>
+    <p>下半部分的判定条件写的是"F2P 全过<strong>且</strong> P2P 不退化"——两个条件都必须满足才给 1.0。P2P 这一半是防回归的：只修好目标测试却弄坏了原本通过的测试，同样得 0 分。这条约束是二元奖励"不可被 hack"性质的技术来源。</p>
+  </div>
+</figure>
+
+<p><strong>预过滤（关键）</strong>：每个候选任务，先用 golden patch 跑一遍（应当 PASS）、再用 empty patch 跑一遍（应当 FAIL），只有干净地呈现 FAIL→PASS、且两次结果确定可复现的任务才入池。脏标签<strong>对训练的具体破坏</strong>有三种：<strong>假阴性（golden 也 FAIL）→ 奖励上限失效</strong>——如果一个任务连正确答案都拿不到 1 分（flaky 测试、缺依赖、时间戳/网络相关测试、非确定性顺序），那么 agent 无论多正确，这一组的 reward 期望都偏低甚至恒 0，GRPO 组内归一化会在<strong>全 0 组</strong>上输出零优势或纯噪声优势，等价于向模型提供无信息甚至误导性的 batch；<strong>假阳性（empty 也 PASS）→ 模型学会"什么都不做"</strong>——空 patch 就能过时，agent 提交空补丁也能得分，组内优势会奖励最短、最消极的轨迹，这与 reward-hacking 监控直接呼应：<strong>长度骤降 + reward 上升</strong>正是这种污染的信号；<strong>不确定任务（两次跑结果不稳定）→ 优势估计方差爆炸</strong>——同一条轨迹两次运行的奖励在 1 与 0 之间翻转，组内 baseline 抖动，advantage 的符号都可能翻转，梯度方向被随机化。稀疏奖励本就信号微弱，再叠加标签噪声，等于在低信噪比上再降信噪比。所以预过滤不是"数据清洗的可选项"，而是<strong>让稀疏二元奖励这套方案能成立的前提</strong>。</p>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>为缓解稀疏奖励，加入稠密的过程信号：部分测试通过比例、编辑距离、LLM-judge 打分；奖励模型或 judge 作为额外服务常驻，数据清洗视为可选的预处理步骤。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-inf">推断</span> 只用二元 F2P/P2P（1.0 / 0.0，format 惩罚，超时 = 0）：它是任务定义本身而非代理，且不必在昇腾上再维护一个 judge 推理服务；稀疏性由组采样 8–16 + GRPO 组内相对优势补偿。golden/empty 双跑预过滤是方案成立的前提，而非可选项。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异有两层：奖励形态（稠密代理 vs 任务定义本身）与数据清洗的地位（可选 vs 前提）。原文对两层都给了机理级理由——稠密指标的可 hack 路径、脏标签的三种破坏方式（全 0 组零优势、空补丁得分、advantage 符号翻转）。<b>本站判断：</b>在昇腾上"少一个待对齐的分布"本身就是一项系统收益：judge 服务同样面临训推一致与显存争用问题。二元奖励 + 预过滤这一组合与硬件无关，是本方案中迁移成本为零的部分。</p>
+
+<h2 id="s5"><span class="hnum">05</span>Rollout：scaffold、推理引擎与 observation masking</h2>
+
+<p><strong>scaffold</strong>：从 <strong>mini-swe-agent</strong>（bash-only、约 100 行）起步，封装成 <code>(task, policy endpoint) → (token 级 trajectory, reward)</code>，走 OpenAI 兼容 API；成熟后可换 SWE-agent / R2E AgentHub。<strong>推理引擎</strong>：默认 <strong>vLLM-Ascend</strong>（910B 覆盖最广、最成熟）；<strong>备选 SGLang-Ascend</strong>——它的 RadixAttention 能复用"一个任务采 N 条样本共享的 prompt 前缀"（见 D10），对 group rollout 省 KV，但 Ascend 后端成熟度需先验证。</p>
+
+<p><strong>observation-token masking（必做）</strong>：agent 的轨迹里，工具输出（bash 的 stdout/stderr、文件内容、测试日志）这些 token 是<strong>环境给的、不是模型生成的</strong>，它们必须进入 context 参与 attention（模型需要看见日志才能决策），但<strong>绝不能进入 loss</strong>——否则模型会去"拟合"它根本不负责生成的环境文本。实现上就是一个 per-token 的 0/1 loss mask，把 observation 段置 0。</p>
+
+<div class="formula">为什么这在昇腾上更易出错
+  mask 的传播要穿过自定义融合算子：融合的 cross-entropy · 序列并行下的切分 · packing 的 cu_seqlens 边界
+  这些算子在昇腾上常被重写或替换以适配 NPU，而 mask 与 packing 边界、与序列并行切分点的对齐
+  正是重写时最容易出 off-by-one 的地方
+  agentic 长序列里 mask 是高频翻转的细碎段：thought 算 loss · observation 不算 · action 算 loss
+
+失效模式（两类都静默，不会报错）
+  ├ mask 漏掉（observation 进了 loss）  模型被训练去预测 bash 输出、文件内容——它无法也不该控制的分布
+  │                                     表现：loss 看似在降但能力不涨，模型逐渐学会复读日志格式，reward 停滞
+  └ mask 过多（action token 也被 mask） 有效梯度信号被稀释，长轨迹里真正的决策 token 贡献被抹掉
+                                        表现：训练几乎没有学习
+
+验收：构造已知 mask 的小样本，断言参与 loss 的 token 数 == 期望值，且 mask 边界恰好落在 role 切换处
+      做成 M0/M1 的 CI 级断言，而非依赖人工观察 loss 曲线</div>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>loss mask 是成熟路径：主流 GPU 训练栈里 observation masking 已被框架内建并经大量训练验证，通常不作为单独的验收项；scaffold 与推理引擎的选择以吞吐为主要标准。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-inf">推断</span> mask 要穿过在 NPU 上被重写的融合算子（融合 cross-entropy、序列并行切分、packing 的 cu_seqlens 边界），且 agentic 轨迹的 mask 是高频翻转的细碎段，边界 off-by-one 不会报错、只会静默漂移。因此必须把"参与 loss 的 token 数 == 期望值"做成 M0/M1 的 CI 级断言。推理引擎默认 vLLM-Ascend；SGLang-Ascend 的 RadixAttention 可省 group rollout 的 KV，但后端成熟度需先验证。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异不在算法而在实现路径的可信度：同一个 0/1 mask，在成熟栈上是既定事实，在重写过算子的栈上是待验证假设。原文给出了两类失效的可观测表现（loss 降但能力不涨 / 几乎没有学习），并把验收方式具体化为断言而非曲线观察。<b>本站判断：</b>这是本篇最容易被低估的一条——它的成本极低（一个小样本断言），而失效代价是整轮训练无效且难以归因。SGLang-Ascend 的取舍则是典型的"新收益 vs 新风险"：省 KV 的同时引入一个成熟度未验证的后端。</p>
+
+<h2 id="s6"><span class="hnum">06</span>Trainer 与算法选型</h2>
+
+<p><strong>框架</strong>：<strong>MindSpeed-RL</strong>（华为原生、Megatron 系、跑过 384-NPU 上的 GRPO，本看板 Ascend 标签有卡）为主；<strong>verl-Ascend</strong> 为备选。<strong>算法</strong>：<strong>GRPO++</strong>（clip-higher、无 KL、无 entropy bonus、长度归一化、组采样 8–16/任务）——对稀疏二元奖励最稳，无 value network。<strong>引擎切分</strong>：训练引擎（MindSpeed/Megatron 算梯度）与推理引擎（vLLM-Ascend 出 rollout）分离，周期性 <strong>weight sync</strong>（优先零拷贝 / host 中转）。<strong>冷启动</strong>：先用 <strong>SWE-smith-trajectories</strong> 几千条专家轨迹做 SFT，再进 GRPO。</p>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>PPO 系配 value network，或 GRPO 配完整正则项（KL 惩罚贴住参考策略、entropy bonus 维持探索）；框架选择余地大（verl、TRL、OpenRLHF 等），weight sync 有成熟的 NCCL 直传实现。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-vr">自报</span> MindSpeed-RL 已跑过 384-NPU 上的 GRPO。<span class="chip c-inf">推断</span> 算法直接采用 D22 记录的 GRPO++（clip-higher、无 KL、无 entropy bonus、长度归一化、组采样 8–16），无 value network——稀疏二元奖励下组内 baseline 比学一个 value head 更稳，且省下 reference model 与 critic 的显存；weight sync 优先零拷贝或 host 中转；冷启动用 SWE-smith-trajectories 几千条做 SFT。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异是"显存预算约束下的算法选型"：去掉 value network 与 reference model 不只是算法偏好，在没有 sleep-mode 的 64GB 单卡上，它直接决定方案是否装得下。原文给了算法层理由（稀疏二元奖励下组内 baseline 更稳），显存层理由则由第 08 节坑 1 补足。<b>本站判断：</b>GRPO++ 在这里承担了双重角色——D22 验证过的长程稳定性配方，同时也是昇腾显存约束下的可行解；两个理由指向同一选择，这是本方案中风险最低的一环。</p>
+
+<h2 id="s7"><span class="hnum">07</span>异步与信用分配：解耦异步 vs 同步 GRPO</h2>
+
+<p><strong>同步 GRPO</strong>：每个 step 内，采一组轨迹 → 全部跑完 → 算优势 → 更新。<strong>优点是绝对 on-policy</strong>，采样策略就是当前策略，无需 off-policy 校正，数值最干净。<strong>致命缺点</strong>——如第 02 节所述，SWE 轨迹重尾，step 时间被组内最慢轨迹决定，NPU 在 rollout 阶段大量空转。同步是<strong>正确但慢</strong>的基线。</p>
+
+<p><strong>解耦异步</strong>：推理服务与 trainer 解耦，<strong>per-trajectory 拉取已完成轨迹</strong>（先完成者先入队），trainer 持续消费、持续更新。NPU 不再等尾部，吞吐显著改善。代价是采样轨迹来自<strong>稍旧的策略</strong>（off-policy），引入两个必须管的东西：<strong>staleness 有界</strong>——必须限制"用来更新的轨迹最多落后当前权重几个版本 / 几个 step"，无界 staleness 会让训练用上几代以前的策略数据，优势估计与当前策略脱节，训练发散，有界即以少量 off-policy 偏差换取大量吞吐的调节手段；<strong>TIS/MIS</strong>——轨迹既然 off-policy，就要用重要性采样校正，而 IS 比值方差大、长尾，直接使用会导致梯度爆炸，所以做 <strong>truncated / masked IS</strong>，对比值截断、对异常 token 屏蔽，抑制方差。它与坑 2 的 align-probe 属同一体系：align-probe 告诉你 train/infer 差多大，TIS/MIS 是据此做的实际防护。<strong>信用分配</strong>：默认"结果奖励 + 长度归一化广播 + GRPO 组采样"；太稀疏时采用 <strong>turn-level / GiGPO</strong>（把每轮当 MDP step）。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-3.svg" alt="解耦异步与 align-probe 旁路流程图：推理 server 持续产轨迹入完成队列，trainer 按 staleness 有界拉取做 GRPO++ 更新，旁路 align-probe 测 MAE 并按阈值分流">
+  <figcaption><span class="fnum">图 5</span>解耦异步 + align-probe 旁路：推理 server 持续产 per-trajectory 轨迹进入完成队列，trainer 以 staleness 有界的方式拉取并做 GRPO++ 更新，权重回流至推理 server；旁路的 align-probe 从完成队列采样，测 train 与 infer 的 logprob MAE，超阈值则 trainer 重算或走 TIS/MIS 修正，未超阈值则直接使用 infer logprob。<span class="chip c-inf">推断</span> 本站图，据原文第 6 节 mermaid 图绘制。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>主环路只有一个方向的循环：server → 完成队列 → trainer → weight sync → server。要注意的是<strong>队列的存在本身就是 off-policy 的来源</strong>——轨迹在队列里等待期间，权重已经更新过，因此"staleness 有界"这一标注挂在拉取那条边上，而不是队列上。</p>
+    <p>真正的读图重点在下方旁路：align-probe 不在主环路上，它从完成队列<strong>采样</strong>（虚线），测完 MAE 后通过一个菱形判定把主环路分成两条路径——超阈值走"trainer 重算或 TIS/MIS 修正"，未超阈值直接用 infer logprob。这个结构说明 align-probe 是<strong>一个持续运行的门控，而非一次性检查</strong>：它的输出改变主环路的行为。第 09 节要讨论的阈值，正是这个菱形里的数字。</p>
+  </div>
+</figure>
+
+<p><strong>方案路线</strong>：M2 先以<strong>同步</strong>验证正确性（确认配方本身有效），再切换<strong>解耦异步</strong>获取吞吐——这样一旦异步出问题，有同步基线做对照，能区分"是异步引入的 bug"还是"配方本身不对"。这是把昇腾吞吐杠杆（M3）建立在可信基线上的必要顺序。</p>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>异步与 partial rollout 已是成熟栈的默认模式（图 2 顶部的 Full async / One-step-off-policy 即为现成选项），IS 修正由框架内建；同构栈上 train/infer logprob 天然接近，off-policy 校正的数值基础可以假定成立。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-inf">推断</span> 异步的收益同样成立（不等尾部），但两项前提需自建：staleness 上界的具体取值待实测，TIS/MIS 的截断阈值需与 FP8 联调；且在异构栈上不能假设 train/infer logprob 接近，必须由 align-probe 旁路持续给出证据。因此路线固定为"先同步建可信基线，再切异步"。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在于异步的数值前提是否可以默认成立。CUDA 侧 off-policy 校正建立在"两条路径数值接近"的隐含假设上，昇腾侧这一假设本身就是待验证项——这也是 align-probe 必须与异步同时上线的原因。<b>本站判断：</b>"先同步再异步"的顺序看似保守，实则是归因能力的保证：没有同步基线，异步阶段的任何异常都无法区分是配方问题还是异步引入的 bug。这条纪律与硬件无关，但在昇腾上收益更大，因为可疑源更多。</p>
+
+<h2 id="s8"><span class="hnum">08</span>昇腾特有的四个坑与缓解（本原型的核心产出）</h2>
+
+<figure>
+  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-4.svg" alt="四个坑与对应缓解的对照图：无 sleep-mode 显存争用、train/infer logprob 不一致、长 rollout 上下文爆炸、沙箱成本主导，各自连向一条缓解措施">
+  <figcaption><span class="fnum">图 6</span>四个坑与对应缓解：坑 1 无 sleep-mode 显存争用 → 解耦 + host offload + 限轮 + FP8 量化 rollout；坑 2 train 与 infer logprob 不一致 → align-probe 测 MAE，超阈值则 trainer 重算或 TIS/MIS；坑 3 长 rollout 上下文爆炸 → 限 turns 与 tokens + observation masking + compaction + 截断给 0 不丢弃；坑 4 沙箱成本（CPU / 内存 / 编排主导）→ 预构建镜像 + warm pool + 复用 + 解耦扩缩。<span class="chip c-inf">推断</span> 本站图，据原文第 7 节 mermaid 图绘制。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>四条连线是一一对应的，但<strong>四个坑之间并非独立</strong>——这是图上没有画出、却必须补上的关系：坑 1 的缓解手段"FP8 量化 rollout"会直接抬高坑 2 的 logprob MAE；坑 3 的"限轮"同时压住坑 1 的 KV 增长；坑 4 的沙箱尾延迟决定 NPU 空转比例，从而影响坑 1 的时间片划分是否值得。读这张图时，应把它看作四个耦合变量的一览，而不是四个可独立处理的工单。</p>
+    <p>另一个值得注意的细节：四条缓解里有三条是<strong>限制类</strong>（限轮、限 tokens、staleness 有界、截断），只有 warm pool 与预构建镜像是<strong>增效类</strong>。这反映了方案的整体姿态——在硬件能力与栈成熟度未知的前提下，先用约束把系统压进可运行区间，再逐项放宽。</p>
+  </div>
+</figure>
+
+<p><strong>坑 1：无 sleep-mode 的显存争用。</strong>机理：成熟 GPU RL 栈有 sleep-mode，能在 train 阶段把推理引擎的权重 / KV 临时换出、把显存让给 trainer，step 间再换回。昇腾侧目前<strong>不能假设有这个能力</strong>：rollout 引擎在 train 阶段无法干净释放 KV / 权重，于是 64GB 单卡要同时承载 rollout 与 train 两套常驻占用。对策与取舍：<strong>解耦</strong>（rollout 与 trainer 不在同一时间片争同一份预算）是第一杠杆；<strong>host offload</strong> 把暂不用的权重 / 优化器状态换到 host 内存（代价是搬运延迟）；<strong>限轮</strong>（turns/tokens 上限）直接压住 KV 增长上界；<strong>FP8 量化 rollout</strong> 让推理权重与 KV 用 FP8，显存近似减半（代价是引入 train/infer 数值差，与坑 2 耦合）。定性预期（provisional）：FP8 rollout 预期把 rollout 侧 HBM 峰值压到 BF16 的约 50–60%，是能否在单卡容纳"长轨迹 KV + 训练激活"的关键开关。</p>
+
+<p><strong>坑 2：train/infer logprob 不一致。</strong>机理：同一段 token，rollout 用 vLLM-Ascend（推理优化算子、可能 FP8）、trainer 用 Megatron（训练算子、BF16），<strong>两套算子在 NPU 上的数值实现不同</strong>，逐 token logprob 会有偏差。重要性比 <code>exp(logπ_train − logπ_infer)</code> 对这个差异指数级敏感，长序列上误差累积，会让 off-policy 校正项失真甚至发散。对策：<strong>align-probe</strong>（第 09 节专述）逐 token 量 MAE；超阈值时让 trainer 重算 logprob（以训练侧为准），并用 <strong>TIS/MIS</strong> 对比值做截断。定性预期（provisional）：期望逐 token logprob MAE 落在"小但非零"的量级；FP8 rollout 会把 MAE 抬高一档，因此 FP8 与 TIS/MIS 截断阈值需要联调——这是 M3 量化杠杆能否兑现的核心风险点。</p>
+
+<p><strong>坑 3：长 rollout 超出上下文上限。</strong>机理：30–50 轮、每轮拼接历史，context 单调上涨，必然有任务触及上下文上限。<strong>超限轨迹的处理方式，是有偏与无偏之间的取舍</strong>。对策：硬限 turns/tokens；observation masking 已省下大量"不必算 loss"的 token；<strong>compaction</strong>（对历史 observation 做摘要 / 截断，保留决策必要信息）；<strong>关键取舍——截断的轨迹给 reward 0 但不丢弃</strong>。直觉上倾向于直接丢弃未完成的轨迹，但<strong>丢弃会让梯度有偏</strong>：被丢的恰好是"长、难、易超限"的任务，系统性地从训练分布里去除硬样本，模型会偏向短任务，且与 reward-hacking 的"变短"趋势合流。给 0 分保留，模型仍受到"别把轨迹拖到超限"的负向信号，分布不被扭曲。定性预期（provisional）：加 compaction + observation masking 后，期望大部分任务的有效 context 增长曲线被压平，超限率显著下降；但 compaction 摘要质量本身是变量，过度压缩会丢失决策信息、损害 reward。</p>
+
+<p><strong>坑 4：沙箱容器并行 / 成本。</strong>机理：常见假设是 RL 瓶颈在算力（NPU），但 SWE agentic 的<strong>沙箱成本主导在 CPU / 内存 / 容器编排</strong>——启动容器、安装依赖、运行测试套件，这些都在节点 CPU 上，且每条轨迹每轮都要交互。NPU 反而经常处于等待沙箱的状态。对策：<strong>预构建镜像</strong>（依赖装好，免每次冷装）；<strong>warm pool</strong>（预热一批容器，摊掉启动延迟）；<strong>安全复用</strong>（同一容器跨任务复用，但保证文件系统 / 状态干净隔离，防止跨任务状态污染标签）；<strong>解耦扩缩</strong>（沙箱池与 NPU 训练独立扩缩，沙箱容量不足时增加 CPU 资源而非调整 NPU）。定性预期（provisional）：warm pool + 预构建镜像预期把单轮沙箱交互的尾延迟大幅压低，从而抬高 NPU 的有效利用率；沙箱吞吐应作为与 NPU MFU 并列的一级系统指标监控——它很可能才是真实瓶颈。</p>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>坑 1：sleep-mode 在 step 间换出推理引擎的权重与 KV。坑 2：同构栈上 train/infer 数值路径相近，逐 token logprob 差异可忽略。坑 3：上下文与截断策略按框架默认处理。坑 4：默认瓶颈在算力（GPU），沙箱视为附属设施。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-inf">推断</span> 坑 1：不能假设有 sleep-mode，64GB 单卡同时承载两套常驻占用；解耦 + host offload + 限轮 + FP8 rollout（预期把 rollout 侧 HBM 峰值压到 BF16 的约 50–60%）。坑 2：两套算子数值实现不同，重要性比对差异指数级敏感；align-probe + trainer 重算 + TIS/MIS。坑 3：compaction + observation masking + 截断给 0 不丢弃。坑 4：沙箱成本主导在 CPU / 内存 / 编排，预构建镜像 + warm pool + 安全复用 + 解耦扩缩；沙箱吞吐应与 NPU MFU 并列为一级指标。全部为 provisional 定性预期。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>四个坑中，坑 1 与坑 2 是昇腾特有（能力缺位与异构算子），坑 3 与坑 4 是 agentic 负载共有、但在昇腾上后果更重。原文对每个坑都给了机理与对策，但<b>预期值全部为定性</b>，没有实测数据支撑。<b>本站判断：</b>四条缓解之间存在耦合，最需要联调的是"FP8 rollout ↔ MAE 阈值"这一对——它同时决定坑 1 能否解决与坑 2 是否恶化，是 M3 的核心风险点。坑 4 的判断最容易被忽视却可能最有价值：把沙箱吞吐提升为一级指标，与 D23 后来"沙箱工程本身是最大难点"的结论一致。</p>
+
+<h2 id="s9"><span class="hnum">09</span>align-probe：最该先做的健全性检查，以及阈值的自我修正</h2>
+
+<p><strong>为什么排第一</strong>：坑 2（logprob 不一致）是<strong>静默的、会污染所有后续训练</strong>的系统性风险，而且它不会像 OOM 那样直接中断——训练仍在运行，只是 advantage 校正在静默失真。在异构（NPU）栈上，<strong>不能假设</strong> train/infer logprob 像同构 GPU 栈那样天然接近。所以在为 GRPO 消耗任何 GPU-hour 之前，先用一个最小探针确认"两条路径算出来的概率到底差多少"，是性价比最高的一次检查。</p>
+
+<p><strong>怎么做</strong>：取一批固定 prompt + 固定 response（可直接用 SFT 后的样本），分别走 rollout 引擎（vLLM-Ascend）与 trainer（Megatron）前向，<strong>对齐逐 token 的 logprob</strong>，统计：逐 token MAE 与 P99；误差是否随序列位置累积（长序列尤其要看尾部）；开 / 关 FP8 两种配置各测一遍（FP8 预期更差）。</p>
+
+<div class="formula">原文给出的阈值思路（provisional，且见下方自我修正）
+  把容忍度挂到"对 IS 比值的影响"上，而非主观设定一个 logprob 数值
+  设重要性比 r = exp(Δlogp)，若希望单 token 比值偏差控制在约 ±5% 以内
+  则 |Δlogp| ≲ ln(1.05) ≈ 0.05
+  ├ 逐 token MAE 约 0.05 nats   绿区
+  ├ 0.05–0.1                    黄区：开启 TIS/MIS 截断，并让 trainer 重算 logprob 兜底
+  └ &gt; 0.1 nats                  红区：算子或量化层面有真问题，先修一致性再训
+                                       否则 GRPO 的 off-policy 校正不可信</div>
+
+<p>原文对这套阈值已有自我限定：<strong>它是设计取值、需在 M2 用真实分布回标</strong>，但"先有一个可证伪的数字"，相比训练结束后发现 reward 无变化再回溯排查，可节省大量 GPU-hour。</p>
+
+<div class="note flag">
+  <span class="ntitle">看板自我修正（D27，2026 年后续）</span>
+  <p>本篇的 align-probe"<strong>0.05 nats 绿区</strong>"阈值，在 D27（低比特训练调研）中被本看板列为<strong>必须修正</strong>项：该阈值<strong>无文献依据</strong>，应改为 <strong>token 级 KL / log-ppl gap / top-1 翻转率</strong>，且阈值<strong>应随策略熵动态调整</strong>（依据 AIS，<a href="https://arxiv.org/abs/2605.13907">arXiv:2605.13907</a>）。D27 同时把"950DT 上 HiF8 GRPO 复现 + 对齐测量"列为可做题目，其口径即为"用 token 级 KL / top-1 翻转率而非静态 nats 阈值"。</p>
+  <p>因此本节的三段式阈值应按下述方式引用：<strong>方法论（把容忍度挂到 IS 比值的影响上、旁路持续监控、超阈值走 trainer 重算 + TIS/MIS）仍然成立；具体数值（0.05 / 0.1 nats）不成立</strong>，需以 token 级 KL 或 top-1 翻转率替换，并随策略熵调整。D23 引用本篇时记录的"约 0.05 nats 绿区"同样属于修正前的口径。</p>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>同构栈上 train/infer 一致性问题由根治层解决：batch-invariant 核、确定性推理、统一 FP8 训推管线；数值对齐派与 IS 修正派各有成熟实现，一致性检查通常不是上线前的必做项。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-inf">推断</span> 根治层手段在非 CUDA 栈上整体缺位，因此只能走"监控 + 算法补偿"：align-probe 作为持续运行的旁路门控（逐 token MAE 与 P99、误差是否随序列位置累积、开关 FP8 各测一遍），超阈值走 trainer 重算与 TIS/MIS 截断。原文的静态 nats 阈值经 D27 修正为 token 级 KL / log-ppl gap / top-1 翻转率，且随策略熵动态调整。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异是"根治"与"监控加补偿"的分层差异，而不是同一手段的强弱差异。原文给的排序理由很硬：这是唯一一类不会中断训练、却会污染全部后续结果的风险，因此必须前置。<b>本站判断：</b>这一节同时是本篇方法论价值最高与最需要打折的一节——旁路探针的架构位置（图 5）值得直接沿用，具体阈值不可照抄。保留一个可证伪的数字仍优于不设阈值，但按 D27 的修正，可证伪的对象应换成 token 级 KL 或 top-1 翻转率。</p>
+
+<h2 id="s10"><span class="hnum">10</span>里程碑路径 M0–M3</h2>
+
+<figure>
+  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-5.svg" alt="里程碑路径图：M0 环境验证到 M1 SFT 冷启动、M2 GRPO 单节点、M3 量化昇腾杠杆，每个里程碑挂一条验收标准">
+  <figcaption><span class="fnum">图 7</span>里程碑路径：M0 环境验证（单任务双跑过滤 + 托管模型跑一条 trajectory，reward 正确，不训练）→ M1 SFT 冷启动（SWE-smith 几千条，7B loss 正常、产合法 patch）→ M2 GRPO 单节点（先同步再解耦异步，reward 升、长度稳、logprob MAE 达标）→ M3 量化昇腾杠杆（FP8 与解耦异步收益，对照 GPU 节点，产吞吐 / MFU / HBM / 一致性对照表）。<span class="chip c-inf">推断</span> 本站图，据原文第 9 节 mermaid 图绘制。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>主链是四个顺序里程碑，但真正的信息在每个节点<strong>下挂的虚线验收条件</strong>上：M0 的验收是"不训练只验环境"，M1 是"冷启动可用"，M2 是"GRPO 完成"，M3 是"昇腾杠杆量化"。注意 M0 明确写着"不训练"——先用托管模型跑通一条完整轨迹并确认 reward 计算正确，把环境侧的正确性与训练侧的正确性分开验证。</p>
+    <p>M2 的验收条件里并列了三项：reward 上升、<strong>轨迹长度稳定</strong>、logprob MAE 达标。三项缺一不可，且第二项是防 reward hacking 的（长度骤降 + reward 上升是污染信号，见第 04 节假阳性）。M3 的产出物不是分数而是<strong>一张四指标对照表</strong>——这与第 01 节的目标定义前后闭合，也正是 Project Ideas 里"GRPO-on-Ascend Benchmark"那条的落地。</p>
+  </div>
+</figure>
+
+<div class="formula">M0 · 环境验证（最小闭环）  1 个任务，golden/empty 双跑过滤，用托管模型跑出一条 trajectory + 正确 reward。不训练
+                            验收：reward 计算正确、沙箱稳定
+M1 · SFT 冷启动             SWE-smith-trajectories 几千条，910B 上 SFT 一个 7B（Qwen2.5-Coder-7B 一类、vLLM-Ascend 已支持）
+                            验收：loss 正常、能产出合法 patch
+M2 · GRPO 单节点            R2E-Gym-Subset 上跑 GRPO++，先完成同步路径，再切换解耦异步
+                            验收：reward 上升、轨迹长度稳定（防 hacking）、logprob MAE 在阈值内
+M3 · 量化昇腾杠杆           分别测 FP8/量化 rollout、解耦异步的显存与吞吐收益，并对一台 GPU 节点做同配置对照
+                            产出：吞吐 / MFU / 峰值 HBM / train-infer 一致性对照表</div>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>里程碑以能力指标推进：跑通管线后直接进 RL，以 reward 曲线与基准分数作为阶段验收；系统指标在需要优化时再测。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-inf">推断</span> 四个里程碑的验收全部是系统性断言：M0 只验环境不训练、M1 只验 loss 与合法 patch、M2 三项并列（reward 升 + 长度稳 + MAE 达标）、M3 产出四指标对照表。能力指标（SWE-bench-Live 切片、R2E held-out）只要求"方向一致、可比"，不追 SOTA。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在于把"环境正确性"与"训练正确性"拆成两个独立里程碑，且每一级都有可断言的验收。原文给的理由是归因：昇腾侧可疑源多，若不分级验证，M2 阶段的任何异常都无法定位。<b>本站判断：</b>M0 的"不训练"是整条路径中最容易被跳过、也最不该跳过的一步——它的成本是一个任务两次跑测，收益是把标签污染这一类问题挡在训练之前。</p>
+
+<h2 id="s11"><span class="hnum">11</span>效果与结果对比（proposal 预期目标，非实测）</h2>
+
+<p>下面三张对照表给出<strong>方案设计阶段的预期方向与目标量级</strong>，用于设定验收口径，<strong>全部为 provisional</strong>，真实数字以 M2/M3 实测回填。GPU 列为对照基线（同配方在 GPU 上的参照），NPU 列为本方案目标。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th>指标</th><th>GPU（对照基线）</th><th>NPU / 910B（目标）</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>Throughput（轨迹 / 小时）</td><td>基线 100%</td><td>目标 ≳ 60–80%</td><td>解耦异步落地后期望接近；沙箱尾延迟是主要折损源</td></tr>
+<tr><td>MFU / 算力利用率</td><td>基线</td><td>同档或略低</td><td>长 rollout 下 NPU 易被沙箱等待拖低，需 warm pool 拉回</td></tr>
+<tr><td>峰值 HBM</td><td>参照</td><td>目标 ≤ 单卡 64GB，留余量</td><td>需 FP8 rollout + 限轮才稳进预算</td></tr>
+<tr><td>逐 token logprob MAE</td><td>约 0（同构）</td><td>目标 &lt; 0.05 nats（绿区）</td><td>异构核心风险，align-probe 把关；该阈值经 D27 修正，见第 09 节</td></tr>
+<tr><td>能力（SWE-bench-Live / R2E held-out）</td><td>参照</td><td>目标：方向一致、可比</td><td>先求"能学到东西"，非 SOTA</td></tr>
+</tbody>
+<caption>表 1：GPU vs NPU（同配方，7B，单节点）。<span class="chip c-inf">推断</span> 全部为 proposal 阶段的目标值与方向标注，非实测。</caption>
+</table>
+</div>
+
+<div class="tbl">
+<table>
+<thead><tr><th>指标</th><th>BF16 rollout</th><th>FP8 rollout（目标）</th><th>取舍</th></tr></thead>
+<tbody>
+<tr><td>Rollout 侧峰值 HBM</td><td>基线 100%</td><td>目标约 50–60%</td><td>这是能否塞下长轨迹 KV 的关键开关</td></tr>
+<tr><td>Rollout 吞吐</td><td>基线</td><td>目标持平或略升</td><td>显存省出来可提并发或更长 context</td></tr>
+<tr><td>逐 token logprob MAE</td><td>较低</td><td>升高一档（预期仍 &lt; 0.1）</td><td>需与 TIS/MIS 截断阈值联调</td></tr>
+<tr><td>训练稳定性</td><td>较稳</td><td>目标不退化</td><td>红区（MAE &gt; 0.1）则放弃 FP8 或先修算子</td></tr>
+</tbody>
+<caption>表 2：FP8 rollout vs BF16 rollout（NPU 侧）。<span class="chip c-inf">推断</span> 目标值，非实测；表中 nats 阈值口径见第 09 节的自我修正。</caption>
+</table>
+</div>
+
+<div class="tbl">
+<table>
+<thead><tr><th>指标</th><th>同步 GRPO（基线）</th><th>解耦异步（目标）</th><th>取舍</th></tr></thead>
+<tbody>
+<tr><td>端到端吞吐</td><td>基线 100%（受组内最慢轨迹限速）</td><td>目标显著高于基线</td><td>核心收益，源于不等尾部</td></tr>
+<tr><td>NPU rollout 阶段空转</td><td>高</td><td>目标明显降低</td><td>per-trajectory 拉取 + 持续消费</td></tr>
+<tr><td>On/off-policy</td><td>纯 on-policy，最干净</td><td>有界 staleness 的 off-policy</td><td>用小偏差换大吞吐</td></tr>
+<tr><td>梯度方差 / 稳定性</td><td>较稳</td><td>目标不显著恶化</td><td>靠 staleness 上界 + TIS/MIS 兜底</td></tr>
+<tr><td>调试难度</td><td>低（基线）</td><td>较高</td><td>故先同步建基线，再切异步对照</td></tr>
+</tbody>
+<caption>表 3：解耦异步 vs 同步 GRPO（NPU 侧）。<span class="chip c-inf">推断</span> 目标值与方向标注，非实测。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>方案文档给出预期收益的百分比作为卖点，实测数字发布时再补；对照组常常缺位或口径不同。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-inf">推断</span> 三张表的全部数字被显式标注为"目标值 / 方向标注"，服务于"M2/M3 验收时拿什么口径去量"；原文明确指出真正有价值的产出不是这些预设数字，而是 M3 用实测把它们替换掉，并附上 GPU 对照表——届时预期与实测之差，本身就是这套昇腾配方最有信息量的结论。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在于预期值的用途：不是宣传口径，而是验收口径。原文对此有明确的读表提醒。<b>本站判断：</b>三张表中信息量最大的是表 2 的最后两行——FP8 的显存收益与 MAE 代价被写在同一张表上，说明设计者已经预见坑 1 与坑 2 的耦合；一旦实测落入红区，方案本身给出了放弃 FP8 的退出条件，而不是把它当作既定收益。</p>
+
+<h2 id="s12"><span class="hnum">12</span>评测、验收与风险回退</h2>
+
+<p><strong>能力</strong>：SWE-bench-<strong>Live</strong>（post-cutoff，抗污染）小切片 + R2E held-out；不应将已被污染的 Verified 作为唯一指标。<strong>系统</strong>：GPU vs NPU 的 throughput / MFU / 峰值 HBM；<strong>logprob 一致性（MAE）</strong>；rollout 占总时长比例；沙箱容器吞吐。<strong>健康</strong>：reward 与平均轨迹长度并行监控（长度骤降 + reward 升 = hacking）。</p>
+
+<div class="formula">风险与回退
+  ├ logprob 漂移太大    → 先 trainer 侧重算 logprob（慢但正确），再优化
+  ├ 沙箱成为瓶颈        → 降并发 group size、加 CPU 节点、缩任务镜像
+  ├ 解耦异步不稳        → 回退同步 GRPO 先确保正确性，再逐步放宽 staleness
+  └ 7B 信号太弱         → 用更易的任务子集（pass-rate 0.2–0.8 区间）维持梯度信号，而非直接改用更大模型</div>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>以 SWE-bench Verified 作为主指标；信号太弱时的第一反应是换更大的基座或加数据；系统指标与健康指标不并列为验收项。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p><span class="chip c-inf">推断</span> 能力、系统、健康三类指标并列：抗污染的 SWE-bench-Live 切片 + R2E held-out 取代 Verified 单一指标；沙箱容器吞吐与 logprob MAE 进入一级系统指标；reward 与平均轨迹长度并行监控。四条回退路径均指向"先保正确性，再要吞吐"，且信号太弱时先调任务难度分布（pass-rate 0.2–0.8）而非换大模型。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在于验收维度的数量与回退的方向。原文对每条回退都给了明确的先后次序，其共同结构是"退回慢而正确的路径"。<b>本站判断：</b>"用 pass-rate 0.2–0.8 的任务子集维持梯度信号"这条最具可操作性——它把稀疏奖励下的信号问题变成数据侧的可调参数，成本远低于换基座，且与 D23 记录的"pass-rate 双侧过滤窗口"是同一手段。</p>
+
+<h2 id="s13"><span class="hnum">13</span>总表：CUDA 默认做法 vs 昇腾现状</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:130px">环节</th><th style="width:250px">CUDA 世界的默认做法</th><th>昇腾上的现状 · 差在哪</th></tr></thead>
+<tbody>
+<tr><td>原型目标</td><td>以出分为目标，系统指标事后补测</td><td>以量化四个坑为目标，产出 GPU vs NPU 系统对照表；刷榜与 32B/MoE 列为非目标</td></tr>
+<tr><td>负载选择</td><td>先用单轮定长任务跑通管线</td><td>直取 SWE agentic：长度同时压吞吐、显存、数值三条主线，三者耦合故一次验完</td></tr>
+<tr><td>架构</td><td>colocate + sleep-mode；三方解耦由成熟栈内建</td><td>解耦是第一原则而非优化：rollout 与 train 分属不同 NPU 子集，沙箱在节点 CPU；架构可借用（图 2），需自建的是基础设施侧</td></tr>
+<tr><td>奖励</td><td>稠密代理信号 + LLM-judge</td><td>二元 F2P/P2P（任务定义本身，不可 hack），稀疏性由组采样 8–16 + 组内相对优势补偿；少一个待对齐的分布</td></tr>
+<tr><td>数据</td><td>数据清洗为可选预处理</td><td>golden/empty 双跑预过滤是方案成立前提；脏标签三种破坏：全 0 组零优势、空补丁得分、advantage 符号翻转</td></tr>
+<tr><td>loss mask</td><td>observation masking 是成熟路径</td><td>mask 要穿过 NPU 上重写的融合算子，边界 off-by-one 静默漂移；必须做成 CI 级 token 计数断言</td></tr>
+<tr><td>算法</td><td>PPO + value network，或 GRPO 配全套正则</td><td>GRPO++（clip-higher、无 KL、无 entropy bonus、长度归一化、组采样 8–16），无 value network——算法稳定性与显存预算指向同一选择</td></tr>
+<tr><td>异步</td><td>Full async / one-step-off-policy 为框架现成选项</td><td>收益相同，但数值前提待验：staleness 上界与 TIS/MIS 阈值需实测；路线固定为先同步建基线再切异步</td></tr>
+<tr><td>显存</td><td>sleep-mode 在 step 间换出推理引擎</td><td>不能假设有 sleep-mode；解耦 + host offload + 限轮 + FP8 rollout（预期 HBM 降至 BF16 的约 50–60%，与一致性耦合）</td></tr>
+<tr><td>训推一致</td><td>根治层：batch-invariant 核、确定性推理、统一 FP8</td><td>根治层整体缺位，只能监控 + 补偿：align-probe 旁路门控 + trainer 重算 + TIS/MIS；静态 nats 阈值经 D27 修正为 token 级 KL / top-1 翻转率</td></tr>
+<tr><td>长轨迹</td><td>按框架默认处理截断</td><td>限 turns/tokens + compaction + 截断给 0 但不丢弃（丢弃会系统性去除硬样本，使梯度有偏）</td></tr>
+<tr><td>沙箱</td><td>默认瓶颈在算力，沙箱为附属设施</td><td>沙箱成本主导在 CPU / 内存 / 编排，NPU 常在等待；预构建镜像 + warm pool + 安全复用 + 解耦扩缩；沙箱吞吐升为一级指标</td></tr>
+<tr><td>验收</td><td>reward 曲线与基准分数</td><td>四级里程碑各有系统性断言；M2 三项并列（reward 升 + 长度稳 + MAE 达标）；M3 产四指标对照表</td></tr>
+</tbody>
+<caption>左栏是成熟 GPU RL 栈的既有路径，右栏是本方案在 910B 上的选型与已知约束。全部条目为方案设计层面的分析，非实测结论（provisional）。</caption>
+</table>
+</div>
+
+<h2 id="s14"><span class="hnum">14</span>原文没给的东西与未能核实的东西</h2>
+
+<p>以下是复现时必须自行确定、原文未给数值、或已被后续修正的条目：</p>
+
+<ul>
+<li><strong>本篇整体为方案设计（proposal），非已验证结果</strong>：所有百分比、阈值与定性预期均为目标值，真实数字以 M2/M3 实测回填；</li>
+<li><strong>align-probe 的 0.05 / 0.1 nats 阈值无文献依据</strong>：经 D27 修正，应改为 token 级 KL / log-ppl gap / top-1 翻转率，且随策略熵动态调整（依据 AIS，<a href="https://arxiv.org/abs/2605.13907">arXiv:2605.13907</a>）；本篇表 1、表 2 中的 nats 口径同样适用该修正；</li>
+<li><strong>staleness 上界的具体取值</strong>：原文只说"有界"，未给版本数或 step 数；</li>
+<li><strong>TIS/MIS 的截断阈值与聚合方式</strong>：原文只说需与 FP8 联调，未给数值；</li>
+<li><strong>turns / tokens 硬上限、compaction 的摘要策略与压缩比</strong>：全部未给，且原文指出 compaction 摘要质量本身是变量，过度压缩会损害 reward；</li>
+<li><strong>组采样取 8 还是 16、7B 具体模型</strong>：仅给出范围与"Qwen2.5-Coder-7B 一类"的示例；</li>
+<li><strong>warm pool 规模、容器复用的隔离方案</strong>：只给出原则（文件系统 / 状态干净隔离），未给实现；</li>
+<li><strong>FP8 rollout 把 HBM 压到约 50–60%、吞吐"持平或略升"</strong>：定性预期（provisional），无实测；</li>
+<li><strong>NPU 吞吐达 GPU 的 60–80%、MFU"同档或略低"</strong>：目标值，非实测；GPU 对照基线的具体机型与配置未给；</li>
+<li><strong>MindSpeed-RL 跑过 384-NPU 上的 GRPO</strong>：<span class="chip c-vr">自报</span> 口径，未经本看板独立复现；SGLang-Ascend 的后端成熟度原文明确标注为"需先验证"；</li>
+<li><strong>昇腾无 sleep-mode 这一前提</strong>：原文表述为"目前不能假设有这个能力"，属保守假设而非已确认的能力缺失；</li>
+<li>本文原图受限于网络代理可达性：MindSpeed-RL 与 vLLM-Ascend 的仓库 README 无可用架构图，两张原图分别取自 verl 官方仓库（备选 trainer 的架构参照）与 R2E-Gym 官方仓库（任务源统计），均非本方案自身的实测图。</li>
+</ul>
+
+<div class="note">
+  <span class="ntitle">三条可以直接搬走的判断</span>
+  <p><strong>一、可迁移的是架构，不可迁移的是算子。</strong>三方解耦（训练 / 推理 / 环境）、二元 F2P/P2P 奖励、golden/empty 预过滤、GRPO++ 配方、warm pool 与镜像预构建——这些在 CUDA 与昇腾上是同一套，迁移成本为零。需要自建的是融合算子里的 mask 传播、logprob 数值路径、显存换出机制，即图 2 中责任线以下的部分。</p>
+  <p><strong>二、静默失效比崩溃更贵，验收要写成断言。</strong>observation mask 边界错误与 train/infer logprob 漂移都不会中断训练，只会让整轮训练无效且难以归因。对策是把它们变成可断言的检查：参与 loss 的 token 数 == 期望值、align-probe 旁路持续给出一致性证据——两项成本都远低于一轮失败的训练。</p>
+  <p><strong>三、阈值可以是设计取值，但必须可证伪且允许被推翻。</strong>本篇的 0.05 nats 绿区在提出时即标注为设计取值、需回标，随后被 D27 以"无文献依据"修正为 token 级 KL / top-1 翻转率并要求随策略熵调整。方法论（把容忍度挂到对 IS 比值的影响上、旁路持续监控、超阈值走重算与截断）经受住了修正，数值没有——引用时应区分这两层。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>M0 与 M1 的实际验收结果</strong>——环境侧 reward 计算与沙箱稳定性是整条路径的地基 · <strong>align-probe 的首批实测分布</strong>（按 D27 修正后的 token 级 KL / top-1 翻转率口径，而非 nats），以及开 / 关 FP8 两种配置的差距 · <strong>FP8 rollout 的 HBM 实测收益</strong>是否落在预期的 50–60% 区间，以及是否把一致性推入红区 · <strong>沙箱吞吐与 NPU 空转比例</strong>的实测值，验证"沙箱才是真实瓶颈"这一判断 · <strong>解耦异步相对同步基线的吞吐倍数</strong>，以及 staleness 上界的可用取值范围。</p>
+</div>
+
+</main>
+
+<footer>
+  来源与声明：本篇为方案设计（proposal），非已验证结果；具体超参与吞吐需实跑确定。参考：本看板 Dispatch 02 / 08 / 10 / 12，MindSpeed-RL、vLLM-Ascend、SGLang、R2E-Gym / SWE-Gym / SWE-smith、DeepSWE（rLLM）。第 09 节的阈值自我修正取自本看板 Dispatch 27 的结论更新清单（依据 AIS，arXiv:2605.13907）。原图分别取自 verl 与 R2E-Gym 官方仓库 README，版权归各原始仓库所有，此处仅作解析引用。
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>

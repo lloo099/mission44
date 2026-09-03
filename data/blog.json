@@ -287,7 +287,8 @@
         "long-horizon",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-17-denovoswe.md"
+      "file": "docs/blog/dispatch-17-denovoswe.md",
+      "read": "reads/dispatch-17-denovoswe.html"
     },
     {
       "id": "dispatch-16-deepseek-v4-agent",
@@ -342,7 +343,8 @@
         "Ascend",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-13-swe-rl-on-ascend.md"
+      "file": "docs/blog/dispatch-13-swe-rl-on-ascend.md",
+      "read": "reads/dispatch-13-swe-rl-on-ascend.html"
     },
     {
       "id": "dispatch-12-swe-agents",
@@ -522,7 +524,8 @@
         "MoE",
         "attention"
       ],
-      "file": "docs/2026-h1-architecture-survey.md"
+      "file": "docs/2026-h1-architecture-survey.md",
+      "read": "reads/survey-2026-h1-architecture.html"
     }
   ]
 }
