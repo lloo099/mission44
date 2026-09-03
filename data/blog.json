@@ -245,7 +245,8 @@
         "Ascend",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-20-openpangu.md"
+      "file": "docs/blog/dispatch-20-openpangu.md",
+      "read": "reads/dispatch-20-openpangu.html"
     },
     {
       "id": "dispatch-19-slime",
@@ -274,7 +275,8 @@
         "SkyRL",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-18-prime-rl-vs-skyrl.md"
+      "file": "docs/blog/dispatch-18-prime-rl-vs-skyrl.md",
+      "read": "reads/dispatch-18-prime-rl-vs-skyrl.html"
     },
     {
       "id": "dispatch-17-denovoswe",
@@ -483,7 +485,8 @@
         "FP8",
         "SuperPoD"
       ],
-      "file": "docs/blog/dispatch-03-ascend-950.md"
+      "file": "docs/blog/dispatch-03-ascend-950.md",
+      "read": "reads/dispatch-03-ascend-950.html"
     },
     {
       "id": "dispatch-02-rollout-bottleneck",

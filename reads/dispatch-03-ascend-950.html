@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 03 精读版 · 昇腾 950 硬件深读</title>
+<meta name="description" content="昇腾 950 的三个改变——自研 HBM、原生 FP8/MXFP4、PR/DT 分工——逐节对照 CUDA 世界的默认做法与昇腾上的现状，落到 RL 的显存争用、FP8 rollout 与解耦训练。规格均为厂商口径，provisional。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-03-ascend-950.html">
+<meta property="og:title" content="Dispatch 03 精读版 · 昇腾 950 硬件深读"><meta property="og:description" content="自研 HBM、原生 FP8/MXFP4、PR/DT 分工三个改变如何对上 RL 的显存争用、FP8 rollout 与解耦训练；规格均为厂商口径，provisional。"><meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-03-ascend-950.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-03-ascend-950.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-03-ascend-950">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-03-ascend-950.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 03 · 精读版 · 2026-06-23</div>
+  <h1>昇腾 950 硬件深读：自研 HBM、原生 FP8 与 PR/DT 分工如何对上 RL 的三个瓶颈</h1>
+  <p class="standfirst">昇腾 950 是第一代使用华为自研 HBM、原生支持 FP8/MXFP4 的 Ascend，并拆成 950PR（prefill / 推荐）与 950DT（decode / 训练）两颗。本文把原文的三个改变逐节拆开，每节对照"CUDA 世界的默认做法"与"昇腾上的现状"，说明它们如何分别对应 RL 的显存争用、FP8 量化 rollout 与 rollout / train 解耦，以及为什么硬件就位不等于软件可用。全部规格来自华为 Connect 2025 与分析师 / 媒体口径，provisional，以实际出货为准。</p>
+  <div class="byline">
+    <span>华为 Connect 2025 · TrendForce / Tom's Hardware / 分析师报道</span>
+    <span>承接 D02 · 相关卡片见 Ascend / NPU 标签页</span>
+    <span>原图 0 张 · 本站图 4 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc"><ol>
+  <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+  <li><a href="#s1"><span class="tnum">01</span>规格速览</a></li>
+  <li><a href="#s2"><span class="tnum">02</span>自研 HBM：容量、带宽与显存争用</a></li>
+  <li><a href="#s3"><span class="tnum">03</span>原生 FP8/MXFP4：从设想到可行</a></li>
+  <li><a href="#s4"><span class="tnum">04</span>PR/DT 分工：硬件层的解耦</a></li>
+  <li><a href="#s5"><span class="tnum">05</span>三个改变接上两条软件主线</a></li>
+  <li><a href="#s6"><span class="tnum">06</span>SuperPoD：规模补效率</a></li>
+  <li><a href="#s7"><span class="tnum">07</span>对 RL-on-NPU 的含义与现实约束</a></li>
+  <li><a href="#s8"><span class="tnum">08</span>总表：CUDA 默认做法 vs 昇腾现状</a></li>
+  <li><a href="#s9"><span class="tnum">09</span>原文没给的东西与未能核实的东西</a></li>
+</ol></nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">Dispatch 02 提出了昇腾 RL 的两条软件主线——<strong>FP8 量化 rollout</strong>与<strong>异步解耦</strong>。本期看它们的硬件对应物：昇腾 950 几乎是照着这两条线设计的。三个改变最关键：<strong>原生 FP8</strong> 把 FP8 量化 rollout 从设想变为可行；<strong>自研 HBM 加更大容量与带宽</strong>直接缓解 910B 上 rollout 与 train 争用 64 GB 显存的僵局；<strong>PR/DT 的硬件分工</strong>天然对应 RL 里 rollout（生成）与 train（更新）的解耦。代价是软件栈须同步跟进，且 950DT 要等到年底。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段：正文（来自原文，保留全部数字与限定语）/ 双栏对照（左栏灰为 <strong>CUDA 世界的默认做法</strong>，右栏橙为 <strong>昇腾上的现状</strong>，全文统一）/ <strong>差在哪</strong>（下方色块：差异、原文是否给了理由、对 RL-on-NPU 的含义）。数字按来源标注：<span class="chip c-tp">第三方</span> 独立测量、<span class="chip c-vr">自报</span> 厂商或媒体口径、<span class="chip c-inf">推断</span> 本站分析。本篇全部规格（容量、带宽、PFLOPS、EFLOPS、上市时间）均为厂商 / 媒体 provisional 口径，无一经过实测复现。</p>
+  <p>一条贯穿全文的线索：<strong>硬件给的是空间，能力仍需软件实现</strong>。容量与带宽是硬件给的，显存腾挪（sleep-mode）是软件给的；原生 FP8 是必要条件，训推一致才是把它用对的充分条件；PR/DT 双 die 是分离式 RL 的载体，跨 die 编排仍要调度层专门支持。</p>
+</div>
+
+<div class="formula">三个改变 → 两条软件主线
+  原生 FP8 / MXFP4          ──硬件落点──▶  FP8 量化 rollout 落地            <span class="cmt">// Jet-RL / FP8-RL / Quantized Rollout</span>
+  PR 与 DT 分工 + 大互联     ──接──▶        异步解耦 rollout 与 train        <span class="cmt">// AsyncFlow / RollMux</span>
+  自研 HBM 大容量            ──缓解──▶      显存争用（rollout 与 train 同卡）  <span class="cmt">// 910B 64 GB 僵局</span>
+  边界：sleep-mode、FP8 训推一致、跨 die 调度 = 软件能力，950 不自动带来</div>
+
+<h2 id="s1"><span class="hnum">01</span>规格速览</h2>
+
+<p>950 拆成两颗：<strong>950PR</strong>（prefill / 推荐 / 推理，约 2026 Q1，128 GB HiBL 1.0，约 1.6 TB/s）与 <strong>950DT</strong>（decode / 训练，约 2026 Q4，144 GB HiZQ 2.0 HBM，约 4 TB/s，互联约 2 TB/s）。两颗都原生支持 FP8 / MXFP8 / HiF8 / MXFP4，算力约 1 PFLOPS FP8 / 约 2 PFLOPS MXFP4（950DT 同量级）。参照 910B：64 GB HBM、约 0.4 TB/s（带宽口径各源不一）、HCCS 互联、无原生 FP8。<span class="chip c-vr">自报</span> 数字来自华为 Connect 2025 与分析师 / 媒体口径，provisional，以实际出货为准。完整卡片见 Ascend / NPU 标签页（已补一张 Atlas 950 SuperPoD 卡）。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th></th><th>Ascend 950PR</th><th>Ascend 950DT</th><th>910B（参照）</th></tr></thead>
+<tbody>
+<tr><td>定位</td><td>prefill / 推荐 / 推理</td><td>decode / 训练</td><td>训练 加 推理</td></tr>
+<tr><td>上市</td><td>约 2026 Q1</td><td>约 2026 Q4</td><td>在售</td></tr>
+<tr><td>显存</td><td>128 GB HiBL 1.0</td><td>144 GB HiZQ 2.0 HBM</td><td>64 GB HBM</td></tr>
+<tr><td>带宽</td><td>约 1.6 TB/s</td><td>约 4 TB/s</td><td>约 0.4 TB/s（各源不一）</td></tr>
+<tr><td>互联</td><td>—</td><td>约 2 TB/s</td><td>HCCS</td></tr>
+<tr><td>低精度</td><td>FP8 / MXFP8 / HiF8 / MXFP4</td><td>同左</td><td>无原生 FP8</td></tr>
+<tr><td>算力</td><td>约 1 PFLOPS FP8 / 约 2 PFLOPS MXFP4</td><td>同量级</td><td>—</td></tr>
+</tbody>
+<caption>全部为厂商 / 媒体口径（华为 Connect 2025、TrendForce、Tom's Hardware、分析师报道），provisional。910B 带宽口径各源不一。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>单芯片以工艺、HBM 代际与能效领先（原文：单芯片华为仍落后于头部 GPU）；系统级以 NVL72 为对标物。规格口径通常有第三方实测可查。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p>两颗芯片分工出货，PR 先到（Q1）、DT 年底（Q4）；显存 128 / 144 GB，带宽 1.6 / 4 TB/s，原生 FP8 / MXFP4。<span class="chip c-vr">自报</span> 全部规格待实测复现。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>数字的可信度层级</b>与<b>时间</b>：950 的每一个数字都是厂商与媒体口径，且训练与 decode 这颗最关键的 950DT 年底才推出，上半年可获得的主要是偏推理 / prefill 的 950PR。对 RL-on-NPU 的含义：2026 年上半年任何"950 上的 RL"都只能在 PR 上做 rollout 侧的准备，训练侧仍在 910B。</p>
+
+<h2 id="s2"><span class="hnum">02</span>自研 HBM：容量、带宽与显存争用</h2>
+
+<p>910B 时代，RL 最硬的约束是单卡 <strong>64 GB HBM</strong>：rollout 的 KV cache 加权重，与 train 的优化器状态加梯度共同占用同一块显存（见 NPU 架构页的"RL 显存争用"视图）。950DT 用华为自己的 <strong>HiZQ 2.0 HBM，144 GB @ 约 4 TB/s</strong>——容量翻倍多、带宽近 10×。自研 HBM 有两层意义。<strong>第一层是容量与带宽的台阶式跳变</strong>：910B 是 64 GB @ 约 0.4 TB/s，950DT 是 144 GB @ 4 TB/s，容量 2.25×、带宽约 10×。RL 训练的痛点在于同一张卡（或同一组卡）上既要容纳 rollout 阶段的推理权重加不断膨胀的 KV cache，又要容纳 train 阶段的训练权重、梯度、优化器状态（Adam 是参数量的若干倍）与激活；64 GB 时代这两套状态很早即无法容纳，工程上被迫做激进的<strong>时间分片</strong>（rollout 完成后把显存完全释放再换入训练态，反复切换，切换开销和复杂度都很高）。144 GB 让两套状态更晚才需互斥分片、甚至部分共存，10× 带宽让 decode-heavy 的 rollout 本身更快、KV 与权重搬运不再是根本限制——注意是"缓解"不是"消除"。<strong>第二层是供应链自主</strong>：HBM 是当前 AI 芯片供应链上最受制约的环节之一、高端 HBM 受出口管制影响显著，HiBL 1.0 / HiZQ 2.0 自研 HBM 的意义在于绕开对外部高端 HBM 的依赖，对一条要长期演进（950 → 960 → 970）的产品线，这是能不能持续放量的前提。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-03-ascend-950/fig-1.svg" alt="910B 单卡 64GB 显存争用与 950DT 144GB@4TB/s 缓解的对照示意，并指出 sleep-mode 仍需软件实现">
+  <figcaption><span class="fnum">图 1</span>910B 单卡 64 GB 的显存争用与 950DT 的缓解：左侧 rollout 的 KV 加权重与 train 的优化器状态加梯度挤在同一 64 GB 中，形成最硬约束；右侧 950DT 以容量翻倍、带宽近 10× 加上 FP8 量化 rollout 进一步省显存，使争用明显缓解；虚线提示 sleep-mode 仍需软件实现，950 不自动带来。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染；容量与带宽数字为厂商口径。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左框两条边都指向同一个"显存争用"节点，这是 910B 问题的结构：不是某一侧太大，而是两套状态<strong>必须共存</strong>于一块显存。右框有两条进入"缓解"的边，一条来自硬件（容量与带宽），一条来自软件配方（FP8 量化 rollout）——读到这里要注意两条边的性质不同，前者随 950DT 出货自动获得，后者要等第 03 节的算子与一致性工作完成。最值得看的位置是右下角那条虚线：它把"缓解"与"软件能力待补"连起来，表示即便显存争用缓解，rollout 与 train 之间的显存挂起、换出与快速切换仍是 vLLM 或训练框架层面的工程实现。粗箭头上的"自研 HBM 加原生 FP8"是从左框到右框的唯一通路，即硬件改变是缓解的前提而非全部。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>显存腾挪由软件完成：sleep-mode（rollout 与 train 之间把不用的显存挂起或换出、快速切换上下文）是 vLLM / 训练框架层面的工程实现，与显存大小无关。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p>910B：64 GB @ 约 0.4 TB/s，两套状态很早即无法容纳，被迫激进时间分片，且无 sleep-mode。950DT：144 GB @ 约 4 TB/s（容量 2.25×、带宽约 10×，<span class="chip c-vr">自报</span>），争用更晚触及上限，但 sleep-mode 仍缺。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>要划清一条线：<b>容量带宽是硬件给的，显存腾挪能力是软件给的</b>。950 把显存做大只是让这件事更不容易触及容量上限，并不会自动带来 sleep-mode。原文给出的理由是两套状态（rollout 的权重加 KV，train 的权重加梯度加优化器状态加激活）的共存问题在 144 GB 下只是推迟而非消失。对 RL-on-NPU 的含义：910B 上"无 sleep-mode"的痛点会随 950DT 与 FP8 rollout 明显减轻，但 sleep-mode 的等价方案仍要在 vLLM-Ascend 侧实现。</p>
+
+<h2 id="s3"><span class="hnum">03</span>原生 FP8/MXFP4：让 FP8 RL 从设想变为可行</h2>
+
+<p>910B 没有原生 FP8，做低精度需迂回实现。950 直接支持 <strong>FP8 / MXFP8 / HiF8 / MXFP4</strong>。把 Dispatch 02 的链条接上：Jet-RL / FP8-RL / Quantized Rollout 这些量化 rollout 配方，在 950 上有了硬件落点。"FP8 RL on Ascend"是一个几乎没有已有工作的选题——硬件这块拼图 2026 到位。<strong>为什么 FP8 对 RL 特别重要</strong>：RL 一轮迭代里 rollout 通常是时间大头（要生成海量轨迹），而 rollout 是 decode、memory-bound，瓶颈在访存带宽和显存容量。把 rollout 的权重和 KV cache 量化到 FP8，等于显著减少每次要搬运的字节数：显存占用降低（KV cache 能容纳更长序列或更大 batch）、有效带宽利用率提升（memory-bound 的 decode 直接受益）。910B 的问题在于没有原生 FP8，只能用更高精度模拟或反复量化 / 反量化，既消耗算力又消耗带宽，FP8 RL 更像纸面方案而非可运行的生产路径；950 提供原生 FP8 / MXFP4（约 1 PFLOPS FP8 / 约 2 PFLOPS MXFP4）让量化 rollout 从"模拟"变成"硬件直接执行"。</p>
+
+<p><strong>但 FP8 在 RL 里有真实风险。</strong>RL 对 rollout 与 train 的数值一致性极其敏感：典型分离式架构里 rollout 用 FP8 低精度采样、train 一侧可能跑更高精度，两侧对同一序列算出的 <strong>logprob 会漂移</strong>；RL 的策略梯度依赖 importance ratio（新旧策略概率比），infer 端 logprob 与 train 端不一致就直接放大 <strong>train-inference mismatch</strong>（轻则训练不稳、reward 噪声大，重则策略失稳），而 FP8 / MXFP4 叠加为新硬件重写的算子（数值行为可能与参考实现有细微差异）会进一步放大。对策两点：① <strong>align-probe</strong>——在训练管线里持续探测 rollout 与 train 两侧 logprob 偏差，把数值不一致作为一级指标监控，而非等 reward 恶化后才发现；② <strong>训推一致的量化逻辑</strong>——让 infer 和 train 走同一套 FP8 量化语义（呼应 Miles 的"统一 FP8"），从源头压住漂移而非事后修补。原生 FP8 是必要条件，训推一致是把它用对的充分条件。</p>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>量化 rollout 配方（Jet-RL / FP8-RL / Quantized Rollout，Dispatch 02）已有公开工作；MoE RL 的训推一致有 Miles 的"统一 FP8"方案（Dispatch 09）。FP8 是配方问题而非硬件问题。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p>910B 无原生 FP8，只能高精度模拟或反复量化 / 反量化，FP8 RL 停留在纸面。950 原生 FP8 / MXFP8 / HiF8 / MXFP4（约 1 PFLOPS FP8 / 约 2 PFLOPS MXFP4，<span class="chip c-vr">自报</span>），但算子库要暴露 FP8 路径、量化 / 反量化 kernel、混精度调度，CANN 需完整支持；"FP8 RL on Ascend"几乎没有已有工作。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>GPU 侧 FP8 RL 的难点在<b>配方与一致性</b>，昇腾侧在此之前还多一层<b>硬件不支持</b>；950 移除了后者，前者原样保留并因新算子而加重。原文给出了完整机理（decode memory-bound → FP8 减少搬运字节 → 但 logprob 漂移放大 importance ratio 误差）与两条对策。对 RL-on-NPU 的含义：谁先在 950 上完成端到端 FP8 RL 并公布 train-inference 一致性，谁就率先填补这一空白领域；align-probe 是把数值一致性变成一级监控指标的具体手段。</p>
+
+<h2 id="s4"><span class="hnum">04</span>PR/DT 分工：硬件层面的 prefill/decode（也是 rollout/train）解耦</h2>
+
+<p>华为把芯片拆成 <strong>PR</strong>（prefill / 推荐，算力密集、带宽次要）和 <strong>DT</strong>（decode / 训练，带宽与显存敏感）：用便宜的 HiBL 供给 prefill，用高带宽 HBM 供给 decode 与训练。这正好对上 RL 的结构——rollout 偏生成（decode）、train 偏更新——以及 AsyncFlow / RollMux 那类解耦 RL 的系统设计。硬件开始按"分离式"思路出货。</p>
+
+<p><strong>为什么 decode 端要堆带宽、prefill 端要堆算力。</strong>Transformer 推理两阶段在硬件上根本不对称。<strong>Prefill 是 compute-bound</strong>：处理输入提示时所有 prompt token 一次性进网络，每层做的是大矩阵乘（<code>[seq_len, hidden] × [hidden, hidden]</code>，seq_len 动辄上千），算术强度（每读一字节做多少次浮点运算）很高、数据复用充分、瓶颈在 FLOPS，延长 prompt 或加大 batch 基本就是在充分利用乘法器阵列——此时关键指标是算力，显存带宽满足供给即可。<strong>Decode 是 memory-bound</strong>：自回归生成每步只产一个 token，核心计算退化成 <code>[1, hidden] × [hidden, hidden]</code> 的矩阵-向量乘（GEMV），算术强度极低——为算这一个 token 得把整层权重和不断增长的 KV cache 从 HBM 搬进计算单元一遍、少量计算后即丢弃，乘法器大部分时间在等数据，决定吞吐的不是峰值 FLOPS 而是每秒能从显存搬运多少字节以及显存能否容纳越来越长的 KV cache——此时关键指标是带宽和容量。<strong>于是拆芯片就是对症下药</strong>：950PR 算力敏感而非带宽敏感，配相对廉价的 HiBL（带宽满足需求即可，把 die 面积和功耗集中在乘法器上，推荐系统的大规模前向同样 compute-heavy，共用合理）；950DT 带宽与容量敏感，配 HiZQ 2.0 HBM 4 TB/s（相对 PR 的 1.6 TB/s 是 2.5×，直接投向 decode 瓶颈）加 144 GB（让长 KV cache 和大模型权重不必那么早溢出），训练同理是带宽与容量敏感（梯度、优化器状态、激活反传）。<strong>这正好对应 RL 的两半</strong>：rollout 本质是 decode-heavy 的批量生成、memory-bound，瓶颈与 decode 同构；train 是 compute 加带宽混合但状态访存量巨大——把 prefill / decode 解耦成 PR / DT 两种 die，在系统层面天然就是把 RL 的 rollout 与 train 解耦，硬件分工和算法分工第一次实现对应，这也是"分离式 RL"能从论文走向落地的硬件前提。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-03-ascend-950/fig-2.svg" alt="950PR 算力密集端与 950DT 带宽显存敏感端分别对应 RL 的 rollout 生成端与 train 更新端">
+  <figcaption><span class="fnum">图 2</span>PR/DT 分工与 RL 结构的对应：950PR（prefill / 推荐，128 GB HiBL，约 1.6 TB/s，便宜大容量、带宽次要）对应 rollout 生成端；950DT（decode / 训练，144 GB HiZQ HBM，约 4 TB/s 加互联 2 TB/s，高带宽自研 HBM）对应 train 更新端；两组虚线分别标注"硬件层 prefill 与 decode 解耦"与"天然支持解耦 RL"。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染；规格为厂商口径。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>先看两条横向链的第四个节点：PR 链收束在"便宜大容量、带宽次要"，DT 链收束在"高带宽、自研 HBM"——这是 compute-bound 与 memory-bound 两种负载在 die 级别的物理分配，也是图中所有其他关系的来源。再看两条"对应"边：原文把 PR 对应 rollout、DT 对应 train，读时要注意这是<strong>按负载类型的对应</strong>而非严格绑定——rollout 是 decode-heavy 的 memory-bound 负载，按第 04 节的分析它更接近 DT 的特性；原文的对应关系强调的是"两种 die 承载两种负载"的分离式结构本身。最值得看的位置是两条虚线的平行关系：上面一条是硬件层的 prefill / decode 解耦，下面一条是算法层的 rollout / train 解耦，图的论点是这两条线第一次在结构上实现对应。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>解耦 RL 是系统设计层面的事（AsyncFlow / RollMux 一类），在同构 GPU 上通过软件把 rollout 池与 train 池分开；prefill 与 decode 的 PD 分离同样在推理框架层实现。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p>硬件层直接拆成两种 die：PR（HiBL，算力密集）与 DT（HiZQ HBM，带宽 / 显存敏感），带宽比 4 : 1.6 = 2.5×（<span class="chip c-vr">自报</span>）；但 rollout（PR / decode）与 train（DT）的跨 die 编排、KV / 权重路由、负载均衡需要调度层专门支持，目前是空白。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>GPU 侧的分离靠软件在同构硬件上划分，昇腾把分离<b>固化进硬件</b>——好处是硬件分工与算法分工第一次对应，是分离式 RL 落地的硬件前提；代价是调度层必须专门支持跨 die 编排，软件缺位时硬件分工无法转化为 RL 收益。原文对 compute-bound / memory-bound 的不对称给出了完整推导。对 RL-on-NPU 的含义：PR/DT 加大互联是把 rollout / train 解耦到不同资源池的天然载体，正好接 Dispatch 02 的异步线。</p>
+
+<h2 id="s5"><span class="hnum">05</span>三个改变接上 Dispatch 02 的两条软件主线</h2>
+
+<p>三个改变与两条软件主线的对应是本篇的核心结构：原生 FP8 / MXFP4 是 FP8 量化 rollout 的硬件落点；PR 与 DT 分工加大互联接 AsyncFlow / RollMux 一类的异步解耦；自研 HBM 大容量缓解显存争用，从而支撑解耦，同时为低精度配方留出余量。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-03-ascend-950/fig-3.svg" alt="昇腾 950 三个改变（原生 FP8/MXFP4、PR 与 DT 分工加大互联、自研 HBM 大容量）与 Dispatch 02 两条软件主线（FP8 量化 rollout、异步解耦）的对应">
+  <figcaption><span class="fnum">图 3</span>三个改变到两条软件主线的映射：原生 FP8 / MXFP4 → FP8 量化 rollout 落地（硬件落点）；PR 与 DT 分工加大互联 → 异步解耦 rollout 与 train（接 AsyncFlow / RollMux）；自研 HBM 大容量 → 异步解耦（缓解显存争用），并以虚线为 FP8 量化 rollout 留出余量。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>数边：三个改变发出四条边，两条软件主线各收到两条。<strong>异步解耦</strong>收到两条实线（PR/DT 分工、自研 HBM），说明它同时依赖分工与容量——分池之后每个池仍要装得下各自的状态；<strong>FP8 量化 rollout</strong> 收到一条实线（原生 FP8）与一条虚线（HBM 余量），说明它的硬前提只有一个，容量只是让低精度配方更从容。最值得看的位置是那条虚线：它表明三个改变不是一一对应两条主线，而是有交叉支撑——这也是为什么 950DT（同时带来 HBM 与 FP8）比 950PR 对 RL 更关键。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>两条软件主线（FP8 量化 rollout、异步解耦）已在 GPU 侧有公开工作与系统实现，硬件前提早已满足，主线的推进只受软件成熟度制约。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p>910B 上两条主线都缺硬件前提（无原生 FP8、64 GB 争用、无分离式 die）；950 逐项补齐硬件前提，但软件栈（CANN / vLLM-Ascend / MindSpeed-RL）尚未跟上。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>主线被卡在哪一层</b>：GPU 侧卡在软件，昇腾侧此前卡在硬件、950 之后也卡在软件。原文的判断是 950 几乎照着 Dispatch 02 的两条线设计。本站判断：这意味着昇腾 RL 的路线图在 950 之后与 GPU 侧同构，差异转为软件栈的时间差与数值一致性的验证负担。</p>
+
+<h2 id="s6"><span class="hnum">06</span>放进 SuperPoD：仍是"规模补效率"</h2>
+
+<p>单芯片华为仍落后（节点工艺、HBM 代际、能效）。它的答案一直是<strong>规模聚合</strong>：<strong>Atlas 950 SuperPoD 最多 8,192 颗 950DT</strong>（约 CM384 的 20×），UnifiedBus 互联约 16 PB/s，系统级约 <strong>8 EFLOPS FP8 / 16 EFLOPS FP4</strong>。路线图 <strong>950（2026）→ 960（2027）→ 970（2028）</strong>，每代算力大致翻倍，2028 目标 4 ZettaFLOPS FP4。思路和 CM384 对标 NVL72 一脉相承（见 Ascend 标签的"scale vs efficiency"卡）：用超节点聚合补单芯片效率。对大规模 RL 意味着：可以把 rollout 池和 train 池分到不同芯片或机柜，用大互联带宽支撑跨池通信。单芯片维度 950 仍落后于头部 GPU（约 1 PFLOPS FP8 单卡不是用来单点对标的），所以读这套规格要按"集群级"而非"单卡级"。<span class="chip c-vr">自报</span> EFLOPS、PFLOPS、带宽均待实测复现。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-03-ascend-950/fig-4.svg" alt="单芯片仍落后 → Atlas 950 SuperPoD 规模聚合 → rollout 池与 train 池分池、950→960→970 路线图">
+  <figcaption><span class="fnum">图 4</span>规模补效率的结构：单芯片在工艺、HBM 代际、能效上仍落后，答案是 Atlas 950 SuperPoD 规模聚合（最多 8,192 颗 950DT，约 CM384 的 20×；UnifiedBus 约 16 PB/s；系统级 8 EFLOPS FP8 / 16 EFLOPS FP4）；聚合之后可分出 rollout 池与 train 池，由大互联支撑跨池通信；路线图 950（2026）→ 960（2027）→ 970（2028，目标 4 ZettaFLOPS FP4）每代翻倍。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 图预渲染；全部数字为厂商口径。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>这张图有一个入口（单芯片落后）和三个出口（rollout 池、train 池、路线图），读法是<strong>看聚合节点如何把弱点转成结构</strong>：单芯片效率不足不是靠单芯片解决，而是靠 8,192 颗的互联规模与每代翻倍的节奏。分池那两个节点之间是虚线而非实线，表示跨池通信依赖 16 PB/s 的互联，这是 SuperPoD 对 RL 的具体价值——第 04 节的 PR/DT 分工在机柜级别再做一次。最值得看的位置是路线图链的最后一个节点"4 ZettaFLOPS FP4"：它是 2028 目标，读数时要与"每代大致翻倍"连起来看，这是一条承诺曲线而非已交付曲线。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>以单芯片效率为基础，系统级以 NVL72 为代表；规模与效率两者兼有。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p>以规模聚合补单芯片效率：SuperPoD 8,192 颗 950DT、16 PB/s UnifiedBus、8 EFLOPS FP8 / 16 EFLOPS FP4（<span class="chip c-vr">自报</span>）；对标关系是 CM384 对 NVL72 的延续。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差在<b>效率的来源</b>：一侧来自单芯片，一侧来自互联规模。原文的理由是工艺、HBM 代际与能效的差距短期无法补齐。对 RL-on-NPU 的含义：rollout 池与 train 池的分离在 SuperPoD 层面有了物理载体，但跨池通信量与 staleness 的关系（Dispatch 02 的异步线）需要在 16 PB/s 的实际可达带宽下重新评估——这一带宽同样是厂商口径。</p>
+
+<h2 id="s7"><span class="hnum">07</span>对 RL-on-NPU 的含义与现实约束</h2>
+
+<p><strong>四点含义。</strong>显存争用被硬件部分缓解：144 GB 加 4 TB/s 让 rollout / train 不必那么早时间分片，叠加 FP8 量化 rollout（占用更小），910B 上"无 sleep-mode"的痛点会明显减轻——但 sleep-mode 是软件能力，950 并不自动带来它。FP8 RL 成为高新颖度选题：硬件就位后，谁先在 950 上完成端到端 FP8 RL 并公布 train-inference 一致性，谁就率先填补这一空白。分离式 RL 有了对口硬件：PR/DT 加大互联是把 rollout / train 解耦到不同资源池的天然载体。数值漂移需重点监控：FP8 / MXFP4 加 NPU 上重写的算子会放大 train-inference mismatch，这正是看板里 align-probe 想法的用武之地。</p>
+
+<p><strong>三项现实约束。</strong>软件是真瓶颈，不是算力：CANN / vLLM-Ascend / MindSpeed-RL 要把 FP8 RL、sleep-mode 等价物、新算子全部跟上，硬件领先不等于栈成熟。950DT 要等到约 Q4 2026：训练与解码这颗最关键的年底才推出，上半年可获得的主要是 950PR。规格都还是厂商口径：EFLOPS、PFLOPS、带宽都待实测复现，本看板一律按 provisional 标注。<strong>硬件就位不等于软件可用</strong>——950 在硬件上提供了应有的能力，但每一项都对应一块需要软件栈跟上的空白：</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th>能力</th><th>硬件（950 提供）</th><th>软件（待 CANN / vLLM-Ascend / MindSpeed-RL 跟上）</th></tr></thead>
+<tbody>
+<tr><td>原生 FP8 计算</td><td>FP8 / MXFP4 计算单元就位，约 1 PFLOPS FP8 / 约 2 PFLOPS MXFP4</td><td>算子库要暴露 FP8 路径、量化 / 反量化 kernel、混精度调度；CANN 需完整支持</td></tr>
+<tr><td>sleep-mode 显存腾挪</td><td>144 GB 大容量加 4 TB/s 带宽，更晚触及容量上限</td><td>rollout / train 间显存挂起、换出、上下文快速切换，纯软件能力，硬件不自动带来</td></tr>
+<tr><td>FP8 RL 训推一致</td><td>原生 FP8 让量化 rollout 可运行</td><td>统一 FP8 量化语义、align-probe 监控、importance ratio 对齐，需 MindSpeed-RL 落地</td></tr>
+<tr><td>新算子（稀疏注意力等）</td><td>算力 / 带宽底座具备</td><td>稀疏注意力、长序列、PD 分离专用 kernel 要逐个重写并调优，数值还要对齐参考实现</td></tr>
+<tr><td>PR-DT 分离式调度</td><td>PR/DT 双 die 加 UnifiedBus 互联（2 TB/s 互联，16 PB/s 总线）</td><td>rollout（PR / decode）与 train（DT）的跨 die 编排、KV / 权重路由、负载均衡，调度层要专门支持</td></tr>
+</tbody>
+<caption>软件栈差距速查（provisional）。左列硬件能力为厂商口径；右列为本看板圈定的软件空白。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>CUDA 世界的默认做法</h5>
+  <p>上表右列的每一项——FP8 路径、sleep-mode、统一 FP8 语义、专用 kernel、PD 分离调度——在 GPU 软件栈中已有实现或公开工作，硬件与软件同时可用。</p></div>
+  <div class="real"><h5>昇腾上的现状</h5>
+  <p>五项能力的硬件底座随 950 到位（DT 部分要等 Q4），软件五项全部待补；CANN / vLLM-Ascend / MindSpeed-RL 的成熟度决定表中多少能力真能用上。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span><b>硬件抬高上限，软件决定可达</b>。原文明确把软件列为真瓶颈，并把三项约束（软件、DT 时间、规格口径）并列。本站判断：五项软件空白中，align-probe 与统一 FP8 语义是其余四项的前置——没有数值一致性验证，FP8 路径、新算子与分离式调度的收益都无法被信任。</p>
+
+<h2 id="s8"><span class="hnum">08</span>总表：CUDA 默认做法 vs 昇腾现状</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th>主题</th><th>CUDA 世界的默认做法</th><th>昇腾上的现状（910B → 950）</th><th>本站判断 / 对 RL 的含义</th></tr></thead>
+<tbody>
+<tr><td>规格可信度</td><td>第三方实测可查</td><td>全部厂商 / 媒体口径，provisional；DT 约 Q4 2026 到位</td><td>上半年仅能在 PR 上做 rollout 侧准备</td></tr>
+<tr><td>显存争用</td><td>sleep-mode 由 vLLM / 训练框架实现</td><td>910B 64 GB @ 约 0.4 TB/s 被迫时间分片；950DT 144 GB @ 约 4 TB/s（2.25× / 约 10×）缓解，仍无 sleep-mode</td><td>缓解不是消除；sleep-mode 等价物仍要软件实现</td></tr>
+<tr><td>FP8 rollout</td><td>量化 rollout 配方与 Miles 统一 FP8 已有公开工作</td><td>910B 无原生 FP8；950 原生 FP8 / MXFP8 / HiF8 / MXFP4，约 1 PFLOPS FP8 / 约 2 PFLOPS MXFP4；CANN 路径待补</td><td>FP8 RL on Ascend 是空白领域；align-probe 加统一量化语义是前置</td></tr>
+<tr><td>rollout / train 解耦</td><td>AsyncFlow / RollMux 一类系统在同构 GPU 上分池</td><td>PR（HiBL，算力密集）/ DT（HiZQ HBM，带宽敏感）双 die，带宽 2.5×；跨 die 调度空白</td><td>硬件分工与算法分工首次对应，是分离式 RL 的硬件前提</td></tr>
+<tr><td>系统规模</td><td>单芯片效率加 NVL72 级系统</td><td>SuperPoD 8,192 颗 950DT（约 CM384 的 20×），16 PB/s，8 EFLOPS FP8 / 16 EFLOPS FP4；950 → 960 → 970 每代翻倍</td><td>按集群级而非单卡级读规格；跨池通信依赖互联实测</td></tr>
+<tr><td>供应链</td><td>依赖外部高端 HBM</td><td>HiBL 1.0 / HiZQ 2.0 自研 HBM，绕开出口管制制约</td><td>长期演进产品线能否持续放量的前提</td></tr>
+<tr><td>软件栈</td><td>硬件与软件同时可用</td><td>五项能力硬件到位、软件全部待补（第 07 节表）</td><td>软件是真瓶颈，硬件领先不等于栈成熟</td></tr>
+</tbody>
+<caption>左栏为 GPU 侧默认做法（以原文引用的工作与系统为限），中栏为昇腾 910B 与 950 的现状，右栏为本站判断。所有 950 数字为厂商口径。</caption>
+</table>
+</div>
+
+<h2 id="s9"><span class="hnum">09</span>原文没给的东西与未能核实的东西</h2>
+
+<p>以下是复现或选型时必须自行确定、原文未给理由，或仅有厂商口径而无独立复现的条目：</p>
+
+<ul>
+<li><strong>全部 950 规格</strong>（128 / 144 GB、1.6 / 4 TB/s、2 TB/s 互联、约 1 PFLOPS FP8 / 约 2 PFLOPS MXFP4、上市时间）：华为 Connect 2025 与分析师 / 媒体口径，无实测；</li>
+<li><strong>910B 带宽约 0.4 TB/s</strong>：原文注明各源口径不一，"带宽约 10×"的比较基线因此不确定；</li>
+<li><strong>SuperPoD 数字</strong>（8,192 颗、16 PB/s、8 EFLOPS FP8 / 16 EFLOPS FP4、约 CM384 的 20×）与 <strong>950 → 960 → 970 每代翻倍、2028 年 4 ZettaFLOPS FP4</strong>：路线图承诺，非交付数据；</li>
+<li><strong>HiBL 1.0 与 HiZQ 2.0 的工艺、代际与能效</strong>：原文仅指出单芯片在工艺、HBM 代际、能效上仍落后，未给出量化差距；</li>
+<li><strong>HiF8 与 MXFP8 的数值格式细节</strong>：原文列出支持的格式名称，未说明与 FP8 E4M3 / E5M2 等参考格式的关系；</li>
+<li><strong>FP8 rollout 在 950 上的实际收益</strong>：原文给出机理（memory-bound decode 受益于字节数减少）但无 950 上的吞吐或显存实测；</li>
+<li><strong>PR/DT 跨 die 调度的延迟与带宽实测</strong>：2 TB/s 互联为厂商口径，跨 die 路由 KV 与权重的实际代价未知；</li>
+<li><strong>CANN / vLLM-Ascend / MindSpeed-RL 的 FP8 与 sleep-mode 时间表</strong>：原文列为待跟上的空白，无官方时间点；</li>
+<li>原文引用的媒体与分析师报道未附链接，本页无法给出可点击的一手来源；本页无原图，全部为本站图。</li>
+</ul>
+
+<div class="note">
+  <span class="ntitle">三条可以直接搬走的判断</span>
+  <p><strong>一、硬件给空间，软件给能力。</strong>144 GB 与 4 TB/s 推迟显存争用，但 sleep-mode、FP8 路径、跨 die 调度全是软件能力；950 抬高的是上限，CANN / vLLM-Ascend / MindSpeed-RL 的成熟度决定可达。</p>
+  <p><strong>二、原生 FP8 是必要条件，训推一致是充分条件。</strong>FP8 rollout 的 logprob 漂移会经 importance ratio 直接进入策略梯度，新硬件的重写算子进一步放大；align-probe 加统一 FP8 量化语义应先于任何 FP8 RL 实验就位。</p>
+  <p><strong>三、分离式 RL 第一次有了对口硬件。</strong>PR/DT 双 die 加 SuperPoD 互联是把 rollout 池与 train 池分开的物理载体，与 Dispatch 02 的异步解耦线直接衔接；但 950DT 年底才到，2026 年上半年只能做 PR 侧准备。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>CANN / vLLM-Ascend 何时把 FP8 RL 路径打通</strong>，以及有没有 sleep-mode 的等价方案 · <strong>950DT 出货后的真实 HBM 带宽与能效实测</strong>，对照 910B 看 RL 吞吐提升 · <strong>第一篇"950 加 FP8 RL"的端到端工作</strong>——这会是 RL-on-NPU 最有分量的里程碑。</p>
+</div>
+
+</main>
+
+<footer>
+  来源与声明：华为 Connect 2025 主题演讲与 Ascend 路线图、TrendForce / Tom's Hardware / 分析师报道（950PR / 950DT 规格、Atlas 950 SuperPoD、950 → 970 路线图）；均为厂商 / 媒体口径，provisional，以实际出货与独立实测为准。相关卡片见本看板 Ascend / NPU 标签页。本页图片均为本站根据原文 mermaid 图预渲染。
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>
