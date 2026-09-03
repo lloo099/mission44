@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 11 精读版 · vLLM vs SGLang</title>
+<meta name="description" content="vLLM/Inferact 与 SGLang/RadixArk：同源、同台、同期商业化的两家伯克利系推理公司——引擎机制、战略、投资视角与昇腾 rollout 引擎选型，左 vLLM 右 SGLang 逐节对照，配三张原图与四张本站图解析。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-11-vllm-vs-sglang.html">
+<meta property="og:title" content="Dispatch 11 精读版 · vLLM vs SGLang">
+<meta property="og:description" content="vLLM/Inferact 与 SGLang/RadixArk：同源、同台、同期商业化的两家伯克利系推理公司——引擎机制、战略、投资视角与昇腾 rollout 引擎选型，左 vLLM 右 SGLang 逐节对照，配三张原图与四张本站图解析。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-11-vllm-vs-sglang.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-11-vllm-vs-sglang.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-11-vllm-vs-sglang">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-11-vllm-vs-sglang.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 11 · 精读版 · 2026-06-25</div>
+  <h1>vLLM/Inferact 与 SGLang/RadixArk：两家伯克利系推理公司的竞争格局</h1>
+  <p class="standfirst">2026 年 1 月，两大开源推理引擎几乎同时商业化：vLLM 组建 Inferact（8 亿美元估值、1.5 亿美元种子），SGLang 组建 RadixArk（约 4 亿美元估值、1 亿美元种子）。本文把原文的公司、引擎、战略、性能、投资、昇腾六个层面逐一拆开，每节固定给出"vLLM / Inferact"与"SGLang / RadixArk"两栏，再给出差异所在与对 RL-on-NPU 的含义。估值与融资均为媒体报道口径（provisional），非投资建议。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D11</span>
+    <span>承接 D09 / D10</span>
+    <span>原图 3 张 · 本站图 4 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>两家公司</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>引擎之争</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>前缀复用的经济学</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>APC 与基数树的边界</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>战略差异与双入口</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>训推一致为何是真痛点</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>分场景性能对比</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>谁赢哪块与共存</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>投资视角</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>对 RL-on-NPU 的意义</a></li>
+    <li><a href="#s11"><span class="tnum">11</span>总表：vLLM vs SGLang</a></li>
+    <li><a href="#s12"><span class="tnum">12</span>原文没给的东西</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">两家公司同源（UC Berkeley）、同台（推理）、同期（2026 初）商业化，却走了<strong>广度</strong>与<strong>专精</strong>两条路。vLLM 的优势在生态广度、社区、硬件中立与资金；SGLang 的优势在 prefix-heavy / agent 场景性能（RadixAttention）与自带的 RL 训练框架 Miles。对 RL-on-NPU，两个引擎都有 Ascend 后端，是 rollout 引擎选型的两个主选项：SGLang 的 RadixAttention 与 Miles 的 R3 / FP8 使其在"RL 训练侧"叙事更完整，vLLM 则以 vLLM-Ascend 的广覆盖见长。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段：<strong>vLLM / Inferact</strong>（左栏，灰）/ <strong>SGLang / RadixArk</strong>（右栏，橙）/ <strong>差在哪</strong>（下方色块）。数字按来源分三类标注：<span class="chip c-tp">第三方</span> 独立测量或多方媒体报道、<span class="chip c-vr">自报</span> 厂商或官方口径、<span class="chip c-inf">推断</span> 本站分析。原文标注为 provisional 的估值、融资、性能倍数在本文中一律保留该限定语。</p>
+  <p>一条贯穿全文的线索：<strong>性能差距是负载的函数，不是引擎的固有属性</strong>。同一对引擎在唯一 prompt 批处理上趋同，在 group rollout 上可差出数倍——决定结果的是前缀共享度、序列长度、并发与到达模式、batch 构成、精度配置与硬件。所有"快多少"都应读作"在什么负载下谁的架构更占便宜"。</p>
+</div>
+
+<div class="formula">两家公司 · 一句话
+  Inferact  ← vLLM    8 亿美元估值 / 1.5 亿美元种子   a16z + Lightspeed   40 万+ GPU   <span class="cmt">// 通用、稳、生态最大</span>
+  RadixArk  ← SGLang  约 4 亿美元估值 / 1 亿美元种子  Accel（Intel CEO 天使）  日均万亿 token  <span class="cmt">// prefix-heavy / agent 专精 + Miles</span>
+  ─────────────────────────────────────────────────────────────────────────
+  整体吞吐 SGLang 高约 29%（provisional）· prefix-heavy 可达 6×（provisional）· 唯一 prompt 批任务两者趋同</div>
+
+<h2 id="s1"><span class="hnum">01</span>两家公司：同源、同台、同期</h2>
+
+<p>2026 年 1 月，<strong>vLLM → Inferact</strong>：8 亿美元估值、1.5 亿美元种子，a16z + Lightspeed 领投（另有 Sequoia / Altimeter / Redpoint / ZhenFund），创始团队 Simon Mo、Woosuk Kwon、Kaichao You、Roger Wang + Ion Stoica（Databricks 联创），vLLM 运行在 40 万+ GPU 上。<strong>SGLang → RadixArk</strong>：约 4 亿美元估值、1 亿美元种子，Accel 领投，Intel CEO 陈立武（Lip-Bu Tan）天使，创始为 SGLang 核心团队（LMSYS 系），2026-01 spin-out、2026-05 launch，引擎日均处理万亿 token。两家均出自 UC Berkeley 系，面向同一个高速增长的推理市场。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-1.svg" alt="两家公司谱系图：UC Berkeley 与 LMSYS 同源，左支 Inferact 源自 vLLM，右支 RadixArk 源自 SGLang，各列估值、领投、创始、规模与定位">
+  <figcaption><span class="fnum">图 1</span>两家公司的谱系：根节点为 UC Berkeley / LMSYS 同源，左支 Inferact（vLLM）依次列出估值、领投、创始团队、40 万+ GPU 与"通用稳、生态最大"定位；右支 RadixArk（SGLang）依次列出估值、领投、天使、Miles 与"prefix-heavy / agent 专精"定位。<span class="chip c-inf">本站图</span> 由原文第 1 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>两条链的前三个节点是资本与团队（估值、领投、创始），后两个节点是产品与定位——真正决定长期格局的是最后一个节点。左链的终点是"事实默认"，右链的终点是"专精"，而右链倒数第二个节点（Miles，FP8 + R3）是左链完全没有的一环：<strong>RadixArk 的谱系里多出一个训练侧产品</strong>。</p>
+    <p>估值差（8 亿 vs 约 4 亿美元）与 GPU 装机量（40 万+ 对日均万亿 token）分别落在两链的第一与第四节点，读图时注意二者口径不同：前者为媒体报道，后者为各自官方口径，均为 provisional，不能直接换算成市场份额。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>vLLM / Inferact</h5>
+  <p><span class="chip c-tp">第三方</span> 8 亿美元估值、1.5 亿美元种子（媒体报道，provisional）；a16z + Lightspeed 领投；<span class="chip c-vr">自报</span> 40 万+ GPU 在跑。团队牌面为 vLLM 核心开发者加 Ion Stoica。</p></div>
+  <div class="real"><h5>SGLang / RadixArk</h5>
+  <p><span class="chip c-tp">第三方</span> 约 4 亿美元估值、1 亿美元种子（媒体报道，provisional）；Accel 领投、Intel CEO 天使；<span class="chip c-vr">自报</span> 日均万亿 token。团队为 SGLang 原班（LMSYS 系），自带 RL 训练框架 Miles。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>估值差一倍，反映的是社区与生态规模的差异，而非技术能力的差异；原文明确把 RadixArk 描述为"相对便宜，且多一条 RL 训练腿"。<span class="chip c-inf">推断</span> 两家以同一批投资机构可比的口径同期定价，是少见的"同赛道对照实验"——后续观察指标（托管收入、采用份额、非 NVIDIA 硬件覆盖）在两家之间直接可比。</p>
+
+<h2 id="s2"><span class="hnum">02</span>引擎之争：PagedAttention vs RadixAttention</h2>
+
+<p>承接 D10。<strong>vLLM / PagedAttention</strong>：用分页管理 KV、解决显存碎片；前缀缓存是精确哈希命中（APC）。通用、稳、生态最大——支持的模型 / 硬件最广，是事实上的默认。<strong>SGLang / RadixAttention</strong>：用基数树 + cache-aware 调度做自动前缀复用，多轮 / agent / RAG / fork 场景强。整体吞吐比充分优化的 vLLM 高约 29%，prefix-heavy 下可达 6×；唯一 prompt 批任务两者趋同。一句话：vLLM 是"什么都能跑得不错"的默认，SGLang 是"在前缀重度 / agent 上更快"的专精。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-2.svg" alt="引擎机制对照图：vLLM 分页 KV 与精确哈希 APC，SGLang 基数树与 cache-aware 调度，两者在 prefix-heavy 场景的吞吐差异与唯一 prompt 场景的趋同">
+  <figcaption><span class="fnum">图 2</span>引擎机制对照：上左 vLLM 链（分页 KV → APC 精确哈希 → 通用稳）、上右 SGLang 链（基数树 → cache-aware 调度 → 多轮 / agent / RAG / fork 强），下方为 prefix-heavy 场景：共享长前缀的大量请求分别进入两条路径，SGLang 路径标注"高约 29%，prefix-heavy 可达 6 倍"，两条路径共同汇入"唯一 prompt 批任务两者趋同"。<span class="chip c-inf">本站图</span> 由原文第 2 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>看下方子图的两条边：从"大量请求共享同一长前缀"出发，左边到 vLLM 的精确哈希命中，右边到 SGLang 的基数树自动复用——<strong>差异只发生在这个分岔上</strong>。29% 与 6× 两个数字（<span class="chip c-vr">自报</span> 官方口径，provisional）只挂在右边分支之后，且最下方两条边同时汇入"趋同"节点，说明数字是条件性的：前缀共享度为零时分岔消失。</p>
+    <p>上方两条链的第二个节点（APC 与 cache-aware 调度）是理解第 04 节的关键：vLLM 的前缀复用是<strong>被动命中</strong>（内容哈希相同即命中），SGLang 的是<strong>主动制造</strong>（调度器优先编排能命中缓存的请求）。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>vLLM / Inferact</h5>
+  <p>PagedAttention 以分页管理 KV cache，解决显存碎片；前缀缓存为 APC 精确哈希命中。定位是通用、稳、覆盖最广的事实默认。</p></div>
+  <div class="real"><h5>SGLang / RadixArk</h5>
+  <p>RadixAttention 以基数树组织 KV，cache-aware 调度自动复用前缀；<span class="chip c-vr">自报</span> 整体吞吐高约 29%（provisional），prefix-heavy 场景可达 6×（provisional）。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>两者都有分页 KV 与前缀缓存，差异在<b>缓存的组织结构</b>（扁平哈希表 vs 树）与<b>调度是否感知缓存</b>。原文给出的 29% / 6× 是官方口径且在各自充分优化的特定基准下得到，原文自己标注为 provisional，并强调唯一 prompt 批任务两者趋同——这是全文最重要的限定语。</p>
+
+<h2 id="s3"><span class="hnum">03</span>前缀复用的经济学：为什么 2026 的负载天然 prefix-heavy</h2>
+
+<p>推理服务里真正花钱的部分是 <strong>prefill（前缀计算）</strong>与 <strong>KV cache 的占用</strong>：一个请求进来，模型要先把所有输入 token 过一遍注意力生成 KV 张量，算力开销随上下文长度线性增长。若两个请求共享同一段开头（system prompt、few-shot 示例、工具定义、检索文档），这段开头的 KV 理论上只需算一次、存一份——这就是前缀复用的全部经济学。问题在于：谁能自动、低成本、跨请求地发现并复用这些共享前缀。</p>
+
+<p>2026 的主流 workload 天然 prefix-heavy，是 agentic 应用的结构性特征：<strong>多轮对话</strong>（第 N 轮 = 前 N−1 轮完整历史 + 新一句，前缀重叠度极高且单调增长）；<strong>agent 工具循环</strong>（system prompt + 工具 schema + 历史 thought / action / observation 构成不断追加的长前缀，一个任务跑十几个工具步就是十几次高度重叠的请求）；<strong>RAG</strong>（同一批检索文档反复置于 prompt 头部）；<strong>group rollout / best-of-n / fork</strong>（同一 prompt 派生多条采样分支，只在生成端分叉——前缀复用收益最极端的场景）。共同点是：前缀不是偶然重合，而是由应用逻辑保证的大段重叠。</p>
+
+<div class="vs">
+  <div class="base"><h5>vLLM / Inferact</h5>
+  <p>APC 对 system prompt 复用、共享 few-shot、固定文档头这类<strong>对齐良好的前缀</strong>同样能省掉 prefill，效果可以与 RadixAttention 很接近。</p></div>
+  <div class="real"><h5>SGLang / RadixArk</h5>
+  <p>树结构在<strong>动态分叉、不定长追加、cache-aware 主动调度</strong>上更顺手；prefix-heavy 且高并发交错时命中率维持得更好。6× 来自把本该重复做的 prefill 几乎全部省掉。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>四类负载中，两者差距按"前缀对齐程度"排序：固定文档头（RAG）最接近，工具循环与 group rollout 拉开最大。原文的判断是：RadixAttention 的溢价完全投入在"未来的负载越来越 prefix-heavy"这一判断上，而 2026 的 agentic 浪潮恰好在兑现它。<span class="chip c-inf">推断</span> 对 RL 训练而言，group rollout 正是前缀复用收益最极端的负载，这解释了为何多条 RL 栈默认选 SGLang 做 rollout（见第 08 节）。</p>
+
+<h2 id="s4"><span class="hnum">04</span>APC 与基数树：命中机制的边界</h2>
+
+<p>RadixAttention 把所有活跃请求的前缀组织成一棵基数树：每个节点是一段 token 序列，根到任意节点的路径就是一个被缓存的前缀，对应一块 KV。新请求沿树做最长公共前缀匹配，匹配到的部分直接挂载已有 KV、<strong>完全跳过 prefill</strong>，只对新增尾部算注意力。两个工程点：一是缓存以树而非扁平哈希表组织，共享前缀自然形成共享路径，分叉点之下各自延伸，天然适配 fork / 多分支；二是 cache-aware 调度——调度器优先编排能命中已有缓存的请求，并据此做缓存淘汰（树上的 LRU），让"命中"从偶发变成被调度主动制造的常态。</p>
+
+<p>vLLM 的 APC（Automatic Prefix Caching）用精确哈希对 KV block 分块缓存，只要前缀的 block 内容逐块哈希相同就命中。差距在于：APC 是块级精确匹配，前缀对齐和 block 边界稍有偏移就可能错过命中。反过来，当 workload 是"每条 prompt 都唯一、几乎没有共享前缀"的批处理（一次性、互不相关的离线打分 / 抽取），前缀复用本身无收益，两套机制都退化为只靠分页 KV 提升显存利用率，此时二者趋同——公认两家差距最小的场景。</p>
+
+<figure>
+  <img src="img/dispatch-11-vllm-vs-sglang/orig-1.png" alt="vLLM 前缀缓存组件总览：Block Pool 双向链表、Free Block Queue 的头尾指针、Cache Blocks 的 Hash Key 到 Block IDs 映射、Request Blocks 的 Request ID 到 Block IDs 映射">
+  <figcaption><span class="fnum">图 3</span>vLLM v1 前缀缓存（APC）的组件总览：Block Pool 是一个按 ID 编号的块列表（每块含 Hash / Prev / Next），Free Block Queue 以 Head / Tail 指针串起空闲块，下方两张表分别是 Cache Blocks（Hash Key → Block IDs）与 Request Blocks（Request ID → Block IDs）。<span class="chip c-vr">自报</span> 取自 vLLM 官方仓库设计文档（vllm-project/vllm，docs/assets/design/prefix_caching/overview.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>这张图画的正是原文所说"精确哈希"的数据结构：左下的 Cache Blocks 表是一个<strong>扁平的哈希表</strong>，键是块内容的哈希，值是块 ID；命中与否只取决于"这一块的哈希是否已在表中"。没有任何结构表达"块 A 是块 B 的前缀"——这就是原文所说"块级精确匹配、对齐稍有偏移即错过命中"的根源。</p>
+    <p>Block Pool 的双向链表与 Free Block Queue 负责的是分页 KV 的分配与回收（PagedAttention 的显存碎片治理），与前缀复用是两个独立机制。对照第 02 节：SGLang 把"缓存组织"从右下这张表换成一棵树，而"分页分配"这一层两家是同类的——这也是唯一 prompt 场景两者趋同的结构性原因。</p>
+  </div>
+</figure>
+
+<figure>
+  <img src="img/dispatch-11-vllm-vs-sglang/orig-2.png" alt="vLLM 前缀缓存示例：Request 0 的 prompt A-O 被切成四个 block，前三块哈希为 A-D、A-H、A-L 并登记进 Cache Blocks，第四块 MNO 未满不做哈希；Block Pool 剩余 6 个空闲块">
+  <figcaption><span class="fnum">图 4</span>APC 的分块示例：Request 0 的 prompt（token A–O）按每块 4 个 token 切成 ID 0–3 四块，前三块的哈希键分别为 A-D、A-H、A-L（每块哈希包含其前缀），登记进 Cache Blocks；第四块（MNO）未满，Hash 为 None；Block Pool 中 ID 4–9 仍在空闲队列，num_free_blocks = 6。<span class="chip c-vr">自报</span> 取自 vLLM 官方仓库设计文档（docs/assets/design/prefix_caching/example-time-1.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>注意哈希键的写法：第二块的键不是 EFGH 而是 <strong>A-H</strong>，第三块是 A-L——每块的哈希把它之前的全部内容都算了进去，因此命中一个块就等价于命中从头到该块的整段前缀。这一设计让 APC 在<strong>对齐良好的固定前缀</strong>（system prompt、固定文档头）上与树结构效果接近，与原文"RAG 长前缀差距收窄"一致。</p>
+    <p>再看第四块：MNO 只有 3 个 token、未满一块，Hash 为 None，不进缓存表。这就是"block 边界"约束的可视化——不足一块的尾部无法复用，而前缀若在中途偏移一个 token，其后所有块的哈希全部改变。agent 工具循环里每一步都在不定长追加，RAG 文档若在不同 query 间位置微移，命中链就会断在偏移点之后；SGLang 的基数树按 token 序列最长公共前缀匹配，没有这一约束。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>vLLM / Inferact</h5>
+  <p>块级精确哈希（图 3、图 4）：对齐良好时命中率高、实现简单；前缀对齐与 block 边界偏移会错过命中；fork 分叉非其最优结构。</p></div>
+  <div class="real"><h5>SGLang / RadixArk</h5>
+  <p>树上最长公共前缀匹配 + LRU 淘汰 + cache-aware 调度：分叉点之下各自延伸，命中由调度主动制造；不定长追加与高并发交错下命中率维持更好。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>两者真正拉开差距的三个条件是<b>动态分叉、不定长追加、高并发交错</b>；三者都不满足时（唯一 prompt 批处理）趋同，只满足"固定长前缀"时（RAG）接近。原文没有给出不同 block 大小或不同对齐偏移下的命中率数据，29% / 6× 之间的中间值需要按自有负载复现。</p>
+
+<h2 id="s5"><span class="hnum">05</span>战略差异：单入口与双入口</h2>
+
+<p>核心叙事：vLLM / Inferact 是"最广的开源推理标准"，SGLang / RadixArk 是"最快的 agent / 前缀场景 + RL 训练（Miles）"。硬件：vLLM 中立、覆盖最广（含 vLLM-Ascend）；SGLang-Ascend 等覆盖较窄但在追。训练侧：vLLM 主打推理；SGLang 同时握 RL 后训练（Miles：FP8 + R3）。生态 / 资金：前者更大更厚，后者较小更聚焦。团队牌面：Ion Stoica 对 SGLang 原班 + Intel CEO 背书。最大的结构差异：<strong>RadixArk 同时卡住"推理 + RL 训练"两个入口</strong>，而 Inferact 目前更纯粹是推理，这让 RadixArk 在"前沿 MoE 后训练"这条线上的故事更完整（D09）。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-3.svg" alt="入口结构图：推理入口有 vLLM 与 SGLang 两家，RL 训练入口只有 Miles；vLLM 指向 Inferact 单入口，SGLang 与 Miles 共同指向 RadixArk 双入口">
+  <figcaption><span class="fnum">图 5</span>入口结构：推理入口下 vLLM 与 SGLang 并列，RL 训练入口下仅有 Miles（RadixArk，FP8 + R3）；vLLM 汇入"Inferact 单入口——目前更纯推理"，SGLang 与 Miles 共同汇入"RadixArk 双入口——训推一体结构优势"。<span class="chip c-inf">本站图</span> 由原文第 3 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>图的重点是右下节点有<strong>两条入边</strong>而左下只有一条。RL 训练入口这个子图里没有 vLLM 的节点——这不是说 vLLM 不能做 rollout（verl 等框架默认支持 vLLM），而是 Inferact 作为公司没有训练侧产品。</p>
+    <p>"双入口"成立的前提写在第 06 节：rollout 本质上是高吞吐推理，且是 group rollout 这种最极端的 prefix-heavy 负载，所以推理引擎的前缀复用优势可以直接转化为训练采样成本优势。Miles 是否被头部实验室真实采用，是这条边是否成立的关键观察指标。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>vLLM / Inferact</h5>
+  <p>推理单入口：最广的开源推理标准，硬件中立、覆盖最广（含 vLLM-Ascend），生态与资金更厚，团队加 Ion Stoica。目前更纯粹是推理。</p></div>
+  <div class="real"><h5>SGLang / RadixArk</h5>
+  <p>推理 + RL 训练双入口：SGLang 负责服务与采样，Miles（FP8 + R3）把采样能力接进训练循环；硬件覆盖较窄但在追（SGLang-Ascend）。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>Inferact 卖的是分发与默认入口，RadixArk 卖的是"前沿后训练的一致性基础设施"。原文判断后者是<b>粘性更高、更难被纯价格战商品化</b>的位置，但明确附加前提："Miles 真的被头部实验室采用"——这一前提原文标注为未证实。</p>
+
+<h2 id="s6"><span class="hnum">06</span>训推一致为何是真痛点</h2>
+
+<p><strong>RL 后训练的瓶颈在采样，而采样就是推理。</strong>一个典型的 RLHF / RLVR 训练步：用当前 policy 对一批 prompt 做 rollout，拿到 response 后打分、算优势、回传梯度更新权重。rollout 阶段占训练墙钟时间的大头，本质是高吞吐推理，且是最极端的 prefix-heavy + group rollout 场景（同一 prompt 采 n 条）。谁的推理引擎快、前缀复用好，谁的 RL 采样就便宜。SGLang 把推理做到领先，Miles 则把这套采样能力直接接进训练循环——同一家、同一引擎覆盖"采样—训练"与"服务"两条价值链。</p>
+
+<p><strong>训推一致（train/infer consistency）</strong>：RL 训练里有一类隐蔽而致命的 bug——训练时算 logprob 的引擎与采样 / 服务时生成 token 的引擎不是同一套实现。即便同一权重，不同 kernel、attention 实现、数值精度、batching / padding 都会让同一 (prompt, token) 的 logprob 出现微小漂移；在 RL 里这种漂移会被放大：重要性采样比率 π<sub>new</sub>/π<sub>old</sub> 直接吃 logprob 差，漂移污染优势估计、使 PPO / GRPO 的梯度方向失真，表现为训练不稳、reward 崩塌，或"线下评估好、上线就退化"。用同一引擎做采样和服务，意味着 rollout 分布、训练 reference 分布、部署服务分布同源——把漂移从架构上消掉，而非事后对齐补丁。Miles 强调 FP8 + R3（训推一致，provisional）正是冲着这一点：让低精度采样既快又数值上可信。</p>
+
+<div class="vs">
+  <div class="base"><h5>vLLM / Inferact</h5>
+  <p>原文未给 vLLM 侧的训推一致方案；vLLM 作为 rollout 引擎时，一致性需由训练框架层处理（原文未展开）。</p></div>
+  <div class="real"><h5>SGLang / RadixArk</h5>
+  <p><span class="chip c-vr">自报</span> Miles：FP8 + R3 训推一致（provisional，D09）。采样、reference、服务同源，结构性消除 logprob 漂移。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>这一节是原文对"双入口为何更完整"的机制解释，而非实测：原文没有给出 Miles 在具体模型上的漂移量或 FP8 采样对最终 reward 的影响数字。<span class="chip c-inf">推断</span> 训推一致问题在异构硬件上会被进一步放大（D23 有展开），因此它对昇腾的意义大于对 GPU 单栈的意义——这正是第 10 节把 Miles 落昇腾列为最值得追的工程线的原因。</p>
+
+<h2 id="s7"><span class="hnum">07</span>分场景性能对比（provisional）</h2>
+
+<p>下表均为 provisional（媒体 / 官方口径，非实测，非投资建议），用于说明结构性差异而非给出通用排名。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:190px">场景</th><th>vLLM 表现</th><th>SGLang 表现</th><th style="width:220px">说明</th></tr></thead>
+<tbody>
+<tr><td>唯一 prompt 批处理（离线、无共享前缀）</td><td>强：PagedAttention / 分页 KV 解决显存碎片，吞吐高</td><td>相当：前缀复用无用武之地，退化为同类显存优化</td><td>两者趋同，公认差距最小；拼 kernel / 调度细节而非前缀机制</td></tr>
+<tr><td>多轮对话</td><td>APC 可缓存上一轮历史前缀，命中良好</td><td>树结构天然命中单调增长的历史前缀</td><td>SGLang 略优，差距随轮数与并发交错增大</td></tr>
+<tr><td>agent 工具循环（ReAct）</td><td>APC 块级命中，前缀对齐良好时有效</td><td>cache-aware 调度 + 树结构，主动制造命中</td><td>SGLang 优势明显，工具步越多、前缀越长收益越大</td></tr>
+<tr><td>RAG 长前缀（共享文档头）</td><td>APC 对固定文档头命中好，效果接近</td><td>文档前缀复用同样强</td><td>接近；对齐良好的固定长前缀是 APC 强项</td></tr>
+<tr><td>group RL rollout（同 prompt 多采样 / fork）</td><td>可缓存共享 prompt，但 fork 分叉非其最优结构</td><td>最极端收益场景，prefix-heavy 可达约 6×</td><td>SGLang 优势最大；fork / 分支正是基数树设计目标</td></tr>
+</tbody>
+<caption>原文表 3.5 的重排。所有"快多少"均为 provisional 口径；任何采购决策应以自己真实流量的复现基准为准。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>vLLM / Inferact</h5>
+  <p>在五类场景中无一落后到不可用：唯一 prompt 批处理最强，RAG 接近，多轮略逊，工具循环与 group rollout 明显落后。很多场景下"够快 + 生态 / 可移植性"比峰值吞吐更重要。</p></div>
+  <div class="real"><h5>SGLang / RadixArk</h5>
+  <p>优势随前缀共享度单调放大：批处理趋同 → 多轮略优 → 工具循环明显 → group rollout 最大（<span class="chip c-vr">自报</span> 约 6×，provisional）。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>原文强调这张表要读作"<b>在什么负载下谁的架构更占便宜</b>"的地图，而非总分榜：决定结果的是前缀共享度、序列长度、并发与到达模式、batch 构成、精度配置、硬件；换一组超参或负载，顺序甚至可能反转。29% / 6× 是在各自充分优化的特定基准下得到的官方口径。</p>
+
+<h2 id="s8"><span class="hnum">08</span>谁赢哪块，会共存吗</h2>
+
+<p>生产部署默认：vLLM（广度、社区、硬件）。prefix-heavy / agent / 结构化输出 / RL rollout：SGLang。大多数团队 2026 年其实在两者之间二选一——很多 RL 栈（AReaL、Miles）默认用 SGLang 做 rollout，而通用服务默认 vLLM。两者<strong>长期共存</strong>的概率高于一家通吃。</p>
+
+<figure>
+  <img src="img/dispatch-11-vllm-vs-sglang/orig-3.png" alt="SGLang 采用方 logo 墙：xAI、NVIDIA、AMD、Intel、LinkedIn、Cursor、Oracle、Google Cloud、Microsoft Azure、AWS、Atlas Cloud、Voltage Park、Nebius、Novita、DataCrunch、RunPod、innomatrix、MIT、UCLA、UW、Stanford、Berkeley、CMU、清华、百度、baseten、Meituan、微信、蚂蚁集团、阿里云、腾讯云等">
+  <figcaption><span class="fnum">图 6</span>SGLang 官方 README 引用的采用方一览：五行 logo 依次为模型与芯片厂商（xAI、NVIDIA、AMD、Intel）与应用方（LinkedIn、Cursor）、公有云（Oracle、Google Cloud、Azure、AWS、Atlas Cloud）、GPU 云（Voltage Park、Nebius、Novita、DataCrunch、RunPod）、高校（MIT、UCLA、UW、Stanford、Berkeley、CMU、清华）与国内互联网（百度、美团、微信、蚂蚁、阿里云、腾讯云）。<span class="chip c-vr">自报</span> 取自 sgl-project/sgl-learning-materials 仓库（slides/adoption.png），SGLang README 引用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>这张图不能用来比较两家的采用规模——vLLM 的 README 没有对应的 logo 墙，40 万+ GPU 是另一种口径的数字。它能说明的是 SGLang 采用方的<strong>构成</strong>：第一行有 NVIDIA、AMD、Intel 三家芯片厂商同时在列（Intel CEO 为 RadixArk 天使投资人），第二、三行以云与 GPU 云为主，第五行是国内互联网大厂——即 SGLang 的采用不局限于"agent 专精"的细分用户，也进入了通用服务与云平台。</p>
+    <p>与原文"通用服务默认 vLLM、RL 栈默认 SGLang"合看：logo 墙里没有区分"用作服务引擎"还是"用作 rollout 引擎"，因此它是"覆盖较窄但在追"的证据，不是"已追平"的证据。国内厂商一行对本站有直接意义：它们是昇腾栈最可能的 SGLang-Ascend 早期用户。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>vLLM / Inferact</h5>
+  <p>赢生产部署默认：广度、社区、硬件覆盖。</p></div>
+  <div class="real"><h5>SGLang / RadixArk</h5>
+  <p>赢 prefix-heavy / agent / 结构化输出 / RL rollout：AReaL、Miles 等 RL 栈默认以 SGLang 做 rollout。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>两家的赢面按负载切分而非按客户切分——同一个团队可能服务用 vLLM、训练用 SGLang。原文的结论是长期共存概率高于一家通吃；<span class="chip c-inf">推断</span> 这意味着 RL 框架对两种引擎的双后端支持将成为常态，昇腾适配也需要同时覆盖两条线。</p>
+
+<h2 id="s9"><span class="hnum">09</span>投资视角（非建议）</h2>
+
+<p>估值差：Inferact 8 亿美元对 RadixArk 4 亿美元，前者反映更大社区 / 生态，后者相对便宜且多一条 RL 训练腿。看多 vLLM / Inferact：事实标准、40 万 GPU 分发、a16z + Lightspeed + Ion Stoica 的牌面与渠道。看多 SGLang / RadixArk：性能领先的细分 + 推理与训练双入口 + 更低进入估值。共同风险：开源推理商品化 + 变现难；巨头（NVIDIA、云厂）夹击；价格战压毛利。观察指标：各自托管 / 企业版收入起量、相对采用份额、对非 NVIDIA 硬件（昇腾 / AMD）的覆盖、SGLang 的 RL 训练（Miles）是否被头部实验室真实采用。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:130px">维度</th><th>Inferact–vLLM</th><th>RadixArk–SGLang</th></tr></thead>
+<tbody>
+<tr><td>估值 / 融资</td><td>约 8 亿美元估值 / 1.5 亿美元种子</td><td>约 4 亿美元估值 / 1 亿美元种子</td></tr>
+<tr><td>领投 / 关键背书</td><td>a16z + Lightspeed 领投（+Sequoia / Altimeter / Redpoint / ZhenFund）；Ion Stoica（Databricks 联创）</td><td>Accel 领投；Intel CEO 陈立武（Lip-Bu Tan）天使；LMSYS 系核心团队</td></tr>
+<tr><td>竞争壁垒</td><td>最大覆盖面 + 社区 / 生态 + 硬件中立（vLLM-Ascend）+ 事实默认 + 资金厚度</td><td>性能领先的细分（RadixAttention / agent 负载）+ 推理 × RL 双入口 + 训推一致（Miles FP8 / R3）</td></tr>
+<tr><td>变现路径</td><td>托管 / 企业版 + 广覆盖带来的默认入口与跨硬件部署</td><td>高性能托管 + 切入前沿后训练采样（更贴近实验室核心预算）</td></tr>
+<tr><td>最大风险</td><td>开源推理商品化、变现难；广而不深、被云厂 / NVIDIA 夹击，差异化溢价弱</td><td>估值与"性能领先"叙事强绑定；vLLM 在 agent 负载追平则溢价收窄；Miles 采用未证实</td></tr>
+<tr><td>关键观察指标</td><td>托管 / 企业版收入起量；采用份额；非 NVIDIA 硬件覆盖</td><td>同上 + Miles 是否被头部实验室真实采用；prefix-heavy 优势能否维持</td></tr>
+</tbody>
+<caption>原文"投资对比速查"的重排。全部为 provisional，非投资建议。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>vLLM / Inferact · Bull / Bear</h5>
+  <p><strong>Bull</strong>：推理界的事实默认，40 万+ GPU 在跑，覆盖最广、社区最大、硬件最中立，叠加最厚资金与 Ion Stoica 背书，是"卖水给所有人"的分发壁垒，变现只要在巨大装机量上抽一层。<strong>Bear</strong>：开源推理正在商品化，广度不等于定价权；NVIDIA（TensorRT-LLM）与云厂自有栈两头夹击，8 亿美元估值需尽快证明托管 / 企业版起量。</p></div>
+  <div class="real"><h5>SGLang / RadixArk · Bull / Bear</h5>
+  <p><strong>Bull</strong>：投入 agentic 浪潮，负载越 prefix-heavy 优势越值钱；以 Miles 把推理延伸到 RL 后训练采样，占住更粘、更难被价格战商品化、更贴近实验室核心预算的位置；训推一致是真痛点。<strong>Bear</strong>：估值一半建立在"性能领先"叙事上，而该优势高度依赖 workload，vLLM 的 APC 在 RAG / 对齐前缀上已能逼近；覆盖面显著小于 vLLM；Miles 被头部实验室真实采用尚未证实。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>两家的 Bear 情形是对称的：Inferact 的风险是"广而不深"，RadixArk 的风险是"深而不广"。原文给出的四个观察指标中，只有"Miles 是否被头部实验室真实采用"是 RadixArk 独有的——它同时是双入口叙事与估值溢价的支点。（以上均为 provisional，非投资建议。）</p>
+
+<h2 id="s10"><span class="hnum">10</span>对 RL-on-NPU 的意义</h2>
+
+<p><strong>rollout 引擎选型</strong>：在昇腾上做 RL，rollout 引擎基本就是 vLLM-Ascend 与 SGLang-Ascend 二选一。vLLM-Ascend 覆盖广、社区成熟；SGLang-Ascend 带 RadixAttention 的前缀复用红利（D10）。<strong>训练侧</strong>：SGLang 一侧有 Miles 的 R3 + 端到端 FP8（D09）——这是"训推一致 + FP8 RL"在 GPU 上的完整答案；能否随 SGLang-Ascend 一起落到昇腾，是 RL-on-NPU 最值得追的工程线。换言之：<strong>vLLM 给昇腾最广的 rollout 覆盖，SGLang / RadixArk 给昇腾最完整的 RL 训练蓝图</strong>——两条都值得持续跟踪。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-4.svg" alt="昇腾 rollout 引擎选型决策树：先判断是否 prefix-heavy 或 agent 或多轮场景，否则选 vLLM-Ascend；是则选 SGLang-Ascend，再判断是否要训推一致加 FP8 RL，是则搭配 Miles，否则仅用 SGLang-Ascend 做 rollout">
+  <figcaption><span class="fnum">图 7</span>昇腾 rollout 引擎选型决策树：第一个菱形问"是否 prefix-heavy / agent / 多轮场景"，否则走 vLLM-Ascend（覆盖广、社区成熟、模型硬件支持稳），是则走 SGLang-Ascend（RadixAttention 前缀复用红利）；第二个菱形问"是否要训推一致 + FP8 RL"，是则搭配 Miles（R3 + 端到端 FP8），否则仅用 SGLang-Ascend 做 rollout。<span class="chip c-inf">本站图</span> 由原文第 4 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>决策树只有两个判断点，第一个是<strong>负载属性</strong>，第二个是<strong>训练需求</strong>——顺序不能颠倒：先看自己的 rollout 是否 prefix-heavy（RL 的 group rollout 几乎总是），再决定是否需要把训推一致与 FP8 一并解决。左分支只有一个终点，右分支有两个，说明 SGLang 一侧的选项空间更大，代价是覆盖更窄。</p>
+    <p>图中隐含一个未画出的前提：右分支最下方"搭配 Miles"的终点<strong>目前只在 GPU 上被验证</strong>（原文："能否随 SGLang-Ascend 一起落到昇腾"是待追问题）。因此昇腾上今天可走通的路径实际是三个终点中的前两个。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>vLLM / Inferact</h5>
+  <p>vLLM-Ascend：覆盖广、社区成熟、模型与硬件支持稳；给昇腾最广的 rollout 覆盖。</p></div>
+  <div class="real"><h5>SGLang / RadixArk</h5>
+  <p>SGLang-Ascend：RadixAttention 前缀复用红利（D10）；搭配 Miles（R3 + 端到端 FP8）构成训推一致 + FP8 RL 的完整蓝图，但该蓝图落昇腾尚待验证。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>在 GPU 上是"广度 vs 专精"的选择，在昇腾上则多一层"已落地 vs 待落地"：vLLM-Ascend 的覆盖是现状，SGLang-Ascend 的前缀复用红利是现状，而 Miles 的训推一致 + FP8 是蓝图。<span class="chip c-inf">推断</span> 对本站最值得追的工程线是 Miles 与 SGLang-Ascend 的结合——它决定昇腾上是否能同时拿到 rollout 加速与一致性保证。</p>
+
+<h2 id="s11"><span class="hnum">11</span>总表：vLLM vs SGLang</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:130px">维度</th><th>vLLM / Inferact</th><th>SGLang / RadixArk</th><th style="width:230px">差在哪</th></tr></thead>
+<tbody>
+<tr><td>公司</td><td>8 亿美元估值 / 1.5 亿美元种子，a16z + Lightspeed，Ion Stoica，40 万+ GPU</td><td>约 4 亿美元 / 1 亿美元种子，Accel + Intel CEO 天使，LMSYS 系，日均万亿 token</td><td>估值差一倍反映生态规模；后者多一条 RL 训练腿（provisional）</td></tr>
+<tr><td>引擎机制</td><td>PagedAttention 分页 KV + APC 精确哈希</td><td>RadixAttention 基数树 + cache-aware 调度</td><td>缓存组织结构与调度是否感知缓存（图 2–4）</td></tr>
+<tr><td>负载经济学</td><td>对齐良好的固定前缀命中好</td><td>动态分叉、不定长追加、高并发交错命中维持更好</td><td>差距随前缀共享度放大，唯一 prompt 趋同</td></tr>
+<tr><td>战略</td><td>推理单入口：最广开源推理标准、硬件中立</td><td>推理 + RL 训练双入口：SGLang + Miles（FP8 + R3）</td><td>后者更贴近实验室核心预算，前提是 Miles 被采用</td></tr>
+<tr><td>训推一致</td><td>原文未给方案</td><td>Miles R3 + FP8（provisional）</td><td>同一引擎采样 / reference / 服务同源，消除 logprob 漂移</td></tr>
+<tr><td>性能</td><td>批处理最强，RAG 接近，多轮略逊</td><td>整体高约 29%，prefix-heavy 可达 6×（自报，provisional）</td><td>负载的函数，非引擎固有属性</td></tr>
+<tr><td>赢面</td><td>生产部署默认</td><td>prefix-heavy / agent / 结构化输出 / RL rollout</td><td>按负载切分，长期共存概率高</td></tr>
+<tr><td>风险</td><td>商品化、广而不深、NVIDIA 与云厂夹击</td><td>叙事绑定性能领先、覆盖窄、Miles 采用未证实</td><td>对称的 Bear：广而不深 vs 深而不广</td></tr>
+<tr><td>昇腾</td><td>vLLM-Ascend：最广 rollout 覆盖</td><td>SGLang-Ascend + Miles：最完整 RL 训练蓝图（待落地）</td><td>现状 vs 蓝图（图 7）</td></tr>
+</tbody>
+<caption>左两栏为原文各节的对照内容，右栏为差异与本站判断。估值、融资、性能倍数均为 provisional。</caption>
+</table>
+</div>
+
+<h2 id="s12"><span class="hnum">12</span>原文没给的东西 / 未能核实的东西</h2>
+
+<p>以下内容原文未给出或标注为 provisional，复现或引用时需自行补足或保留限定语：</p>
+
+<ul>
+<li><strong>估值与融资金额</strong>（8 亿 / 1.5 亿、约 4 亿 / 1 亿美元）：媒体报道口径（TechCrunch / Bloomberg / SiliconANGLE / pulse2），provisional，非投资建议；</li>
+<li><strong>29% 与 6× 的基准条件</strong>：官方口径、各自充分优化的特定基准，原文未给模型、序列长度、并发、精度与硬件配置；</li>
+<li><strong>40 万+ GPU 与日均万亿 token</strong>：两家各自口径，不可互相换算；</li>
+<li><strong>Miles 的 FP8 + R3 训推一致</strong>：provisional（D09），原文未给具体模型上的 logprob 漂移量或对 reward 的影响；</li>
+<li><strong>Miles 被头部实验室真实采用</strong>：原文明确标注未证实，同时是双入口叙事的前提；</li>
+<li><strong>vLLM 侧的训推一致方案</strong>：原文未展开；</li>
+<li><strong>APC 在不同 block 大小与对齐偏移下的命中率</strong>：原文只给定性描述，29% 与 6× 之间的中间负载无数据；</li>
+<li><strong>SGLang-Ascend 与 vLLM-Ascend 在昇腾上的实测对比</strong>：原文未给；</li>
+<li>本文原图受限于网络代理可达性，取自 vLLM 官方仓库设计文档与 SGLang 官方仓库引用的采用方图；RadixAttention 原理图、性能对比图与融资报道原图未能获取。</li>
+</ul>
+
+<div class="note">
+  <span class="ntitle">三条可以直接搬走的判断</span>
+  <p><strong>一、性能差距是负载的函数。</strong>唯一 prompt 批处理两者趋同，group rollout 差距最大；决定顺序的是前缀共享度、序列长度、并发模式、batch 构成、精度与硬件。任何选型都应以自己真实流量的复现基准为准，而不是 29% 或 6×。</p>
+  <p><strong>二、RL 的 rollout 是最极端的 prefix-heavy 负载。</strong>同一 prompt 采 n 条、只在生成端分叉，正是基数树的设计目标——这解释了为何多条 RL 栈默认以 SGLang 做 rollout，也是 RadixArk 双入口叙事成立的技术基础。</p>
+  <p><strong>三、在昇腾上，vLLM 给覆盖、SGLang 给蓝图。</strong>vLLM-Ascend 的广覆盖与 SGLang-Ascend 的前缀复用红利是现状，Miles 的训推一致 + FP8 是待落地的蓝图；两条线都要跟踪，但后者是 RL-on-NPU 最值得追的工程线。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>Miles 是否被头部实验室真实采用</strong>（双入口叙事与估值溢价的支点）· <strong>vLLM 的 APC 在 agent 负载上是否追平 RadixAttention</strong>（RadixArk 溢价能否维持）· <strong>两家托管 / 企业版收入是否起量</strong> · <strong>SGLang-Ascend 是否随 Miles 的 R3 + FP8 一起落到昇腾</strong> · <strong>非 NVIDIA 硬件（昇腾 / AMD）覆盖</strong>的相对进度。</p>
+</div>
+
+</main>
+
+<footer>
+  来源与声明：TechCrunch / Bloomberg / SiliconANGLE / pulse2（Inferact 8 亿美元估值、1.5 亿美元种子、a16z + Lightspeed、创始团队、Ion Stoica）、RadixArk 报道（D09 来源）、SGLang vs vLLM 性能对比（D10 来源）。估值 / 融资为媒体口径，provisional；非投资建议。原图取自 vllm-project/vllm 设计文档与 sgl-project/sgl-learning-materials，版权归各原始仓库所有，此处仅作解析引用。
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>

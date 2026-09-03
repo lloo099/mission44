@@ -130,7 +130,8 @@
         "MoonViT",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-28-native-multimodal.md"
+      "file": "docs/blog/dispatch-28-native-multimodal.md",
+      "read": "reads/dispatch-28-native-multimodal.html"
     },
     {
       "id": "dispatch-27-low-bit-training",
@@ -172,7 +173,8 @@
         "GRPO",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-25-efficiency-aware-agent-rl.md"
+      "file": "docs/blog/dispatch-25-efficiency-aware-agent-rl.md",
+      "read": "reads/dispatch-25-efficiency-aware-agent-rl.html"
     },
     {
       "id": "dispatch-24-kimi-k3",
@@ -200,7 +202,8 @@
         "problem-map",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-23-agentic-rl-problem-map.md"
+      "file": "docs/blog/dispatch-23-agentic-rl-problem-map.md",
+      "read": "reads/dispatch-23-agentic-rl-problem-map.html"
     },
     {
       "id": "dispatch-22-deepswe-rllm",
@@ -214,7 +217,8 @@
         "SWE-agents",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-22-deepswe-rllm.md"
+      "file": "docs/blog/dispatch-22-deepswe-rllm.md",
+      "read": "reads/dispatch-22-deepswe-rllm.html"
     },
     {
       "id": "dispatch-21-longcat-2",
@@ -296,7 +300,8 @@
         "后训练",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-16-deepseek-v4-agent.md"
+      "file": "docs/blog/dispatch-16-deepseek-v4-agent.md",
+      "read": "reads/dispatch-16-deepseek-v4-agent.html"
     },
     {
       "id": "dispatch-15-dspark",
@@ -309,7 +314,8 @@
         "DeepSeek-V4",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-15-dspark.md"
+      "file": "docs/blog/dispatch-15-dspark.md",
+      "read": "reads/dispatch-15-dspark.html"
     },
     {
       "id": "dispatch-14-scaleswe",
@@ -322,7 +328,8 @@
         "训练数据",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-14-scaleswe.md"
+      "file": "docs/blog/dispatch-14-scaleswe.md",
+      "read": "reads/dispatch-14-scaleswe.html"
     },
     {
       "id": "dispatch-13-swe-rl-on-ascend",
@@ -348,7 +355,8 @@
         "guide",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-12-swe-agents.md"
+      "file": "docs/blog/dispatch-12-swe-agents.md",
+      "read": "reads/dispatch-12-swe-agents.html"
     },
     {
       "id": "dispatch-11-vllm-vs-sglang",
@@ -361,7 +369,8 @@
         "SGLang",
         "investment"
       ],
-      "file": "docs/blog/dispatch-11-vllm-vs-sglang.md"
+      "file": "docs/blog/dispatch-11-vllm-vs-sglang.md",
+      "read": "reads/dispatch-11-vllm-vs-sglang.html"
     },
     {
       "id": "dispatch-10-radixattention",
@@ -416,7 +425,8 @@
         "hybrid-attention",
         "RL-on-NPU"
       ],
-      "file": "docs/blog/dispatch-07-mimo-v2-5.md"
+      "file": "docs/blog/dispatch-07-mimo-v2-5.md",
+      "read": "reads/dispatch-07-mimo-v2-5.html"
     },
     {
       "id": "dispatch-06-glm-5-2",

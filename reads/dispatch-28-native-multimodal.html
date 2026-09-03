@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 28 精读版 · 原生多模态两条路线</title>
+<meta name="description" content="Kimi K3 的连续特征路线（MoonViT-V2 from scratch、纯 NTP、native resolution、薄 projector、token-0 联合）与 LongCat-Next 的离散 token 路线（DiNA、dNaViT 8 层 RVQ / 28× 压缩、理解与生成统一、先离散后联合课程）在数据 / 架构 / 训练三主题上逐节对照，配原图与本站图解析；对 RL-on-NPU 的含义与开放问题。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-28-native-multimodal.html">
+<meta property="og:title" content="Dispatch 28 精读版 · 原生多模态两条路线">
+<meta property="og:description" content="Kimi K3 的连续特征路线与 LongCat-Next 的离散 token 路线在数据 / 架构 / 训练三主题上逐节对照，配原图与本站图解析；对 RL-on-NPU 的含义与开放问题。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-28-native-multimodal.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-28-native-multimodal.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-28-native-multimodal">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-28-native-multimodal.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 28 · 精读版 · 2026-08-19</div>
+  <h1>原生多模态训练的两条路线：K3 的连续特征与 LongCat-Next 的离散 token</h1>
+  <p class="standfirst">"原生多模态"在 2026 年分裂成两条可对照的路线：Kimi K3 让视觉保持连续特征，但编码器从零训练、只用 next-token 目标、从第一个 token 起与语言联合；LongCat-Next 把视觉与语音彻底离散化为与文本同源的 token，模型是纯粹的自回归 NTP，理解与生成天然统一。本文限定在数据、架构、训练三件事上逐节对照，每节左栏为 K3 连续特征路线、右栏为 LongCat-Next 离散路线，下方给出本站判断；两者的数据配比均未公开，全部 benchmark 为厂商自报。对 RL-on-NPU：离散路线将训练系统归约为纯 NTP，对非 NVIDIA 栈尤为有利（推断）。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D28</span>
+    <span>承接 D24（K3）· D21（LongCat 系）</span>
+    <span>原图 2 张 · 本站图 3 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>"原生"为什么成了关键词</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>数据：两种数据学</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>架构：MoonViT-V2 对 dNaViT</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>训练：token-0 联合 vs 原生化课程</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>评测与权衡</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>对 RL-on-NPU 的含义</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>开放问题</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>总表：连续 vs 离散</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>原文没给的东西</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>判断与后续关注</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">两个对象：<strong>Kimi K3</strong>（2026-07，2.8T / 104B 激活，<a href="https://arxiv.org/abs/2607.24653">arXiv 2607.24653</a>）的<strong>连续特征路线</strong>——MoonViT-V2 完全 from scratch + 纯 next-token 训练、无任何对比学习阶段，native resolution 打包，projector 进 backbone，从第一个 token 起与语言联合优化；<strong>LongCat-Next</strong>（美团，2026-03，68.5B / A3B，<a href="https://arxiv.org/abs/2603.27538">arXiv 2603.27538</a>）的<strong>离散 token 路线</strong>——DiNA：全模态离散化为同源 token，dNaViT 8 层 RVQ、28× 像素压缩，单一自回归目标同时做理解与生成。两者在移除对比学习遗产上殊途同归；分歧在于视觉信息以何种形态进入模型——输入适配器，还是另一种词表。两者均未披露数据配比，是复现的最大缺口。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段：<strong>K3 · 连续特征路线</strong>（左栏，灰）/ <strong>LongCat-Next · 离散路线</strong>（右栏，橙）/ <strong>本站判断</strong>（下方色块：分歧的本质、原文是否给了理由、对 RL-on-NPU 的含义）。本篇是双工作对照，两栏不是"基线与做法"，而是两条平行路线；左右分配全文固定。数字按来源分三类标注：<span class="chip c-tp">第三方</span> 独立测量、<span class="chip c-vr">自报</span> 厂商 / 作者口径、<span class="chip c-inf">推断</span> 本站分析。两家规模差 40 倍，评测数字不可直接互比。</p>
+  <p>本篇性质：双工作对照调研（K3 技术报告此前已精读 + 两路定向检索补齐），主题限定在原生多模态的数据、架构、训练三件事，承接 D24（K3 首发与报告跟进）、D21（LongCat 系），不重复两篇已覆盖的内容。MoonViT-V2 的 projector / 位置编码细节来自第三方 config 逆向与解读页，原文已标注待复核，本文保留该限定。</p>
+</div>
+
+<div class="formula">两条路线
+  ├ 上一代   预训练 LLM + CLIP / SigLIP 编码器 + 对齐阶段（对比学习或 caption 预热）→ 表示失配与管线复杂度
+  ├ K3       MoonViT-V2（401M · 27 层 · patch 14）from scratch · 纯 NTP · native resolution 打包
+  │          薄 projector（2×2 pixel shuffle + 两层 MLP）→ 视觉 token 与文本交错进 2.8T backbone · token-0 起联合
+  ├ Next     dNaViT：SAE + 8 层 RVQ · 像素域压缩至多 28× → 同源离散 token（文本 · 图像 · 语音）
+  │          68.5B / A3B 纯 NTP backbone · 理解与生成同一模型 · 先离散（冻结 tokenizer → Pre-align）后联合
+  ├ 共同点   均移除对比学习遗产；均以数据配比保持文本能力；均未公开配比  <span class="cmt">// 复现最大缺口</span>
+  └ RL/NPU   离散路线 rollout 与纯文本同构、训练系统退化为标准 LLM 训练  <span class="cmt">// 推断</span></div>
+
+<h2 id="s1"><span class="hnum">01</span>"原生"为什么成了关键词</h2>
+
+<p>上一代多模态模型的标准做法是<strong>嫁接</strong>：以预训练语言模型为基座，外接 CLIP / SigLIP 系视觉编码器，中间加对齐阶段（对比学习或 caption 预热），再做联合微调。该路线的代价在 2025–2026 年逐渐显现：对齐阶段引入独立的训练目标与数据管线，编码器与 backbone 预训练来源不同，留下持续的表示失配，长上下文与视频场景下该失配被进一步放大。"原生"（native）的主张是：<strong>视觉自预训练起始即与语言共享同一目标函数</strong>。对"相同"的实现方式，2026 年出现了两条不同路线。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-28-native-multimodal/fig-1.svg" alt="两条原生路线总对照：上一代嫁接式多模态分别沿去 CLIP 遗产一边走向 K3 连续特征原生（MoonViT-V2 从零训练、native resolution 打包、projector 投影为视觉 token），沿去连续特征一边走向 LongCat-Next 离散 token 原生（dNaViT SAE + 8 层 RVQ、全模态同源离散 token、单一自回归 NTP）；共同点为均移除对比学习遗产，分歧为视觉是输入适配器还是另一种词表">
+  <figcaption><span class="fnum">图 1</span>两条原生路线总对照——上一代嫁接式多模态分别沿"去 CLIP 遗产"与"去连续特征"两条边走向 K3 与 LongCat-Next；共同点是均移除对比学习遗产，分歧是视觉是输入适配器还是另一种词表（原文图 A）。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>先看从"上一代"出发的两条边的标注：<strong>"去 CLIP 遗产"与"去连续特征"</strong>。两条路线各自去掉了嫁接式的一样东西：K3 去掉的是编码器的对比学习来源，但保留连续特征；LongCat-Next 去掉的是连续特征本身，视觉变成词表。这两条边的差异就是全文的分歧所在。</p>
+    <p>再看底部以虚线汇合的"共同点"节点：两条路线都经由它，说明"移除对比学习遗产"不是某一方的特色而是原生路线的共同定义。左右两栏各三个节点的顺序一致（编码 → 组织 → 进入 backbone），便于逐层对照：K3 的第三步是"projector 投影"，Next 的第三步是"单一自回归 NTP"——<strong>前者仍有一个适配层，后者没有</strong>。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>K3 · 连续特征路线</h5>
+  <p><span class="chip c-vr">自报</span> 视觉保持连续特征，但编码器从零训练、目标函数只有 next-token prediction，与语言 token 交错在同一序列里。2.8T / 104B 激活，2026-07。</p></div>
+  <div class="real"><h5>LongCat-Next · 离散路线</h5>
+  <p><span class="chip c-vr">自报</span> 视觉（与语音）彻底离散化为与文本同源的 token，模型是纯粹的自回归 NTP，无 projector、无连续特征注入，理解与生成天然统一。68.5B / A3B，2026-03。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>两条路线对"原生"的定义在目标函数层面相同（只有 NTP），在表示层面不同。<b>分歧不在训练目标而在视觉进入模型的形态</b>：K3 仍需要一个把连续特征映射进 LLM 隐空间的适配器，Next 把这一步前移到 tokenizer。后续三节（数据、架构、训练）的每一处差异都可以追溯到这一点。</p>
+
+<h2 id="s2"><span class="hnum">02</span>数据：两种数据学</h2>
+
+<p><strong>K3 的数据策略：分域精修、交错输入。</strong>报告口径：文本四域（Web / Code / Math / Knowledge）之外，视觉语料覆盖 caption、交错图文文档、OCR、perception、视频，以及一类值得注意的 <strong>programmatic multimodal 数据</strong>——代码与其渲染结果（SVG / 3D / 网页 / CAD）成对，使模型直接学习"符号 → 视觉"的双向映射。各域经规则过滤 + 分类器质量打分 + 去重，采样率由小模型消融确定。图文 / 视频的配比与视觉 token 占比未公开——这是 K3 多模态部分最大的复现缺口。</p>
+
+<p><strong>LongCat-Next 的数据策略：全部展平为统一序列。</strong>不走图文对路线，主干是 web 级<strong>交错混排数据</strong>（图 / 文 / 音混排网页），展平为统一序列（文本 token 与 <code>&lt;Image_Start&gt;…&lt;Image_End&gt;</code> 包裹的视觉 token、音频 token 顺序排列），使模型直接学习跨模态转移概率——官方称这"打破了数据瓶颈"：散落互联网的混排数据都能以同一格式喂入。图文清洗是三段式：启发式过滤 → 多个开源 LVLM 重写 caption（合成）→ SigLIP 相似度剔除图文不匹配对（值得注意的细节：<strong>SigLIP 在这条离对比学习最远的路线中，仍以数据过滤器的角色被保留</strong>）。音频 tokenizer 语料约 250 万小时。为防止文本能力退化，配比中混入大量代码 / 数学 / agent 高质量文本。同样，backbone 多模态预训练的 token 总量与精确配比未披露。</p>
+
+<div class="vs">
+  <div class="base"><h5>K3 · 连续特征路线</h5>
+  <p><span class="chip c-vr">自报</span> 分域精修：视觉语料按 caption / 交错图文 / OCR / perception / 视频 / programmatic 分域，规则过滤 + 分类器打分 + 去重，采样率由小模型消融确定。programmatic 数据（代码 ↔ 渲染结果成对）是独有的一类。配比与视觉 token 占比未公开。</p></div>
+  <div class="real"><h5>LongCat-Next · 离散路线</h5>
+  <p><span class="chip c-vr">自报</span> 统一展平：web 级图 / 文 / 音混排数据以同一序列格式喂入，学习跨模态转移概率；三段式清洗末端仍用 SigLIP 相似度过滤；音频 tokenizer 语料约 250 万小时；混入大量代码 / 数学 / agent 文本防退化。token 总量与配比未披露。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>两种数据学与各自的表示形态一致：连续路线需要按任务分域的高质量图文，离散路线的统一序列格式天然适合混排网页。两者共同的信息缺口需要指出：原生多模态的<b>数据配比是当前最不透明的环节</b>——两份报告均披露管线细节而未给出配比数字，这与纯文本时代数据配方保密的行业惯例一致。SigLIP 以过滤器身份留在离散路线里，说明"移除对比学习遗产"移除的是训练目标，而非对比模型作为工具的用途。</p>
+
+<h2 id="s3"><span class="hnum">03</span>架构：MoonViT-V2 对 dNaViT</h2>
+
+<p><strong>K3：MoonViT-V2——从视觉编码器中去除对比学习。</strong>401M 参数、27 层、patch 14（架构表口径）。三个设计点：① <strong>完全 from scratch + 纯 NTP，无任何对比学习阶段</strong>——这是 V2 相对一代 MoonViT（Kimi-VL 基于 SigLIP-SO400M 初始化）最本质的改变。动机是训练稳定性：报告发现 SigLIP 初始化的编码器与 LLM 联合优化时<strong>梯度范数持续偏高且反复 spike</strong>，from-scratch 版本全程平稳，且视觉评测追平初始化版本。该结果表明：在足够大的联合训练预算下，CLIP 系预训练不再是必要前提，反而构成数值稳定性负担。② <strong>native resolution + NaViT 式打包</strong>：图像按原始分辨率直接 patch 化，不 resize 不裁剪不切片，变长序列打包进同一批次；视频帧作为时空体进入——多帧 2D patch 联合展平为单一 1D 序列，同一注意力跨空间 + 时间运行，3D 网格位置编码（以下 projector 与位置编码细节来自第三方 config 逆向与解读页，待原文复核）：可学习 2D 空间嵌入叠加 1D sin-cos 时间嵌入。③ <strong>projector 保留，但已轻量化</strong>：2×2 pixel shuffle（4 token 合 1）+ 两层 MLP 投影进 LLM 隐空间，视觉特征作为普通 token 与文本交错进 backbone 最底层——视觉在 K3 中仍属于"经适配的输入"。</p>
+
+<p><strong>LongCat-Next：dNaViT——去除连续特征表示。</strong>范式名 <strong>DiNA（Discrete Native Autoregression）</strong>：文本、图像、语音全部映射为同源离散 token，单一 AR 目标，"最小模态特化"。视觉侧自研 <strong>dNaViT</strong>（Discrete Native Any-Resolution ViT）：SAE（语义对齐编码器）+ <strong>8 层 RVQ</strong> 层级量化，像素域压缩至多 <strong>28×</strong> 仍保持语义与文字渲染保真度；解码用 DepthTransformer 多层 token 合并 + 解耦双轨生成式解码器。语音侧 LongCat-Audio-Codec（Whisper-large-v3 初始化 encoder，语义 / 声学双路，8 层 RVQ）。backbone 是 LongCat-Flash-Lite MoE（68.5B / 约 A3B，带 N-gram Embedding）。核心主张：<strong>同一自回归模型同时承担视觉理解与图像生成</strong>（以及语音理解 / 低延迟对话），官方主张首次让离散路线在理解 benchmark 上追平连续特征专用模型——理解任务的性能损失长期是离散路线的瓶颈。</p>
+
+<figure>
+  <img src="img/dispatch-28-native-multimodal/orig-1.jpg" alt="LongCat-Next 总览图：底部为多模态输入（文本问题、672×560 图像、文本 prompt、音频），经 Text / Vision / Audio Tokenizer 变为三色 token 序列送入 LongCat-Flash Modality-Agnostic MoE 解码器，输出 token 序列再经 Vision / Text / Audio De-Tokenizer 还原为文本答案、1372×720 生成图像与语音回复">
+  <figcaption><span class="fnum">图 2</span>LongCat-Next 总览：自下而上为 Multimodality Input → Multimodality Tokenizer → Decoder-only Backbone（LongCat-Flash，Modality-Agnostic MoE）→ Multimodality De-Tokenizer → 输出。图例中橙色为 Vision Token、蓝色为 Text Token、绿色为 Audio Token；左侧示例是对 672×560 图像的 OCR 问答，右侧示例是按 prompt 生成 1372×720 图像与语音对话。<span class="chip c-vr">自报</span> 取自 <a href="https://huggingface.co/meituan-longcat/LongCat-Next">meituan-longcat/LongCat-Next</a> 仓库 README（assets/overview.jpg）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>最值得看的是 backbone 上下两行的 token 序列：<strong>三种颜色的方块在同一行里顺序排列，backbone 对它们没有区别对待</strong>——这就是"Modality-Agnostic"与"同源离散 token"的图示。输入行与输出行的颜色分布对应四个示例：文本问题 + 图像 → 文本答案（理解），文本 prompt → 图像（生成），音频 → 音频（对话）。理解与生成在图上没有分开的分支，只是输出行里 token 颜色不同。</p>
+    <p>再看 Tokenizer 与 De-Tokenizer 两层：它们是唯一带模态名的组件，位于 backbone 之外。这与 K3 的形态对照最直接：K3 的 MoonViT-V2 + projector 位于 backbone 输入侧、输出的是连续向量；Next 的 tokenizer 输出的是离散 id，De-Tokenizer 才把 id 还原为像素或波形。图中标注的 672×560 与 1372×720 说明输入与输出均为任意分辨率，与 dNaViT 的"Any-Resolution"对应。图中未画出的是 dNaViT 内部的 SAE + 8 层 RVQ 结构。</p>
+  </div>
+</figure>
+
+<figure>
+  <img class="diagram" src="img/dispatch-28-native-multimodal/fig-2.svg" alt="架构逐项对照：K3 MoonViT-V2 管线——原始分辨率图像或视频 patch 14 直接切块、NaViT 式变长打包、27 层 ViT 401M from scratch 纯 NTP、薄 projector 像素混洗 4 合 1 加两层 MLP、视觉 token 与文本交错进 2.8T backbone 底层；LongCat-Next dNaViT 管线——任意分辨率图像、SAE 语义对齐编码、8 层 RVQ 层级量化压缩至多 28×、同源离散 token 与文本音频一序列、68.5B 纯 NTP backbone 理解与生成同一模型；分歧本质为视觉是被适配的输入还是另一种词表">
+  <figcaption><span class="fnum">图 3</span>架构逐项对照——K3 的 MoonViT-V2 管线（五步）与 LongCat-Next 的 dNaViT 管线（五步）并列，两条虚线汇于"分歧本质"：视觉 = 被适配的输入，还是视觉 = 另一种词表（原文图 B）。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>两条管线各五步、一一对位，逐格对照最有信息量的是<strong>第三步与第四步</strong>。第三步：K3 是 27 层 ViT（401M，from scratch，纯 NTP），Next 是 8 层 RVQ 层级量化——前者输出连续向量，后者输出离散 id，这一格是两条路线分道的位置。第四步：K3 是薄 projector（4 合 1 + 两层 MLP），Next 是"同源离散 token 与文本 · 音频一序列"——<strong>K3 在这一格仍有一个可训练的适配层，Next 在这一格只有序列拼接</strong>。</p>
+    <p>第五步的差异是能力面的差异：K3 进入 2.8T backbone 底层，只做理解；Next 进入 68.5B backbone，"理解与生成同一模型"并由 DepthTransformer 解码回像素。K3 侧第一步的"patch 14"与第三步的"401M · 27 层"是架构表口径；projector 的具体形式（第四步）来自第三方 config 逆向，读图时应保留待复核的限定。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>K3 · 连续特征路线</h5>
+  <p><span class="chip c-vr">自报</span> MoonViT-V2 401M / 27 层 / patch 14，from scratch + 纯 NTP；SigLIP 初始化版本联合训练时梯度范数偏高且反复 spike，from-scratch 全程平稳且视觉评测追平。native resolution + NaViT 打包，视频按时空体展平。<span class="chip c-tp">第三方</span>（config 逆向，待复核）3D 网格位置编码、2×2 pixel shuffle + 两层 MLP projector。</p></div>
+  <div class="real"><h5>LongCat-Next · 离散路线</h5>
+  <p><span class="chip c-vr">自报</span> DiNA 范式：文本 / 图像 / 语音同源离散 token，单一 AR 目标，最小模态特化。dNaViT = SAE + 8 层 RVQ，像素域压缩至多 28×，DepthTransformer + 解耦双轨解码器还原像素。语音侧 LongCat-Audio-Codec（Whisper-large-v3 初始化，8 层 RVQ）。backbone LongCat-Flash-Lite MoE 68.5B / 约 A3B，带 N-gram Embedding。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>K3 给出了弃用 SigLIP 初始化的<b>理由与证据</b>（梯度 spike 与评测追平），这是两份报告里少见的消融级结论；但其成立条件是 2.8T backbone 的联合训练预算（第 07 节）。Next 的 8 层 RVQ / 28× 压缩是自报的设计点，报告未给出该组数字相对其他层数与压缩比的消融。两者在架构层面的分歧可以概括为：<b>K3 把复杂度放在编码器与 projector，Next 把复杂度放在 tokenizer / de-tokenizer，backbone 则退化为标准 LLM</b>——这一分配决定了第 06 节的系统含义。</p>
+
+<h2 id="s4"><span class="hnum">04</span>训练：token-0 联合 vs 原生化课程</h2>
+
+<p><strong>K3：从第一个 token 起联合。</strong>报告明言 native multimodal training strategy——语言与视觉从训练开始就联合优化，视觉与文本 token 交错在单一 next-token 目标内，不存在"先语言后对齐"的阶段划分。配套的稳定性设计即第 03 节的 from-scratch 选择（消除梯度 spike 来源）。基建侧报告仅有一句话级描述：multimodal encoder optimizations 与 MoonEP、memory-efficient training 并列，"在有界显存内维持利用率"；训练期编码器的并行方式与变长图像负载均衡未见公开细节（推理侧旁证：vLLM / Dynamo 部署对视觉编码器用 data-parallel sharding）。</p>
+
+<p><strong>LongCat-Next：分阶段的原生化课程。</strong>并非纯"从 step 0 交错"，而是：① tokenizer 独立预训练（dNaViT 与 Audio-Codec 各自重建训练，音频侧分三步）→ 冻结 tokenizer；② <strong>Pre-align</strong>：冻结语言模型，只训 codebook embedding 与解码头——使离散词表与语言模型的嵌入空间先行对齐；③ 解冻全部参数，以交错数据深度联合训练；④ mid-training 与 SFT（合成长 CoT、任意分辨率生成数据）。冻结 tokenizer 保证离散接口稳定，是该路线独有的稳定性保障。工程口径（自报，provisional）：相对连续方案<strong>解码提速约 10×、算力节省约 30%</strong>，支持 1M 上下文。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-28-native-multimodal/fig-3.svg" alt="训练课程对照：K3 单阶段联合——token 0 起视觉与文本交错单一 NTP 联合优化，稳定性保障为编码器 from scratch 消除 SigLIP 初始化的梯度 spike；LongCat-Next 先离散后联合——阶段一 tokenizer 独立预训练、阶段二 Pre-align 冻结 LM 只训 codebook 嵌入与解码头、阶段三全参交错联合训练、阶段四 mid-train 与 SFT，稳定性保障为冻结 tokenizer 离散接口不漂移；共同点为均以数据配比保持文本能力">
+  <figcaption><span class="fnum">图 4</span>训练课程对照——K3 单阶段联合（token 0 起交错、稳定性来自编码器 from scratch）与 LongCat-Next 四阶段原生化课程（tokenizer 预训练 → Pre-align → 全参联合 → mid-train 与 SFT，稳定性来自冻结 tokenizer）；共同点是均以数据配比保持文本能力（原文图 C）。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左右两栏的节点数量本身就是信息：K3 只有一个训练节点加一个稳定性节点，Next 有四个顺序阶段加一个稳定性节点。<strong>两个稳定性节点都以虚线挂在各自的联合训练节点上</strong>，且内容互为镜像：K3 靠"编码器从零训练"避免外来初始化带来的梯度 spike，Next 靠"冻结 tokenizer"避免离散接口在联合训练中漂移。两条路线都识别出了同一个风险——视觉侧与语言侧在联合优化中的不匹配——但一个在参数初始化上解决，一个在接口冻结上解决。</p>
+    <p>Next 的阶段二 Pre-align 是全图唯一"冻结语言模型"的阶段，意味着离散路线在全参联合之前先让词表向 LM 靠拢；K3 没有对应阶段，因为 projector 与编码器在 token 0 起就随 backbone 一起更新。底部虚线连接的"共同点"说明两条课程在文本能力保持上的手段相同（数据配比），而配比数字两者都没有给。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>K3 · 连续特征路线</h5>
+  <p><span class="chip c-vr">自报</span> 单阶段：语言与视觉从训练开始联合优化，无"先语言后对齐"划分；稳定性保障 = 编码器 from scratch。基建侧仅一句话：multimodal encoder optimizations 与 MoonEP、memory-efficient training 并列；编码器并行方式与变长图像负载均衡未公开（推理侧旁证为 data-parallel sharding）。</p></div>
+  <div class="real"><h5>LongCat-Next · 离散路线</h5>
+  <p><span class="chip c-vr">自报</span> 四阶段：tokenizer 独立预训练并冻结 → Pre-align（冻结 LM，只训 codebook 嵌入与解码头）→ 全参交错联合 → mid-training 与 SFT；稳定性保障 = 冻结 tokenizer。工程口径（provisional）：解码提速约 10×、算力节省约 30%，1M 上下文。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>"原生"在训练课程上并不等于"单阶段"：Next 的四阶段课程仍被称为原生，因为 backbone 的训练目标始终只有 NTP，阶段划分只发生在 tokenizer 与嵌入对齐上。<b>K3 基建侧的一句话描述是本篇最重要的空白</b>：变长图像打包下编码器与 backbone 的负载均衡是连续路线特有的系统问题，报告未给细节。Next 的 10× / 30% 为官方口径，对照基线（"连续方案"具体指什么）未说明，本站不作换算。</p>
+
+<h2 id="s5"><span class="hnum">05</span>评测与权衡：各占优势区间</h2>
+
+<p>自报数字（均厂商口径，且两家规模差 40 倍、不可直接互比）：</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:130px">维度</th><th>K3（2.8T / 104B）</th><th>LongCat-Next（68.5B / A3B）</th></tr></thead>
+<tbody>
+<tr><td>MMMU 系</td><td>MMMU-Pro <strong>81.6 / 83.4</strong>（无 / 带 Python）</td><td>MMMU 70.6</td></tr>
+<tr><td>数学视觉</td><td>MathVision <strong>94.3 / 97.8</strong>（带工具追平 GPT-5.6 Sol）</td><td>MathVision 64.7、MathVista 83.1</td></tr>
+<tr><td>文档</td><td>OmniDocBench 91.1</td><td>DocVQA 94.2，OmniDocBench 超 Qwen3-Omni</td></tr>
+<tr><td>视频</td><td>Video-MME（w/ sub）<strong>90.0</strong>（超 GPT-5.6 Sol 89.5）</td><td>—</td></tr>
+<tr><td><strong>图像生成</strong></td><td><strong>不支持</strong></td><td>GenEval <strong>84.44</strong>，长文字渲染强</td></tr>
+<tr><td>语音</td><td>—</td><td>MMAU 76.40，AISHELL-1 WER 1.47%</td></tr>
+</tbody>
+<caption>两家自报数字，<span class="chip c-vr">自报</span> provisional。K3 视觉评测分数为官方 <a href="https://github.com/MoonshotAI/Kimi-K3/blob/main/README.md">GitHub README</a> 原文；LongCat-Next 数字来自 arXiv 2603.27538、<a href="https://tech.meituan.com/2026/04/02/longcat-next.html">美团技术博客</a>与 HF 模型页。"—"表示该模型不覆盖该维度或原文未列。</caption>
+</table>
+</div>
+
+<figure>
+  <img src="img/dispatch-28-native-multimodal/orig-2.png" alt="LongCat-Next 评测柱状图，八个面板：MMMU-Pro、MathVision、OmniDocBench-EN（越低越好）、CharXivRQ、TIIF-LONG、LongText-EN、ReasoningQA、MMAU，每面板 LongCat-Next 与四个对照模型的分数">
+  <figcaption><span class="fnum">图 5</span>LongCat-Next 官方评测总览，八个面板分三组：上排四项为视觉理解（MMMU-Pro 60.3、MathVision 64.7、OmniDocBench-EN 0.152 且箭头标注越低越好、CharXivRQ 60.1），对照为 Qwen3-Omni-A3B-Instruct、GPT5-minimal、Gemini2.5-Flash-Lite-preview、Qwen3-VL-A3B-Instruct；下排前两项为图像生成的文字渲染（TIIF-LONG 84.38、LongText-EN 93.15），对照为 BAGEL、Gemini2.5-Flash-Image、FLUX.1-dev、Qwen-Image-2507；下排后两项为语音（ReasoningQA 87.52、MMAU 76.4），对照为 Gemini2.5-Flash-Lite-preview、Qwen3-Omni-A3B-Instruct、Kimi-audio、Step-audio-2-mini。<span class="chip c-vr">自报</span> 取自 meituan-longcat/LongCat-Next 仓库 README（assets/evaluation.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>先看对照模型的选取：上排的对照全部是 A3B 量级或 Flash-Lite / minimal 档的模型——<strong>这张图证明的是"离散路线追平同量级连续模型"，而不是追平旗舰</strong>，与原文的限定一致。MathVision 面板上 LongCat-Next 64.7 对 Qwen3-VL-A3B 60.2、Gemini2.5-Flash-Lite 61.9，正是原文表中 64.7 的出处；把它与 K3 的 94.3 / 97.8 放在一起读时，要记住两者相差一个 2.8T 对 68.5B 的档位。</p>
+    <p>再看 OmniDocBench-EN 面板的箭头：该项越低越好（0.152 为编辑距离类指标），读图时不能按柱高比较。下排前两个面板（TIIF-LONG、LongText-EN）是这张图与 K3 最不可比的部分——它们是图像生成侧的文字渲染指标，K3 不支持图像生成，因此没有对应数字；LongText-EN 93.15 对应原文"长文字渲染强"的表述，与 dNaViT 在 28× 压缩下"保持文字渲染保真度"的架构主张互为印证。原文表中的 MMMU 70.6 与图中的 MMMU-Pro 60.3 是不同基准，不应混读。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>K3 · 连续特征路线</h5>
+  <p><span class="chip c-vr">自报</span> 以参数规模换取理解上限：MMMU-Pro 81.6 / 83.4、MathVision 94.3 / 97.8（带工具追平 GPT-5.6 Sol）、Video-MME 90.0（超 GPT-5.6 Sol 89.5）——视觉理解已与闭源旗舰同档。不支持图像生成，无语音。</p></div>
+  <div class="real"><h5>LongCat-Next · 离散路线</h5>
+  <p><span class="chip c-vr">自报</span> 以统一建模换取能力覆盖面：理解（MMMU 70.6、MathVision 64.7、DocVQA 94.2）+ 生成（GenEval 84.44、长文字渲染强）+ 语音（MMAU 76.40、AISHELL-1 WER 1.47%）一个模型，小激活低成本。主张理解追平连续——严格说是追平同量级连续模型。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>权衡关系明确：<b>连续路线以参数规模换取理解上限，离散路线以统一建模换取能力覆盖面</b>。LongCat-Next 与 K3 这种 2.8T 旗舰仍差一个档位；K3 不支持图像生成，统一性缺失。两条路线当前并非替代关系，而是<b>分工关系</b>。全部数字为自报；两家的第三方复测（尤其 MMMU-Pro / Video-MME）是检验"原生 &gt; 嫁接"叙事的关键，目前缺位。</p>
+
+<h2 id="s6"><span class="hnum">06</span>对 RL-on-NPU 的含义</h2>
+
+<p><strong>① vision-in-the-loop RL 需要哪条路线？</strong>K3 报告的 RL 环境里已有"多模态推理 + vision-in-the-loop 工具使用"（D24 §7）：agent 在轨迹中生成代码渲染图表再观察结果。连续路线下，这要求 rollout 引擎集成视觉编码器、KV 与视觉特征一起管理；离散路线下视觉输出就是 token，<strong>rollout 引擎与纯文本 RL 架构同构</strong>——环境返回的图像离散化后直接进序列，不需要在推理引擎里嵌视觉编码器。对 RL 系统复杂度这是实质差异（推断）。</p>
+
+<p><strong>② 对昇腾 / 异构硬件的亲和性（推断）。</strong>连续路线的训练难点在异构负载：变长图像打包造成编码器与 backbone 的算力配比波动，K3 以专门的 encoder optimization 处理（细节未公开）；离散路线将全部模态归约为纯 NTP，<strong>训练系统等价于标准 LLM 训练</strong>——没有第二套算子、没有编码器并行、没有模态间负载均衡。对算子生态薄的 NPU 栈，离散路线的工程实现门槛更低（D23"根治层缺位"语境下尤其如此）；代价在于性能上限完全由 tokenizer 质量决定，而 RVQ 类 tokenizer 的训练与解码 kernel 在 CANN 上同样是空白。</p>
+
+<div class="vs">
+  <div class="base"><h5>K3 · 连续特征路线</h5>
+  <p><span class="chip c-inf">推断</span> rollout 引擎需集成视觉编码器，KV 与视觉特征一起管理；训练侧存在编码器与 backbone 的异构负载均衡问题，K3 以未公开的 encoder optimization 处理。已有 vision-in-the-loop RL 环境的实例（D24 §7）。</p></div>
+  <div class="real"><h5>LongCat-Next · 离散路线</h5>
+  <p><span class="chip c-inf">推断</span> 视觉输出即 token，rollout 引擎与纯文本 RL 同构，环境返回图像离散化后直接进序列；训练系统等价于标准 LLM 训练。代价：性能上限由 tokenizer 决定，RVQ 类 tokenizer 的训练与解码 kernel 在 CANN 上是空白；尚无 RL 后训练细节披露。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>两条路线把系统复杂度放在了不同位置：连续路线放在<b>训练与 rollout 的运行时</b>（编码器并行、负载均衡、引擎内嵌编码器），离散路线放在<b>一次性的 tokenizer 训练</b>（RVQ 训练与解码 kernel）。对 NPU 栈，后者是可以离线完成、甚至在其他硬件上完成后固定下来的成本，前者是每次训练与 rollout 都要承担的成本——这是"离散路线对非 NVIDIA 栈更友好"这一推断的依据。但这一推断的两个前提（tokenizer 可迁移、离散路线的 RL 可行）目前都没有公开工作支持。</p>
+
+<h2 id="s7"><span class="hnum">07</span>开放问题三条</h2>
+
+<p><strong>（a）数据配比未公开</strong>：两者均未披露视觉 token 占比——第三方复现原生多模态的最大障碍。<strong>（b）from-scratch ViT 的结论边界</strong>：K3 证明 401M 编码器可以纯 NTP 目标从零训练，但这依赖 2.8T backbone 的联合预算，小模型语境是否成立未知。<strong>（c）离散路线的 RL</strong>：LongCat-Next 尚无 RL 后训练细节披露，"离散视觉 token × RLVR"（生成图像的可验证奖励）是尚无公开工作的交叉方向——与 D25 / D27 圈出的空白同属尚无先例的研究窗口。</p>
+
+<div class="vs">
+  <div class="base"><h5>K3 · 连续特征路线</h5>
+  <p>开放问题落在<b>结论边界</b>：from-scratch + 纯 NTP 的稳定性与追平结论在 2.8T 联合预算下成立，小模型是否成立未知；encoder optimization 细节未公开；视觉 token 占比未公开。</p></div>
+  <div class="real"><h5>LongCat-Next · 离散路线</h5>
+  <p>开放问题落在<b>下游延伸</b>：RL 后训练细节未披露；离散视觉 token 与 RLVR（生成侧可验证奖励）的结合无公开工作；8 层 RVQ / 28× 这组数字是否会成为被各家消融的超参；配比未公开。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>三条开放问题中，（a）是两者共有的复现障碍，（b）限定了 K3 结论的可迁移范围，（c）是本篇圈出的<b>尚无公开工作的交叉方向</b>。对本站的研究议程，（c）最直接：离散路线若能做 RLVR，则 vision-in-the-loop RL 在国产栈上的实现路径与纯文本 RL 完全一致，第 06 节的系统优势才能兑现。</p>
+
+<h2 id="s8"><span class="hnum">08</span>总表：连续特征路线 vs 离散路线</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:110px">主题</th><th style="width:300px">K3 · 连续特征路线</th><th>LongCat-Next · 离散路线 · 本站判断</th></tr></thead>
+<tbody>
+<tr><td>身份</td><td>2026-07，2.8T / 104B 激活，arXiv 2607.24653</td><td>2026-03，68.5B / A3B，arXiv 2603.27538，MIT。规模差 40 倍，不可直接互比</td></tr>
+<tr><td>"原生"的定义</td><td>连续特征保留，编码器从零 + 纯 NTP，与文本交错</td><td>全模态离散为同源 token，纯 AR NTP，无 projector。分歧在视觉进入模型的形态而非目标函数</td></tr>
+<tr><td>数据</td><td>分域精修（含 programmatic 代码 ↔ 渲染成对），采样率由小模型消融定；配比未公开</td><td>web 级混排数据展平为统一序列；三段清洗末端保留 SigLIP 过滤；音频约 250 万小时；配比未披露。配比是两者共同的最大缺口</td></tr>
+<tr><td>视觉编码</td><td>MoonViT-V2 401M / 27 层 / patch 14，from scratch，弃 SigLIP 初始化因梯度 spike；native resolution 打包；薄 projector（第三方逆向，待复核）</td><td>dNaViT = SAE + 8 层 RVQ，压缩至多 28×；DepthTransformer 解码。K3 把复杂度放在编码器 / projector，Next 放在 tokenizer</td></tr>
+<tr><td>训练课程</td><td>token 0 起单阶段联合；稳定性 = 编码器 from scratch；基建仅一句话描述</td><td>tokenizer 预训练并冻结 → Pre-align → 全参联合 → mid-train / SFT；稳定性 = 冻结 tokenizer；10× / 30% 为自报口径。两者以镜像方式处理同一风险</td></tr>
+<tr><td>评测</td><td>MMMU-Pro 81.6 / 83.4、MathVision 94.3 / 97.8、Video-MME 90.0；不支持生成</td><td>MMMU 70.6、MathVision 64.7、GenEval 84.44、MMAU 76.40。规模换上限 vs 统一换覆盖面；分工而非替代；全部自报</td></tr>
+<tr><td>RL-on-NPU</td><td>rollout 需内嵌视觉编码器；训练有异构负载均衡（细节未公开）</td><td>rollout 与纯文本同构，训练退化为标准 LLM 训练；RVQ kernel 在 CANN 上空白；无 RL 细节。推断：对 NPU 栈更友好</td></tr>
+<tr><td>开放问题</td><td>from-scratch 结论的小模型边界；encoder optimization 细节</td><td>离散视觉 token × RLVR 尚无公开工作；8 层 RVQ / 28× 是否成为被消融的超参</td></tr>
+</tbody>
+<caption>左栏为 K3 连续特征路线，右栏为 LongCat-Next 离散路线与本站判断。全部 benchmark 为厂商自报（provisional）；标注推断处为本站分析。</caption>
+</table>
+</div>
+
+<h2 id="s9"><span class="hnum">09</span>原文没给的东西</h2>
+
+<p>以下是复现或独立评估时必须自行确定、原文未提供理由或未经独立复现的内容——引用时应保留限定语：</p>
+
+<ul>
+<li><strong>数据配比</strong>：K3 的图文 / 视频配比与视觉 token 占比、LongCat-Next 的 backbone 多模态预训练 token 总量与精确配比，两者均未公开——第三方复现的最大障碍；</li>
+<li><strong>MoonViT-V2 的 projector 与位置编码细节</strong>：3D 网格位置编码（可学习 2D 空间嵌入叠加 1D sin-cos 时间嵌入）、2×2 pixel shuffle + 两层 MLP 来自第三方 config 逆向（<a href="https://github.com/PipeNetwork/kimi-k3-mlx">kimi-k3-mlx</a> 等），待原文复核；</li>
+<li><strong>K3 训练基建</strong>：multimodal encoder optimizations 仅一句话描述，训练期编码器的并行方式与变长图像负载均衡未见公开细节；推理侧 data-parallel sharding 仅为旁证；</li>
+<li><strong>from-scratch ViT 的结论边界</strong>：梯度 spike 与评测追平的结论依赖 2.8T backbone 的联合预算，小模型语境未知；</li>
+<li><strong>dNaViT 设计点的消融</strong>：8 层 RVQ 与 28× 压缩相对其他配置的对照未给；</li>
+<li><strong>LongCat-Next 的工程口径</strong>："解码提速约 10× / 算力节省约 30%"为官方口径（provisional），对照的"连续方案"具体指什么未说明；</li>
+<li><strong>LongCat-Next 的 RL 后训练</strong>：尚无细节披露；"离散视觉 token × RLVR"无公开工作；</li>
+<li><strong>第三方复测</strong>：两家的视觉评测分数全部自报，MMMU-Pro / Video-MME 无独立复现；</li>
+<li>本文原图受限于网络代理可达性，取自 GitHub 托管的 LongCat-Next 仓库 README；K3 仓库 README 无架构或评测配图（视觉分数为表格文本），arXiv 与美团技术博客的配图未能获取，K3 侧全部为本站图。</li>
+</ul>
+
+<h2 id="s10"><span class="hnum">10</span>可搬走的判断与后续关注</h2>
+
+<div class="note">
+  <span class="ntitle">三条可以直接搬走的判断</span>
+  <p><strong>一、"原生"的分歧不在目标函数而在视觉进入模型的形态。</strong>两条路线都只用 NTP、都移除了对比学习作为训练目标；K3 保留一个把连续特征映射进 LLM 隐空间的适配器，Next 把这一步前移到 tokenizer。评估任何自称"原生"的多模态工作，先问视觉是被适配的输入还是另一种词表。</p>
+  <p><strong>二、两条路线以镜像方式处理同一个稳定性风险。</strong>视觉侧与语言侧在联合优化中的不匹配，K3 在参数初始化上解决（编码器 from scratch，消除 SigLIP 初始化的梯度 spike），Next 在接口上解决（冻结 tokenizer，离散接口不漂移）。K3 的结论有消融级证据但依赖 2.8T 预算；Next 的做法不依赖规模但把上限交给了 tokenizer。</p>
+  <p><strong>三、对 NPU 栈，离散路线把系统复杂度从运行时移到了一次性的 tokenizer 训练。</strong>连续路线的编码器并行、负载均衡、引擎内嵌编码器是每次训练与 rollout 都要承担的成本；离散路线的 RVQ kernel 是可离线完成的成本。这是推断，其兑现取决于离散路线的 RL 是否可行——目前无公开工作。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>LongCat-Next 的 RL 后训练</strong>：离散统一模型怎么做 RLVR（尤其生成侧的可验证奖励），美团是否会在 LongCat-2.0 系上复用 DiNA · <strong>K3 §5.2.3 细节</strong>：multimodal encoder 训练基建若随 CANN / 开源生态披露，变长视觉负载均衡的做法值得单独拆 · <strong>第三方复测</strong>：两家的视觉评测分数目前全部自报，MMMU-Pro / Video-MME 的独立复现是检验"原生 &gt; 嫁接"叙事的关键 · <strong>离散 tokenizer 的后续</strong>：dNaViT 之后，8 层 RVQ / 28× 压缩这组数字会不会像"3:1 混合比"一样成为下一个被各家消融的超参。</p>
+</div>
+
+</main>
+
+<footer>
+  来源与声明：K3 侧基于技术报告 <a href="https://arxiv.org/abs/2607.24653">arXiv 2607.24653</a>（本看板已精读，见 D24 §7）与官方 <a href="https://github.com/MoonshotAI/Kimi-K3/blob/main/README.md">GitHub README</a>（视觉评测分数为 README 原文）；MoonViT-V2 的 projector / 位置编码细节来自第三方 config 逆向（<a href="https://github.com/PipeNetwork/kimi-k3-mlx">kimi-k3-mlx</a> 等），已标注待原文复核。LongCat-Next 侧基于 <a href="https://arxiv.org/abs/2603.27538">arXiv 2603.27538</a>、<a href="https://tech.meituan.com/2026/04/02/longcat-next.html">美团技术博客</a>、<a href="https://arxiv.org/abs/2510.15227">LongCat-Audio-Codec</a> 与 <a href="https://huggingface.co/meituan-longcat/LongCat-Next">HF 模型页</a>（MIT 开源）。全部 benchmark 为厂商自报（provisional）；"解码 10× / 算力省 30%"为 LongCat 官方口径；标注（推断）处为本看板分析。两家的数据配比均未公开，文中如实标注。原图取自 meituan-longcat/LongCat-Next 仓库 README，版权归原始仓库所有，此处仅作解析引用；本站图由原文 mermaid 图预渲染。
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>

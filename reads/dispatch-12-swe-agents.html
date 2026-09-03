@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 12 精读版 · SWE Agents 与 Agentic RL 上手指南</title>
+<meta name="description" content="SWE agent 子领域的四块咬合——评测、脚手架、训练数据、agentic RL——逐节做叙事与证据对照，配 SWE-bench 与 R2E-Gym 原图解析，并给出端到端搭建 SWE agentic RL 系统的部件、参考栈与常见失稳模式。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-12-swe-agents.html">
+<meta property="og:title" content="Dispatch 12 精读版 · SWE Agents 与 Agentic RL 上手指南">
+<meta property="og:description" content="SWE agent 子领域的四块咬合——评测、脚手架、训练数据、agentic RL——逐节做叙事与证据对照，配 SWE-bench 与 R2E-Gym 原图解析，并给出端到端搭建 SWE agentic RL 系统的部件、参考栈与常见失稳模式。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-12-swe-agents.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-12-swe-agents.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-12-swe-agents">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-12-swe-agents.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 12 · 精读版 · 2026-06-26</div>
+  <h1>SWE Agents 与 Agentic RL 上手指南：任务格式、四块咬合与端到端搭建</h1>
+  <p class="standfirst">一个 SWE agent 任务是"真实仓库的 buggy commit + issue + 一组隐藏测试"，奖励是"打上 patch 后 FAIL_TO_PASS 全过且 PASS_TO_PASS 不退化"。本文把 D12 的六个部分逐节拆开：评测（SWE-bench 家族与 Scale 的抗污染接班人）、脚手架（三种模式）、训练数据（真实 PR 挖掘对合成 bug 注入）、agentic RL（RLVR 奖励与信用分配），再到端到端搭一套 SWE agentic RL 系统的部件、参考栈与常见失稳模式。每节固定给出"叙事怎么说"与"证据是什么"两栏，所有厂商与前沿数字按原文保留 provisional 限定语。原图取自 SWE-bench 与 R2E-Gym 的官方仓库 README。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D12</span>
+    <span>6 路并行子 agent 调研 + 1 路综合</span>
+    <span>原图 4 张 · 本站图 5 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>任务格式：F2P 是核心</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>四块咬合与五件事</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>评测：SWE-bench 家族</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>Scale 的抗污染接班人</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>名字撞车：ScaleSWE</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>脚手架三模式</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>训练数据：真实 vs 合成</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>奖励与信用分配</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>前沿工作清单</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>三张对比速查表</a></li>
+    <li><a href="#s11"><span class="tnum">11</span>怎么搭：四个部件</a></li>
+    <li><a href="#s12"><span class="tnum">12</span>参考栈与分步清单</a></li>
+    <li><a href="#s13"><span class="tnum">13</span>常见失稳模式</a></li>
+    <li><a href="#s14"><span class="tnum">14</span>与 RL-on-NPU 的联系</a></li>
+    <li><a href="#s15"><span class="tnum">15</span>总表：叙事 vs 证据</a></li>
+    <li><a href="#s16"><span class="tnum">16</span>原文没给的东西</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">SWE agent 子领域可以拆成四件事互相咬合：<strong>评测</strong>（任务长什么样、怎么打分）、<strong>脚手架</strong>（模型外面的控制循环和工具）、<strong>训练数据</strong>（怎么大规模造出可执行验证的任务）、<strong>agentic RL</strong>（用可验证奖励 RLVR 把模型训上去）。四件事共用一个任务格式——<strong>F2P（Fail-to-Pass）</strong>：理解了这一格式就理解了整个生态。原文由 6 个并行子 agent 调研加 1 个综合 agent 汇总产出，链接与 arXiv ID 为调研所得，部分前沿与厂商数字为 provisional，以原始来源为准。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段：<strong>叙事怎么说</strong>（左栏，灰：社区或厂商的常见表述）/ <strong>证据是什么</strong>（右栏，橙：原文核实到的机制与数字）/ <strong>本站判断</strong>（下方色块：差异、原文是否给了理由、对 RL-on-NPU 的含义）。数字按来源标注：<span class="chip c-tp">第三方</span> 独立测量或论文口径、<span class="chip c-vr">自报</span> 厂商或作者口径、<span class="chip c-inf">推断</span> 本站分析。原文标为"暂定 / provisional"的数字一律保留限定语。</p>
+  <p>贯穿全文的一条线索：<strong>SWE-bench 分数是"模型 × scaffold × harness"三者的联合产物，不是模型单独的属性</strong>。这条线索决定了为什么 Verified 退役、为什么跨来源分数不可直接比、为什么 Bash-Only 对照有信息量，也决定了搭系统时 scaffold 与 reward 的设计比算法选择更先。</p>
+</div>
+
+<div class="formula">SWE agentic RL 的主线
+  ├ 任务      buggy commit + issue + 隐藏测试（F2P / P2P）  <span class="cmt">// 生态核心格式</span>
+  ├ 奖励      F2P 全过 且 P2P 不退化 且 未超时 → 1.0，否则 0.0
+  ├ 评测      SWE-bench Full / Lite / Verified / Bash-Only / Live → Scale Pro / Atlas
+  ├ 脚手架    ReAct 循环 · Agentless 流水线 · 混合组合循环
+  ├ 数据      SWE-Gym（真实 PR）· SWE-smith（合成 bug）· R2E-Gym（反向翻译）· ScaleSWE（真实 PR + 流水线）
+  ├ RL        RLVR 稀疏结果奖励 + GRPO 系 · turn-level 信用分配
+  └ 系统      环境 → rollout(scaffold) → trainer → 异步解耦 + 信用分配 → 数据；起点 DeepSWE 栈（rLLM + R2E-Gym）</div>
+
+<h2 id="s1"><span class="hnum">01</span>任务格式：F2P 是整个生态的核心</h2>
+
+<p>一个 SWE agent 任务就是 <strong>（真实代码仓库的某个 buggy commit + 一段 issue 描述 + 一组隐藏测试）</strong>；agent 在沙箱里用工具（bash / 编辑 / 搜索）多轮探索并产出一个 patch，reward 是"打上这个 patch 后，原本失败的测试（FAIL_TO_PASS）是否全过、且原本通过的测试（PASS_TO_PASS）不退化"。P2P 检查的作用是防止 agent 靠删代码"修复"；测试执行加超时，超时记 0。</p>
+
+<figure>
+  <img src="img/dispatch-12-swe-agents/orig-4.png" alt="SWE-bench 任务示意图：左侧 Issue 与 Codebase，中间 Language Model 生成 PR，右侧单元测试 Pre PR 与 Post PR 的通过情况对照">
+  <figcaption><span class="fnum">图 1</span>SWE-bench 任务格式示意：左侧为输入（Issue 文本 + 仓库快照），中间为语言模型生成的 PR（含改动文件与增删行数），右侧为单元测试在 PR 前后的通过情况表。<span class="chip c-tp">第三方</span> 取自 SWE-bench/SWE-bench 仓库 README（docs/assets/figures/teaser.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>最值得看的是右侧表格的<strong>两列勾叉</strong>。前三行"Pre PR 为叉、Post PR 为勾"就是 FAIL_TO_PASS：修复前失败、修复后必须通过；后两行"Pre PR 与 Post PR 都为勾"就是 PASS_TO_PASS：本来就通过、不能被改坏。原文的 reward 定义（F2P 全过且 P2P 不退化 → 1.0）在这张图上就是"右侧表格 Post PR 列全绿"。</p>
+    <p>左侧 Issue 是自然语言描述，Codebase 是完整仓库而非单个文件——这是 SWE 任务与代码补全类任务的本质区别，也是 scaffold（第 06 节）中"上下文检索质量"成为决定性杠杆的原因。中间的 PR 视图提示 agent 的产出是一个 diff，评测时以 patch 形式打回仓库再执行测试，与图 2 的流程一一对应。</p>
+  </div>
+</figure>
+
+<figure>
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-1.svg" alt="一个 SWE 任务的输入到奖励流程图：buggy repo 快照与 issue 进入 agent 产出 patch，打回 repo 后在沙箱跑测试，F2P 全过且 P2P 不退化且未超时则 reward 1.0，否则 0.0">
+  <figcaption><span class="fnum">图 2</span>一个 SWE 任务从输入到奖励的完整链路：输入四件（buggy repo 快照、issue 描述、隐藏 F2P 测试、隐藏 P2P 测试）→ agent 产出 patch → 打回 repo → 沙箱跑测试套件 → 三条件判定（F2P 全过、P2P 不退化、未超时）→ reward 1.0 或 0.0；超时以虚线直接指向 0.0。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>看两条进入"跑测试"节点的输入线：F2P 与 P2P 测试<strong>不经过 agent</strong>，直接进入沙箱。这是"隐藏"的图形含义——第 13 节的第一条纪律"绝不把隐藏测试放进 prompt"就是要维持这两条线不与 agent 节点相交。</p>
+    <p>判定菱形的三个条件缺一不可，其中 P2P 不退化是防止"删代码式修复"的机制性防线，超时归 0 是异步系统里最常被忽略的一条：截断或未 submit 的轨迹应给 0 而不是丢弃（第 13 节），否则梯度有偏。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>SWE-bench 是"让模型修 bug"的基准，分数反映模型的编程能力。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 任务构造三步为 scrape PR → filter → execute-and-retain F2P（SWE-bench 原论文，<a href="https://www.swebench.com">swebench.com</a>；Verified 子集见 <a href="https://openai.com/index/introducing-swe-bench-verified/">OpenAI 说明</a>）。奖励是执行判定，不是文本判定；agent 在沙箱内多轮探索，产出 patch 而非答案。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>F2P 格式的价值在于<b>把"是否修好"变成可执行验证</b>——这既是评测的打分口径，也是训练数据的产出目标，也是 RLVR 的 verifier。四块咬合的共同基座就是这一格式，因此后文所有"规模化"的讨论（SWE-smith、R2E-Gym、ScaleSWE）本质上都是在讨论"怎么大规模产出带 F2P 的可执行实例"。</p>
+
+<h2 id="s2"><span class="hnum">02</span>四块咬合与最先做的五件事</h2>
+
+<p>评测定义任务格式与奖励，训练数据向 RL 喂可验证任务，脚手架包住模型产出 trajectory，RL 反过来用测试套件当 verifier——四块之间的依赖关系不是线性的，而是互为输入。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-2.svg" alt="四块咬合关系图：评测（SWE-bench 家族、Scale Pro 或 Atlas）、训练数据（SWE-smith、SWE-Gym、R2E-Gym）、脚手架（ReAct、Agentless、混合）、agentic RL（RLVR、稀疏结果奖励 + GRPO 系）之间的依赖箭头">
+  <figcaption><span class="fnum">图 3</span>四块咬合：评测向训练数据与 RL 输出"任务格式与奖励"，向脚手架输出"统一打分口径"；训练数据向 RL 喂可验证任务；脚手架包住模型产出 trajectory；RL 以测试套件当 verifier 回指评测。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>数一下从"评测"出发的箭头：三条，分别指向数据、RL 与脚手架。评测块是<strong>唯一向其余三块都输出定义的节点</strong>，这就是原文把"读 SWE-bench 原论文"放在五件事第一位的结构性理由。</p>
+    <p>再看 RL 与评测之间的<strong>双向箭头</strong>：评测给 RL 奖励定义，RL 把测试套件当 verifier 回指评测——这一闭环意味着评测集的污染与测试过拟合（第 03 节）会直接进入训练信号，而不只是影响榜单排名。</p>
+  </div>
+</figure>
+
+<div class="formula">最先读 / 最先跑的 5 件事
+  1  读 SWE-bench 原论文   任务构造三步 + Verified 子集          swebench.com · OpenAI Verified 说明
+  2  跑 mini-swe-agent     约 100 行、bash 唯一工具、&gt;74% Verified   亲手看一条 trajectory
+  3  读 SWE-agent + ACI    接口设计而非模型本身撬动 10–30 分       arXiv 2405.15793 · swe-agent.com ACI 文档
+  4  读 SWE-smith          任意 repo 自动变约 5 万可验证任务       arXiv 2504.21798
+  5  读 DeepSWE + clone rLLM   Qwen3-32B 纯 RL 训上去的开源复现     together.ai/blog/deepswe</div>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>入门 SWE agent 先选一个强模型和一个成熟框架，跑通 SWE-bench 榜单即可。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 原文给出的五件事顺序是"读任务格式 → 看一条轨迹 → 理解接口撬动分数 → 理解怎么造任务 → 看一条完整 RL 复现"（<a href="https://github.com/SWE-agent/mini-swe-agent">mini-swe-agent</a>、<a href="https://arxiv.org/abs/2405.15793">SWE-agent</a>、<a href="https://swe-agent.com/0.7/background/aci/">ACI 文档</a>、<a href="https://arxiv.org/abs/2504.21798">SWE-smith</a>、<a href="https://github.com/SWE-bench/SWE-smith">SWE-smith 仓库</a>、<a href="https://www.together.ai/blog/deepswe">DeepSWE</a>、<a href="https://github.com/rllm-org/rllm">rLLM</a>）。其中 mini-swe-agent 约 100 行、bash 是唯一工具即 &gt;74% Verified。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>五件事的顺序本身是一个判断：<b>先理解任务格式与 scaffold 的贡献，再看训练</b>。mini-swe-agent 100 行即 &gt;74% 的事实放在第二位，是为了在读任何榜单之前先建立"scaffold 贡献巨大"的直觉，避免把分数差异误读为模型差异。</p>
+
+<h2 id="s3"><span class="hnum">03</span>评测：SWE-bench 家族与 Verified 的退役</h2>
+
+<p>SWE-bench 家族都给 agent（repo + issue），要求产出能过隐藏 F2P / P2P 测试的 patch。主要切片：<strong>Full</strong>（2294 实例）、<strong>Lite</strong>（300，快测）、<strong>Verified</strong>（500，OpenAI 人工校验，事实标准但已接近饱和）、<strong>Multimodal / M</strong>（JS + 截图）、<strong>Bash-Only</strong>（只给一个 bash 工具，隔离脚手架影响，参考实现即 mini-swe-agent）、<strong>SWE-bench-Live</strong>（post-cutoff issue，抗污染，<a href="https://swe-bench-live.github.io/">swe-bench-live.github.io</a>，arXiv 2505.23419）。关键提醒（均为暂定数字）：跨来源分数因 harness / scaffold 不同不可直接比较；Verified 存在污染（一项研究称约 32.7% 成功 patch 涉及解泄漏）和测试过拟合（审计显示榜单虚高约 6–7 分），OpenAI 已停止报告 Verified（<a href="https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/">说明</a>）。</p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>Verified 是事实标准，榜单上 85%+ 的分数说明 SWE agent 已接近解决真实工程 issue。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> Verified 语料几乎全部早于当前模型的预训练 cutoff，模型很可能在训练中见过对应 PR / 修复；约 32.7% 成功 patch 涉及解泄漏、榜单虚高约 6–7 分（均为暂定）；头部 scaffold 已把分数推到 85%+，区分度坍塌。Bash-Only 对照（mini-swe-agent 100 行 &gt;74%）直接说明相当一部分"模型能力"是 scaffold 喂出来的。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>Verified 退役的逻辑是<b>既不抗污染也不再有信息量</b>。原文给出了两方面理由（泄漏与区分度），但 32.7% 与 6–7 分两个数字来自研究与审计的转述，原文标为暂定。对 RL 的含义：若训练任务池与 Verified 仓库重叠，训练信号与评测信号同源，评测将失去判定泛化的能力——这是第 07 节 R2E-Gym 强调"与 SWE-bench 无仓库重叠"的原因。</p>
+
+<h2 id="s4"><span class="hnum">04</span>Scale（SEAL）的抗污染接班人：SWE-bench Pro 与 SWE Atlas</h2>
+
+<p>原文的更正：本块早前被错标为"ScaleSWE"，而"ScaleSWE"是 AweAI-Team 的训练数据项目（第 05 节），与 Scale AI 无关，只是名字撞车。这里讲的是 <strong>Scale AI（SEAL 评测实验室）</strong>的抗污染 SWE 评测。<strong>SWE-bench Pro</strong>（<a href="https://scale.com/blog/swe-bench-pro">scale.com/blog/swe-bench-pro</a>）：1865 个任务 / 41 个专业仓库，三层抗污染——① 公开集只取强 copyleft（GPL）仓库，用许可证当"法律门槛"阻止被纳入训练数据；② 私有集（276 个实例 / 18 个收购来的非公开商业代码库）是泛化的终极考验；③ held-out 集永久保密查过拟合。任务也更长程。<strong>SWE Atlas</strong>（<a href="https://scale.com/blog/swe-atlas-complete">scale.com/blog/swe-atlas-complete</a>）：同一套抗污染方法从"修 bug"扩到全工程闭环——Codebase Q&amp;A、写测试、重构。</p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>Pro 只是更难一点的 Verified；厂商自报的 Pro 分数可以与标准化口径直接对齐。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 榜单（2026-06-18，暂定）标准化口径 GPT-5.4（xHigh）59.1%；<span class="chip c-vr">自报</span> Opus 4.8 69.2%——比 Verified 低一大截。抗污染是三层机制（copyleft + 私有 + held-out），不是单纯加难度；OpenAI Codex 等已转向 Pro。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>Pro 是 <b>Verified 的抗污染接班人</b>：Verified 已饱和且被解泄漏与测试过拟合污染，Pro 用 copyleft + 私有 + held-out 堵"背题"。59.1% 与 69.2% 的差距同时含口径差异（标准化对自报）与模型差异，原文未拆分，本站也不做拆分。Atlas 把评测扩到全工程闭环，说明单一 pass@1 已不足以刻画 agent 水平。</p>
+
+<h2 id="s5"><span class="hnum">05</span>名字撞车：ScaleSWE 是训练数据，不是 benchmark</h2>
+
+<p>"ScaleSWE" = 论文《Immersion in the GitHub Universe: Scaling Coding Agents to Mastery》（AweAI-Team，人大 RUC 关联，<a href="https://arxiv.org/abs/2602.09892">arXiv 2602.09892</a>）——一个 SWE 训练数据 + 智能体项目（数据 / 蒸馏侧，与 SWE-smith / SWE-Gym / R2E-Gym 同支）。三件套：大规模真实 PR 挖掘 + 强模型轨迹蒸馏 + 合成 F2P 测试。数据漏斗：<strong>23k 仓库 / 6M PR →（LLM-as-judge 只看元数据预过滤）→ 沙箱三智能体流水线（建环境 / 造测试 / 写问题陈述，MEGAFLOW 编排，阿里云 ECS + ACR 出可验证 Docker 镜像）→ 10 万已验证实例（5200 repo）</strong>；开源 2 万 Real-Executable 实例 + 71k 蒸馏轨迹（3.5B token，教师 DeepSeek-V3.2）。合成 F2P：很多真实 PR 没作者写的 F2P，用一个 unit-test creator agent 合成可执行的 F2P 复现脚本（F2P / P2P 同 SWE-bench 口径，强制固定执行顺序防 test pollution）；关键在于只在缺测时"恢复可执行性"，不伪造任务本身。</p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>SWE 训练想大幅提分必须做 RL；SFT 只能做冷启动。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-vr">自报</span>（暂定）71k 轨迹 SFT 到 Qwen3-30B-A3B-Instruct → SWE-bench Verified 64.0%（基座 22.0%，+42 分），超当时开源 SOTA；本论文 SFT-only，没有 RL。配套：<a href="https://github.com/AweAI-Team/AweAgent">AweAgent</a>（Apache-2.0，`search_swe` scaffold + ACI 工具 + 反泄漏 bash blocklist；训练模式下 tool 观测 loss_mask=0 产出 token 级轨迹）、Scale-SWE-Agent（HF 模型，200 轮 / 256k）、<a href="https://github.com/AweAI-Team/DeNovoSWE">DeNovoSWE</a>（2026-06，arXiv 2606.10728，doc2repo 长程数据，明确 for SFT &amp; RL，Qwen3.5-35B-A3B → 约 50% BeyondSWE-Doc2Repo）。仓库 <a href="https://github.com/AweAI-Team/ScaleSWE">AweAI-Team/ScaleSWE</a>，HF <a href="https://huggingface.co/AweAI-Team">AweAI-Team</a>。数字为调研快照（全文 PDF 在原文环境被 403），标暂定。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>生态位：与 SWE-Gym 同路线但规模放大约 3 个数量级；主打蒸馏-SFT（对照 DeepSWE 的从零 RL、Meta SWE-RL 的非执行相似度奖励）。Real-Executable + DeNovoSWE"for RL"暗示 <b>SFT-now → RL-next</b>（类比 R2E-Gym → DeepSWE 的交接）。方法论区别在于 SWE-smith 造合成 bug、R2E-Gym 回译任务，ScaleSWE 只补测不造题。单篇精读见 D14 与 D17。</p>
+
+<h2 id="s6"><span class="hnum">06</span>脚手架三模式：灵活性对控制与成本</h2>
+
+<p>Scaffold = 模型外的一切（控制循环、工具 / ACI、上下文检索、状态管理）。三种主导模式：<strong>A. ReAct agentic loop</strong>（SWE-agent、OpenHands、mini-swe-agent、CCA）：Thought → Action → Observation，模型自己决定每一步，最灵活，但成本高、易陷循环、上下文易爆；<strong>B. Localize → repair 流水线</strong>（Agentless，arXiv 2407.01489）：固定三阶段（定位 → 修复 → 验证），LLM 不决定控制流，便宜、可复现，但僵化；<strong>C. 混合 / 组合循环</strong>（AutoCodeRover、Moatless、SpecRover、2026 多数系统）：结构化检索 / 定位（AST / SBFL / 语义）+ 有界 agentic 循环 + retry / test-repair / planning / tree-search（MCTS）/ reviewer / memory 等原语。"Inside the Scaffold"分类研究（arXiv 2604.03515）发现 13 个里 11 个都叠加了多个循环原语。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-3.svg" alt="脚手架三模式图：模式 A ReAct 循环（Thought → Action → Observation 闭环）、模式 B Agentless 流水线（定位 → 修复 → 验证）、模式 C 混合组合循环（结构化检索 → 有界 agentic 循环 → retry / MCTS / reviewer / memory），三者以虚线映射到一条灵活-控制权衡轴">
+  <figcaption><span class="fnum">图 4</span>三种脚手架模式及其在权衡轴上的位置：A 最灵活高成本、B 强控制低成本、C 居中。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>三个子图的<strong>箭头拓扑</strong>就是模式的定义：A 是闭环（Observation 回到 Thought，循环次数由模型决定），B 是单向链（三阶段固定，LLM 不决定控制流），C 是"链 + 有界循环"（结构化检索在前，循环有上限，末端挂原语）。</p>
+    <p>底部的权衡轴是本节的结论：核心权衡是灵活性对控制 / 成本。但原文同时指出两个<strong>跨模式</strong>的决定性杠杆——上下文检索质量与 test-time scaling——它们不在轴上，说明模式选择之外还有与模式无关的增量来源。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>ReAct 式全自主 agent 是终局形态，流水线式方法是过渡方案。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 2026 多数系统采用混合模式；13 个被分类的系统里 11 个叠加了多个循环原语（arXiv 2604.03515）。SWE-agent 的 ACI（LM 友好工具集 + 编辑前 lint）说明"接口设计而非模型本身"能撬动 10–30 分（<a href="https://arxiv.org/abs/2405.15793">arXiv 2405.15793</a>）。OpenHands 以 event-stream + CodeAct 提供通用 runtime（<a href="https://arxiv.org/abs/2407.16741">arXiv 2407.16741</a>，<a href="https://github.com/All-Hands-AI/OpenHands">仓库</a>）。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>模式收敛到 C 不是折中妥协，而是<b>把结构化检索与有界循环各自放到最擅长的位置</b>。对 RL 训练的含义：模式 A 的轨迹是 token 级 RL 序列的直接来源，模式 B / C 的固定阶段则需要决定"哪些阶段的输出进入 loss"——第 11 节的 observation mask 与 AweAgent 的 loss_mask=0 处理的是同一问题。</p>
+
+<h2 id="s7"><span class="hnum">07</span>训练数据：真实 PR 挖掘对合成 bug 注入</h2>
+
+<p>中心设计轴是<strong>真实 PR 挖掘 vs 合成 bug 注入</strong>。<strong>SWE-Gym</strong>（arXiv 2412.21139）：首个为"训练"而非评测建的环境，2438 个真实任务 / 11 repo，挖真 PR（真实但慢、规模小），还训 verifier 做 best-of-n。<strong>SWE-smith</strong>（arXiv 2504.21798）：把任意 Python repo 自动变成任务工厂，四种造 bug 策略（LM Rewrite / AST 改写 / PR Mirroring 反转真实修复 / Combine Bugs），只保留能把 ≥1 个通过测试翻成失败的 patch 来验证；<strong>一个 repo 一个执行环境</strong>是规模化关键（解决旧方法每任务数 GB 容器的问题），产出约 5 万任务 + 2.6 万条 trajectory（可作 SFT）。<strong>R2E-Gym</strong>（arXiv 2504.07164）：8.1k 程序化环境，SWE-GEN 从 commit 反向翻译出环境 + 测试，无需人写 issue / test。<strong>BugPilot</strong>（arXiv 2510.19898）专攻"合成 bug 太简单"的批评。</p>
+
+<figure>
+  <img src="img/dispatch-12-swe-agents/orig-3.png" alt="R2E-Gym 数据集统计表与仓库分布环形图：表格对比 APPS、R2E、SWE-Bench train、SWE-Gym Raw、SWE-Bench test、SWE-Gym、R2E-Gym-Subset、R2E-Gym 的 Repo、Executable 与实例数；环形图为 R2E-Gym Subset 4578 实例的仓库占比">
+  <figcaption><span class="fnum">图 5</span>R2E-Gym 的数据集统计（Table 1）与训练子集仓库分布（Table 2）：左表按"是否为仓库级、是否可执行、实例数"对比八个数据集，R2E-Gym 全集 8,135、子集 4,578；右图为子集的仓库占比，pandas 31.5%、numpy 17.1%、pillow 13.5%、orange3 10.5%，其余为 aiohttp、tornado、pyramid、scrapy、datalad、coveragepy。<span class="chip c-vr">自报</span> 取自 R2E-Gym/R2E-Gym 仓库 README（assets/docs-env-stats-v1.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左表要看 <strong>Repo? 与 Executable? 两列的组合</strong>：APPS 可执行但不是仓库级；SWE-Bench(train) 与 SWE-Gym Raw 是仓库级但不可执行（19,008 与 66,894 个实例）；同时满足两者的只有下面几行——SWE-Bench(test) 2,294、SWE-Gym 2,438、R2E-Gym 8,135。这就是"真实 PR 挖掘规模小"与"程序化生成可扩展"在同一张表上的对照：可执行是瓶颈，仓库级的原始 PR 数量本身并不稀缺。</p>
+    <p>右图要看的是<strong>子集与 SWE-Bench 无仓库重叠</strong>的说明（图题标注）以及前四个仓库占比之和超过 70%——训练分布高度集中在少数科学计算与图像库。这对应第 03 节的判断：抗污染的前提是训练集与评测集的仓库分离，而分离之后分布是否够宽是另一个问题。</p>
+  </div>
+</figure>
+
+<figure>
+  <img src="img/dispatch-12-swe-agents/orig-1.png" alt="R2E-Gym 三面板总览：(a) 合成数据 SWEGEN 相比人类 PR 的可执行训练环境数为 2.5 倍；(b) 混合 test-time scaling 从 Pass@1 34.4% 经 execution-free 42.8%、execution-based 43.7% 到 hybrid 51.0%；(c) 开源权重模型 SWE-Bench Verified Best@K 对比，Ours 51.0%">
+  <figcaption><span class="fnum">图 6</span>R2E-Gym 总览三面板：(a) SWEGEN 合成的可执行训练环境数为人类 PR 的 2.5×；(b) 混合 test-time scaling——四根柱分别为 Pass@1 34.4%、execution-free 42.8%、execution-based 43.7%、hybrid 51.0%，图中箭头标注 +16.6% / +8.2% / +7.3%；(c) SWE-Bench Verified Best@K 对比，开源权重组中 Ours 51.0%，SweRL 41%、SweGym 32%、SweFixer 30.2%；商用组 Sonnet-3.5 OpenHands 53.0%、Sonnet-3.5 w/ Tools 49%、O1 48%、O1-preview 41.3%。<span class="chip c-vr">自报</span> 取自 R2E-Gym/R2E-Gym 仓库 README（assets/docs-teaser-v1.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>(b) 面板是第 08 节"两种 verifier 互补"的图形证据：<strong>execution-free 与 execution-based 两根柱各自只到 42.8% 与 43.7%</strong>，而 hybrid 到 51.0%——单 verifier 的上限在 42–43% 附近，这正是原文所说"与执行信号互补可突破约 42–43% 单 verifier 天花板"的来源。注意纵轴是 Best@K 而非 Pass@1，即 test-time scaling 口径。</p>
+    <p>(a) 的 2.5× 说明程序化反向翻译在"可执行环境数量"上的规模优势；(c) 中开源与商用两组的分组着色提醒：51.0% 与 Sonnet-3.5 OpenHands 的 53.0% 处在不同 scaffold 之下，仍是"模型 × scaffold × harness"的联合数字，不能直接横比。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>合成 bug 任务质量不如真实 PR，规模化训练数据的可信路径只有挖真 PR。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 真实 PR 挖掘（SWE-Gym）任务分布贴近线上但每个实例都要建执行环境、配齐测试，只有 2438 个；合成注入（SWE-smith、R2E-Gym）以"一 repo 一环境"摊薄建环境成本，把任务量推到 5 万乃至上万环境。合成 bug 可能偏离真实 bug 分布（过于局部、过于"可被工具定位"），BugPilot 正面回应这一批评。ScaleSWE 的折中：从真实 PR 出发保住分布真实性，再用沙箱三智能体流水线把"真实但不可执行"补全成"可执行可验证"。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>这条轴决定的是"真实性—可扩展性"取舍，而非"真实优于合成"。<b>可执行才是瓶颈</b>（图 5 左表）：三条路线都在解决"怎么让仓库级任务可执行验证"，只是分别选择了造 bug、回译、补测三种手段。对 RL-on-NPU 的含义：数据产出是 CPU / 容器负载，与 NPU 训练集群解耦，国产集群做 SWE RL 在数据侧无生态劣势（<span class="chip c-inf">推断</span>）。</p>
+
+<h2 id="s8"><span class="hnum">08</span>奖励与信用分配：稀疏结果奖励是主力</h2>
+
+<p><strong>RLVR 用测试套件当 verifier</strong>，跑 F2P 得到客观 0/1 reward。经验共识：稀疏的、基于结果的 test-pass 奖励是主力且最安全——多轮 agentic RL 实践指南（<a href="https://arxiv.org/abs/2510.01132">arXiv 2510.01132</a>）发现稀疏奖励在稳定性和最终分数上都胜过 dense / piecewise-dense，而 dense shaping 可靠地诱发 reward hacking。稀疏奖励的弱点是"可区分性低"（两条都通过 / 都失败的轨迹分不开），两种缓解：<strong>execution-free reward model</strong>（SWE-RM、R2E-Gym 的非执行 verifier，与执行信号互补可突破约 42–43% 单 verifier 天花板）和<strong>相似度规则奖励</strong>（Meta SWE-RL，<a href="https://arxiv.org/abs/2502.18449">arXiv 2502.18449</a>，用与 ground-truth patch 的序列相似度，绕开执行）。<strong>信用分配</strong>：别把一个轨迹级 reward 平摊到每个 token——把每轮当成 MDP step，用 turn-level advantage（即时反馈 + 折扣后的最终结果份额）（MT-GRPO arXiv 2505.11821、Kevin arXiv 2507.11948）；process / checklist 奖励（CM2、SWE-TRACE）能给中间信号但必须防 hacking。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-4.svg" alt="奖励设计决策树：稀疏结果奖励或 dense shaping → 稀疏是否导致可区分性低 → 叠加 execution-free reward model 或相似度规则奖励 → 信用分配用 turn-level advantage 或 GiGPO，不推荐 token 平摊">
+  <figcaption><span class="fnum">图 7</span>奖励设计的决策路径：先选稀疏结果奖励（默认最安全）而非 dense shaping（易诱发 reward hacking）；若可区分性低则叠加 execution-free reward model 或相似度规则奖励；信用分配把每轮当 MDP step，用 turn-level advantage 或 GiGPO，token 平摊为不推荐分支。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>这棵树有两个"不推荐"叶节点：dense shaping 与 token 平摊，都以虚线或旁注标出。要注意它们分别在<strong>不同层次</strong>——前者是"奖励信号来自哪"，后者是"奖励信号分给谁"，两个问题独立，可以稀疏奖励 + 好的信用分配，也可以 dense 奖励 + 差的信用分配。</p>
+    <p>中间菱形"稀疏导致可区分性低吗"是唯一需要实验才能回答的分支：原文没有给出判定阈值，实践中通常以组内奖励方差或 pass-rate 分布判断（<span class="chip c-inf">推断</span>）。这是第 12 节"按 pass-rate 区间丢掉无解 / 秒解任务"的动机。</p>
+  </div>
+</figure>
+
+<figure>
+  <img src="img/dispatch-12-swe-agents/orig-2.png" alt="R2E-Gym 训练效果表：7B、14B、32B 三种规模在 SWE-Bench Lite 与 Verified 上 Base-model、SWE-Gym、Ours 的分数及增量">
+  <figcaption><span class="fnum">图 8</span>R2E-Gym 训练效果：三种模型规模（7B / 14B / 32B）在 SWE-Bench Lite 与 Verified 上，基座、SWE-Gym 训练、R2E-Gym 训练（Ours）的分数与相对 SWE-Gym 的增量 Δ。Verified 列：7B 1.8 → 10.6 → 19.0（Δ +8.4），14B 4.0 → 16.4 → 26.8（+10.4），32B 7.0 → 20.6 → 34.4（+13.8）。<span class="chip c-vr">自报</span> 取自 R2E-Gym/R2E-Gym 仓库 README（assets/docs-training-v1.png）。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>看 <strong>Δ 列随规模的变化</strong>：Verified 上 +8.4 → +10.4 → +13.8，Lite 上 +1.0 → +7.97 → +8.47，都随模型变大而扩大。这说明程序化环境带来的增益不是"小模型的补课"，而是随规模放大的——与第 07 节"可执行环境数量是瓶颈"一致。</p>
+    <p>括号内的 ± 是原图给出的标准差，Verified 列 32B 的 34.4 (±1.2) 就是图 6(b) 的 Pass@1 起点。同一基座、同一 scaffold 下 SWE-Gym 与 R2E-Gym 两列的对照，是本页少数<strong>控制了 scaffold 变量</strong>的数据对比，可信度高于跨来源榜单。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>稀疏奖励信号太少，SWE 这类长程任务必须用 dense 过程奖励才能训得动。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 稀疏结果奖励在稳定性和最终分数上都胜过 dense（arXiv 2510.01132）；dense shaping 可靠地诱发 reward hacking。稀疏的真正弱点是可区分性而非信号量，两种缓解（非执行 verifier、相似度奖励）都是叠加而非替换。信用分配的改进落在轮级（MT-GRPO、Kevin），而非 token 级。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>原文给出了明确理由（稳定性、hacking 风险）与文献依据，判断可靠。<b>"稀疏奖励 + 轮级信用分配"是当前最稳的默认配置</b>；process / checklist 奖励是可选增量而非必需。对 RL-on-NPU 的含义：轮级优势估计要求 trainer 保留轮边界信息，这是 scaffold 与 trainer 接口的一个必要字段（<span class="chip c-inf">推断</span>）。</p>
+
+<h2 id="s9"><span class="hnum">09</span>前沿工作清单</h2>
+
+<p>按四块整理原文清单，链接与 ID 保留原样；工业界数字均为暂定、scaffold 相关、未独立复现。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:90px">类别</th><th style="width:220px">工作</th><th>要点</th><th style="width:220px">来源</th></tr></thead>
+<tbody>
+<tr><td>评测</td><td>SWE-bench Verified</td><td>500 实例人工校验，事实标准（已饱和）</td><td><a href="https://www.swebench.com/verified.html">swebench.com/verified</a></td></tr>
+<tr><td>评测</td><td>SWE-bench-Live</td><td>post-cutoff issue，抗污染持续更新</td><td><a href="https://swe-bench-live.github.io/">swe-bench-live</a> · arXiv 2505.23419</td></tr>
+<tr><td>评测</td><td>SWE-bench Pro / SWE Atlas（Scale）</td><td>更难、含私有 / copyleft、扩到全工程闭环</td><td><a href="https://scale.com/blog/swe-bench-pro">Pro</a> · <a href="https://scale.com/blog/swe-atlas-complete">Atlas</a></td></tr>
+<tr><td>脚手架</td><td>SWE-agent</td><td>ACI：LM 友好工具集 + 编辑前 lint</td><td><a href="https://arxiv.org/abs/2405.15793">arXiv 2405.15793</a></td></tr>
+<tr><td>脚手架</td><td>OpenHands</td><td>event-stream + CodeAct，通用 runtime</td><td><a href="https://arxiv.org/abs/2407.16741">arXiv 2407.16741</a> · <a href="https://github.com/All-Hands-AI/OpenHands">仓库</a></td></tr>
+<tr><td>脚手架</td><td>mini-swe-agent</td><td>100 行，bash-only，&gt;74% Verified</td><td><a href="https://github.com/SWE-agent/mini-swe-agent">仓库</a></td></tr>
+<tr><td>脚手架</td><td>Agentless</td><td>去 agent 的定位 → 修复流水线</td><td><a href="https://github.com/OpenAutoCoder/Agentless">仓库</a></td></tr>
+<tr><td>脚手架</td><td>Moatless / SWE-Search</td><td>检索优先 + MCTS 树搜索</td><td><a href="https://github.com/aorwall/moatless-tools">仓库</a> · arXiv 2410.20285</td></tr>
+<tr><td>脚手架</td><td>Confucius Code Agent（Meta + Harvard）</td><td>orchestrator + memory，52.7 / 54.3% SWE-bench Pro（暂定）</td><td><a href="https://arxiv.org/abs/2512.10398">arXiv 2512.10398</a></td></tr>
+<tr><td>数据</td><td>SWE-smith</td><td>任意 repo → 5 万可验证任务工厂</td><td><a href="https://github.com/SWE-bench/SWE-smith">仓库</a></td></tr>
+<tr><td>数据</td><td>SWE-Gym</td><td>首个训练用真实任务环境</td><td><a href="https://github.com/SWE-Gym/SWE-Gym">仓库</a></td></tr>
+<tr><td>数据</td><td>R2E-Gym</td><td>8.1k 程序化环境，SWE-GEN 反向翻译</td><td><a href="https://github.com/R2E-Gym/R2E-Gym">仓库</a></td></tr>
+<tr><td>RL</td><td>DeepSWE</td><td>Qwen3-32B 纯 RL（GRPO++），42.2% Pass@1（暂定）</td><td><a href="https://www.together.ai/blog/deepswe">together.ai</a></td></tr>
+<tr><td>RL</td><td>Meta SWE-RL</td><td>相似度规则奖励，免大规模执行环境</td><td><a href="https://arxiv.org/abs/2502.18449">arXiv 2502.18449</a></td></tr>
+<tr><td>RL</td><td>Nebius long-context multi-turn</td><td>改进 DAPO，RFT → 39% Verified</td><td><a href="https://arxiv.org/abs/2508.03501">arXiv 2508.03501</a></td></tr>
+<tr><td>RL</td><td>Kimi-Dev（Moonshot）</td><td>Agentless skill-prior + RL，60.4% Verified（暂定）</td><td><a href="https://arxiv.org/abs/2509.23045">arXiv 2509.23045</a></td></tr>
+<tr><td>RL</td><td>Agent-RLVR</td><td>加 guidance / dense feedback 缓解稀疏奖励</td><td><a href="https://arxiv.org/abs/2506.11425">arXiv 2506.11425</a></td></tr>
+<tr><td>RL</td><td>多轮 agentic RL 实践指南</td><td>稀疏 vs dense 系统对比</td><td><a href="https://arxiv.org/abs/2510.01132">arXiv 2510.01132</a></td></tr>
+<tr><td>工业界</td><td>Cursor Composer 2.5</td><td>基于 Kimi K2.5 + 大规模 agentic RL（compaction-in-the-loop、Directive Text Feedback）</td><td><a href="https://cursor.com/blog/composer-2-5">cursor.com</a> · <a href="https://www.philschmid.de/kimi-composer-context">philschmid</a></td></tr>
+<tr><td>工业界</td><td>Anthropic Claude Code（Opus 4.8）</td><td>高层披露 RLHF + agentic RL；Verified 约 88.6% / Pro 69.2%（暂定）</td><td><a href="https://www.anthropic.com/news/claude-opus-4-5">anthropic.com</a></td></tr>
+<tr><td>工业界</td><td>OpenAI Codex（GPT-5.3-Codex）</td><td>RL on 真实工程任务，转向 SWE-bench Pro</td><td><a href="https://openai.com/index/introducing-gpt-5-3-codex/">openai.com</a></td></tr>
+<tr><td>工业界</td><td>Zhipu GLM-5</td><td>开源 slime 框架做 async agentic RL</td><td><a href="https://github.com/THUDM/slime">仓库</a></td></tr>
+<tr><td>工业界</td><td>Cognition Devin / Google Jules / Factory Droid</td><td>scaffold / async 自治为卖点</td><td><a href="https://cognition.ai/blog/swe-bench-technical-report">Devin</a> · <a href="https://jules.google/">Jules</a> · <a href="https://factory.ai/news/code-droid-technical-report">Droid</a></td></tr>
+</tbody>
+<caption>原文第 3 节清单的表格化，条目、数字与链接与原文一致；"暂定"为原文标注。</caption>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>工业界旗舰的 Verified 88.6% 与 Pro 69.2% 是当前能力水位线，开源方法在 40–60% 区间落后一代。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-vr">自报</span> 所有 vendor 数字均为暂定、scaffold 相关、未独立复现；开源方法的基座（Qwen3-32B、30B-A3B、未公开）、scaffold（Agentless skill-prior 对纯 agentic）与 harness 各不相同。<span class="chip c-tp">第三方</span> 唯一可横比的是同一标准化口径内的结果（如 Pro 的标准化榜单）。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>清单的价值在于路线而非排名。<b>把 42.2 / 60.4 / 64.0 当同尺度排名是最常见的误读</b>；正确的读法是看每条路线的工程取舍与增量来源（第 10 节）。</p>
+
+<h2 id="s10"><span class="hnum">10</span>三张对比速查表</h2>
+
+<p>原文第 3.5 节的三张表，分别回答"选哪个评测"、"选哪条数据路线"、"RL 效果怎么比"。</p>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:150px">基准</th><th style="width:130px">规模</th><th>用途</th><th style="width:170px">抗污染</th><th>现状 / 提醒</th></tr></thead>
+<tbody>
+<tr><td>SWE-bench Verified</td><td>500（人工校验）</td><td>通用 issue → patch 主力榜，长期事实标准</td><td>弱：语料早于多数模型预训练，泄漏风险高</td><td>已接近饱和并退役：OpenAI 已停止报告；一项研究称约 32.7% 成功 patch 涉及解泄漏，审计显示榜单虚高约 6–7 分</td></tr>
+<tr><td>SWE-bench Bash-Only</td><td>复用 Verified 实例</td><td>去工具化对照：只给 bash，考察"scaffold 多大程度上在替模型干活"</td><td>同 Verified</td><td>参考实现 mini-swe-agent（约 100 行）即 &gt;74% Verified，说明高分里 scaffold 贡献巨大</td></tr>
+<tr><td>SWE-bench-Live</td><td>滚动更新</td><td>post-cutoff 真实 issue，持续抗污染评测</td><td>强：取模型训练 cutoff 之后的实例，从机制上挡数据泄漏</td><td>arXiv 2505.23419；需关注其"截止日期"版本以匹配被测模型</td></tr>
+<tr><td>SWE-bench Pro（Scale）</td><td>1865 实例 / 41 仓库</td><td>更难、更贴近真实工程的升级榜</td><td>强（三层）：copyleft + 私有 + held-out</td><td>2026-06-18 暂定：标准化口径 GPT-5.4（xHigh）59.1%；厂商自报 Opus 4.8 69.2%——比 Verified 低一大截，更能区分前沿模型</td></tr>
+<tr><td>SWE Atlas</td><td>多任务</td><td>把评测从"修 bug"扩到 Codebase Q&amp;A / 写测试 / 重构</td><td>取决于子任务来源</td><td>反映 SWE agent 能力边界外扩，单一 pass@1 已不足以刻画 agent 水平</td></tr>
+</tbody>
+<caption>评测基准选型对比。数字为原文暂定口径。</caption>
+</table>
+</div>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:150px">项目</th><th>造任务方式</th><th>规模</th><th>真实性 vs 可扩展性</th><th>SFT / RL 定位</th></tr></thead>
+<tbody>
+<tr><td>SWE-Gym（2412.21139）</td><td>直接采真实 PR / issue（11 repo）</td><td>2438 真实任务</td><td>真实性最高，但建环境慢、规模小</td><td>首个用于训练的环境；SFT 与 RL 的真实信号源，但难规模化</td></tr>
+<tr><td>SWE-smith（2504.21798）</td><td>合成造 bug：LM Rewrite / AST / PR Mirroring / Combine 四策略</td><td>5 万任务 + 2.6 万 trajectory</td><td>可扩展性极强；真实性次于真实 PR</td><td>一 repo 一执行环境是规模化关键；供 SFT / 拒绝采样轨迹</td></tr>
+<tr><td>R2E-Gym（2504.07164）</td><td>程序化生成环境 + SWE-GEN 反向翻译（无需人写 issue / test）</td><td>8.1k 环境</td><td>高度自动化、可扩展；任务真实性偏"合成"</td><td>主打 RL 可执行环境的规模供给</td></tr>
+<tr><td>ScaleSWE（2602.09892）</td><td>真实 PR 挖掘 + 沙箱三智能体流水线验证</td><td>漏斗：23k 仓库 / 6M PR → 10 万已验证实例（5200 repo）；开源 2 万 Real-Executable + 71k 蒸馏轨迹（3.5B token，教师 DeepSeek-V3.2）</td><td>兼顾真实性与规模：用流水线把"真实 PR"做到可执行可验证</td><td>71k 轨迹 SFT-only（无 RL）到 Qwen3-30B-A3B-Instruct → Verified 64.0%（基座 22.0%，+42 分）</td></tr>
+</tbody>
+<caption>训练数据路线对比。中心设计轴是真实 PR 挖掘 vs 合成 bug 注入。</caption>
+</table>
+</div>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:170px">方法</th><th style="width:150px">基座</th><th>训练方式</th><th style="width:170px">报告分数（暂定）</th><th>关键点</th></tr></thead>
+<tbody>
+<tr><td>DeepSWE</td><td>Qwen3-32B</td><td>纯 RL，GRPO++</td><td>42.2% Pass@1（Verified）</td><td>纯 RL 路线代表，无 SFT 预热也能起量；对 reward / 采样工程敏感</td></tr>
+<tr><td>Meta SWE-RL（2502.18449）</td><td>—</td><td>RL，相似度规则奖励、免执行</td><td>—</td><td>用 patch 与参考解的相似度当奖励，绕开建执行环境的瓶颈；奖励代理性强、可能与真实通过率脱节</td></tr>
+<tr><td>Kimi-Dev</td><td>—</td><td>Agentless skill-prior + RL</td><td>60.4% Verified</td><td>把 Agentless 流水线的结构先验注入，再 RL 精修；高分但 scaffold 依赖重</td></tr>
+<tr><td>Nebius（long-context multi-turn）</td><td>—</td><td>改进 DAPO，RFT（拒绝采样微调）</td><td>39% Verified</td><td>主攻长上下文多轮交互；RFT 而非完整 RL，工程上更稳</td></tr>
+<tr><td>ScaleSWE（SFT）</td><td>Qwen3-30B-A3B-Instruct</td><td>SFT-only（71k 蒸馏轨迹，无 RL）</td><td>64.0% Verified（基座 22.0%，+42 分）</td><td>证明高质量蒸馏轨迹 SFT 即可大幅追平，RL 不是唯一路</td></tr>
+</tbody>
+<caption>RL 训练效果对比（provisional）。这些分数不能直接横比：基座、scaffold、评测 harness 与是否标准化均不同，且大多为自报、未独立复现。</caption>
+</table>
+</div>
+
+<div class="vs">
+<div class="base"><h5>叙事怎么说</h5>
+  <p>三条路线是竞争关系：纯 RL 上限最高、蒸馏 SFT 是捷径、相似度奖励是妥协。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 纯 RL（DeepSWE 的 GRPO++）信号最真实、上限最高，但需要大规模可执行环境、稳定的采样 / 优势估计，且奖励稀疏（一条长轨迹最后才有一个 0/1）——Agent-RLVR 正是靠加 guidance / dense feedback 缓解。蒸馏 SFT（ScaleSWE）便宜、稳定、可复现，71k 轨迹把 Qwen3-30B 从 22.0% 拉到 64.0%，但学的是教师行为分布，难超过教师。相似度奖励（Meta SWE-RL）免执行环境，代价是可能奖励"长得像但不对"的 patch。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>三条路线的关系是<b>阶段互补</b>而非竞争：SFT 的天花板被严重低估（+42 分），但 SFT 难超教师；RL 能超教师但依赖执行环境。ScaleSWE 的 Real-Executable 与 DeNovoSWE 的"for RL"正是 SFT-now → RL-next 的交接。读表时应看增量来源（如 +42 分的基座差），不看绝对值排名。</p>
+
+<h2 id="s11"><span class="hnum">11</span>怎么搭：四个部件加数据</h2>
+
+<p><strong>环境</strong> = 任务实例（buggy commit 的 repo 快照 + 问题描述 + F2P / P2P 测试列表 + golden patch），包进可运行 Docker 镜像；reward = 打 patch 跑隐藏测试，全部 F2P 通过且 P2P 不退化 → 1.0，否则 0.0；测试执行加超时，超时记 0。→ <strong>rollout（scaffold）</strong>把一个任务变成多轮 trajectory：策略看 issue → 发工具调用（bash / 编辑 / 搜索 / submit）→ 沙箱执行 → 反馈 → 循环；trajectory 的 token 即 RL 训练序列（<strong>务必 mask 掉 observation / 工具输出 token，只对策略自己生成的 token 算 loss——这是常见 bug 源</strong>）。→ <strong>trainer</strong> 分成训练引擎（FSDP2 / Megatron 算梯度）+ 推理引擎（vLLM / SGLang 出 rollout），周期性 weight sync；算法几乎都用 GRPO 系（DAPO / GiGPO / GSPO），无 value network、组归一化、对稀疏二元奖励更稳。→ <strong>异步 + 信用分配</strong>：SWE rollout 常 30–50 轮、分钟级容器时间，同步批生成会让 GPU 干等最慢轨迹，所以用 server-based 解耦异步（推理独立成 vLLM / SGLang server，trainer 拉完成的轨迹），并 per-trajectory（而非 per-batch）与沙箱交互；信用分配默认"结果奖励 + 长度归一化广播 + GRPO 组采样（8–16 / 任务）"，太稀疏时上 GiGPO / turn-level。→ <strong>数据</strong>：SFT 冷启动（SWE-smith-trajectories 几千条专家轨迹）→ 在过滤后的任务池上 GRPO（按 pass-rate 区间丢掉无解 / 秒解任务以保住梯度信号）。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-5.svg" alt="端到端数据流时序图：训练引擎、推理引擎（独立 server）、rollout 与 scaffold、环境（repo 沙箱与 F2P/P2P 奖励）四个参与者之间的消息：提供权重做生成、工具调用、沙箱反馈、循环到 submit、跑测试给 reward、trainer 拉轨迹并 mask observation、GRPO 算梯度、周期 weight sync">
+  <figcaption><span class="fnum">图 9</span>server-based 解耦异步的数据流：推理引擎向 scaffold 提供策略权重做生成；scaffold 与环境多轮交互直到 submit；环境跑测试给出 reward；trainer 拉完成轨迹（mask observation token）、以 GRPO 系组归一化算梯度；周期性 weight sync 回流推理引擎。<span class="chip c-inf">推断</span> 本站图，由原文第 5 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>四条生命线里，<strong>训练引擎与推理引擎之间只有一条消息</strong>（周期 weight sync）——这就是"解耦"的含义：两者不共享步调，推理引擎持续服务 scaffold，训练引擎按自己的节奏拉轨迹。中间两条生命线（scaffold 与环境）之间的往返最密集，且每条 trajectory 独立往返，对应"per-trajectory 而非 per-batch"。</p>
+    <p>要看的风险点在两处：weight sync 之后 in-flight 的轨迹由旧策略生成（第 13 节的 staleness 与重要性采样修正），以及"trainer 拉完成轨迹"这一步的 mask observation——图上写成一条消息，实际是最常见的 bug 源。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>agentic RL 系统的核心是 RL 算法；选好 GRPO 变体即可，其余是工程细节。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 原文四个部件里算法只占 trainer 的一个子项（GRPO 系几乎是默认）；决定成败的是 observation mask、超时归 0、P2P 检查、per-trajectory 异步、pass-rate 过滤——全部是环境与 rollout 侧的设计。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>SWE agentic RL 的<b>难点在环境与 rollout 层，不在算法层</b>。GRPO 系之所以成为默认，恰是因为它对稀疏二元奖励足够稳、无 value network 减少了一个需要调试的部件；剩余的复杂度被推到了"怎么把任务变成正确的训练序列"上。</p>
+
+<h2 id="s12"><span class="hnum">12</span>参考栈与分步清单</h2>
+
+<p><strong>参考栈（阻力最小路径）——以 DeepSWE 栈起步</strong>：数据 / 环境用 R2E-Gym（R2E-Gym-Subset）+ R2E-Gym AgentHub scaffold；trainer 用 rLLM（基于 verl），GRPO++（clip-higher、无 KL、无 entropy bonus、长度归一化）；复现指南在 repo 内（`reproduction/DEEPSWE_REPRODUCTION.MD`），脚本见 <a href="https://github.com/agentica-project/rllm/tree/main/examples/swe">rllm/examples/swe</a>。</p>
+
+<div class="formula">分步骤搭建清单
+  1  选环境 / 数据    小规模真实用 SWE-Gym；要规模用 SWE-smith（52k）或 R2E-Gym（8.1k）
+                      预构建并缓存所有任务镜像 + 维持 warm pool
+  2  建 reward        二元 F2P + P2P，加 format / parse 惩罚 + 超时 = 0
+                      用 golden patch 和 empty patch 各跑一遍，丢掉不能干净 FAIL→PASS 或不确定性高的实例
+  3  接 scaffold      从轻量的 SWE-agent 或 R2E-Gym AgentHub 入手
+                      封装成 (task, policy endpoint) → (token 级 trajectory, reward)，走 OpenAI 兼容 API
+  4  选 trainer       最完整复现 → rLLM / DeepSWE
+                      最模块化、后端一行切换（SkyRL-train / verl / Tinker）→ SkyRL-Agent（自带 SWE example，arXiv 2511.16108）
+                      开箱全异步 → prime-rl（自带 examples/qwen30b_swe + verifiers SWE 环境）
+  5  跑 SFT 冷启动 → GRPO RL    监控 reward 与平均轨迹长度（防 hacking）</div>
+
+<p><strong>关键开源仓库</strong>：环境 / 数据——<a href="https://github.com/SWE-bench/SWE-bench">SWE-bench</a> · <a href="https://github.com/SWE-Gym/SWE-Gym">SWE-Gym</a> · <a href="https://github.com/R2E-Gym/R2E-Gym">R2E-Gym</a> · <a href="https://github.com/SWE-bench/SWE-smith">SWE-smith</a>。Trainer——<a href="https://github.com/volcengine/verl">verl</a> · <a href="https://github.com/NovaSky-AI/SkyRL">SkyRL</a> · <a href="https://github.com/rllm-org/rllm">rLLM</a> · <a href="https://github.com/PrimeIntellect-ai/prime-rl">prime-rl</a>（+ <a href="https://github.com/PrimeIntellect-ai/verifiers">verifiers</a>）· <a href="https://github.com/THUDM/slime">slime</a> · <a href="https://github.com/radixark/miles">Miles</a> · <a href="https://github.com/OpenRLHF/OpenRLHF">OpenRLHF</a> · <a href="https://github.com/langfengQ/verl-agent">verl-agent</a>（GiGPO，step 级信用）· <a href="https://github.com/TIGER-AI-Lab/verl-tool">verl-tool</a>（per-trajectory 异步）。</p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>框架之间是替代关系，选一个最新的即可。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 原文按三种需求区分：完整复现（rLLM / DeepSWE）、模块化与后端可切换（SkyRL-Agent）、开箱全异步（prime-rl）；verl-agent 与 verl-tool 分别补 step 级信用与 per-trajectory 异步。prime-rl 与 SkyRL-Agent 的层次差异见 D18。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>阻力最小路径的选择依据是<b>复现指南与示例的完整度</b>，不是框架的先进性。第 2 步的 golden / empty 双跑与第 5 步的轨迹长度监控，是原文反复出现的两条纪律，任何 trainer 选择都不能省略。</p>
+
+<h2 id="s13"><span class="hnum">13</span>常见失稳模式</h2>
+
+<p><strong>Flaky / 错测试</strong>：自动化合成任务的测试质量未经校验，标签噪声直接进 reward。预过滤（golden / empty patch 双跑）、固定 seed、沙箱禁网、隔离运行、隔离 flaky 任务；order / time / network 依赖测试会随机给 0。<strong>Reward hacking</strong>：绝不把隐藏测试放进 prompt；agent 会改 / mock / 删测试、写 `assert True`、硬编码期望值——防御：打分前从 golden 恢复测试文件、强制 P2P 回归检查、禁止 agent 改测试文件、留 held-out 测试集。典型崩溃信号：<strong>轨迹长度骤降而 reward 上升</strong>，务必并行监控（Agent-RLVR，<a href="https://arxiv.org/abs/2506.11425">arXiv 2506.11425</a>）。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-6.svg" alt="reward hacking 监控与防御流程图：监控 reward 与轨迹长度 → 若 reward 升且长度稳为正常学习，若 reward 升但长度骤降为崩溃信号 → 启用防御（禁止改动测试文件、P2P 回归检查、held-out 隐藏测试集）→ 重跑并回到监控">
+  <figcaption><span class="fnum">图 10</span>reward hacking 的监控与防御闭环：以"reward 与轨迹长度的关系"作为判定，reward 升且长度稳为正常学习；reward 升但长度骤降为疑似 hacking，触发三项防御（禁止改动测试文件、P2P 回归检查、held-out 隐藏测试集）后重跑并回到监控。<span class="chip c-inf">推断</span> 本站图，由原文第 6 个 mermaid 图预渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>判定菱形只用<strong>两条曲线的联合关系</strong>，不用任何一条的绝对值——单看 reward 上升无法区分学习与 hacking，单看长度下降也可能是策略变高效。这是原文"务必并行监控"的图形表述。</p>
+    <p>三项防御中，P2P 回归检查是环境层已有的（图 2 的判定条件之一），禁止改测试文件与 held-out 测试集是需要额外加的；图中它们汇合到"重跑并回到监控"，说明防御是迭代的而非一次性配置。</p>
+  </div>
+</figure>
+
+<p><strong>长 rollout 显存 / 上下文</strong>：30–50 轮会冲爆上下文 → 限制 max turns / tokens、mask observation token；截断 / 未 submit 的轨迹给 reward 0 而不要丢弃（丢弃会让梯度有偏）。<strong>沙箱并行 / 成本</strong>：每个并发 rollout × group size × batch 一个容器——这才是主导成本和扩展瓶颈（不是 GPU）。预算约 1–2 CPU / 2–4 GB 每容器，K8s 编排；镜像 cold-start 主导延迟，预构建 + warm pool + 安全复用容器。容器-free 方向（SWE-MiniSandbox 等）值得跟踪但还不是默认。<strong>Benchmark 污染</strong>：repo 公开且 pre-cutoff，Verified 已被解泄漏与测试过拟合污染；判真实泛化用 SWE-bench-Live（post-cutoff）/ Pro（私有 / copyleft），分离模型能力与 scaffold 工程用 Bash-only。<strong>异步正确性</strong>：in-flight 权重更新导致 rollout 由略旧策略生成 → 用重要性采样修正（TIS / MIS）或限制 staleness；train / infer 的 logprob 数值不匹配（vLLM / SGLang 对 FSDP / Megatron）会悄悄毁梯度，早期就要验证一致性。</p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>SWE RL 的成本瓶颈是 GPU；沙箱是附属开销。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 原文明确：容器数 = 并发 rollout × group size × batch，这才是主导成本和扩展瓶颈；镜像 cold-start 主导延迟。GPU 侧的主要问题是异步正确性（staleness、logprob 不匹配）而非算力不足。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>五类失稳模式里，<b>三类在环境层（flaky、hacking、沙箱成本）、两类在训练层（长 rollout、异步正确性）</b>。原文对每一类都给了具体防御而非泛泛提醒，其中"截断轨迹给 0 而不丢弃"与"logprob 一致性早期验证"是最容易被忽略、后果最隐蔽的两条。</p>
+
+<h2 id="s14"><span class="hnum">14</span>与 RL-on-NPU 的联系</h2>
+
+<p>SWE 的 agentic rollout 又长又重（30–50 轮、分钟级容器时间、上下文随轮数膨胀），恰恰是昇腾（NPU）显存与异步痛点的放大器：长轨迹把 KV-cache 与激活显存压力推到极致，同步批生成让 NPU 干等最慢 / 最长轨迹，沙箱容器又把 CPU / 内存 / 编排成本叠加在算力之外。因此 D02 / D08 讲的招式在这里全部适用且收益更大——解耦的异步 rollout（推理 server 与 trainer 分离、in-flight weight sync）、train / infer 引擎切分与 logprob 一致性校验、staleness 有界 + 重要性采样修正、长序列的显存 / 上下文管理（限轮、mask、compaction）。</p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>SWE agentic RL 对硬件平台无特殊要求，CUDA 上能跑的配方迁移到 NPU 只是算子适配问题。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><span class="chip c-tp">第三方</span> 原文列出的四项系统招式全部对应 D02 / D08 已识别的 NPU 痛点；SWE 负载把每一项的收益放大。<span class="chip c-inf">推断</span> 沙箱与环境服务为 CPU / 容器负载，与 NPU 解耦，是国产集群在数据与环境侧无生态劣势的部分。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span>把这些招式套到 SWE agentic RL 这个最严苛的负载上，正是<b>检验和打磨昇腾 RL 系统的最佳压力测试场</b>。具体到部件：推理 server 与 trainer 的 logprob 一致性在 NPU 上需要针对昇腾推理引擎重新验证；沙箱编排则与平台无关。</p>
+
+<h2 id="s15"><span class="hnum">15</span>叙事 vs 证据：一页总表</h2>
+
+<div class="tbl">
+<table>
+<thead><tr><th style="width:130px">主题</th><th style="width:230px">叙事怎么说</th><th>证据是什么 · 本站判断</th></tr></thead>
+<tbody>
+<tr><td>任务格式</td><td>SWE-bench 测编程能力</td><td>F2P / P2P 执行判定，隐藏测试不经 agent；四块共用此格式（图 1–2）。可执行验证是生态基座</td></tr>
+<tr><td>入门顺序</td><td>选强模型 + 成熟框架跑榜</td><td>先读格式、看轨迹、理解接口撬动 10–30 分，再看训练；mini-swe-agent 100 行 &gt;74%。先建立 scaffold 贡献的直觉</td></tr>
+<tr><td>Verified</td><td>事实标准，85%+ 接近解决</td><td>约 32.7% 解泄漏、虚高 6–7 分（暂定），OpenAI 停报；分数是模型 × scaffold × harness 联合产物。退役合理</td></tr>
+<tr><td>Scale Pro / Atlas</td><td>更难的 Verified</td><td>三层抗污染（copyleft + 私有 + held-out）；标准化 59.1% 对自报 69.2%（暂定）。Verified 的抗污染接班人</td></tr>
+<tr><td>ScaleSWE</td><td>必须 RL 才能大幅提分</td><td>71k 蒸馏轨迹 SFT-only → 64.0%（基座 22.0%，暂定）；只补测不造题。SFT-now → RL-next</td></tr>
+<tr><td>脚手架</td><td>ReAct 全自主是终局</td><td>13 个系统 11 个叠加多循环原语；2026 多数为混合模式（图 4）。检索质量与 test-time scaling 是跨模式杠杆</td></tr>
+<tr><td>训练数据</td><td>只有真 PR 可信</td><td>可执行才是瓶颈（图 5）；SWE-Gym 2438、SWE-smith 约 5 万、R2E-Gym 8.1k、ScaleSWE 10 万。真实性—可扩展性取舍</td></tr>
+<tr><td>奖励</td><td>长程任务必须 dense</td><td>稀疏结果奖励更稳、dense 诱发 hacking（arXiv 2510.01132）；单 verifier 天花板约 42–43%，hybrid 51.0%（图 6）。稀疏 + 轮级信用分配是默认</td></tr>
+<tr><td>路线比较</td><td>纯 RL / SFT / 相似度奖励竞争</td><td>基座、scaffold、harness 均不同，不可横比；SFT 难超教师、RL 依赖环境。阶段互补</td></tr>
+<tr><td>系统搭建</td><td>核心是 RL 算法</td><td>GRPO 系是默认；成败在 mask、超时归 0、P2P、per-trajectory 异步、pass-rate 过滤（图 9）。难点在环境与 rollout 层</td></tr>
+<tr><td>成本瓶颈</td><td>GPU</td><td>容器数 = 并发 × group × batch，cold-start 主导延迟。沙箱是主导成本</td></tr>
+<tr><td>失稳模式</td><td>调参问题</td><td>五类各有具体防御；轨迹长度骤降 + reward 上升是 hacking 信号（图 10）。三类在环境层</td></tr>
+<tr><td>NPU</td><td>只是算子适配</td><td>SWE 负载放大 D02 / D08 的四项痛点；沙箱与 NPU 解耦。最佳压力测试场</td></tr>
+</tbody>
+<caption>左栏是常见表述，右栏是原文核实到的证据与本站判断。"暂定"为原文标注，未经独立复现。</caption>
+</table>
+</div>
+
+<h2 id="s16"><span class="hnum">16</span>原文没给的东西 / 未能核实的东西</h2>
+
+<p>以下是复现时必须自定、原文未给理由、或仅为转述与自报的内容：</p>
+
+<ul>
+<li><strong>"可区分性低"的判定阈值</strong>：原文给出两种缓解手段，但未给何时启用的量化标准（组内方差或 pass-rate 分布需自定）；</li>
+<li><strong>pass-rate 过滤区间</strong>：按 pass-rate 丢掉无解 / 秒解任务的具体上下界原文未给；</li>
+<li><strong>GRPO 组采样 8–16 / 任务、max turns / tokens、staleness 上界</strong>：均为范围或未量化，需按模型与集群自定；</li>
+<li><strong>约 32.7% 解泄漏与 6–7 分虚高</strong>：来自一项研究与一次审计的转述，原文标暂定，未给原始来源链接；</li>
+<li><strong>SWE-bench Pro 榜单 59.1% / 69.2%</strong>：2026-06-18 暂定，前者标准化口径、后者厂商自报，口径差异未拆分；</li>
+<li><strong>ScaleSWE 全部数字</strong>（6M PR、10 万实例、71k 轨迹、64.0%）：调研快照，全文 PDF 在原文环境被 403；</li>
+<li><strong>工业界数字</strong>（Opus 4.8 约 88.6% / 69.2%、Confucius 52.7 / 54.3%、DeepSWE 42.2%、Kimi-Dev 60.4%）：均为自报或前沿转述、scaffold 相关、未独立复现；</li>
+<li><strong>Verified 的"退役"</strong>是原文对 OpenAI 停报与社区转向的概括，并非某一机构的正式声明；</li>
+<li><strong>SWE-MiniSandbox 等容器-free 方向</strong>仅提及名称，无数据；</li>
+<li>本文原图受限于网络代理可达性，全部取自 GitHub 托管的官方仓库 README（SWE-bench、R2E-Gym）；SWE-smith、SWE-agent、Scale、arXiv 论文的原图未能获取。</li>
+</ul>
+
+<div class="note">
+  <span class="ntitle">三条可以直接搬走的判断</span>
+  <p><strong>一、分数是"模型 × scaffold × harness"的联合产物。</strong>Bash-Only 对照（100 行 &gt;74%）是直接证据；跨来源数字只能在同一标准化口径内横比，厂商自报一律视为 provisional。搭系统时先把 scaffold 与 harness 固定下来，再谈模型与算法。</p>
+  <p><strong>二、稀疏结果奖励 + 轮级信用分配是默认配置。</strong>稀疏奖励更稳、dense 诱发 hacking；稀疏的弱点是可区分性而非信号量，用 execution-free verifier 或相似度奖励叠加缓解；信用分配把每轮当 MDP step。监控曲线看 reward 与轨迹长度的联合关系。</p>
+  <p><strong>三、难点在环境与 rollout 层。</strong>容器数是主导成本，golden / empty 双跑、隐藏测试不进 prompt、P2P 检查、observation mask、截断给 0 不丢弃、logprob 一致性——这些纪律决定成败，GRPO 变体的选择次之。对 NPU 而言，环境侧与算力解耦，训练侧的异步与显存痛点被 SWE 负载放大。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>ScaleSWE 与 DeNovoSWE 的 RL 交接</strong>是否兑现（D14 / D17 精读）· <strong>SWE-bench-Live 与 Pro 的标准化榜单</strong>能否成为跨来源可比的口径 · <strong>容器-free 沙箱</strong>（SWE-MiniSandbox 等）能否改变"容器数是主导成本"的结构 · <strong>prime-rl 与 SkyRL-Agent</strong>在同一 SWE 环境下的对照（D18）· <strong>execution-free verifier 与执行信号的混合</strong>能否把 42–43% 的单 verifier 天花板在更强基座上再次推高。</p>
+</div>
+
+</main>
+
+<footer>
+  来源与声明：本文由 6 路并行子 agent 调研 + 1 路综合 agent 汇总产出（2026-06-26）。主要来源含 SWE-bench 与 Verified、SWE-agent 与 ACI、mini-swe-agent、SWE-smith、SWE-Gym、R2E-Gym、DeepSWE / rLLM、Scale SWE-bench Pro / Atlas、ScaleSWE（arXiv 2602.09892）、Meta SWE-RL、Kimi-Dev、Agent-RLVR、多轮 agentic RL 实践指南（arXiv 2510.01132）。arXiv ID 与厂商数字为调研所得、provisional，以原始来源为准。原图取自 SWE-bench/SWE-bench 与 R2E-Gym/R2E-Gym 仓库 README，版权归各原始仓库所有，此处仅作解析引用。相关条目见本看板 Agentic RL 与 RL for LLMs 标签页。
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>
