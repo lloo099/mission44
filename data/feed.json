@@ -1,7 +1,7 @@
 {
-  "updated": "2026-09-03T11:19:20.331062Z",
+  "updated": "2026-09-04T11:22:19.124476Z",
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 52,
+  "count": 46,
   "pinned": 25,
   "items": [
     {
@@ -332,11 +332,11 @@
       ]
     },
     {
-      "title": "Post-Training Language Models for Gold-Medal Performance in Coding Competitions",
-      "org": "Aleksander Ficek +4",
-      "year": "2026-09-02",
-      "summary": "Competitive programming has become a key test of large language model reasoning, with international competitions such as IOI and ICPC representing its most challenging settings. We present an end-to-end specialization pipeline combining large-scale problem curation, synthetic reasoning traces, super…",
-      "url": "http://arxiv.org/abs/2609.02849v1",
+      "title": "Sequential Beats Joint: On the Interplay between On-Policy Distillation and RLVR",
+      "org": "Boyan Li +5",
+      "year": "2026-09-03",
+      "summary": "Reinforcement learning with verifiable rewards (RLVR) and on-policy distillation (OPD) have emerged as two dominant methods for post-training reasoning LLMs. Prior work uses OPD's dense token-level supervision to complement the sparse RL reward, fusing the two signals within a single step: either as…",
+      "url": "http://arxiv.org/abs/2609.04108v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -345,11 +345,11 @@
       ]
     },
     {
-      "title": "Cliff: Learning Process Rewards from the First Mistake",
-      "org": "Peixuan Han +5",
-      "year": "2026-09-02",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) has emerged as a powerful paradigm for large language model (LLM) post-training, but its reliance on coarse outcome rewards leads to limited guidance on intermediate reasoning processes. Existing approaches such as process reward modeling and on-…",
-      "url": "http://arxiv.org/abs/2609.02817v1",
+      "title": "Subspace Inference Enables Efficient Active Reward Learning from Preferences",
+      "org": "Yutai Zhou +1",
+      "year": "2026-09-03",
+      "summary": "Reinforcement learning from human feedback (RLHF) has emerged as a powerful yet sample-inefficient approach for learning reward models from human preferences, making active learning a critical component in synthesizing informative preference queries. However, effective uncertainty quantification req…",
+      "url": "http://arxiv.org/abs/2609.04066v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -358,11 +358,11 @@
       ]
     },
     {
-      "title": "Learn from Whoever Is Right: Answer-Verified Multi-Teacher Distillation for Multi-Domain LLMs",
-      "org": "Xixiang He +6",
-      "year": "2026-09-02",
-      "summary": "Modern large language models (LLMs) rely on reinforcement learning to build strong capabilities in individual domains, but integrating those capabilities into a single deployable model remains challenging. By routing each sample to the teacher whose domain matches it, existing approaches let a domai…",
-      "url": "http://arxiv.org/abs/2609.02548v1",
+      "title": "When Models Edit Too Much: On the Fidelity of Minimal Code Edits",
+      "org": "Tongyao Zhu +2",
+      "year": "2026-09-03",
+      "summary": "Large language models (LLMs) are increasingly used to edit existing code, but correctness alone is not enough: useful repairs should also be minimal, reviewable, and faithful to the original implementation. We study over-editing, the tendency of a model to rewrite code beyond what is required to fix…",
+      "url": "http://arxiv.org/abs/2609.04061v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -371,11 +371,11 @@
       ]
     },
     {
-      "title": "APEx: Distillation of Agent Procedural Experience for Adaptive Deep Research Question Answering",
-      "org": "Jie Ding +4",
-      "year": "2026-09-02",
-      "summary": "Deep research agents augment large language models with external tools to answer complex, long-horizon questions through multi-turn reasoning. Learning from prior experience is crucial for continual improvement, yet existing methods either retrieve verbose task-specific traces that burden decision-m…",
-      "url": "http://arxiv.org/abs/2609.02253v1",
+      "title": "Two-Stage Reinforcement Learning for Sound and Adversarial Test Generation in Code LLMs",
+      "org": "Jiacheng Xu +6",
+      "year": "2026-09-03",
+      "summary": "Reinforcement learning (RL) has substantially advanced code generation with large language models (LLMs) through executable feedback. The feedback for coding problems mainly comes from specific test cases, where high-quality test cases are often scarce since they should be both sound and discriminat…",
+      "url": "http://arxiv.org/abs/2609.03955v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -384,11 +384,11 @@
       ]
     },
     {
-      "title": "RideSkill: A Hierarchical Algorithm for Generalized Ride Sharing with LLM-Driven Automatic Evolution",
-      "org": "Zijian Zhao +3",
-      "year": "2026-09-02",
-      "summary": "Ride-sharing, which allows multiple passengers with different origin-destination (OD) pairs to share a single vehicle, is a challenging operational problem, as it requires orders with different OD pairs to be efficiently bundled and assigned to vehicles under uncertain and varying scenarios. Althoug…",
-      "url": "http://arxiv.org/abs/2609.02250v1",
+      "title": "LLM4AIGQ: LLM-based AI Guidance Query Generation Framework for Multi Interest Mining",
+      "org": "Xiangchen Pan +4",
+      "year": "2026-09-03",
+      "summary": "Guidance queries stimulate user consumption by extracting preferences to provide search queries with guidance value, playing a crucial role in the e-commerce field. Traditional AI-generated queries (AIGQ) generation primarily relies on a two-stage \"Query-to-AI-Generated-Query\" (Q2AIGQ) association p…",
+      "url": "http://arxiv.org/abs/2609.03674v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -397,11 +397,11 @@
       ]
     },
     {
-      "title": "PGPO: Potential-Guided Policy Optimization for Multi-Turn Agentic Tasks",
-      "org": "Yuyao Zheng +6",
-      "year": "2026-09-02",
-      "summary": "Group-based reinforcement learning (RL) has become an effective paradigm for LLM post-training, but in multi-turn agentic tasks with sparse terminal rewards, it often provides coarse credit for intermediate actions. To obtain more fine-grained credit assignment, recent work such as GiGPO introduces …",
-      "url": "http://arxiv.org/abs/2609.02236v1",
+      "title": "StrixAE: An Intelligent Agent for Audio Enhancement under Complex Distortion Coupling in Real-World Scenarios",
+      "org": "Chenglin Wu +7",
+      "year": "2026-09-03",
+      "summary": "Audio enhancement in real-world scenarios involves complex distortion couplings and requires personalized enhancement. Existing solutions struggle to address both simultaneously. To improve robustness and enable autonomous operation in such scenarios, we propose StrixAE, an agent based on a multimod…",
+      "url": "http://arxiv.org/abs/2609.03414v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -410,11 +410,11 @@
       ]
     },
     {
-      "title": "DMRL: Document-Mediated Reinforcement Learning for Skill Optimization in Advertising Recommendation",
-      "org": "Wei Zhang +6",
-      "year": "2026-09-02",
-      "summary": "Advertising recommendation requires continuously tuning complex system parameters while balancing commercial returns and user experience. Recent work has introduced large language models (LLMs) with skill documents to assist this labor-intensive process, but skill optimization remains largely prompt…",
-      "url": "http://arxiv.org/abs/2609.02170v1",
+      "title": "Gradients Know What Outcomes Don't: Unlocking Reinforcement Learning for LLM Reasoning with Gradient-Aligned Rewards",
+      "org": "Leqi Zheng +10",
+      "year": "2026-09-03",
+      "summary": "Reinforcement learning from verifiable rewards (RLVR) drives chain-of-thought reasoning in large language models, yet its binary outcome reward cannot distinguish among correct trajectories. Existing dense reward alternatives, from surface heuristics to process reward models, either ignore the exper…",
+      "url": "http://arxiv.org/abs/2609.03342v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -423,11 +423,11 @@
       ]
     },
     {
-      "title": "IDEEA: training-free Input-Dependent stEEring via Activation cluster matching",
-      "org": "Zheng Wang +3",
-      "year": "2026-09-02",
-      "summary": "Steering aligns large language models (LLMs) by injecting a bias into selected activations at inference time, offering a far cheaper alternative to weight-update methods such as supervised fine-tuning or reinforcement learning. However, most existing training-free steering methods are input-independ…",
-      "url": "http://arxiv.org/abs/2609.02089v1",
+      "title": "DE-Venus: A Data-Efficient RLVR Framework for Large Language Models",
+      "org": "Shenzhi Yang +13",
+      "year": "2026-09-03",
+      "summary": "Reinforcement learning with verifiable rewards (RLVR) improves large language model reasoning, but its practical scaling is constrained by expensive on-policy rollouts and the cost of obtaining reliable targets at scale. Existing methods address sample selection, incomplete supervision, or noisy lab…",
+      "url": "http://arxiv.org/abs/2609.03324v1",
       "category": "rl-llm",
       "tags": [
         "live",
@@ -436,28 +436,106 @@
       ]
     },
     {
-      "title": "Act More, Decide Less: Skill-Guided Adaptive Action Chunking for Long-Horizon LLM Agents",
-      "org": "Yanting Yang +8",
-      "year": "2026-09-02",
-      "summary": "Large language model (LLM) agents for long-horizon interactive tasks typically follow a ReAct-style protocol, issuing one primitive action per LLM round. While this enables frequent replanning, it is inefficient for long-horizon tasks where many rounds are spent on routine action sequences. A natura…",
-      "url": "http://arxiv.org/abs/2609.02042v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Coverage, Not Targeting: A Structural Regime in Multi-Turn Agent Credit Assignment",
-      "org": "Chenyu Zhou +3",
-      "year": "2026-09-02",
-      "summary": "Multi-turn agentic RL increasingly treats credit assignment as a targeting problem: given a terminal verifiable reward, per-turn methods localize credit onto the turns that mattered. We identify the structural quantity that predicts when this is the right move, the verifier information density V_d =…",
-      "url": "http://arxiv.org/abs/2609.02417v1",
+      "title": "DRACO: Fine-Grained Credit Assignment with Dynamic Rubrics for Long-Horizon Agent Training",
+      "org": "Shubham Gandhi +3",
+      "year": "2026-09-03",
+      "summary": "Reinforcement Learning from Verifiable Rewards works well when a task has a programmatic checker, but most long-horizon agent domains have none. We work in the outcome-blind setting, where ground-truth success signals are not available. Multi-criteria rubrics are a popular way to supply such a rewar…",
+      "url": "http://arxiv.org/abs/2609.04094v1",
       "category": "reasoning-rl",
       "tags": [
         "live",
         "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Spurious Advantage Hidden in GRPO",
+      "org": "Jiamian Wang +4",
+      "year": "2026-09-03",
+      "summary": "Group Relative Policy Optimization (GRPO) is widely studied for reinforcement learning with verifiable rewards, where its advantage estimator assigns each rollout a magnitude from within-group reward statistics. In the common case, this magnitude rewards rollouts that reach the correct answer throug…",
+      "url": "http://arxiv.org/abs/2609.04063v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "FiMI Banking: A Sovereign Model for Indian Retail Banking",
+      "org": " NPCI AI Research Team +17",
+      "year": "2026-09-03",
+      "summary": "Banks need conversational systems that can answer product questions, assist customers with account-related requests, and operate safely within strict operational and regulatory constraints. General-purpose language models do not reliably meet these requirements. They fall short when a task requires …",
+      "url": "http://arxiv.org/abs/2609.03960v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Unfold The World: Factorize 4D Properties in Reinforcing Spatial Reasoning",
+      "org": "Yijun Yang +10",
+      "year": "2026-09-03",
+      "summary": "Despite the remarkable prowess of Vision-Language Models (VLMs) in general multimodal tasks, they remain fundamentally ``flat'' when reasoning about the physical world. We argue that this spatial bottleneck stems from a profound dimensional mismatch: while VLMs are trained to interpret 2D projection…",
+      "url": "http://arxiv.org/abs/2609.03729v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "STAIR (STructure Aware Information Retriever): A novel dataset and LLM based retriever for document structure augmentation",
+      "org": "Vineet Kumar +5",
+      "year": "2026-09-03",
+      "summary": "Retrieval Augmented Generation (RAG) is a key component for generating accurate and hallucination free answers using Large Language Models (LLMs). LLMs are improving at handling long context, but still suffer from \"lost in the middle\" problem. Thus, precise and accurate retrieval is important. Curre…",
+      "url": "http://arxiv.org/abs/2609.03874v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "SGD-KV: Summarization Guided KV Cache Compression",
+      "org": "Zeyu Liu +7",
+      "year": "2026-09-03",
+      "summary": "Large language models (LLMs) face severe memory bottlenecks in long-context inference due to the linearly growing size of key-value (KV) caches. Existing KV cache compression techniques typically rely on simple heuristics, overlooking the distinct functional roles of different attention heads. We pr…",
+      "url": "http://arxiv.org/abs/2609.03235v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Why Gated DeltaNet Survives 4-Bit Quantization: NVFP4 W4A4 for the Recurrent Half of a Hybrid 27B LLM",
+      "org": "Sergii Kozyrev +1",
+      "year": "2026-09-03",
+      "summary": "Hybrid LLMs pair softmax attention with linear-attention layers such as Gated DeltaNet (GDN), whose recurrent state summarizes the context in fixed size. Early community 4-bit quantizations of Qwen3.8-27B (48 GDN layers, 16 attention layers) left the GDN block in 8- or 16-bit precision -- especially…",
+      "url": "http://arxiv.org/abs/2609.04098v1",
+      "category": "fp8-lowprec",
+      "tags": [
+        "live",
+        "fp8-lowprec",
+        "auto"
+      ]
+    },
+    {
+      "title": "BASP: Communication-Efficient Batch-Aware Sequence Parallelism for LLM Training",
+      "org": "Bigyan Ghimire +1",
+      "year": "2026-09-02",
+      "summary": "Long-context reasoning for large language models (LLMs) is becoming increasingly important, but training over long sequences remains challenging due to massive memory and communication requirements. Sequence parallelism has emerged as an essential technique for addressing bottlenecks in long sequenc…",
+      "url": "http://arxiv.org/abs/2609.03151v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
         "auto"
       ]
     },
@@ -467,19 +545,6 @@
       "year": "2026-09-02",
       "summary": "Transformers process information causally, but long-context reasoning may depend on task state discovered only later. We formalize this mismatch through conditional state update tasks. For causal state update processors, providing the condition first can require exponentially less memory in the wors…",
       "url": "http://arxiv.org/abs/2609.02702v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "Multi-Turn LLM Conversations under the Least-Recently-Used Policy: Mean-Field Asymptotics and Hit Ratio Approximation",
-      "org": "Heyuan Yao +4",
-      "year": "2026-09-02",
-      "summary": "The major workloads in modern large language model (LLM) serving systems have shifted from single-shot LLM calls to multi-turn conversations, where new responses are generated based on the whole conversation history across all previous turns. The hit ratio, i.e., the average fraction of KV caches ac…",
-      "url": "http://arxiv.org/abs/2609.02027v1",
       "category": "sparse-attention",
       "tags": [
         "live",
@@ -506,149 +571,6 @@
       "year": "2026-09-02",
       "summary": "Mixture-of-Experts (MoE) is a scaling architecture for large language models that activates only a small subset of expert modules per token, enabling massive parameter growth with nearly constant computation. Recent Hybrid MoE architecture adds \\textit{shared experts} to capture consistently useful …",
       "url": "http://arxiv.org/abs/2609.02293v1",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Thinking effort aligns between humans and reasoning models in abductive reasoning",
-      "org": "Henry Arthur",
-      "year": "2026-09-01",
-      "summary": "A major question in cognitive modeling concerns the behavioral alignment between large language models and humans across linguistic and non-linguistic tasks. Unlike standard LLMs, large reasoning models (LRMs) are optimized with reinforcement learning from verifiable rewards, encouraging correct sol…",
-      "url": "http://arxiv.org/abs/2609.01867v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "The Rise of Verbal Reinforcement Learning",
-      "org": "Kshitij Tayal +4",
-      "year": "2026-09-01",
-      "summary": "Natural language is emerging as a primary feedback channel for improving language agents, capable of conveying intent, preferences, and causal structure in forms interpretable by both humans and modern language models. We call this paradigm Verbal Reinforcement Learning (VRL) and offer the first uni…",
-      "url": "http://arxiv.org/abs/2609.01597v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "Selective Agent Guidance via Entropy: Learning Autonomous Policies from Imperfect VLM Teachers",
-      "org": "Giovanni Bonetta +4",
-      "year": "2026-09-01",
-      "summary": "Vision-Language Models (VLMs) provide useful priors for interactive decision-making, but using them directly as policies is expensive and brittle: they must be queried at every step, do not improve from environment interaction, and can repeat systematic errors. We study how to learn a cheap autonomo…",
-      "url": "http://arxiv.org/abs/2609.01567v2",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "Where the Verifier Fails: A Category-Level Audit of Reward Signals in RLVR",
-      "org": "Esther Xin",
-      "year": "2026-09-01",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) and standard benchmark evaluation both rely on an automatic verifier that turns a free text answer into a binary reward. Prior work reports that one evaluation harness accepts only about 94% of its own ground truth answers, blaming LaTeX parsing.…",
-      "url": "http://arxiv.org/abs/2609.01354v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "VerTox: Verifiable Reward-Guided Corpus Poisoning Against Neural Ranking Models",
-      "org": "Zhiqi Huang +5",
-      "year": "2026-09-01",
-      "summary": "Neural ranking models have become core components of modern information retrieval systems and important building blocks of AI systems such as retrieval-augmented generation (RAG) pipelines. However, their robustness remains insufficiently understood in the presence of large language models (LLMs), w…",
-      "url": "http://arxiv.org/abs/2609.01325v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "From Base Rollouts to RL Reasoning: A Budgeted Search Perspective",
-      "org": "Wenhe Sun +3",
-      "year": "2026-09-01",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) improves language-model reasoning, but how these gains relate to inference-time decoding and search remains unclear. Does RL create reasoning the base model lacks, or shift the rollout distribution toward trajectories it can already reach but rar…",
-      "url": "http://arxiv.org/abs/2609.01274v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "CRISP: Cliff-awaRe Input-adaptive Sparse Prefilling with Structural-Mass-Motivated Routing",
-      "org": "Huu Huy Nguyen +6",
-      "year": "2026-09-01",
-      "summary": "The attention prefilling phase of long-context LLM inference scales quadratically, making self-attention a severe computational bottleneck. Traditional sparse attention methods mitigate this through fixed patterns or offline profiling, but lack the flexibility to adapt to input-dependent attention s…",
-      "url": "http://arxiv.org/abs/2609.01925v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "SMELT: Scaling Laws for Compute-Matched MoE Looped Transformers",
-      "org": "Shaowen Wang +8",
-      "year": "2026-09-01",
-      "summary": "Looped Transformers increase effective depth by iterating a shared block of layers, but most evaluations compare at fixed model size, conflating architectural advantage with extra FLOPs. We study looping on Mixture-of-Experts Transformers while closely matching per-token FLOPs, total non-embedding p…",
-      "url": "http://arxiv.org/abs/2609.01343v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "mzCache: On-Device LLM Memory Management under Multitasking",
-      "org": "Hongseung Yu +3",
-      "year": "2026-09-01",
-      "summary": "On-device mobile Large Language Model (LLM) inference is gaining significant attention. However, mobile devices operate in highly dynamic multitasking environments where users frequently switch between applications. This creates memory pressure, forcing LLM memory (model weights and KV cache) to be …",
-      "url": "http://arxiv.org/abs/2609.01338v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "CacheBridge: Efficient Cross-Model KV Cache Transfer",
-      "org": "Xingyu Qu +4",
-      "year": "2026-09-01",
-      "summary": "Sharing context between LLMs in a multi-model system requires the receiving model to prefill the shared prefix because KV caches are model-specific. Recent closed-form cross-model KV transfer, hereafter Full-Head Mapping, avoids this replay by fitting a training-free affine mapper from source to tar…",
-      "url": "http://arxiv.org/abs/2609.00891v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "The Structure of Quantization Damage in LLMs: Why the Next Bit Should Be Spent Globally",
-      "org": "Jundong Hu +1",
-      "year": "2026-09-01",
-      "summary": "Post-training quantization (PTQ) is widely used to reduce the cost of serving large language models (LLMs), but its accuracy cost is uneven and is often tuned per model. We study where quantization damage occurs and how to allocate a small additional precision budget. Using causal mixed-precision in…",
-      "url": "http://arxiv.org/abs/2609.01587v1",
       "category": "efficient-llm",
       "tags": [
         "live",
