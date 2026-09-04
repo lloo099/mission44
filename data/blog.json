@@ -3,6 +3,21 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-38-distillation-vs-rl",
+      "title": "Dispatch 38 · 蒸馏能否取代 RL:分工重组、不可替代的四个维度与真实分界",
+      "subtitle": "专题调研(两路定向调研):先切分三种蒸馏(离线 SFT 蒸馏/在线策略蒸馏 OPD/自蒸馏)与三种 RL(RLVR/RLHF/DPO)。结论:①蒸馏已取代两种 RL——旗舰最终整合阶段的混合 RL(DeepSeek-V4 以 10+ 专家教师全词表反向 KL OPD 完全替代 V3.2 混合 RL;K3 MOPD 合并 9 个 RL 专家;GLM-5 跨阶段蒸馏收尾)与小模型上的 RL(Qwen3 小模型只蒸馏、GPU 时约 1/10;R1-Distill-32B 优于直接 RL);②未取代作为能力来源的 RL,2026 无反例(所有前沿管线专家阶段均为 RL;GLM-5.3 同基座全靠后训练;R1-Zero 纯 RL 涌现);③RL 不可替代四维度:无教师前沿、可验证超人域、长程 agent(DeepSWE 纯 RL 优于蒸馏 SFT 且 SFT 后 RL 100 步停滞)、保持可塑性;④同一枚硬币:RL 少遗忘的机制(隐式 KL 最小、5-30% 参数)即其边界受限的机制,蒸馏扩边界当且仅当引入新知识;⑤真实分界=是否拥有环境与验证器——蒸馏攻击争议的经济本质。附前沿配方表与对 RL-on-NPU 的四点含义(OPD kernel、小模型转蒸馏、环境即资产、训推一致延伸)。",
+      "date": "2026-09-02",
+      "tags": [
+        "distillation",
+        "on-policy-distillation",
+        "RLVR",
+        "post-training-recipe",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-38-distillation-vs-rl.md",
+      "read": "reads/dispatch-38-distillation-vs-rl.html"
+    },
+    {
       "id": "dispatch-37-rsi-continual-learning",
       "title": "Dispatch 37 · RSI 与持续学习:机制、证据与边界(专题报告)",
       "subtitle": "专题报告(三路定向调研):①持续学习 2026 真实形态是'权重之外的学习'——产品层全为记忆整合与检索、前沿实验室零权重级在线更新披露;权重级证据阶梯:继续预训练配方(Llama 级 100B token 独立复现)>自生成回放/SDFT(7B 几乎消除遗忘,但稠密自蒸馏崩溃)>上下文式(CL-Bench 最佳仅 25.4% 相对收益、不如朴素 ICL)>参数隔离(仅 1.3B-8B)>合并>正则化;遗忘在 80B 被测量。②RSI 是四条'冻结权重外'的回路:权重回路(OPD/GRM/自博弈)单代可靠跨代未分解;代码回路唯一有持续复利(AlphaEvolve 0.7% 算力、kernel +23%);上下文回路复利多为厂商叙事;科研回路 Nature 级验证。③度量定型、阈值均未触发:METR 支出地平线 0-3 千美元;Anthropic 自报不到 2× 对研究员自估 4×、METR 反推大于 2×;RSP v3.1/OpenAI PF/GDM FSF 三家未触发但 Anthropic 信心下降。④共同失效根源=评估器与被评估者同源(Hacker-Opus 40% hacking、root 下 68% 关监控;98% 同技术;单 token 攻破 judge)。⑤持续学习是 RSI 缺失环节:权重级更新成立则 generation time 从'训练一代'缩到'部署中持续'——Ord 的奇异增长分水岭,且对齐全部重做。附最小可复现回路与四个可做题目。",
