@@ -3,6 +3,21 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-40-gpt6-benchmarks",
+      "title": "Dispatch 40 · GPT-6 Astra 基准全表:八类六十余项,以及\"他到底有多强\"",
+      "subtitle": "基准合集(两路全量扫描,厂商 30+ 项与第三方 30+ 项全部标注口径):问\"有多强\"得到的是两个矛盾结论——Epoch ECI(50+ 基准)给 169 分是 267 个模型历史最高,AA 智能指数(10 项、私有留出集占 40%)给 61 分与自家前代持平且落后 Fable 5.1。逐项看结论分域:数学与解谜真跃升(ARC-AGI-2 95.0、GPQA 96.0、Epoch 谜题 84.0 对 59.0)、计算机使用与网络安全真领先(ScreenSpot-Pro 92.7、OSWorld 耗时降 47%、FrontierCyber 86/226 对 34/226 但精英难度 0%);编码平局甚至落后(FrontierCode 两切分均低于 Fable 5 与 Opus 5,DeepSWE 被 Muse Spark 1.3 反超);知识工作与长文档回退(GDPval-AA 约 −80 Elo、τ³-Banking 与 AA-LCR 各降 2-3 分)。最响的三个数字都有折扣:ARC-AGI-3 的 99.9% 靠 harness(中立口径 62.7)、ExploitBench 的 100% 去污染重测只有 39.0%、Erdős 突破在固定协议下只算 2/68 且 Anthropic 数学家 24 小时用 Fable 复现一半。成本侧 xhigh 升 max 多花 40% 换 0 分提升。附 OpenAI 未公布的知名基准清单(SWE-bench 全系、LiveCodeBench、AIME、MMLU、SimpleQA、MMMU、tau-bench)与第三方八项空白(METR 无评估、中文榜单全空、与国产旗舰无同 harness 对比)。",
+      "date": "2026-09-07",
+      "tags": [
+        "GPT-6",
+        "benchmarks",
+        "evaluation",
+        "harness-as-score",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-40-gpt6-benchmarks.md",
+      "read": "reads/dispatch-40-gpt6-benchmarks.html"
+    },
+    {
       "id": "dispatch-39-gpt6-fable51",
       "title": "Dispatch 39 · GPT-6 Astra 与 Claude Fable 5.1:系统战争与测量危机",
       "subtitle": "双模型深度调研(两路定向 agent):两个旗舰 48 小时内发布,但最醒目的数字都不是模型属性。①Astra 的 ARC-AGI-3 有 62.7%(标准 harness,每步丢弃上轮推理 token)与 99.9%(provider adapter,保留不透明推理状态+压缩历史)两个官方数字,适配器内关闭推理仍得 96.7%——做功的是记忆连续性而非思考预算;②Fable 5.1 的 ARC-AGI-3 根本没跑完,ARC Prize 的调用被反蒸馏防护(thinking block binding)判为逆向工程——抗蒸馏与独立评测首次冲突;③横向对比本身 harness 混淆(Codex 67 对 Claude Code 70,AA 自承部分属脚手架);④AA v4.2 把留出集权重由 20% 提到 40%、新增私有 AA-Briefcase,GLM-5.3 由 60 降至 49 的降幅可分解为过拟合与难度两部分;⑤能力分工与成本相反:Fable 5.1 赢 AA 指数(65.7 对 61)、HLE 带工具、编码 agent 指数,Astra 赢 Terminal-Bench 4.0/Science、FrontierMath、网络安全,单任务成本 1.67 对 3.76 美元。安全侧:Astra 首个 Critical 网络安全分级(最大 RL 运行仍暂停)、Fable 5.1 首个 GA 级 CB-1,Anthropic 自曝约一半 computer-use RL 环境有 reward hack 面。",
