@@ -2,6 +2,38 @@
   "updated": "2026-09-01",
   "items": [
     {
+      "title": "GPT-6 Astra(Astra 以 GPT-6 之名发布;ARC-AGI-3 的 harness 分差 62.7 对 99.9)",
+      "org": "OpenAI",
+      "year": "2026-09",
+      "category": "model-report",
+      "innovation": "2026-09-03 发布,即此前代号 Astra 的下一代旗舰(并非传闻的 GPT-5.7);105 万 token 上下文、12.8 万输出、low 至 max 推理档;定价约为前代 Sol 的 2.5 倍每 token(单任务成本约高 75%)",
+      "analysis": "Innovation:本次发布最具方法学意义的不是分数而是分差——ARC-AGI-3 上用 OpenAI 自家 provider adapter harness 得 99.9%,用标准中立 harness 仅 62.7%,差异来源是前者在动作之间保留推理状态。这是看板 D29/D30'harness 即分数'迄今最极端的公开样本:同一模型同一基准,harness 差异造成 37 个百分点。Performance:第三方 Artificial Analysis 智能指数 61(v4.1 口径),与前代 GPT-5.6 Sol 持平、低于 Claude Fable 5.1;媒体评论普遍指出'读小字'的必要性。对 RL-on-NPU 意义:provider harness 保留推理状态的做法,与 D29 记录的 dsh minimal 模式(复现 RL 训练分布)是同一问题的两种答案——评测口径必须随模型一起披露,否则跨模型比较无意义。",
+      "url": "https://openai.com/index/gpt-6-astra/",
+      "tags": [
+        "GPT-6",
+        "OpenAI",
+        "harness-as-score",
+        "ARC-AGI"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "Claude Fable 5.1(AA 指数登顶 65.7;长程任务大幅提升、短任务几乎持平)",
+      "org": "Anthropic",
+      "year": "2026-09",
+      "category": "model-report",
+      "innovation": "2026-09-01 发布,与 Claude Mythos 5.1 同模型不同安全档;价格维持每百万 token 10/50 美元,缓存读取降价 75%;官方发布未报 SWE-bench,改以 agentic 基准领衔",
+      "analysis": "Innovation:能力提升的形状值得记录——Terminal-Bench-Science 0.1 由 Fable 5 的 24.7% 升至 52.6%(Opus 5 为 29.0%),Terminal-Bench 4.0 达 55.8%,而短任务提升有限:'长程多步工作大幅变好,已擅长的短任务只好一点'。这与 D34 记录的 GLM-5.3 后训练 scaling 形状一致——增量集中在长程 agent 任务。Performance:第三方 AA 智能指数 65.7 居首(v4.2 口径,高于 Opus 5 的 63.0);第三方 SWE-bench Pro 榜 81.2% 第一(厂商自己未报该项)。对 RL-on-NPU 意义:厂商主动放弃 SWE-bench 作为头条指标、改用 Terminal-Bench 系,印证 D30 关于 SWE-bench Verified 饱和与效度危机的判断;长程与短程能力的分离说明后训练环境的时长结构直接决定能力形状。",
+      "url": "https://www.anthropic.com/news/claude-fable-5-1",
+      "tags": [
+        "Claude",
+        "Fable-5.1",
+        "long-horizon",
+        "Terminal-Bench"
+      ],
+      "confidence": "secondary"
+    },
+    {
       "title": "权重级持续学习的两条原型线:Nested Learning/Hope 与稀疏记忆层微调",
       "org": "Google Research;Meta FAIR 及独立复现",
       "year": "2026",
@@ -56,7 +88,7 @@
       "year": "2026-08",
       "category": "model-report",
       "innovation": "基座与 GLM-5.2 完全相同(753B/A40B MoE、1M 上下文),全部能力提升来自后训练 scaling——长程任务环境规模扩大数十倍、类型扩到安全漏洞发现、后训练时长增加;强制开启 thinking(low/high/max 三档)",
-      "analysis": "Innovation:一次难得的受控实验——固定基座只推 RL。训练栈 slime 异步 RL(GLM 全系共用)+ SAO with compaction(压缩片段上直接训练,使训练分布对齐生产推理=上下文层训推一致)+ IndexShare(每 4 层共享 indexer,1M 下 per-token FLOPs 降 2.9×)+ SFT 阶段 INT4 QAT 位级一致 kernel。Performance:第三方 Artificial Analysis 智能指数由 5.2 的 53 独立评为 60,与 Kimi K3 并列开源第一(Opus 5 领跑 63);自报 Terminal-Bench 3.0 由 4.6 至 28.3、DeepSWE v1.1 46.2 至 66.9、CyberGym 84.5(均厂商自跑未复现);网络安全账本自报 2436 漏洞但仅约 2% 公开、累计口径。对 RL-on-NPU 意义:D25'主干成熟、增量在后训练'的旗舰级实证;训推一致三层(数值 R3/量化 QAT/上下文 SAO)在单厂商栈全落地;GLM-5.3-Flash(320B-A18B,MIT,GLM-5 系首个原生多模态)自称全程国产芯片训练,vLLM-Ascend 已有 5.2 教程、5.3 预期近即插即用。权重已于 08-29 前后上 HF(zai-org/GLM-5.3 与 GLM-5.3-Flash),第三方复现窗口开启。详见 Dispatch 34。",
+      "analysis": "Innovation:一次难得的受控实验——固定基座只推 RL。训练栈 slime 异步 RL(GLM 全系共用)+ SAO with compaction(压缩片段上直接训练,使训练分布对齐生产推理=上下文层训推一致)+ IndexShare(每 4 层共享 indexer,1M 下 per-token FLOPs 降 2.9×)+ SFT 阶段 INT4 QAT 位级一致 kernel。Performance:第三方 Artificial Analysis 智能指数由 5.2 的 53 独立评为 60,与 Kimi K3 并列开源第一(Opus 5 领跑 63);自报 Terminal-Bench 3.0 由 4.6 至 28.3、DeepSWE v1.1 46.2 至 66.9、CyberGym 84.5(均厂商自跑未复现);网络安全账本自报 2436 漏洞但仅约 2% 公开、累计口径。对 RL-on-NPU 意义:D25'主干成熟、增量在后训练'的旗舰级实证;训推一致三层(数值 R3/量化 QAT/上下文 SAO)在单厂商栈全落地;GLM-5.3-Flash(320B-A18B,MIT,GLM-5 系首个原生多模态)自称全程国产芯片训练,vLLM-Ascend 已有 5.2 教程、5.3 预期近即插即用。权重已于 08-29 前后上 HF(zai-org/GLM-5.3 与 GLM-5.3-Flash),第三方复现窗口开启。【AA 版本口径更正(2026-09-07)】本卡与 D34 记录的'AA 智能指数 60、与 K3 并列开源第一'为 v4.1 口径;AA 于 09-04 发布 v4.2(更复杂任务 + 私有测试集防刷),同一模型在 v4.2 下 GLM-5.3(max)记为 49、GLM-5.3-Flash 记为 57(Flash 高于 max 属反常,以 AA 页面为准待复核)。跨版本分数不可直接比较。截至 09-07 仍无独立评测方在单一受控设置下复跑 GLM-5.3,例外仅 GDPval-AA v2。详见 Dispatch 34。",
       "url": "https://docs.z.ai/guides/llm/glm-5.3",
       "tags": [
         "GLM-5.3",

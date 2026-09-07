@@ -124,6 +124,13 @@ flowchart LR
 
 **权重已落地。** [zai-org/GLM-5.3](https://huggingface.co/zai-org/GLM-5.3) 与 [zai-org/GLM-5.3-Flash](https://huggingface.co/zai-org/GLM-5.3-Flash) 均已上线 HF,官方兑现"安全评估后开源"承诺。两点更新:其一,本篇"权重延期"相关表述已随之修订,第三方复现窗口正式开启——Terminal-Bench 3.0 跳变、CyberGym 84.5、漏洞账本三项自报数字进入可复跑状态;其二,Flash 模型卡确认为 GLM-5 系**首个原生多模态**成员(320B-A18B,MIT),官方表述其编程与 agentic 能力接近 Claude Opus 4.8——该对标为自报口径,同样待独立 harness 校验。昇腾侧 vLLM-Ascend 的 5.3 专门适配条目仍待观察。
 
+
+## 跟进(2026-09-07):AA 指数换版,本篇的头条数字需标注口径
+
+Artificial Analysis 于 2026-09-04 发布智能指数 **v4.2**(更复杂、更贴近真实的任务,并增加私有测试集以防刷榜)。直接后果是**跨版本分数不可比**:本篇反复引用的"AA 智能指数由 53 升至 60、与 Kimi K3 并列开源第一"是 **v4.1 口径**;在 v4.2 下,AA 页面将 GLM-5.3(max)记为 **49**、GLM-5.3-Flash 记为 **57**(Flash 高于 max 属反常,以 AA 页面为准待复核),而 v4.2 榜首为 Claude Fable 5.1(65.7)、Opus 5(63.0)。本篇的 v4.1 数字作为发布时点的历史快照保留,后续引用请标注版本。
+
+第三方复现的进展仍然有限:截至 09-07,**没有独立评测方在单一受控设置下复跑过 GLM-5.3**,唯一例外是 AA 评分的 GDPval-AA v2(以及用于归一化预算的 AA 吞吐数字);本篇第 6 节列为"真伪检验点"的 Terminal-Bench 3.0 跳变与 CyberGym 84.5 至今没有独立复现。这与 ideas 中"国产模型自报分第三方统一 harness 复跑"卡的判断一致,该卡已据此更新紧迫性依据。
+
 ---
 
 **来源与声明**:主循环调研 + 定向补充(2026-08-28)。主要来源:[GLM-5 技术报告 arXiv 2602.15763](https://arxiv.org/abs/2602.15763)、[Z.ai GLM-5.3 文档](https://docs.z.ai/guides/llm/glm-5.3)、[slime](https://github.com/THUDM/slime)、[Artificial Analysis GLM-5.3](https://artificialanalysis.ai/models/glm-5-3)、[Unite.AI 智能指数报道](https://www.unite.ai/glm-5-3-scores-60-on-artificial-analysis-intelligence-index-matching-kimi-k3/)、[vLLM-Ascend GLM5.2 教程](https://docs.vllm.ai/projects/ascend/zh-cn/main/tutorials/models/GLM5.2.html)、[LMSYS INT4 QAT 实践](https://www.lmsys.org/blog/2026-01-26-int4-qat/)、[kingy.ai 漏洞账本核查](https://kingy.ai/blog/glm-5-3-open-weight-cybersecurity-vulnerability-claim/) 等,文中逐处标注。除 AA 智能指数 60 为第三方独立评分外,GLM-5.3 的 benchmark 与漏洞账本均为厂商自报(provisional);权重已于 08-29 前后上线 HF(跟进段);昇腾即插即用与两代对照的部分归因为本看板推断。

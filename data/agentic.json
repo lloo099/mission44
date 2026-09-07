@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-01",
+  "updated": "2026-09-07",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -35,6 +35,42 @@
     }
   ],
   "items": [
+    {
+      "title": "OpenAI 宣布达成'自动化研究实习生'(3.1 agent-工作日对 1 人类工作日)",
+      "org": "OpenAI",
+      "year": "2026-09",
+      "category": "benchmark",
+      "track": "industry",
+      "innovation": "2026-09-06 宣布如期达成 2025-10 立下的目标:一个'能在人类指导下完成边界清晰的研究任务(含熟练研究员需数天的任务)'的受监督 agentic 系统;自报研究组织当前每 1 个人类工作日投入 3.1 个 agent 工作日的努力量",
+      "summary": "用量分析采用 Epoch AI 的研发工作六阶段分类法(Decide/Design/Build/Run/Analyze/Communicate)。2026 年 1 月至 8 月各类研究活动全面增长,研究与基建代码成为主导类别,技术协助与运行监控增长显著;高层规划仍只占 agent 输出 token 的极小比例。下一节点:2028-03 全自动 AI 研究员。",
+      "analysis": "Innovation:这是 D35 方向 #6、D36 §4、D37 §7 共同标记的到期节点,结果为如期达成——但达成的定义是'受监督、边界清晰的任务',与'自主研究'仍有距离。关键结构性证据:**agent 越来越多地承担 build/run/analyze,人类仍承担绝大部分 decide**——这正面印证了 D37/D38 反复记录的判断:执行环节证据充足,想法产生环节无正面证据。Performance:3.1 agent-工作日为厂商自报的努力量口径(非产出或提速口径),不可与 Anthropic'研发提速不到 2×'直接比较——后者量的是能力进展速率。对看板意义:D37 五判据表中'研发提速'与'想法产生'两行据此更新;六阶段分类法可作为国产栈自动化研究度量的现成框架。",
+      "url": "https://openai.com/index/research-acceleration-view-inside-openai/",
+      "tags": [
+        "automated-AI-research",
+        "RSI",
+        "OpenAI",
+        "Epoch-taxonomy"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "ARC-AGI-3 的 harness 分差:同模型 62.7% 对 99.9%",
+      "org": "ARC Prize / OpenAI",
+      "year": "2026-09",
+      "category": "benchmark",
+      "track": "industry",
+      "innovation": "GPT-6 Astra 在 ARC-AGI-3 上用 OpenAI 自家 provider adapter harness 得 99.9%、用标准中立 harness 得 62.7%;差异来源是前者在动作之间保留推理状态,后者不保留",
+      "summary": "媒体报道称该结果同时推动了对 AGI 时间表的重估与对'读小字'的提醒;ARC Prize 将官方成绩与 provider harness 成绩分开呈现。",
+      "analysis": "Innovation:这是'harness 即分数'(D29/D30)迄今最极端的公开样本——同一模型、同一基准、37 个百分点的差距,全部来自 harness 是否保留跨动作的推理状态。此前看板记录的跨 harness 分差为 9.5 至 36 分(D29),本例达到该区间上沿并首次由基准方与厂商同时公开两个数字。判断:它把'评测口径必须随分数一起披露'从方法学建议变成了硬性要求;也说明 agent 能力评测中'状态保持'是与模型能力同等重要的自变量。对 RL-on-NPU 意义:与 D34 SAO compaction、D29 dsh 日志投影同属'状态如何跨步保持'的问题域——训练侧的 partial rollout 与评测侧的 provider harness 是同一机制在两端的体现。",
+      "url": "https://the-decoder.com/benchmarks-disagree-on-gpt-6-astra-but-its-human-beating-efficiency-on-arc-agi-3-pulls-chollets-agi-forecast-forward/",
+      "tags": [
+        "harness-as-score",
+        "ARC-AGI",
+        "evaluation",
+        "agent-evaluation"
+      ],
+      "confidence": "secondary"
+    },
     {
       "title": "Anthropic 自动化对齐研究员(AARs):9 个 agent 60 小时超过人类研究员,2.4% 轨迹含作弊尝试",
       "org": "Anthropic",

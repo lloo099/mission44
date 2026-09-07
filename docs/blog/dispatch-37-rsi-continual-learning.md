@@ -190,6 +190,17 @@ flowchart TB
 4. **CL-Bench 上前沿模型的公开分数**:25.4% 最佳相对收益能否被记忆架构突破,或继续被上下文学习压制。
 5. **Hacker-Opus 协议的第三方复现**:可 hack 环境 + 监控的 hacking 率能否成为跨厂商可比的 RSI 风险刻度。
 
+
+## 跟进(2026-09-07):三个到期节点同时落地
+
+**① OpenAI"研究实习生"如期达成,但达成的定义需要读清楚。** 2026-09-06 OpenAI 宣布完成 2025-10 立下的目标([原文](https://openai.com/index/research-acceleration-view-inside-openai/)),定义为"能在人类指导下完成边界清晰的研究任务(含熟练研究员需数天的任务)"的**受监督** agentic 系统;自报研究组织当前每 1 个人类工作日投入 **3.1 个 agent 工作日**的努力量,下一节点为 2028-03 的全自动研究员。用量分析采用 Epoch AI 的六阶段分类法(Decide/Design/Build/Run/Analyze/Communicate):2026 年 1 至 8 月各类活动全面增长,研究与基建代码成为主导类别,而**高层规划仍只占 agent 输出 token 的极小比例**——官方表述为"agent 越来越多地 build、run、analyze,人类仍承担绝大部分 decide"。
+
+这对本篇 §8 的五判据表是**正面确认而非推翻**:"研发提速"判据新增一个自报数字(3.1 agent-工作日,注意这是努力量口径,不能与 Anthropic"能力进展速率不到 2×"直接比较);"想法产生"判据的结论——**无正面证据**——由 OpenAI 自己的用量分布证实。§11 的结构性判断(RSI 是"在冻结权重外做优化"的循环、人仍控制研究方向与评估器)不变。
+
+**② 治理阈值仍未触发,但外部刻度换了版本。** 本篇引用的 Artificial Analysis 指数为 v4.1 口径;AA 于 09-04 发布 **v4.2**(更复杂、更贴近真实的任务 + 更多私有测试集防刷),跨版本分数不可直接比较。这本身是 D30 主题的一个实例:当能力逼近测量上限,基准方会重做标尺,而重做标尺会让历史分数失去可比性。
+
+**③ 一个新的评估器完整性样本。** GPT-6 Astra 在 ARC-AGI-3 上,用 OpenAI 自家 provider adapter harness(在动作之间保留推理状态)得 99.9%,用标准中立 harness 得 **62.7%**。本篇 §9 论证"评估器与被评估者同源"是自改进回路的失效根源;此例把同一问题推到评测侧——**当厂商同时提供模型与评测适配层,分数的含义取决于适配层**,37 个百分点的差距即由此而来。
+
 ---
 
 **来源与声明**:三路定向调研汇总(2026-09-02):持续学习方法层、RSI 度量与治理、工业自改进回路与安全;主要来源含 [Forethought SIE](https://www.forethought.org/research/will-ai-r-and-d-automation-cause-a-software-intelligence-explosion)、[Ord 动力学](https://newsletter.forethought.org/p/the-dynamics-of-intelligence-explosions)、[Burtsev 2609.00137](https://arxiv.org/abs/2609.00137)、[CL-Bench 2606.05661](https://arxiv.org/abs/2606.05661)、[SDFT 2601.19897](https://arxiv.org/abs/2601.19897)、[Denser ≠ Better 2607.01763](https://arxiv.org/abs/2607.01763)、[CapTrack 2603.06610](https://arxiv.org/abs/2603.06610)、[Dwarkesh 8 predictions](https://www.dwarkesh.com/p/era-of-continual-learning)、[METR 支出地平线](https://metr.org/blog/2026-07-21-expenditure-horizon/)、[GovAI 2603.03992](https://www.governance.ai/research-paper/measuring-ai-r-d-automation)、[Anthropic When AI Builds Itself](https://www.anthropic.com/institute/recursive-self-improvement)、[Anthropic RSP](https://www.anthropic.com/responsible-scaling-policy)、[OpenAI PF v2](https://cdn.openai.com/pdf/18a02b5d-6b67-4cec-ab64-68cdfbddebcd/preparedness-framework-v2.pdf)、[GDM FSF](https://deepmind.google/blog/strengthening-our-frontier-safety-framework/)、[AlphaEvolve 影响报告](https://deepmind.google/blog/alphaevolve-impact/)、[autoresearch](https://github.com/karpathy/autoresearch)、[AARs 仓库](https://github.com/YuehHanChen/automated_alignment_researcher)、[Hacker-Opus](https://alignment.anthropic.com/2026/reward-seeker/)、[HF 入侵时间线](https://huggingface.co/blog/agent-intrusion-technical-timeline)、[RSI 综述 2607.07663](https://arxiv.org/abs/2607.07663)、[IAPS 访谈 2603.03338](https://arxiv.org/abs/2603.03338) 等,文中逐处标注。厂商数字均为自报口径;媒体转述处已明示。

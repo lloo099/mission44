@@ -139,6 +139,16 @@ flowchart LR
 4. **OpenAI 研究实习生的产品化与 GLM-5.3 的 speedrun 成绩**:前者是 D35 方向 #6 的到期节点,后者是国产模型在冻结验证器下的第一个自动化研究刻度。
 5. **环境市场整合**:Mercor 收购 Deeptune 后,Fleet/Mechanize/Prime 的下一步与环境规格的标准化(verifiers/Harbor 是否成为事实标准)。
 
+
+## 跟进(2026-09-07):§4 边界规则的第一个正面样本
+
+本篇 §4 给出的边界规则是:自动化研究**在验证器丰富的闭环任务上成立,在评估器模糊的开放式研究上全部失败**。2026-09-06 OpenAI 宣布达成"自动化研究实习生"([原文](https://openai.com/index/research-acceleration-view-inside-openai/)),为该规则提供了第一个来自前沿实验室内部的正面样本,且其自身的用量分布正好落在规则的两侧:
+
+- **成立侧**:自报每 1 个人类工作日对应 **3.1 个 agent 工作日**的努力量;按 Epoch AI 六阶段分类法(Decide/Design/Build/Run/Analyze/Communicate),研究与基建代码成为主导类别,技术协助与运行监控增长显著——这些都是**有明确完成判据**的环节。
+- **未成立侧**:高层规划仍只占 agent 输出 token 的极小比例,官方表述为"agent 越来越多地 build、run、analyze,人类仍承担绝大部分 decide"。
+
+需要注意口径:3.1 是**努力量**(agent 工作日投入)而非产出或提速,与 Anthropic 风险报告"能力进展速率不到 2×"量的不是同一件事,不可直接比较。达成的定义也限定为"受监督、边界清晰"的任务,距 2028-03 的全自动研究员目标仍有本篇 §4 所述的两个未解环节(想法产生、评估器可靠性)。
+
 ---
 
 **来源与声明**:三路定向深挖汇总(2026-09-01):环境轴与世界模型、持续学习与记忆、自动化 AI 研发;主要来源含 [verifiers](https://github.com/PrimeIntellect-ai/verifiers)、[Epoch AI 环境市场 FAQ](https://epoch.ai/gradient-updates/state-of-rl-envs)、[Anthropic 奖励寻求者研究](https://alignment.anthropic.com/2026/reward-seeker/)、[可 hack 性审计 2606.16062](https://arxiv.org/abs/2606.16062)、[WM-R1](https://arxiv.org/abs/2608.27508)、[Qwen-AgentWorld](https://arxiv.org/abs/2606.24597)、[GUI-GENESIS](https://arxiv.org/abs/2602.14093)、[稀疏记忆微调 2510.15103](https://arxiv.org/abs/2510.15103)、[JitRL](https://github.com/liushiliushi/JitRL)、[TRACE](https://arxiv.org/abs/2607.13988)、[Prime Agent 仓库](https://github.com/PrimeIntellect-ai/prime-agent)、[speedrun 验证仓库](https://github.com/PrimeIntellect-ai/frontier-automated-speedrun)、[Anthropic 自动化对齐研究员](https://alignment.anthropic.com/2026/automated-alignment-researchers/)、[PostTrainBench](https://icml.cc/virtual/2026/poster/63667)、[METR 前沿风险报告](https://metr.org/blog/2026-05-19-frontier-risk-report/) 等,文中逐处标注。厂商数字均为自报口径;标注(第三方)处为媒体或分析机构口径;单一来源条目已明示。

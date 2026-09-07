@@ -165,6 +165,15 @@ flowchart TB
 3. **pass^k 与 80% horizon 的普及**:可靠性指标何时进入厂商发布的默认报告。
 4. **HAL 式统一 harness 的覆盖扩张**:第三方标准化评测能否覆盖国产模型(LongCat/Qwen/openPangu 的自报分至今无独立复跑)。
 
+
+## 跟进(2026-09-07):harness 分差的新上限与标尺换版
+
+**同一模型、同一基准、37 个百分点。** GPT-6 Astra(2026-09-03 发布)在 ARC-AGI-3 上,用 OpenAI 自家 provider adapter harness 得 **99.9%**,用标准中立 harness 得 **62.7%**;差异来源是前者在动作之间**保留推理状态**,后者不保留。本篇第 5 节记录的跨 harness 分差区间为 9.5 至 36 分,本例达到并超过该区间上沿,且首次由基准方与厂商同时公开两个数字。方法学含义有二:其一,**当厂商同时提供模型与评测适配层时,分数的含义取决于适配层**,"harness 必须随分数一起披露"从建议变为硬性要求;其二,agent 评测中"跨步状态是否保持"是与模型能力同等重要的自变量——它与训练侧的 partial rollout、上下文侧的 compaction(D34)属同一问题域。
+
+**标尺换版:AA 指数 v4.2(2026-09-04)。** Artificial Analysis 发布 v4.2,引入更复杂、更贴近真实的任务与更多私有测试集以防刷榜。直接后果是**跨版本分数不可比**:看板此前记录的 v4.1 口径数字(如 GLM-5.3 与 K3 并列 60)与 v4.2 口径(Fable 5.1 65.7、Opus 5 63.0)不能同表比较。这是本篇"测量协议三威胁"的一个新实例——基准方在能力逼近上限时重做标尺是必要的,但每次重做都会让历史分数失去纵向可比性,看板因此在卡片中标注指数版本。
+
+**厂商开始放弃 SWE-bench 作头条。** Anthropic 的 Fable 5.1 发布未报 SWE-bench 分数,改以 Terminal-Bench-Science(52.6%,前代 24.7%)、Terminal-Bench 4.0(55.8%)等 agentic 基准领衔;SWE-bench Pro 的 81.2% 第一由第三方榜单给出。这与本篇记录的 OpenAI 于 2026-02 弃用 SWE-bench Verified 是同一趋势的延续。
+
 ---
 
 **来源与声明**:两路定向调研(2026-08-25),主要来源文中逐处标注:SWE-bench 原文 [2310.06770](https://arxiv.org/abs/2310.06770)、[Verified 公告](https://openai.com/index/introducing-swe-bench-verified/)与[弃用声明](https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/)、SWE-bench+ [2410.06992](https://arxiv.org/abs/2410.06992)、UTBoost [2506.09289](https://arxiv.org/abs/2506.09289)、Illusion [2506.12286](https://arxiv.org/abs/2506.12286)、[Cursor 作弊审计](https://cursor.com/blog/reward-hacking-coding-benchmarks)、Codex pass@k [2107.03374](https://arxiv.org/abs/2107.03374)、tau-bench [2406.12045](https://arxiv.org/abs/2406.12045)、HAL [2510.11977](https://arxiv.org/abs/2510.11977)、METR [2503.14499](https://arxiv.org/abs/2503.14499) 与 [Time Horizon 1.1](https://metr.org/blog/2026-1-29-time-horizon-1-1/)、harness 披露论文 [2605.23950](https://arxiv.org/abs/2605.23950)、误差棒 [2411.00640](https://arxiv.org/abs/2411.00640) 等。各基准的具体分数为其发布时点口径,随版本与 harness 变化;METR 对 time horizon 的测量精度有官方局限性声明,外推需谨慎。

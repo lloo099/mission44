@@ -1,6 +1,54 @@
 {
-  "updated": "2026-09-01",
+  "updated": "2026-09-07",
   "items": [
+    {
+      "title": "RL's Razor 与稀疏子网:RL 少遗忘的机制,也是其边界受限的机制",
+      "org": "MIT 等",
+      "year": "2026",
+      "category": "paper",
+      "innovation": "RL's Razor(arXiv 2509.04259,NeurIPS 2025):同等新任务性能下 on-policy RL 遗忘显著少于 SFT,遗忘量由新任务上相对基座的 KL 预测,RL 隐式偏向 KL 最小解;配套发现(arXiv 2505.11711)RL 仅更新 5-30% 参数且跨种子与算法高度重叠,稀疏性来自近策略数据而非 KL 正则或梯度裁剪",
+      "analysis": "Innovation:两篇合起来给出统一图景——on-policy 采样使梯度只落在模型已高概率的区域。判断:这既解释了 RL 少遗忘(不漂远),也解释了它能力边界受限(不跳到新区域,数学域 pass@k 不超基座支撑集)——**同一枚硬币的两面**,是 D38 的理论主干。规模多在 32B 以下;机制解释见 arXiv 2605.28860(SFT 电路重组更大,RL 保留更多基座电路)。对 RL-on-NPU 意义:只更新 5-30% 参数为 RL 训练的显存与通信优化提供了理论依据(稀疏优化器状态、子网 checkpoint);也提示昇腾上做 RL 的收益主要在保持基座能力而非注入新知识。",
+      "url": "https://arxiv.org/abs/2509.04259",
+      "tags": [
+        "RL-vs-SFT",
+        "forgetting",
+        "sparse-update",
+        "RL-on-NPU"
+      ],
+      "confidence": "provisional"
+    },
+    {
+      "title": "在线策略蒸馏 OPD:第三代后训练与它的四种失效模式",
+      "org": "Thinking Machines / 学界",
+      "year": "2026",
+      "category": "algorithm",
+      "innovation": "学生自采样(on-policy,同 RL)+ 教师逐 token 稠密监督(同 SFT);2025-10 由 Thinking Machines 系统化,2026 年成为 DeepSeek-V4、Kimi K3、GLM-5 的后训练收官阶段,取代混合 RL;自报算力约为 RL 的 1/10、为外推 SFT 的 1/9 至 1/30",
+      "analysis": "Innovation:V4 以 10+ 专家教师做全词表反向 KL、缓存教师末层隐状态;K3 的 MOPD 用裁剪的师生 log-ratio 作稠密 token 奖励;GLM-5 用跨阶段蒸馏修复顺序 RL 的累积退化。失效模式(2026 集中出现):KL 一致陷阱(学生进入错误前缀后教师条件分布与之趋同、监督信号消失,KAT 终止规则使 avg@k +2.66、rollout 长度 -59.7%,arXiv 2606.09471)、监督保真度随学生前缀单调衰减(2605.30833)、同族弱教师分布上不可区分(2604.13016)、稠密自蒸馏在持续后训练中崩溃(2607.01763)。判断:OPD 不是免费的 RL 替代;流传的'省 50-100× 算力'非原文口径。对 RL-on-NPU 意义:昇腾尚无公开的全词表反向 KL kernel 与教师 logits 缓存实现,这是 RL 基建之外的新缺口;OPD 比 RL 更依赖逐 token 概率精确性,低比特 rollout 的影响需先验证。详见 Dispatch 38。",
+      "url": "https://thinkingmachines.ai/blog/on-policy-distillation/",
+      "tags": [
+        "on-policy-distillation",
+        "post-training",
+        "distillation",
+        "RL-on-NPU"
+      ],
+      "confidence": "provisional"
+    },
+    {
+      "title": "RLVR 的能力边界之争:pass@k 收缩、富解空间例外与蒸馏的新知识条件",
+      "org": "学界",
+      "year": "2026",
+      "category": "paper",
+      "innovation": "Yue et al.(arXiv 2504.13837,NeurIPS 2025):RLVR 提升 pass@1 但 pass@256 低于基座,RL 模型的正确路径已在基座分布中,蒸馏则能注入新推理模式扩展边界;Invisible Leash 将 RLVR 形式化为支撑集受限优化;Kim et al.(2505.14216)给出条件——蒸馏扩展能力当且仅当引入新知识,只蒸推理模式则与 RLVR 无异",
+      "analysis": "Innovation:反证同样具体——ProRL(1.5B,2k+ 步 + 参考策略重置)在基座全采样也失败的任务上得到解,但数学域 pass@128 常下降;竞赛编程上 RL 在 pass@256 仍领先,归因于组合式解空间与执行奖励提供更强探索信号(2604.01302)。判断:**域的解空间结构决定谁扩展边界**——数学域 RL 受限、蒸馏占优;代码与 agent 域 RL 可扩张。这修正了'RL 创造、蒸馏复制'的通行直觉。对 RL-on-NPU 意义:昇腾上做 RL 的选题应优先富解空间域(代码、agent、kernel 优化),数学域投入产出比低;pass@k 应作为探索诊断指标纳入训练监控(D30 四轴之一)。",
+      "url": "https://arxiv.org/abs/2504.13837",
+      "tags": [
+        "RLVR",
+        "capability-boundary",
+        "pass@k",
+        "distillation"
+      ],
+      "confidence": "provisional"
+    },
     {
       "title": "TRACE 与 ECHO:turn 级信用分配的两条可复现路线(BrowseComp-Plus 大幅增益)",
       "org": "Microsoft/UW-Madison;北大/百度",

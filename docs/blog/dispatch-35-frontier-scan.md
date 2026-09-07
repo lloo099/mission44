@@ -130,6 +130,15 @@ flowchart TB
 4. **环境市场的整合**:约 50 家环境厂商的第一轮洗牌与头部 Hub 的标准化格式。
 5. **Gemini 3.5 Pro 与 Astra 的发布方式**:两个被延期的旗舰如何处理 cyber 门槛,将定义"能力即风险"的行业默认流程。
 
+
+## 跟进(2026-09-07):方向 #6 节点到期,旗舰格局重排
+
+**方向 #6(自动化 AI 研发)的到期节点已兑现。** OpenAI 于 2026-09-06 宣布如期达成"自动化研究实习生"(受监督、边界清晰的研究任务),自报每 1 人类工作日对应 3.1 agent 工作日,下一节点 2028-03。按 Epoch 六阶段分类法,agent 承担的是 build/run/analyze,**人类仍承担绝大部分 decide**——本篇第 14 节"想法产生无正面证据"的判断得到发布方自身数据的确认。
+
+**旗舰格局重排(本篇第 01 节的分数梯队已过时)。** 2026-09-01 至 09-03 连续发布:Claude Fable 5.1(与 Mythos 5.1 同模型不同安全档)、GPT-6 Astra(此前代号 Astra,并非传闻的 GPT-5.7)、Gemini 3.8 Flash、Muse Spark 1.3。第三方 AA 指数同期升级到 **v4.2**(09-04,更复杂任务 + 私有测试集),新旧版本分数不可比;v4.2 榜首为 Fable 5.1(65.7),Opus 5 为 63.0、Muse Spark 1.3 为 62.1。本篇记录的"Opus 5 Max 63 / Fable 5 62 / GLM-5.3 与 K3 各 60"为 v4.1 口径,作为历史快照保留。
+
+**第 03 节的 cyber 门槛叙事有了下文。** 曾因"无法排除达到 Critical cyber 阈值"而暂停 RL 训练两周的 Astra 最终以 GPT-6 之名发布;其 ARC-AGI-3 成绩同时出现 99.9%(OpenAI provider harness,动作间保留推理状态)与 62.7%(标准中立 harness)两个数字,成为本篇第 05 节"验证外置"与 D29/D30"harness 即分数"迄今最极端的公开样本。
+
 ---
 
 **来源与声明**:三路并行 agent 调研汇总(2026-09-01):前沿模型扫描、agent 方案扫描、提前探索方向扫描;主要来源含 [Artificial Analysis](https://artificialanalysis.ai/)、[METR Time Horizon 1.1](https://metr.org/blog/2026-1-29-time-horizon-1-1/)、[MCP 改版公告](https://blog.modelcontextprotocol.io/posts/2026-07-28/)、[Linux 基金会 A2A](https://www.linuxfoundation.org/press/a2a-protocol-surpasses-150-organizations-lands-in-major-cloud-platforms-and-sees-enterprise-production-use-in-first-year)、[OpenAI Astra cyber 声明](https://openai.com/index/responding-next-frontier-critical-cyber-capabilities/)、[Prime Intellect 融资](https://www.pymnts.com/news/investment-tracker/2026/prime-intellect-raises-130-million-to-help-companies-train-ai-agents/)、[WM-R1](https://arxiv.org/abs/2608.27508)、[自改进综述](https://arxiv.org/abs/2607.13104)、[RaR](https://openreview.net/forum?id=c1bTcrDmt4)、[Anthropic 上下文工程](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) 等,文中逐处标注。厂商数字均为自报口径;二级媒体转述的金额与增益(环境采购、Outcomes +10pp)标注为报道而非事实。
