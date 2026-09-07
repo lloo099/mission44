@@ -22,7 +22,7 @@
 
 一个值得记录的元批评:**AA 在 Astra 得分平平引发争议后数天改版指数**,这既可以解读为旧版低估了 agent 能力,也可以解读为指数向叙事靠拢——两种解读目前都无法证伪。
 
-### 图 A · 一个模型,两个总分
+### 图 1 · 一个模型,两个总分
 
 ```mermaid
 flowchart LR
@@ -169,7 +169,17 @@ flowchart LR
 
 **xhigh 到 max 多花 40% 成本换 0 分提升**是本表最实用的一条:**max 档只在需要极限能力的少数任务上值得**。
 
+![单任务成本与 AA 智能指数的散点图,越靠左上越划算](reads/img/dispatch-40-gpt6-benchmarks/fig-5.svg)
+
+*图 2 · 成本-能力前沿(AA v4.2 指数运行实测,max 档)。Astra 以约 1.67 美元每任务取得 61 分,是四者中最便宜的;Fable 5.1 以约 3.76 美元取得 65.7 分,是最强的。没有一个点同时占据左上角——这正是选型取决于负载形状而非排名的原因。*
+
 ## 8 · 他到底有多强:分域结论
+
+![GPT-6 Astra 相对 Claude Fable 5.1 的逐项差值:柱状图,正值为 Astra 领先](reads/img/dispatch-40-gpt6-benchmarks/fig-4.svg)
+
+*图 3 · 两者均有公开数字的九项对照。Astra 在 Terminal-Bench-Science、BenchCAD、AutomationBench、FrontierMath T4 上领先 10 分上下,在 AA 指数与 HLE 带工具上落后 4 到 8 分;AA 编码 agent 指数一项两者 harness 不同(Astra 在 Codex、Fable 5.1 在 Claude Code),差距的一部分属于脚手架。厂商表与第三方口径混列,不可相加。*
+
+### 图 4 · 三组归纳与综合判断
 
 ```mermaid
 flowchart TB
@@ -194,6 +204,10 @@ flowchart TB
     D --> V
     V --> C["强在搜索与验证可闭环的域<br/>弱在开放式知识工作<br/>编码优势主要来自 harness 与成本"]
 ```
+
+![头条数字与受控口径的差距:ARC-AGI-3、ExploitBench、FrontierMath Erdős 三组对照柱状图](reads/img/dispatch-40-gpt6-benchmarks/fig-3.svg)
+
+*图 5 · 最响的三个数字换测量方式后的结果。ARC-AGI-3 由 provider adapter 的 99.9% 降到中立 harness 的 62.7%;ExploitBench 由发布口径的 100% 降到发布后新 CVE 上的 39.0%(但对照 GPT-5.6 Sol 的 5.5% 仍是七倍);Erdős 由非协议的 5/68 降到 Epoch 固定协议的 2/68。*
 
 **一句话回答"他有多强"**:GPT-6 Astra 在**搜索与验证可以闭环的域**上是真实且大幅的跃升——形式化数学、抽象推理谜题、GUI 操作、漏洞利用;在**开放式知识工作**上不如 Claude Fable 5.1,且相对自家前代有可测量的回退;在**编码**上是平局,其可见优势主要来自与模型同期发布的 Codex harness 与更低的单任务成本,而非模型本身。这与 D38 的判断一致:**能力增长集中在有验证器的域**。
 

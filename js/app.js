@@ -438,6 +438,8 @@ function mdInline(s) {
   s = s.replace(/`([^`]+)`/g, (m, a) => `<code>${a}</code>`);
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   s = s.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>");
+  // images before links — ![alt](src) must not fall through to the link rule
+  s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img src="$2" alt="$1" loading="lazy" />');
   s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
   return s.split(SENT).join("*");
 }

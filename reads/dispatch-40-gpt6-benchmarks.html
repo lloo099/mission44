@@ -31,7 +31,7 @@
   <div class="kicker">NPU Frontier Dispatch 40 · 精读版 · 2026-09-07</div>
   <h1>GPT-6 Astra 基准全表：他到底有多强</h1>
   <p class="standfirst">把能找到的 GPT-6 Astra 基准数字全部收齐——厂商 30 余项、第三方 30 余项，逐项标注口径与 harness。问"有多强"得到的不是一个数，而是两个互相矛盾的总分：Epoch 的 ECI 给 169 分是 267 个模型的历史最高，Artificial Analysis 的智能指数给 61 分与自家前代持平。逐项拆开后答案是分域的，而最响亮的三个数字都有折扣。</p>
-  <div class="byline"><span>两路定向 agent 全量扫描</span><span>D39 的数据附卷</span><span>本站图 2 张</span><span><span class="chip c-vr">V 厂商</span> <span class="chip c-tp">BO 基准方 / 3P 第三方</span></span></div>
+  <div class="byline"><span>两路定向 agent 全量扫描</span><span>D39 的数据附卷</span><span>本站图 5 张</span><span><span class="chip c-vr">V 厂商</span> <span class="chip c-tp">BO 基准方 / 3P 第三方</span></span></div>
 </header>
 <nav class="toc"><ol>
   <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
@@ -204,15 +204,41 @@
 </div>
 <p class="delta"><span class="dl">本站判断</span>同一维度、同一周、两个相反方向——多半取决于 effort 档与是否命中缓存，但<b>没有任何一方披露测试配置</b>。本表最实用的一条是：<b>xhigh 到 max 多花 40% 成本换 0 分提升</b>，max 档只在需要极限能力的少数任务上值得。</p>
 
+<figure>
+  <img src="img/dispatch-40-gpt6-benchmarks/fig-5.svg" alt="单任务成本与 AA 智能指数的散点图，越靠左上越划算">
+  <figcaption><span class="fnum">图 2</span>成本-能力前沿（AA v4.2 指数运行实测，max 档）。<span class="chip c-inf">推断</span> 本站图，成本与指数均取自 AA 同一次运行。</figcaption>
+  <div class="readout"><h5>这张图怎么读</h5>
+    <p>四个点没有一个同时占据左上角：Astra 最便宜（约 1.67 美元）但分数最低（61），Fable 5.1 最强（65.7）但最贵（约 3.76 美元）。<strong>这就是选型取决于负载形状而非排名的原因</strong>——高频调用的 agent 场景与需要极限能力的少数任务，最优解不是同一个模型。</p>
+    <p>图外还有一条同源数据值得配合读：Astra 自身由 low 档到 max 档，成本从 0.46 涨到 1.67 美元（3.6 倍），而 <strong>xhigh 升到 max 多花约 40% 成本、指数零提升</strong>。也就是说这张图上 Astra 那个点如果退到 xhigh，会向左移而几乎不下降——<strong>effort 档位调度本身就是成本杠杆</strong>。</p>
+  </div>
+</figure>
+
 <h2 id="s8"><span class="hnum">08</span>分域结论</h2>
 <figure>
+  <img src="img/dispatch-40-gpt6-benchmarks/fig-4.svg" alt="GPT-6 Astra 相对 Claude Fable 5.1 的逐项差值:正值为 Astra 领先的发散柱状图">
+  <figcaption><span class="fnum">图 3</span>两者均有公开数字的九项对照，正值为 Astra 领先。<span class="chip c-inf">推断</span> 本站图，数据取自本文各节表格。</figcaption>
+  <div class="readout"><h5>这张图怎么读</h5>
+    <p>先看正负两侧的<strong>项目性质</strong>：正侧四个大幅领先项（Terminal-Bench-Science +12.0、BenchCAD +11.6、AutomationBench +10.0、FrontierMath T4 +9.8）全部是<strong>有明确完成判据</strong>的任务；负侧三项（AA 编码 agent 指数 −3.0、AA 智能指数 −4.7、HLE 带工具 −7.8）全部是<strong>综合或依赖模糊评判</strong>的口径。</p>
+    <p>中间两项 GPQA Diamond +2.3 与 Terminal-Bench 4.0 +1.9 值得单独看：它们是「领先但幅度不大」，而 Terminal-Bench 4.0 恰是 OpenAI 拿来做头条的项目之一。带 ✻ 的那一行两者 harness 不同（Astra 在 Codex、Fable 5.1 在 Claude Code），AA 自己声明差距的一部分属于脚手架——这一项不能当作模型差距读。</p>
+  </div>
+</figure>
+<figure>
   <img class="diagram" src="img/dispatch-40-gpt6-benchmarks/fig-2.svg" alt="真跃升、平局或落后、三个有折扣的数字，三组共同指向综合判断">
-  <figcaption><span class="fnum">图 2</span>三组归纳：真跃升（数学解谜、计算机使用、网络安全、长上下文自测）、平局或落后（编码、知识工作、HLE）、最响的三个数字都有折扣。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
+  <figcaption><span class="fnum">图 4</span>三组归纳：真跃升（数学解谜、计算机使用、网络安全、长上下文自测）、平局或落后（编码、知识工作、HLE）、最响的三个数字都有折扣。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>三个分组不是打分卡，而是按<strong>证据一致性</strong>划分的：上组是多来源、跨口径都成立的；中组是厂商自己的表里就落后的；下组是头条数字与受控口径差距最大的。三组汇于同一句判断。</p>
     <p>把三组连起来看有一条规律：<strong>Astra 的强项全部可程序化验证</strong>（形式化数学、谜题、GUI 点击、漏洞利用），<strong>弱项全部依赖模糊评判</strong>（44 个职业的知识工作、长文档理解、开放式写作）。这与 D36 的环境轴与 D38 的 RL 边界是同一条规律——能力增长集中在有验证器的域。</p>
   </div>
 </figure>
+<figure>
+  <img src="img/dispatch-40-gpt6-benchmarks/fig-3.svg" alt="头条数字与受控口径的差距:ARC-AGI-3、ExploitBench、FrontierMath Erdős 三组对照柱状图">
+  <figcaption><span class="fnum">图 5</span>最响的三个数字换测量方式后的结果。<span class="chip c-inf">推断</span> 本站图，Erdős 以 68 道开放问题为分母换算。</figcaption>
+  <div class="readout"><h5>这张图怎么读</h5>
+    <p>三行的<strong>缩水幅度不同，原因也不同</strong>：ARC-AGI-3 的 99.9 到 62.7 是<strong>脚手架差异</strong>（是否跨动作保留推理状态）；ExploitBench 的 100 到 39.0 是<strong>数据污染</strong>（换成发布后新出现的 CVE）；Erdős 的 5/68 到 2/68 是<strong>评测协议</strong>（固定预算与 Lean 可验证要求）。</p>
+    <p>要避免读成「都是虚的」：ExploitBench 的 39.0% 对照 GPT-5.6 Sol 在同一去污染口径下的 5.5%，仍是七倍提升。正确的结论是<strong>提升真实，但绝对水平远低于头条数字</strong>——而这三种缩水方式恰好对应 D30 记录的三类测量威胁。</p>
+  </div>
+</figure>
+
 <div class="note">
   <span class="ntitle">一句话回答</span>
   <p>GPT-6 Astra 在<strong>搜索与验证可以闭环的域</strong>上是真实且大幅的跃升；在<strong>开放式知识工作</strong>上不如 Claude Fable 5.1，且相对自家前代有可测量的回退；在<strong>编码</strong>上是平局，可见优势主要来自与模型同期发布的 Codex harness 与更低的单任务成本。</p>
