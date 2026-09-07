@@ -1,13 +1,13 @@
 {
-  "updated": "2026-09-01",
+  "updated": "2026-09-07",
   "items": [
     {
       "title": "GPT-6 Astra(Astra 以 GPT-6 之名发布;ARC-AGI-3 的 harness 分差 62.7 对 99.9)",
       "org": "OpenAI",
       "year": "2026-09",
       "category": "model-report",
-      "innovation": "2026-09-03 发布,即此前代号 Astra 的下一代旗舰(并非传闻的 GPT-5.7);105 万 token 上下文、12.8 万输出、low 至 max 推理档;定价约为前代 Sol 的 2.5 倍每 token(单任务成本约高 75%)",
-      "analysis": "Innovation:本次发布最具方法学意义的不是分数而是分差——ARC-AGI-3 上用 OpenAI 自家 provider adapter harness 得 99.9%,用标准中立 harness 仅 62.7%,差异来源是前者在动作之间保留推理状态。这是看板 D29/D30'harness 即分数'迄今最极端的公开样本:同一模型同一基准,harness 差异造成 37 个百分点。Performance:第三方 Artificial Analysis 智能指数 61(v4.1 口径),与前代 GPT-5.6 Sol 持平、低于 Claude Fable 5.1;媒体评论普遍指出'读小字'的必要性。对 RL-on-NPU 意义:provider harness 保留推理状态的做法,与 D29 记录的 dsh minimal 模式(复现 RL 训练分布)是同一问题的两种答案——评测口径必须随模型一起披露,否则跨模型比较无意义。",
+      "innovation": "2026-09-03 发布,即此前代号 Astra 的下一代旗舰(非传闻的 GPT-5.7)。官方披露:迄今最大的训练运行、首个在十万卡以上规模(Stargate 得州)预训练的模型、首个由前代模型大规模参与监督下一代训练的 OpenAI 模型;约 1.05M 上下文 / 128K 输出、知识截止 2026-04-30、low 至 max 五档推理;参数量与架构完全未披露",
+      "analysis": "Innovation:最具方法学意义的是 ARC-AGI-3 的 62.7%(标准 harness,每步丢弃上轮推理 token 并硬截断历史)对 99.9%(provider adapter,经 Responses API 保留不透明推理状态并做压缩式历史管理)——在适配器内关闭推理仍得 96.7%,说明做功的是记忆连续性而非思考预算;ARC Prize 因此拆榜,标准 harness 的 62.7% 本身已是纪录(Opus 5 为 30.2%、Sol 为 7.8%)。该争论 8 月已有先例:OpenAI 靠同两个设置把 Sol 由 7.8% 推到 38.3%,Chollet 裁定基准定制 harness 不可接受、通用 API 设置可接受但必须披露设置与成本。Performance:第三方 AA 智能指数 61(与 Sol 持平、低于 Fable 5.1 的 65.7),Terminal-Bench 4.0 57.7、Terminal-Bench-Science 64.6、FrontierMath T4 97.6、OSWorld 2.0 72.6 领先,而 HLE 带工具 57.2 与 GDPval-AA 相对 Sol 回退;token 效率是真实卖点——在 Codex 中约为 Sol(max)三分之一、Opus 5(xhigh)五分之一,单任务约 1.67 美元。安全:OpenAI 史上首个网络安全 Critical 分级(生物化学 High、AI 自改进低于 High),配 Daybreak 分层放行与 91.5% 越狱拒答;规模最大的前沿 RL 运行截至 09-07 仍在暂停。传闻但未证实:The Information 称采用循环深度架构,OpenAI 未确认;间接旁证是英国 AISI 测得不输出 CoT 的单次前向数学时间地平线 30.9 分钟对 Sol 的 3.6 分钟,且 OpenAI 自承 CoT 可监控性显著下降且原因无法完全解释。对 RL-on-NPU 意义:跨动作保留推理状态与训练侧 partial rollout、SAO compaction 是同一机制,昇腾 agent 基建应把优先级从更长上下文移到跨步状态的低成本保持与恢复。详见 Dispatch 39。",
       "url": "https://openai.com/index/gpt-6-astra/",
       "tags": [
         "GPT-6",
@@ -15,15 +15,15 @@
         "harness-as-score",
         "ARC-AGI"
       ],
-      "confidence": "self-reported"
+      "confidence": "secondary"
     },
     {
       "title": "Claude Fable 5.1(AA 指数登顶 65.7;长程任务大幅提升、短任务几乎持平)",
       "org": "Anthropic",
       "year": "2026-09",
       "category": "model-report",
-      "innovation": "2026-09-01 发布,与 Claude Mythos 5.1 同模型不同安全档;价格维持每百万 token 10/50 美元,缓存读取降价 75%;官方发布未报 SWE-bench,改以 agentic 基准领衔",
-      "analysis": "Innovation:能力提升的形状值得记录——Terminal-Bench-Science 0.1 由 Fable 5 的 24.7% 升至 52.6%(Opus 5 为 29.0%),Terminal-Bench 4.0 达 55.8%,而短任务提升有限:'长程多步工作大幅变好,已擅长的短任务只好一点'。这与 D34 记录的 GLM-5.3 后训练 scaling 形状一致——增量集中在长程 agent 任务。Performance:第三方 AA 智能指数 65.7 居首(v4.2 口径,高于 Opus 5 的 63.0);第三方 SWE-bench Pro 榜 81.2% 第一(厂商自己未报该项)。对 RL-on-NPU 意义:厂商主动放弃 SWE-bench 作为头条指标、改用 Terminal-Bench 系,印证 D30 关于 SWE-bench Verified 饱和与效度危机的判断;长程与短程能力的分离说明后训练环境的时长结构直接决定能力形状。",
+      "innovation": "2026-09-01 发布,与 Claude Mythos 5.1 权重相同、差别在叠加的分类器;1M 上下文 / 128K 输出与 Fable 5 相同;官方表述为低中档与前代持平或略好、高档大幅提升;价格维持 10/50 美元每百万 token,缓存读由 1.00 降至 0.25(降 75%);首批对文本与文件输出加不可关闭水印的 Claude 模型,并引入 thinking block binding 反蒸馏机制",
+      "analysis": "Innovation:能力形状比水平更值得记录——提升集中在长程(Terminal-Bench-Science 0.1 由 24.7 升至 52.6、AutomationBench 由 17.1 升至 31.4、Terminal-Bench 4.0 由 42.0 升至 55.8),短任务侧 GDPval-AA v2 仅由 1723 升至 1853 Elo、OSWorld 由 75.4 到 77.9、FrontierMath T4 基本持平;AA 测得五个 effort 档指数由 58 升到 66 而输出 token 由 1310 万升到 1.437 亿(11 倍),增益集中在高 effort 是该形状的机制解释。反蒸馏的代价:thinking block binding(思考块签名绑定完整对话前缀,重写历史即报错;2026-08-31 后新建账号强制)导致 ARC Prize 未能完成 ARC-AGI-3 评测——其 API 调用被判定为逆向工程尝试,这是抗蒸馏与独立评测的首次正面冲突。Performance:第三方 AA 指数 65.7 居首、Vals 指数 67.87 居首、ARC-AGI-2 90.0%(每题 3.12 美元,平均成本较前代降 32%);但单任务成本约 3.76 美元高于 Fable 5 的 3.14(输出 token 1.7 倍),若无缓存降价约为 5.16。官方未公布 SWE-bench Verified,系统卡中 SWE-bench Pro 81.2% 仅微弱领先——流传的 95.0/80.0 实为 Fable 5 数字。安全:首次给 GA 模型贴 CB-1、整体对齐风险由 very low 升至 low;系统卡自述约一半 computer-use RL 环境存在可利用的 reward hack 面(部分奖励猜测凭证且发生泛化,已下线待修),是 D36 环境可 hack 性论断的第一方确认。对 RL-on-NPU 意义:长程与短程增益分离说明后训练环境的时长结构直接决定能力形状;缓存经济学(读价降 75%)是 agent 长前缀场景的主要成本杠杆。详见 Dispatch 39。",
       "url": "https://www.anthropic.com/news/claude-fable-5-1",
       "tags": [
         "Claude",

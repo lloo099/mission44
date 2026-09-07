@@ -3,6 +3,21 @@
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
     {
+      "id": "dispatch-39-gpt6-fable51",
+      "title": "Dispatch 39 · GPT-6 Astra 与 Claude Fable 5.1:系统战争与测量危机",
+      "subtitle": "双模型深度调研(两路定向 agent):两个旗舰 48 小时内发布,但最醒目的数字都不是模型属性。①Astra 的 ARC-AGI-3 有 62.7%(标准 harness,每步丢弃上轮推理 token)与 99.9%(provider adapter,保留不透明推理状态+压缩历史)两个官方数字,适配器内关闭推理仍得 96.7%——做功的是记忆连续性而非思考预算;②Fable 5.1 的 ARC-AGI-3 根本没跑完,ARC Prize 的调用被反蒸馏防护(thinking block binding)判为逆向工程——抗蒸馏与独立评测首次冲突;③横向对比本身 harness 混淆(Codex 67 对 Claude Code 70,AA 自承部分属脚手架);④AA v4.2 把留出集权重由 20% 提到 40%、新增私有 AA-Briefcase,GLM-5.3 由 60 降至 49 的降幅可分解为过拟合与难度两部分;⑤能力分工与成本相反:Fable 5.1 赢 AA 指数(65.7 对 61)、HLE 带工具、编码 agent 指数,Astra 赢 Terminal-Bench 4.0/Science、FrontierMath、网络安全,单任务成本 1.67 对 3.76 美元。安全侧:Astra 首个 Critical 网络安全分级(最大 RL 运行仍暂停)、Fable 5.1 首个 GA 级 CB-1,Anthropic 自曝约一半 computer-use RL 环境有 reward hack 面。",
+      "date": "2026-09-07",
+      "tags": [
+        "GPT-6",
+        "Claude-Fable-5.1",
+        "harness-as-score",
+        "evaluation",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-39-gpt6-fable51.md",
+      "read": "reads/dispatch-39-gpt6-fable51.html"
+    },
+    {
       "id": "dispatch-38-distillation-vs-rl",
       "title": "Dispatch 38 · 蒸馏能否取代 RL:分工重组、不可替代的四个维度与真实分界",
       "subtitle": "专题调研(两路定向调研):先切分三种蒸馏(离线 SFT 蒸馏/在线策略蒸馏 OPD/自蒸馏)与三种 RL(RLVR/RLHF/DPO)。结论:①蒸馏已取代两种 RL——旗舰最终整合阶段的混合 RL(DeepSeek-V4 以 10+ 专家教师全词表反向 KL OPD 完全替代 V3.2 混合 RL;K3 MOPD 合并 9 个 RL 专家;GLM-5 跨阶段蒸馏收尾)与小模型上的 RL(Qwen3 小模型只蒸馏、GPU 时约 1/10;R1-Distill-32B 优于直接 RL);②未取代作为能力来源的 RL,2026 无反例(所有前沿管线专家阶段均为 RL;GLM-5.3 同基座全靠后训练;R1-Zero 纯 RL 涌现);③RL 不可替代四维度:无教师前沿、可验证超人域、长程 agent(DeepSWE 纯 RL 优于蒸馏 SFT 且 SFT 后 RL 100 步停滞)、保持可塑性;④同一枚硬币:RL 少遗忘的机制(隐式 KL 最小、5-30% 参数)即其边界受限的机制,蒸馏扩边界当且仅当引入新知识;⑤真实分界=是否拥有环境与验证器——蒸馏攻击争议的经济本质。附前沿配方表与对 RL-on-NPU 的四点含义(OPD kernel、小模型转蒸馏、环境即资产、训推一致延伸)。",

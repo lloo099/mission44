@@ -13,6 +13,7 @@ flowchart LR
         N36["D36 · 前沿方向机制深挖"]
         N37["D37 · RSI 与持续学习"]
         N38["D38 · 蒸馏能否取代 RL"]
+        N39["D39 · GPT-6 与 Fable 5.1"]
     end
     subgraph MODEL ["模型与架构"]
         N01["D01 · Seed 与开源 1M 浪潮"]
@@ -88,3 +89,5 @@ flowchart LR
     N30 -. "评估器工程的最强证据" .-> N37
     N37 -. "权重回路的 RL 与蒸馏之争" .-> N38
     N24 -. "MOPD 合并 RL 专家" .-> N38
+    N30 -. "harness 分差的公开上限" .-> N39
+    N38 -. "反蒸馏的评测代价" .-> N39

@@ -54,15 +54,15 @@
       "confidence": "self-reported"
     },
     {
-      "title": "ARC-AGI-3 的 harness 分差:同模型 62.7% 对 99.9%",
+      "title": "ARC-AGI-3 的 harness 分差:62.7% 对 99.9%,以及被反蒸馏挡住的第三方评测",
       "org": "ARC Prize / OpenAI",
       "year": "2026-09",
       "category": "benchmark",
       "track": "industry",
-      "innovation": "GPT-6 Astra 在 ARC-AGI-3 上用 OpenAI 自家 provider adapter harness 得 99.9%、用标准中立 harness 得 62.7%;差异来源是前者在动作之间保留推理状态,后者不保留",
-      "summary": "媒体报道称该结果同时推动了对 AGI 时间表的重估与对'读小字'的提醒;ARC Prize 将官方成绩与 provider harness 成绩分开呈现。",
-      "analysis": "Innovation:这是'harness 即分数'(D29/D30)迄今最极端的公开样本——同一模型、同一基准、37 个百分点的差距,全部来自 harness 是否保留跨动作的推理状态。此前看板记录的跨 harness 分差为 9.5 至 36 分(D29),本例达到该区间上沿并首次由基准方与厂商同时公开两个数字。判断:它把'评测口径必须随分数一起披露'从方法学建议变成了硬性要求;也说明 agent 能力评测中'状态保持'是与模型能力同等重要的自变量。对 RL-on-NPU 意义:与 D34 SAO compaction、D29 dsh 日志投影同属'状态如何跨步保持'的问题域——训练侧的 partial rollout 与评测侧的 provider harness 是同一机制在两端的体现。",
-      "url": "https://the-decoder.com/benchmarks-disagree-on-gpt-6-astra-but-its-human-beating-efficiency-on-arc-agi-3-pulls-chollets-agi-forecast-forward/",
+      "innovation": "同一模型(GPT-6 Astra)在 ARC-AGI-3 上的两个官方数字:标准 harness 每动作一次全新请求、丢弃上轮推理 token、硬截断历史,得 62.7%(max 档,约 2.6 万美元);provider adapter 经 Responses API 以 previous_response_id 保留不透明推理状态并做压缩式历史管理,得 99.9%(high 档,约 1.9 万美元)。在适配器内关闭推理仍得 96.7%——做功的是记忆连续性而非思考预算",
+      "summary": "ARC Prize 拆榜处理:标准 harness 作同口径排名(62.7% 本身即纪录,是 Opus 5 的 2 倍、Sol 的 8 倍),适配器结果单列并附 harness 与成本。先例是 8 月 OpenAI 用同两个设置把 Sol 由 7.8% 推到 38.3%,Chollet 当时裁定基准定制 harness 不可接受、通用 API 设置可接受但须披露设置与成本。截至 09-07 无任何非 OpenAI 模型有可比的适配器成绩;Claude Fable 5.1 的 ARC-AGI-3 未能完成——ARC Prize 的 API 调用被 Anthropic 的反蒸馏防护判定为逆向工程尝试。",
+      "analysis": "Innovation:这是 harness 即分数(D29/D30)迄今最极端且机制最清楚的公开样本,适配器代码开源于 arcprize/arc-agi-3-benchmarking,可复现。两点延伸:其一,跨动作状态保持与训练侧的 partial rollout(K3 可恢复 microVM)、上下文侧的 SAO compaction(D34)是同一机制,评测与训练在此处合流;其二,反蒸馏与独立评测在技术上是同一件事的两面——两者都需要密集探测模型输出结构,Fable 5.1 的 block binding 因此挡住了 ARC Prize,这是评测生态的分水岭事件。数字仍在漂移:OpenAI 禁令期草稿 98.6%、上线文 99.99%、ARC Prize 记 99.9%、Chollet 推文称标准 harness 为 66%(与公布的 62.7% 不符,未有人调和)。对 RL-on-NPU 意义:昇腾 agent 基建的优先级应从更长上下文移到跨步状态的低成本保持与恢复。详见 Dispatch 39。",
+      "url": "https://arcprize.org/blog/astra",
       "tags": [
         "harness-as-score",
         "ARC-AGI",
