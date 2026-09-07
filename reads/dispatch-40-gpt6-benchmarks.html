@@ -31,20 +31,21 @@
   <div class="kicker">NPU Frontier Dispatch 40 · 精读版 · 2026-09-07</div>
   <h1>GPT-6 Astra 基准全表：他到底有多强</h1>
   <p class="standfirst">把能找到的 GPT-6 Astra 基准数字全部收齐——厂商 30 余项、第三方 30 余项，逐项标注口径与 harness。问"有多强"得到的不是一个数，而是两个互相矛盾的总分：Epoch 的 ECI 给 169 分是 267 个模型的历史最高，Artificial Analysis 的智能指数给 61 分与自家前代持平。逐项拆开后答案是分域的，而最响亮的三个数字都有折扣。</p>
-  <div class="byline"><span>两路定向 agent 全量扫描</span><span>D39 的数据附卷</span><span>本站图 5 张</span><span><span class="chip c-vr">V 厂商</span> <span class="chip c-tp">BO 基准方 / 3P 第三方</span></span></div>
+  <div class="byline"><span>两路定向 agent 全量扫描</span><span>D39 的数据附卷</span><span>本站图 9 张 · 19 个模型</span><span><span class="chip c-vr">V 厂商</span> <span class="chip c-tp">BO 基准方 / 3P 第三方</span></span></div>
 </header>
 <nav class="toc"><ol>
   <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
   <li><a href="#s1"><span class="tnum">01</span>两个总分与它们的矛盾</a></li>
-  <li><a href="#s2"><span class="tnum">02</span>数学与推理</a></li>
-  <li><a href="#s3"><span class="tnum">03</span>编码</a></li>
-  <li><a href="#s4"><span class="tnum">04</span>Agent 与计算机使用</a></li>
-  <li><a href="#s5"><span class="tnum">05</span>长上下文与知识</a></li>
-  <li><a href="#s6"><span class="tnum">06</span>安全与网络</a></li>
-  <li><a href="#s7"><span class="tnum">07</span>成本与速度</a></li>
-  <li><a href="#s8"><span class="tnum">08</span>分域结论</a></li>
-  <li><a href="#s9"><span class="tnum">09</span>未公布与未覆盖</a></li>
-  <li><a href="#s10"><span class="tnum">10</span>对看板的含义</a></li>
+  <li><a href="#s1b"><span class="tnum">02</span>全阵容横向对比</a></li>
+  <li><a href="#s2"><span class="tnum">03</span>数学与推理</a></li>
+  <li><a href="#s3"><span class="tnum">04</span>编码</a></li>
+  <li><a href="#s4"><span class="tnum">05</span>Agent 与计算机使用</a></li>
+  <li><a href="#s5"><span class="tnum">06</span>长上下文与知识</a></li>
+  <li><a href="#s6"><span class="tnum">07</span>安全与网络</a></li>
+  <li><a href="#s7"><span class="tnum">08</span>成本与速度</a></li>
+  <li><a href="#s8"><span class="tnum">09</span>分域结论</a></li>
+  <li><a href="#s9"><span class="tnum">10</span>未公布与未覆盖</a></li>
+  <li><a href="#s10"><span class="tnum">11</span>对看板的含义</a></li>
 </ol></nav>
 
 <main>
@@ -77,7 +78,74 @@
   </div>
 </figure>
 
-<h2 id="s2"><span class="hnum">02</span>数学与推理：真跃升，三处折扣</h2>
+<h2 id="s1b"><span class="hnum">02</span>全阵容横向对比：GPT-6 在整个前沿里的位置</h2>
+<p class="lede">单看一个模型的数字无法回答「有多强」。下面把 2026 年 9 月在场的 19 个模型（闭源 9、开放权重 10）放进同一张图。<strong>空白与数字同样重要</strong>——某个模型在某项上没有公开成绩，本身就是信息。</p>
+<figure>
+  <img src="img/dispatch-40-gpt6-benchmarks/fig-6.svg" alt="全阵容 Artificial Analysis 智能指数排名，15 个模型，闭源与开放权重分色">
+  <figcaption><span class="fnum">图 2</span>综合指数的全阵容排名（v4.1 口径，覆盖最全的一版）。<span class="chip c-inf">推断</span> 本站图，数据为第三方 AA 口径。</figcaption>
+  <div class="readout"><h5>这张图怎么读</h5>
+    <p>GPT-6 Astra 的 61 分与自家前代 GPT-5.6 Sol、Grok 4.6、Muse Spark 1.3 <strong>四者同分</strong>，落后 Claude Fable 5.1 五分。橙色的开放权重头部（Kimi K3 59.7、GLM-5.3 59.5）已经插进闭源中位区，而闭源的 Gemini 3.8 Flash 反而低于两者——<strong>开闭源的界线在这张图上已经不是一条横线</strong>。</p>
+    <p>标度警告：AA 目前有两套并行流通的分数。v4.1（本图）与 v4.2（09-04 换版，私有留出集权重由 20% 升至 40%、移除已饱和的 GPQA Diamond）相差 8 到 11 分——v4.2 下 Fable 5.1 记 57、Astra 55、Opus 5 54、Sol 51、K3 50。<strong>排序基本一致，绝对值不可跨版本比较</strong>。</p>
+  </div>
+</figure>
+<figure>
+  <img src="img/dispatch-40-gpt6-benchmarks/fig-7.svg" alt="全阵容 GPQA Diamond 排名，16 个模型">
+  <figcaption><span class="fnum">图 3</span>覆盖最广的单项基准（16 个模型）。<span class="chip c-inf">推断</span> 本站图，多为厂商自报。</figcaption>
+  <div class="readout"><h5>这张图怎么读</h5>
+    <p>Astra 的 96.0 确实第一，但真正值得看的是第四名：<strong>开放权重的 Kimi K3 以 93.5 高于 Claude Opus 5（93.4）与 Fable 5.1（92.6）</strong>，GLM-5.3 与 Qwen3.8 系也都在 91 以上。</p>
+    <p>这一项上开闭源差距已不足 5 分——这正是 AA v4.2 把它作为饱和项移除的原因。<strong>一个基准饱和的信号，就是排名开始由测量噪声而非能力决定</strong>。Muse Spark 1.3 的 89.5 来自 52/270 子样本聚合，小样本不可与全量口径并列。</p>
+  </div>
+</figure>
+<figure>
+  <img src="img/dispatch-40-gpt6-benchmarks/fig-8.svg" alt="全阵容 SWE-bench Pro 排名，14 个模型，GPT-6 Astra 缺席">
+  <figcaption><span class="fnum">图 4</span>SWE-bench Pro 的 14 个模型，<strong>GPT-6 Astra 不在其中</strong>。<span class="chip c-inf">推断</span> 本站图。</figcaption>
+  <div class="readout"><h5>这张图怎么读</h5>
+    <p>OpenAI 未公布本项任何数字，改用 DeepSWE v1.1 替代——<strong>这使跨厂商编码对比无法进行</strong>。榜上 Claude 三款占据前三（79 到 81 分），开放权重头部为 Kimi K3 68.5 与 Qwen3.8-Max 67.7。</p>
+    <p>口径警告必须一起读：Claude 系的 79 到 81 分在厂商脚手架下所得，而 Scale 的标准化 harness 把前沿模型压到约 59 分。<strong>这两个数不是同一次测量</strong>，把 81.2 和 59.1 放在一起排名是错的。</p>
+  </div>
+</figure>
+<figure>
+  <img src="img/dispatch-40-gpt6-benchmarks/fig-9.svg" alt="全阵容每任务成本与智能指数散点图，成本前沿与能力前沿由不同厂商把持">
+  <figcaption><span class="fnum">图 5</span>成本与能力的全阵容视图。<span class="chip c-inf">推断</span> 本站图，成本与指数均取自 AA。</figcaption>
+  <div class="readout"><h5>这张图怎么读</h5>
+    <p><strong>两条前沿由不同厂商把持</strong>：能力前沿是 Claude Fable 5.1（66 分 / 3.69 美元），成本前沿是 GLM-5.3-Flash（57 分 / <strong>0.09 美元</strong>，约为前者的四十分之一）。Astra 位于中间偏右——比 GPT-5.6 Sol 贵 76% 而分数相同。</p>
+    <p>对以成本与自主可控为核心诉求的部署方，这张图比任何排名都更有用：<strong>9 分的指数差换四十倍的成本差</strong>，取舍点取决于任务价值密度，而不是谁排第一。图中缺席的 Opus 5、Fable 5 与全部 DeepSeek/Qwen/MiniMax 是因为没有 AA 单任务成本数字。</p>
+  </div>
+</figure>
+<h3>全阵容速览</h3>
+<div class="tbl"><table>
+<thead><tr><th style="width:150px">模型</th><th>AA v4.2</th><th>AA v4.1</th><th>TB 2.1</th><th>SWE-bench Pro</th><th>GPQA-D</th><th>价格 入/出</th></tr></thead>
+<tbody>
+<tr><td><strong>GPT-6 Astra</strong></td><td><strong>55</strong></td><td><strong>61</strong></td><td>—</td><td><strong>—</strong>（未公布）</td><td><strong>96.0</strong></td><td>10 / 50</td></tr>
+<tr><td>GPT-5.6 Sol</td><td>51</td><td>61</td><td>89.5</td><td>64.6</td><td>94.1</td><td>4 / 20</td></tr>
+<tr><td>Claude Fable 5.1</td><td><strong>57</strong></td><td><strong>66</strong></td><td>—</td><td><strong>81.2</strong> [厂商脚手架]</td><td>92.6</td><td>10 / 50</td></tr>
+<tr><td>Claude Opus 5</td><td>54</td><td>63</td><td>89.1</td><td>79.2 [厂商脚手架]</td><td>93.4</td><td>5 / 25</td></tr>
+<tr><td>Claude Fable 5</td><td>53</td><td>62</td><td>—</td><td>80.0 [厂商脚手架]</td><td>—</td><td>—</td></tr>
+<tr><td>Gemini 3.8 Flash</td><td>上半区</td><td>59</td><td>89.4 [厂商 90.8]</td><td>—</td><td>94.4</td><td>0.75 / 3.75</td></tr>
+<tr><td>Gemini 3.7 Flash</td><td>—</td><td>—</td><td>85.8 [第三方 81.6]</td><td>—</td><td>—</td><td>0.75 / 3.75</td></tr>
+<tr><td>Grok 4.6</td><td>51</td><td>61</td><td>88.4</td><td>64.7（4.5 版）</td><td>87.5</td><td>2 / 6</td></tr>
+<tr><td>Muse Spark 1.3</td><td>53</td><td>61</td><td>88.8</td><td>61.5</td><td>89.5 [小样本]</td><td>1.25 / 4.25</td></tr>
+<tr><td>Kimi K3</td><td>50</td><td>59.7</td><td>88.3 [Kimi Code]</td><td>68.5</td><td><strong>93.5</strong></td><td>3 / 15</td></tr>
+<tr><td>GLM-5.3</td><td>上半区</td><td>59.5</td><td>88.2</td><td>62.1（5.2 版）</td><td>91.7</td><td>1.40 / 4.40</td></tr>
+<tr><td>GLM-5.3-Flash</td><td>—</td><td>57</td><td>84.3</td><td>—</td><td>91.2</td><td><strong>0.15 / 0.25</strong></td></tr>
+<tr><td>DeepSeek V4-Pro</td><td>—</td><td>42 [另源 44]</td><td>87.9</td><td>55.4</td><td>90.1</td><td>0.435 / 0.87</td></tr>
+<tr><td>DeepSeek V4-Flash</td><td>—</td><td>50</td><td>—</td><td>—</td><td>88.1</td><td>0.14 / 0.28</td></tr>
+<tr><td>Qwen3.8-Max</td><td>—</td><td>—</td><td>86.6</td><td>67.7</td><td>92.6</td><td>2 / 6</td></tr>
+<tr><td>Qwen3.8-Flash-Next</td><td>—</td><td>—</td><td>—</td><td>62.5</td><td>91.7</td><td>0.16 / 0.47</td></tr>
+<tr><td>MiniMax M3</td><td>—</td><td>44</td><td>66.0</td><td>59.0</td><td>—</td><td>0.30 / 1.20</td></tr>
+<tr><td>Muse Glimmer</td><td>—</td><td>—</td><td>51.7</td><td>51.2</td><td>83.5</td><td>免费 Apache 2.0</td></tr>
+<tr><td>Step 3.7 Flash</td><td>—</td><td>43</td><td>59.5</td><td>56.3</td><td>80.9</td><td>0.20 / 1.15</td></tr>
+</tbody>
+<caption>空白表示未查到任何公开数字；方括号为可比性警告。TB 2.1 = Terminal-Bench 2.1，是 AA v4.2 实际采用的版本；Astra 与 Fable 5.1 只报 Terminal-Bench 4.0，与 2.1 不可比。</caption>
+</table></div>
+<div class="note">
+  <span class="ntitle">三条最容易被忽略的事</span>
+  <p><strong>一、两套 AA 标度同时在流通。</strong>引用 59 到 66 区间的是 v4.1，50 到 57 区间的是 v4.2；GPQA Diamond 在前者里面、在后者被移除。混用两者是当前二级报道最常见的错误。</p>
+  <p><strong>二、harness 是单一最大的方差来源。</strong>Astra 的 ARC-AGI-3 在两套 harness 间是 99.9% 对 62.7%；Moonshot 的 K3 编码表混用四种 harness、摆幅 10 到 26 分；Claude 系的 SWE-bench Pro 与 Scale 标准化口径不是同一次测量。跨模型比较前必须先对齐 harness。</p>
+  <p><strong>三、能力前沿与成本前沿由不同厂商把持。</strong>v4.2 下 Kimi K3 的 50 对 Fable 5.1 的 57；而 GLM-5.3-Flash 的 0.09 美元每任务约为 Fable 5.1 的四十分之一。对以成本与自主可控为核心诉求的部署方，这比排名本身更有意义。</p>
+</div>
+
+<h2 id="s2"><span class="hnum">03</span>数学与推理：真跃升，三处折扣</h2>
 <div class="tbl"><table>
 <thead><tr><th style="width:200px">基准</th><th style="width:120px">Astra</th><th>对照</th><th style="width:80px">口径</th></tr></thead>
 <tbody>
@@ -103,7 +171,7 @@
 </div>
 <p class="delta"><span class="dl">本站判断</span>数学与解谜的跃升是<b>真实的</b>——ARC-AGI-2 的 95.0% 与 Epoch 谜题的 84.0%（对 Opus 5 的 59.0%）都在中立口径下取得。但三个最响的说法都需要折扣，且 HLE 带工具是它唯一明显落后 Fable 5.1 的学术项。</p>
 
-<h2 id="s3"><span class="hnum">03</span>编码：平局甚至落后，而且换了尺子</h2>
+<h2 id="s3"><span class="hnum">04</span>编码：平局甚至落后，而且换了尺子</h2>
 <div class="tbl"><table>
 <thead><tr><th style="width:200px">基准</th><th style="width:110px">Astra</th><th>对照</th><th style="width:80px">口径</th></tr></thead>
 <tbody>
@@ -126,7 +194,7 @@
 </div>
 <p class="delta"><span class="dl">本站判断</span>编码是这次发布<b>最被高估的一栏</b>。可见优势主要来自与模型同期发布的 Codex harness 与更低的单任务成本，而非模型本身——Cognition 的测量说得最清楚：<b>与 Fable 5 相差 0.4 分以内，但便宜 64%</b>。</p>
 
-<h2 id="s4"><span class="hnum">04</span>Agent 与计算机使用：真领先，但工具使用只排第五</h2>
+<h2 id="s4"><span class="hnum">05</span>Agent 与计算机使用：真领先，但工具使用只排第五</h2>
 <div class="tbl"><table>
 <thead><tr><th style="width:210px">基准</th><th style="width:120px">Astra</th><th>对照</th><th style="width:70px">口径</th></tr></thead>
 <tbody>
@@ -146,7 +214,7 @@
 </table></div>
 <p class="delta"><span class="dl">本站判断</span>计算机使用是<b>真领先</b>——ScreenSpot-Pro 与 OSWorld 的耗时优势都很扎实。但"agent 能力"整体并不领先：BenchLM 分项排第 5，AA 的三项真实工作流评测中两项回退。<b>差别在于任务是否有明确完成判据</b>：点击定位有，44 个职业的开放工作没有。</p>
 
-<h2 id="s5"><span class="hnum">05</span>长上下文与知识</h2>
+<h2 id="s5"><span class="hnum">06</span>长上下文与知识</h2>
 <div class="tbl"><table>
 <thead><tr><th style="width:110px">类别</th><th style="width:200px">基准</th><th style="width:130px">Astra</th><th>对照</th><th style="width:70px">口径</th></tr></thead>
 <tbody>
@@ -162,7 +230,7 @@
 </table></div>
 <p class="delta"><span class="dl">本站判断</span><b>长上下文的独立验证是空白</b>——1M 窗口与 MRCR 96.3% 全部是 OpenAI 自测，无第三方 needle 或衰减复现；而唯一的第三方长文档项（AA-LCR）是回退的。知识广度上 AA-Omniscience 44 分是全模型最高，这一项含金量高，因为它是私有集。</p>
 
-<h2 id="s6"><span class="hnum">06</span>安全与网络：最强的一栏，也有最大的折扣</h2>
+<h2 id="s6"><span class="hnum">07</span>安全与网络：最强的一栏，也有最大的折扣</h2>
 <div class="tbl"><table>
 <thead><tr><th style="width:230px">评测</th><th style="width:150px">Astra</th><th>对照</th><th style="width:70px">口径</th></tr></thead>
 <tbody>
@@ -182,7 +250,7 @@
 </table></div>
 <p class="delta"><span class="dl">本站判断</span><b>ExploitBench 的 100% 与去污染重测的 39.0% 并列，是本篇最有教育意义的一组数字</b>：同一能力，在可能被训练数据覆盖的题目上满分，在发布后新出现的 CVE 上只有 39%——但对照 Sol 的 5.5% 仍是七倍。真实结论是「提升巨大且真实，但绝对水平远低于头条数字」。Irregular 的独立测试同向：精英难度 <b>0%</b>。<b>去污染重测应当成为惯例</b>。</p>
 
-<h2 id="s7"><span class="hnum">07</span>成本与速度：分歧最大的一栏</h2>
+<h2 id="s7"><span class="hnum">08</span>成本与速度：分歧最大的一栏</h2>
 <div class="tbl"><table>
 <thead><tr><th style="width:230px">指标</th><th>数值</th><th style="width:70px">口径</th></tr></thead>
 <tbody>
@@ -206,17 +274,17 @@
 
 <figure>
   <img src="img/dispatch-40-gpt6-benchmarks/fig-5.svg" alt="单任务成本与 AA 智能指数的散点图，越靠左上越划算">
-  <figcaption><span class="fnum">图 2</span>成本-能力前沿（AA v4.2 指数运行实测，max 档）。<span class="chip c-inf">推断</span> 本站图，成本与指数均取自 AA 同一次运行。</figcaption>
+  <figcaption><span class="fnum">图 6</span>成本-能力前沿（AA v4.2 指数运行实测，max 档）。<span class="chip c-inf">推断</span> 本站图，成本与指数均取自 AA 同一次运行。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>四个点没有一个同时占据左上角：Astra 最便宜（约 1.67 美元）但分数最低（61），Fable 5.1 最强（65.7）但最贵（约 3.76 美元）。<strong>这就是选型取决于负载形状而非排名的原因</strong>——高频调用的 agent 场景与需要极限能力的少数任务，最优解不是同一个模型。</p>
     <p>图外还有一条同源数据值得配合读：Astra 自身由 low 档到 max 档，成本从 0.46 涨到 1.67 美元（3.6 倍），而 <strong>xhigh 升到 max 多花约 40% 成本、指数零提升</strong>。也就是说这张图上 Astra 那个点如果退到 xhigh，会向左移而几乎不下降——<strong>effort 档位调度本身就是成本杠杆</strong>。</p>
   </div>
 </figure>
 
-<h2 id="s8"><span class="hnum">08</span>分域结论</h2>
+<h2 id="s8"><span class="hnum">09</span>分域结论</h2>
 <figure>
   <img src="img/dispatch-40-gpt6-benchmarks/fig-4.svg" alt="GPT-6 Astra 相对 Claude Fable 5.1 的逐项差值:正值为 Astra 领先的发散柱状图">
-  <figcaption><span class="fnum">图 3</span>两者均有公开数字的九项对照，正值为 Astra 领先。<span class="chip c-inf">推断</span> 本站图，数据取自本文各节表格。</figcaption>
+  <figcaption><span class="fnum">图 7</span>两者均有公开数字的九项对照，正值为 Astra 领先。<span class="chip c-inf">推断</span> 本站图，数据取自本文各节表格。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>先看正负两侧的<strong>项目性质</strong>：正侧四个大幅领先项（Terminal-Bench-Science +12.0、BenchCAD +11.6、AutomationBench +10.0、FrontierMath T4 +9.8）全部是<strong>有明确完成判据</strong>的任务；负侧三项（AA 编码 agent 指数 −3.0、AA 智能指数 −4.7、HLE 带工具 −7.8）全部是<strong>综合或依赖模糊评判</strong>的口径。</p>
     <p>中间两项 GPQA Diamond +2.3 与 Terminal-Bench 4.0 +1.9 值得单独看：它们是「领先但幅度不大」，而 Terminal-Bench 4.0 恰是 OpenAI 拿来做头条的项目之一。带 ✻ 的那一行两者 harness 不同（Astra 在 Codex、Fable 5.1 在 Claude Code），AA 自己声明差距的一部分属于脚手架——这一项不能当作模型差距读。</p>
@@ -224,7 +292,7 @@
 </figure>
 <figure>
   <img class="diagram" src="img/dispatch-40-gpt6-benchmarks/fig-2.svg" alt="真跃升、平局或落后、三个有折扣的数字，三组共同指向综合判断">
-  <figcaption><span class="fnum">图 4</span>三组归纳：真跃升（数学解谜、计算机使用、网络安全、长上下文自测）、平局或落后（编码、知识工作、HLE）、最响的三个数字都有折扣。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
+  <figcaption><span class="fnum">图 8</span>三组归纳：真跃升（数学解谜、计算机使用、网络安全、长上下文自测）、平局或落后（编码、知识工作、HLE）、最响的三个数字都有折扣。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>三个分组不是打分卡，而是按<strong>证据一致性</strong>划分的：上组是多来源、跨口径都成立的；中组是厂商自己的表里就落后的；下组是头条数字与受控口径差距最大的。三组汇于同一句判断。</p>
     <p>把三组连起来看有一条规律：<strong>Astra 的强项全部可程序化验证</strong>（形式化数学、谜题、GUI 点击、漏洞利用），<strong>弱项全部依赖模糊评判</strong>（44 个职业的知识工作、长文档理解、开放式写作）。这与 D36 的环境轴与 D38 的 RL 边界是同一条规律——能力增长集中在有验证器的域。</p>
@@ -232,7 +300,7 @@
 </figure>
 <figure>
   <img src="img/dispatch-40-gpt6-benchmarks/fig-3.svg" alt="头条数字与受控口径的差距:ARC-AGI-3、ExploitBench、FrontierMath Erdős 三组对照柱状图">
-  <figcaption><span class="fnum">图 5</span>最响的三个数字换测量方式后的结果。<span class="chip c-inf">推断</span> 本站图，Erdős 以 68 道开放问题为分母换算。</figcaption>
+  <figcaption><span class="fnum">图 9</span>最响的三个数字换测量方式后的结果。<span class="chip c-inf">推断</span> 本站图，Erdős 以 68 道开放问题为分母换算。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>三行的<strong>缩水幅度不同，原因也不同</strong>：ARC-AGI-3 的 99.9 到 62.7 是<strong>脚手架差异</strong>（是否跨动作保留推理状态）；ExploitBench 的 100 到 39.0 是<strong>数据污染</strong>（换成发布后新出现的 CVE）；Erdős 的 5/68 到 2/68 是<strong>评测协议</strong>（固定预算与 Lean 可验证要求）。</p>
     <p>要避免读成「都是虚的」：ExploitBench 的 39.0% 对照 GPT-5.6 Sol 在同一去污染口径下的 5.5%，仍是七倍提升。正确的结论是<strong>提升真实，但绝对水平远低于头条数字</strong>——而这三种缩水方式恰好对应 D30 记录的三类测量威胁。</p>
@@ -250,7 +318,7 @@
   <p><strong>三、能力提升与可观测性下降同时发生。</strong>CoT 自控率由 16.1% 升至 60.9%；系统卡自承若模型自行隐蔽 sandbagging「很可能无法可靠察觉」，有报道称 sandbagging 检测在 89% 以上的测试中未能识别规避。</p>
 </div>
 
-<h2 id="s9"><span class="hnum">09</span>未公布与未覆盖</h2>
+<h2 id="s9"><span class="hnum">10</span>未公布与未覆盖</h2>
 <div class="vs">
   <div class="base"><h5>OpenAI 未公布的知名基准</h5>
   <p><strong>数学</strong>：AIME 2025/2026、HMMT、IMO 系、MathArena、FrontierMath Tier 1-3 与研究层、HLE 无工具。</p>
@@ -268,7 +336,7 @@
   <p>⑧ 企业 A/B 只有 Box 一家（样本量 1，且是早期预览伙伴）。</p></div>
 </div>
 
-<h2 id="s10"><span class="hnum">10</span>对看板的含义</h2>
+<h2 id="s10"><span class="hnum">11</span>对看板的含义</h2>
 <ol class="rank">
   <li><h4>本篇本身就是 D30 的教材</h4><p>同一个模型，覆盖 50+ 基准的聚合器说历史最高、覆盖 10 项但含 40% 私有集的聚合器说原地踏步。<strong>结论取决于测什么、用什么 harness、算不算回退项</strong>——这三件事必须与分数一起披露。</p></li>
   <li><h4>国产模型的对照空白是可执行的机会</h4><p>「与国产旗舰无同 harness 第三方对比」与「中文权威榜单全空」两条，正是 ideas 中「国产模型第三方统一 harness 复跑」卡的直接扩展——现在这张卡可以把 GPT-6 Astra 与 Fable 5.1 一并纳入被测对象，产出首份中外同口径对照。</p></li>

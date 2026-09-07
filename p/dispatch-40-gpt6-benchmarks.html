@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dispatch 40 · GPT-6 Astra 基准全表:八类六十余项,以及&quot;他到底有多强&quot; · NPU Frontier Dispatch</title>
-  <meta name="description" content="基准合集(两路全量扫描,厂商 30+ 项与第三方 30+ 项全部标注口径):问&quot;有多强&quot;得到的是两个矛盾结论——Epoch ECI(50+ 基准)给 169 分是 267 个模型历史最高,AA 智能指数(10 项、私有留出集占 40%)给 61 分与自家前代持平且落后 Fable 5.1。逐项看结论分域:数学与解谜真跃升(ARC-AGI-2 95.0、GPQA 96.0、Epoch 谜题 84.0 对 59.0)、计算机使用与网络安全真领先(ScreenSpot-Pro 92.7、OSWorld 耗时降 47%、FrontierCyber 86/226 " />
+  <meta name="description" content="基准合集(两路全量扫描 + 全阵容矩阵):**19 个模型(闭源 9、开放权重 10)× 14 项基准的横向对比**,九张图。问&quot;GPT-6 有多强&quot;得到的是两个矛盾总分:Epoch ECI(50+ 基准)给 169 分是 267 个模型历史最高,AA 智能指数给 61 分(v4.1)与自家前代 GPT-5.6 Sol 同分、落后 Fable 5.1 五分。全阵容看:AA 指数上 Astra 与 Sol、Grok 4.6、Muse Spark 1.3 四者同分,开放权重头部(Kimi K3 59.7、GLM-5.3 59.5)已插进闭源中位区;GPQA-" />
   <link rel="canonical" href="https://lloo099.github.io/mission44/p/dispatch-40-gpt6-benchmarks.html" />
   <meta property="og:type" content="article" />
   <meta property="og:title" content="Dispatch 40 · GPT-6 Astra 基准全表:八类六十余项,以及&quot;他到底有多强&quot;" />
-  <meta property="og:description" content="基准合集(两路全量扫描,厂商 30+ 项与第三方 30+ 项全部标注口径):问&quot;有多强&quot;得到的是两个矛盾结论——Epoch ECI(50+ 基准)给 169 分是 267 个模型历史最高,AA 智能指数(10 项、私有留出集占 40%)给 61 分与自家前代持平且落后 Fable 5.1。逐项看结论分域:数学与解谜真跃升(ARC-AGI-2 95.0、GPQA 96.0、Epoch 谜题 84.0 对 59.0)、计算机使用与网络安全真领先(ScreenSpot-Pro 92.7、OSWorld 耗时降 47%、FrontierCyber 86/226 " />
+  <meta property="og:description" content="基准合集(两路全量扫描 + 全阵容矩阵):**19 个模型(闭源 9、开放权重 10)× 14 项基准的横向对比**,九张图。问&quot;GPT-6 有多强&quot;得到的是两个矛盾总分:Epoch ECI(50+ 基准)给 169 分是 267 个模型历史最高,AA 智能指数给 61 分(v4.1)与自家前代 GPT-5.6 Sol 同分、落后 Fable 5.1 五分。全阵容看:AA 指数上 Astra 与 Sol、Grok 4.6、Muse Spark 1.3 四者同分,开放权重头部(Kimi K3 59.7、GLM-5.3 59.5)已插进闭源中位区;GPQA-" />
   <meta property="og:url" content="https://lloo099.github.io/mission44/p/dispatch-40-gpt6-benchmarks.html" />
   <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-40-gpt6-benchmarks.png" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -19,8 +19,8 @@
 </head>
 <body>
   <h1>Dispatch 40 · GPT-6 Astra 基准全表:八类六十余项,以及&quot;他到底有多强&quot;</h1>
-  <p><em>2026-09-07 · NPU Frontier Dispatch · GPT-6 / benchmarks / evaluation / harness-as-score / RL-on-NPU</em></p>
-  <p>基准合集(两路全量扫描,厂商 30+ 项与第三方 30+ 项全部标注口径):问&quot;有多强&quot;得到的是两个矛盾结论——Epoch ECI(50+ 基准)给 169 分是 267 个模型历史最高,AA 智能指数(10 项、私有留出集占 40%)给 61 分与自家前代持平且落后 Fable 5.1。逐项看结论分域:数学与解谜真跃升(ARC-AGI-2 95.0、GPQA 96.0、Epoch 谜题 84.0 对 59.0)、计算机使用与网络安全真领先(ScreenSpot-Pro 92.7、OSWorld 耗时降 47%、FrontierCyber 86/226 </p>
+  <p><em>2026-09-07 · NPU Frontier Dispatch · GPT-6 / benchmarks / model-comparison / evaluation / RL-on-NPU</em></p>
+  <p>基准合集(两路全量扫描 + 全阵容矩阵):**19 个模型(闭源 9、开放权重 10)× 14 项基准的横向对比**,九张图。问&quot;GPT-6 有多强&quot;得到的是两个矛盾总分:Epoch ECI(50+ 基准)给 169 分是 267 个模型历史最高,AA 智能指数给 61 分(v4.1)与自家前代 GPT-5.6 Sol 同分、落后 Fable 5.1 五分。全阵容看:AA 指数上 Astra 与 Sol、Grok 4.6、Muse Spark 1.3 四者同分,开放权重头部(Kimi K3 59.7、GLM-5.3 59.5)已插进闭源中位区;GPQA-</p>
   <p><a href="https://lloo099.github.io/mission44/#blog/dispatch-40-gpt6-benchmarks">→ 阅读全文(RL-on-NPU Research Dashboard)</a></p>
 </body>
 </html>

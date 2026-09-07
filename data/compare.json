@@ -1,7 +1,7 @@
 {
   "updated": "2026-09-07",
   "doc": "docs/2026-frontier-models.md",
-  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。 Kimi K3 权重与技术报告(2607.24653)均已放出,AA 智能指数 60 为第三方独立评分。 GLM-5.3(08-14)与 5.2 同基座、全部提升来自后训练,AA 指数 60 与 K3 并列开源第一,权重 08-29 前后上 HF(详见 D34),本表 GLM 列仍以 5.2 为口径。 V4 列口径已含 V4-Flash-0731 与 V4-Pro-0813 GA(0813 公榜为自家 harness minimal 模式)。 Qwen3.8-Max 权重 08-12 已放(纯文本/thinking 强制/专有许可),自报 OSWorld 86.1 无第三方复跑。 【指数版本与新旗舰(2026-09-07)】Artificial Analysis 于 09-04 发布智能指数 v4.2(更复杂任务 + 更多私有测试集防刷),**跨版本分数不可直接比较**:本表与各卡片引用的 60/57/53 等为 v4.1 口径;v4.2 榜首为 Claude Fable 5.1(65.7)、Opus 5(63.0)、Muse Spark 1.3(62.1),GPT-6 Astra 记为 61,GLM-5.3(max)记为 49、GLM-5.3-Flash 记为 57(Flash 高于 max 属反常,待复核)。 09-01 至 09-03 连续发布 Claude Fable 5.1、GPT-6 Astra(即此前代号 Astra,非传闻的 GPT-5.7)、Gemini 3.8 Flash、Muse Spark 1.3;本表以开放权重模型为主,四者均未入列。 GPT-6 Astra 的 ARC-AGI-3 成绩存在 99.9%(OpenAI provider harness,动作间保留推理状态)与 62.7%(标准中立 harness)两个数字——跨 harness 分差的公开上限,读任何 agent 分数前须先确认 harness。",
+  "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。 Kimi K3 权重与技术报告(2607.24653)均已放出,AA 智能指数 60 为第三方独立评分。 GLM-5.3(08-14)与 5.2 同基座、全部提升来自后训练,AA 指数 60 与 K3 并列开源第一,权重 08-29 前后上 HF(详见 D34),本表 GLM 列仍以 5.2 为口径。 V4 列口径已含 V4-Flash-0731 与 V4-Pro-0813 GA(0813 公榜为自家 harness minimal 模式)。 Qwen3.8-Max 权重 08-12 已放(纯文本/thinking 强制/专有许可),自报 OSWorld 86.1 无第三方复跑。 【指数版本与新旗舰(2026-09-07,已更正)】Artificial Analysis 于 09-04 发布智能指数 v4.2(10 项评测、私有留出集权重由 20% 升至 40%、新增 AA-Briefcase 与 GDP.pdf、移除已饱和的 GPQA Diamond)。**两套标度目前同时在流通,跨版本分数不可比**:v4.1 口径下 Fable 5.1 记 66、Opus 5 63、Fable 5 62、GPT-6 Astra 与 GPT-5.6 Sol 各 61、Kimi K3 59.7、GLM-5.3 59.5;v4.2 口径下同一批模型整体低 8 到 11 分(Fable 5.1 57、Astra 55、Opus 5 54、Sol 51、K3 50)。二级来源混用两者,引用时须标注版本;两套标度下的排序基本一致。 09-01 至 09-03 连续发布 Claude Fable 5.1、GPT-6 Astra(即此前代号 Astra,非传闻的 GPT-5.7)、Gemini 3.8 Flash、Muse Spark 1.3;上方开放权重对照表未收录四者,但下方各指标榜已按全阵容重建。 GPT-6 Astra 的 ARC-AGI-3 成绩存在 99.9%(OpenAI provider harness,动作间保留推理状态)与 62.7%(标准中立 harness)两个数字——跨 harness 分差的公开上限,读任何 agent 分数前须先确认 harness。",
   "models": {
     "columns": [
       "",
@@ -166,12 +166,47 @@
         "id": "swepro",
         "label": "SWE-bench Pro",
         "unit": "%",
-        "note": "Harder agentic-coding variant (≠ Verified). GLM-5.2 (62.1) tops the open set, ahead of GPT-5.5 (~58.6); media/vendor-reported, partial coverage.",
+        "note": "更难的 agentic 编码变体(不同于 Verified)。**GPT-6 Astra 未公布本项任何数字**,OpenAI 改用 DeepSWE v1.1 替代,导致跨厂商编码对比无法进行。口径警告:Claude 系的 79 至 81 分为厂商脚手架下所得,而 Scale 的标准化 harness 把前沿模型压到约 59 分,两者不是同一次测量。",
         "items": [
           {
-            "model": "Claude Fable 5",
-            "score": 80.3,
+            "model": "Claude Fable 5.1",
+            "score": 81.2,
             "open": false
+          },
+          {
+            "model": "Claude Fable 5",
+            "score": 80.0,
+            "open": false
+          },
+          {
+            "model": "Claude Opus 5",
+            "score": 79.2,
+            "open": false
+          },
+          {
+            "model": "Kimi K3",
+            "score": 68.5,
+            "open": true
+          },
+          {
+            "model": "Qwen3.8-Max",
+            "score": 67.7,
+            "open": true
+          },
+          {
+            "model": "Grok 4.5",
+            "score": 64.7,
+            "open": false
+          },
+          {
+            "model": "GPT-5.6 Sol",
+            "score": 64.6,
+            "open": false
+          },
+          {
+            "model": "Qwen3.8-Flash-Next",
+            "score": 62.5,
+            "open": true
           },
           {
             "model": "GLM-5.2",
@@ -179,36 +214,41 @@
             "open": true
           },
           {
-            "model": "MiMo-V2.5-Pro",
-            "score": 62,
+            "model": "Muse Spark 1.3",
+            "score": 61.5,
+            "open": false
+          },
+          {
+            "model": "MiniMax M3",
+            "score": 59.0,
             "open": true
           },
           {
-            "model": "LongCat-2.0 (self-reported)",
-            "score": 59.5,
+            "model": "Step 3.7 Flash",
+            "score": 56.3,
             "open": true
           },
           {
-            "model": "MiniMax-M3",
-            "score": 59,
+            "model": "DeepSeek V4-Pro",
+            "score": 55.4,
             "open": true
           },
           {
-            "model": "GLM-5.1",
-            "score": 58.4,
+            "model": "Muse Glimmer",
+            "score": 51.2,
             "open": true
           }
         ]
       },
       {
         "id": "aa",
-        "label": "Artificial Analysis 指数 (v4.2)",
+        "label": "Artificial Analysis 指数 (v4.1 口径)",
         "unit": "pts",
-        "note": "第三方独立评分。**AA 于 2026-09-04 换版 v4.2**:10 项评测、私有留出集权重由 20% 升至 40%(新增 AA-Briefcase 多周知识工作、GDP.pdf 4592 页文档推理),移除已饱和的 GPQA Diamond。**跨版本分数不可比**——本表为 v4.2 口径;v4.1 口径下 GLM-5.3 与 Kimi K3 记 60、Opus 5 记 63。Epoch 的 ECI 指数(覆盖 50+ 基准)对同一批模型给出不同排序:GPT-6 Astra 在 ECI 上是 267 个模型的历史最高(169),在此表仅与自家前代持平。详见 D40。",
+        "note": "第三方独立评分。**两套标度同时在流通**:AA 于 2026-09-04 换版 v4.2(10 项评测、私有留出集权重由 20% 升至 40%、新增 AA-Briefcase 与 GDP.pdf、移除已饱和的 GPQA Diamond)。本表为覆盖最全的 **v4.1 口径**;同一批模型在 v4.2 下整体低 8 到 11 分(Fable 5.1 记 57、GPT-6 Astra 55、Opus 5 54、Muse Spark 1.3 与 Fable 5 各 53、GPT-5.6 Sol 与 Grok 4.6 各 51、Kimi K3 50)。**排序在两套标度下基本一致,绝对值不可跨版本比较**;部分二级来源混用两者,引用时须标注版本。另注:Epoch 的 ECI 指数(覆盖 50+ 基准)给出不同结论——GPT-6 Astra 在 ECI 上是 267 个模型的历史最高(169),在此表仅与自家前代持平。详见 D40。",
         "items": [
           {
             "model": "Claude Fable 5.1",
-            "score": 65.7,
+            "score": 66.0,
             "open": false
           },
           {
@@ -217,12 +257,12 @@
             "open": false
           },
           {
-            "model": "Muse Spark 1.3",
-            "score": 62.1,
+            "model": "Claude Fable 5",
+            "score": 62.0,
             "open": false
           },
           {
-            "model": "GPT-6 Astra (max)",
+            "model": "GPT-6 Astra",
             "score": 61.0,
             "open": false
           },
@@ -232,13 +272,53 @@
             "open": false
           },
           {
+            "model": "Grok 4.6",
+            "score": 61.0,
+            "open": false
+          },
+          {
+            "model": "Muse Spark 1.3",
+            "score": 61.0,
+            "open": false
+          },
+          {
+            "model": "Kimi K3",
+            "score": 59.7,
+            "open": true
+          },
+          {
+            "model": "GLM-5.3",
+            "score": 59.5,
+            "open": true
+          },
+          {
+            "model": "Gemini 3.8 Flash",
+            "score": 59.0,
+            "open": false
+          },
+          {
             "model": "GLM-5.3-Flash",
             "score": 57.0,
             "open": true
           },
           {
-            "model": "GLM-5.3 (max)",
-            "score": 49.0,
+            "model": "DeepSeek V4-Flash",
+            "score": 50.0,
+            "open": true
+          },
+          {
+            "model": "MiniMax M3",
+            "score": 44.0,
+            "open": true
+          },
+          {
+            "model": "Step 3.7 Flash",
+            "score": 43.0,
+            "open": true
+          },
+          {
+            "model": "DeepSeek V4-Pro",
+            "score": 42.0,
             "open": true
           }
         ]
@@ -313,52 +393,87 @@
         "id": "gpqa",
         "label": "GPQA Diamond",
         "unit": "%",
-        "note": "Graduate-level science QA. Open models now cluster 88–94%.",
+        "note": "已被 AA v4.2 因饱和移除,现为覆盖最广的厂商自报项之一。16 个模型有公开数字,开源侧 Kimi K3 的 93.5 高于多数闭源旗舰。",
         "items": [
-          {
-            "model": "GLM-5 (Reasoning)",
-            "score": 94,
-            "open": true
-          },
-          {
-            "model": "MiniMax-M3",
-            "score": 92.7,
-            "open": true
-          },
-          {
-            "model": "GLM-5.2",
-            "score": 91.2,
-            "open": true
-          },
-          {
-            "model": "Kimi K2.6",
-            "score": 90.5,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V4",
-            "score": 90.1,
-            "open": true
-          },
-          {
-            "model": "Seed 2.0 Pro (closed)",
-            "score": 88.9,
-            "open": false
-          },
-          {
-            "model": "Qwen3.5",
-            "score": 88.4,
-            "open": true
-          },
           {
             "model": "GPT-6 Astra",
             "score": 96.0,
             "open": false
           },
           {
-            "model": "Claude Fable 5.1",
-            "score": 93.7,
+            "model": "Gemini 3.8 Flash",
+            "score": 94.4,
             "open": false
+          },
+          {
+            "model": "GPT-5.6 Sol",
+            "score": 94.1,
+            "open": false
+          },
+          {
+            "model": "Kimi K3",
+            "score": 93.5,
+            "open": true
+          },
+          {
+            "model": "Claude Opus 5",
+            "score": 93.4,
+            "open": false
+          },
+          {
+            "model": "Claude Fable 5.1",
+            "score": 92.6,
+            "open": false
+          },
+          {
+            "model": "Qwen3.8-Max",
+            "score": 92.6,
+            "open": true
+          },
+          {
+            "model": "GLM-5.3",
+            "score": 91.7,
+            "open": true
+          },
+          {
+            "model": "Qwen3.8-Flash-Next",
+            "score": 91.7,
+            "open": true
+          },
+          {
+            "model": "GLM-5.3-Flash",
+            "score": 91.2,
+            "open": true
+          },
+          {
+            "model": "DeepSeek V4-Pro",
+            "score": 90.1,
+            "open": true
+          },
+          {
+            "model": "Muse Spark 1.3",
+            "score": 89.5,
+            "open": false
+          },
+          {
+            "model": "DeepSeek V4-Flash",
+            "score": 88.1,
+            "open": true
+          },
+          {
+            "model": "Grok 4.6",
+            "score": 87.5,
+            "open": false
+          },
+          {
+            "model": "Muse Glimmer",
+            "score": 83.5,
+            "open": true
+          },
+          {
+            "model": "Step 3.7 Flash",
+            "score": 80.9,
+            "open": true
           }
         ]
       },
@@ -560,6 +675,137 @@
             "model": "Claude Opus 5",
             "score": 90.4,
             "open": false
+          }
+        ]
+      },
+      {
+        "id": "tb21",
+        "label": "Terminal-Bench 2.1",
+        "unit": "%",
+        "note": "AA v4.2 实际采用的终端 agent 版本,覆盖最广的 agent 基准(14 个模型)。**GPT-6 Astra 与 Claude Fable 5.1 均无本版数字**——两者只报 Terminal-Bench 4.0(见另一榜),而 4.0 重新校准了资源与任务集,与 2.1 不可比。Kimi K3 的数字在 Kimi Code harness 下测得,厂商表混用四种 harness、摆幅 10 至 26 分。",
+        "items": [
+          {
+            "model": "GPT-5.6 Sol",
+            "score": 89.5,
+            "open": false
+          },
+          {
+            "model": "Gemini 3.8 Flash",
+            "score": 89.4,
+            "open": false
+          },
+          {
+            "model": "Claude Opus 5",
+            "score": 89.1,
+            "open": false
+          },
+          {
+            "model": "Muse Spark 1.3",
+            "score": 88.8,
+            "open": false
+          },
+          {
+            "model": "Grok 4.6",
+            "score": 88.4,
+            "open": false
+          },
+          {
+            "model": "Kimi K3",
+            "score": 88.3,
+            "open": true
+          },
+          {
+            "model": "GLM-5.3",
+            "score": 88.2,
+            "open": true
+          },
+          {
+            "model": "DeepSeek V4-Pro",
+            "score": 87.9,
+            "open": true
+          },
+          {
+            "model": "Qwen3.8-Max",
+            "score": 86.6,
+            "open": true
+          },
+          {
+            "model": "Gemini 3.7 Flash",
+            "score": 85.8,
+            "open": false
+          },
+          {
+            "model": "GLM-5.3-Flash",
+            "score": 84.3,
+            "open": true
+          },
+          {
+            "model": "MiniMax M3",
+            "score": 66.0,
+            "open": true
+          },
+          {
+            "model": "Step 3.7 Flash",
+            "score": 59.5,
+            "open": true
+          },
+          {
+            "model": "Muse Glimmer",
+            "score": 51.7,
+            "open": true
+          }
+        ]
+      },
+      {
+        "id": "costtask",
+        "label": "每任务成本(AA,美元)",
+        "unit": "$",
+        "note": "Artificial Analysis 按其智能指数任务加权的实测单任务成本,越低越好。**成本前沿与能力前沿由不同厂商把持**:GLM-5.3-Flash 的 0.09 美元约为 Claude Fable 5.1(3.69 美元)的四十分之一,而指数只低约 9 分。GPT-6 Astra 随 effort 档在 0.46(low)到 1.67(max)之间摆动 3.6 倍,且 xhigh 升 max 多花约 40% 成本、指数零提升;另有来源给出 0.63 至 2.57 的区间。",
+        "items": [
+          {
+            "model": "Claude Fable 5.1",
+            "score": 3.69,
+            "open": false
+          },
+          {
+            "model": "GPT-6 Astra (max)",
+            "score": 1.67,
+            "open": false
+          },
+          {
+            "model": "GPT-5.6 Sol",
+            "score": 0.95,
+            "open": false
+          },
+          {
+            "model": "Kimi K3",
+            "score": 0.84,
+            "open": true
+          },
+          {
+            "model": "Grok 4.6",
+            "score": 0.84,
+            "open": false
+          },
+          {
+            "model": "Muse Spark 1.3",
+            "score": 0.84,
+            "open": false
+          },
+          {
+            "model": "GLM-5.3",
+            "score": 0.68,
+            "open": true
+          },
+          {
+            "model": "Gemini 3.8 Flash",
+            "score": 0.58,
+            "open": false
+          },
+          {
+            "model": "GLM-5.3-Flash",
+            "score": 0.09,
+            "open": true
           }
         ]
       }

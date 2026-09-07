@@ -177,6 +177,16 @@ flowchart TB
 4. **被暂停的那次前沿 RL 运行**:OpenAI 规模最大的 RL 运行仍在暂停,恢复时点与恢复条件是 D37 治理阈值主题的直接观测点。
 5. **循环深度传闻的证实或证伪**:若属实,"潜在推理不可监控"会成为架构层的安全议题,而非训练层。
 
+
+## 更正(2026-09-07):AA 两套标度的归属
+
+本篇多处把 Fable 5.1 的 **65.7** 与 Astra 的 **61** 记为 v4.2 口径。补充调研(D40 全阵容矩阵)显示这一归属有误:多个二级来源明确 **v4.2 下 Fable 5.1 记 57、Astra 55、Opus 5 54、GPT-5.6 Sol 51、Kimi K3 50**,而 65.7 / 63.0 / 61 这一组属于 **v4.1**。也就是说 AA 目前有两套并行流通的分数,相差 8 到 11 分,**二级报道大量混用**。
+
+三点需要明确:
+1. **本篇的横向结论不受影响**——两套标度下的排序基本一致(Fable 5.1 > Opus 5 > Astra ≈ Sol),受影响的只是绝对值与"落后几分"的表述。
+2. **v4.2 的方法学改动仍如本篇所述**:10 项评测、私有留出集权重由 20% 升至 40%、新增 AA-Briefcase 与 GDP.pdf、移除已饱和的 GPQA Diamond。
+3. **GLM-5.3 的 49 分需重新核对**:该数字与 v4.2 的 50 至 57 区间相符,但本篇据以推断的"由 60 降到 49 可分解为过拟合与难度"仍成立——只是两端应分别标注为 v4.1 的 59.5(而非 60)与 v4.2 的区间值。看板 compare 表与相关卡片已按此更正,全阵容对照见 D40。
+
 ---
 
 **来源与声明**:两路定向 agent 深挖 + 主循环横向核实(2026-09-07)。主要来源含 [ARC Prize 的 Astra 说明](https://arcprize.org/blog/astra)与[结果页](https://arcprize.org/results/openai-gpt-6-astra)、[适配器代码](https://github.com/arcprize/arc-agi-3-benchmarking)、[OpenAI 八月的两设置说明](https://openai.com/index/how-two-settings-tripled-our-arc-agi-3-scores/)、[Astra 系统卡](https://deploymentsafety.openai.com/gpt-6-astra)、[AA 对 Astra 的评测](https://artificialanalysis.ai/articles/benchmarking-gpt-6-astra)与[对 Fable 5.1 的评测](https://artificialanalysis.ai/articles/claude-fable-5-1)、[AA v4.2 公告](https://artificialanalysis.ai/articles/artificial-analysis-intelligence-index-v4-2)、[Anthropic Fable 5.1 发布页](https://www.anthropic.com/claude-fable-and-mythos-5-1)与[迁移指南](https://platform.claude.com/docs/en/models/fable-5-1/migration-guide)、[ARC Prize 对 Fable 5.1 的结果页](https://arcprize.org/results/anthropic-claude-fable-5-1)、[Snorkel 的独立编码评测](https://snorkel.ai/blog/fable-5-1-vs-opus-5-coding-benchmark/)、[The New Stack 对 harness 的追问](https://thenewstack.io/astra-arc-agi-benchmark/)、[雷峰网技术解析](https://www.leiphone.com/category/yanxishe/FQUliuw9lt15UH54.html)、[量子位 Fable 5.1 报道](https://www.qbitai.com/2026/09/482652.html)等,文中逐处标注。厂商数字均为自报口径且在各自 harness 下测得;标注为传闻的条目未经确认,本篇不作为事实使用。
