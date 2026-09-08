@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-07",
+  "updated": "2026-09-08",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -35,6 +35,26 @@
     }
   ],
   "items": [
+    {
+      "title": "Prime Agent:RLM 与 Continual Harness——harness 把 Opus 5 的 ARC-AGI-3 从 30.2 抬到 95.24",
+      "org": "Prime Intellect",
+      "year": "2026-08",
+      "category": "framework",
+      "track": "open-source",
+      "innovation": "MIT 开源 agent harness,两个抽象:RLM——持久 IPython kernel 是模型唯一的内建工具,上下文即变量、子代理即 rlm() 函数调用、技能即可 import 的 Python 包;Continual Harness——harness 状态 H=(p 提示词, G 子代理, K 技能, M 记忆) 由 agent 经 /refine 自身 CRUD,基础 system prompt 不可变、快照可回滚",
+      "summary": "架构为 TypeScript 主机加 Python kernel:provider 调用、会话持久化、子代理生命周期、调度与安全策略留在 TS 侧,kernel 经类型化宿主请求动权威状态。rlm() 立即返回准入句柄而非子代理答案,结果只经 agent_message 或文件回流;完成后的子代理保留可寻址,注册表跨压缩与 kernel 重启存活。ARC-AGI-3 三次运行 RHAE 95.24(中位,178/183 关)、94.99(183/183)、95.5(179/183),成本 944 至 1288 美元,配置 prime-agent v0.3.3 加 claude-opus-5 thinking xhigh,已公开记分卡与 verbatim AGENTS.md。官方明示进程隔离不是安全沙箱。",
+      "analysis": "Innovation:与 D29 的 DeepSeek Harness 构成两条相反路线——dsh 以 append-only 日志为状态中心、由开发者替换插件、用收窄保证分数口径可信;Prime Agent 以持久 kernel 为状态中心、由 agent 自身改 harness、用放大证明 harness 是能力放大器。Performance:同一个 Opus 5 在 ARC 官方中立 harness 记 30.2%,换 Prime Agent 得 95.24%(人类专家基线 95.4%),Prime Intellect 自述'The agent is unmodified Prime Agent. What makes the run is the prompt plus the protocol'。本站计算:该 65 分的跃升成本约 1059 美元,而 OpenAI 用自家 provider adapter 把 Astra 抬高 37 分约需 1.9 万美元(不同模型与协议,量级观察)。谱系更正:Continual Harness 是先于本项目的独立工作(arXiv 2605.09998),原始环境为宝可梦 Red/Emerald 的 reset-free 在线 in-context 学习,且已做过 θ 与 H 的联合训练(online DAgger 加过程奖励模型)——模型与 harness 协同学习不是未来工作。缺口:编码任务上无 /refine 的受控消融,ARC-AGI-3 无第三方独立复现,自改导致评测口径漂移未量化。对看板意义:θ+H 联合回路所需的训练侧组件 D18/D19/D33 均已具备,缺的是环境与 harness 侧工程;若在昇腾集群作 RL 环境使用必须自建 microVM 或容器隔离层。",
+      "url": "https://github.com/PrimeIntellect-ai/prime-agent",
+      "tags": [
+        "agent-harness",
+        "Prime-Agent",
+        "RLM",
+        "continual-harness",
+        "ARC-AGI-3",
+        "self-improvement"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "OpenAI 宣布达成'自动化研究实习生'(3.1 agent-工作日对 1 人类工作日)",
       "org": "OpenAI",
@@ -140,24 +160,6 @@
         "continual-learning",
         "context-engineering",
         "Dreaming"
-      ],
-      "confidence": "self-reported"
-    },
-    {
-      "title": "Prime Agent(自改进 RLM harness:上下文即变量、sub-agent 即函数调用)",
-      "org": "Prime Intellect",
-      "year": "2026-08",
-      "category": "framework",
-      "track": "industry",
-      "innovation": "MIT 开源、模型无关的 agent harness,两个核心抽象:RLM(Recursive Language Model)把上下文当变量、把 sub-agent 委派当持久 IPython REPL 内的 rlm() 函数调用;Continual Harness 把 prompt/技能/记忆/sub-agent 规格开放给 agent 自身 CRUD(/refine 做有证据的自我修订)",
-      "summary": "2026-08-05 发布(arXiv 2608.23552)。自报搭配 Claude Opus 5 在 ARC-AGI-3 得 95.5%(超人类专家基线 95.4%),九项长上下文评测六项超过 Claude Code 且 token 更少;明确不做沙箱,以用户权限执行代码。",
-      "analysis": "Innovation:与 DeepSeek Harness(dsh,D29)构成两极——dsh 以 append-only 日志为状态中心、为训推一致与精确回放优化;Prime Agent 以活的 Python kernel 为状态中心、为长任务 token 效率优化,代价是回放困难与评测口径随自改而漂移。Performance:全部为厂商自报,未见独立复现。对 RL-on-NPU 意义:'harness 即分数'的又一实证(同一 Opus 5 换 harness 即拉开差距);技能层自进化是 D35 方向 #2 的产品化样本;Prime 的商业闭环 环境 Hub → prime-rl → harness 使轨迹天然回流训练栈,与 dsh 同构但不绑模型。",
-      "url": "https://github.com/PrimeIntellect-ai/prime-agent",
-      "tags": [
-        "agent-harness",
-        "RLM",
-        "self-improving",
-        "Prime-Intellect"
       ],
       "confidence": "self-reported"
     },

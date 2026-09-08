@@ -1,7 +1,24 @@
 {
-  "updated": "2026-09-07",
+  "updated": "2026-09-08",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-41-prime-agent",
+      "title": "Dispatch 41 · 详解 Prime Agent:REPL 即控制面、subagent 即函数调用,与 DeepSeek Harness 的两条演进路线",
+      "subtitle": "详解篇 + 对照篇(官方 repo、RLM 与架构文档、ARC-AGI-3 复现仓库三路一手核对):Prime Agent 的贡献不是 RL 算法,而是两个 harness 抽象——**RLM**(持久 IPython kernel 是模型唯一的内建工具,上下文即变量、subagent 即 `rlm()` 函数调用)与 **Continual Harness**(harness 状态 H=(p,G,K,M) 由 agent 自身 CRUD)。最硬的证据在 ARC-AGI-3:**同一个 Opus 5,官方中立 harness 30.2%,换上 Prime Agent 得 95.24%**(三次运行中位;人类专家基线 95.4%),模型参数未动,Prime Intellect 自己把功劳给了 prompt 与协议。四处更正广泛流传的说法:技术报告已存在(arXiv 2608.23552);**95.5% 是三次里最好的一次而非官方口径,183/183 全关卡出自 RHAE 最低的那次**,三个数字分属三次运行;`await rlm(...)` 返回准入句柄而非子代理答案,结果只经 agent_message 或文件回流;**Continual Harness 的谱系是宝可梦而非编码**(arXiv 2605.09998,reset-free 在线 in-context 学习),且该谱系**已经做过 θ 与 H 的联合训练**(online DAgger + 过程奖励模型)——协同学习不是未来工作。成本账:Prime Agent 每张记分卡 944 至 1,288 美元,OpenAI 用 provider adapter 把 Astra 抬到 99.9% 约需 1.9 万美元;中立 harness 跑 Astra 的约 2.6 万美元买到的 62.7% 还低于 Prime Agent 约 1,059 美元买到的 95.24%(不同模型与协议,量级观察)。与 dsh 的四条分界:状态中心(append-only 日志 对 持久 kernel)、谁能改 harness(开发者 对 agent 自身)、防过拟合方向(收窄 对 放大)、安全模型(四层权限插件 对 官方明示不是沙箱)。附官方未给的七项(编码任务上的受控消融缺失、自改漂移未量化、无第三方复现)与对 RL-on-NPU 的四点含义。",
+      "date": "2026-09-08",
+      "tags": [
+        "Prime-Agent",
+        "agent-harness",
+        "RLM",
+        "continual-harness",
+        "DeepSeek-Harness",
+        "evaluation",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-41-prime-agent.md",
+      "read": "reads/dispatch-41-prime-agent.html"
+    },
     {
       "id": "dispatch-40-gpt6-benchmarks",
       "title": "Dispatch 40 · GPT-6 Astra 基准全表:八类六十余项,以及\"他到底有多强\"",

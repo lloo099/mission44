@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispatch 41 · 详解 Prime Agent:REPL 即控制面、subagent 即函数调用,与 DeepSeek Harness 的两条演进路线 · NPU Frontier Dispatch</title>
+  <meta name="description" content="详解篇 + 对照篇(官方 repo、RLM 与架构文档、ARC-AGI-3 复现仓库三路一手核对):Prime Agent 的贡献不是 RL 算法,而是两个 harness 抽象——**RLM**(持久 IPython kernel 是模型唯一的内建工具,上下文即变量、subagent 即 `rlm()` 函数调用)与 **Continual Harness**(harness 状态 H=(p,G,K,M) 由 agent 自身 CRUD)。最硬的证据在 ARC-AGI-3:**同一个 Opus 5,官方中立 harness 30.2%,换上 Prime" />
+  <link rel="canonical" href="https://lloo099.github.io/mission44/p/dispatch-41-prime-agent.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Dispatch 41 · 详解 Prime Agent:REPL 即控制面、subagent 即函数调用,与 DeepSeek Harness 的两条演进路线" />
+  <meta property="og:description" content="详解篇 + 对照篇(官方 repo、RLM 与架构文档、ARC-AGI-3 复现仓库三路一手核对):Prime Agent 的贡献不是 RL 算法,而是两个 harness 抽象——**RLM**(持久 IPython kernel 是模型唯一的内建工具,上下文即变量、subagent 即 `rlm()` 函数调用)与 **Continual Harness**(harness 状态 H=(p,G,K,M) 由 agent 自身 CRUD)。最硬的证据在 ARC-AGI-3:**同一个 Opus 5,官方中立 harness 30.2%,换上 Prime" />
+  <meta property="og:url" content="https://lloo099.github.io/mission44/p/dispatch-41-prime-agent.html" />
+  <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-41-prime-agent.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-41-prime-agent.png" />
+  <script>location.replace("https://lloo099.github.io/mission44/#blog/dispatch-41-prime-agent");</script>
+  <meta http-equiv="refresh" content="0; url=https://lloo099.github.io/mission44/#blog/dispatch-41-prime-agent" />
+  <style>body{font-family:system-ui,sans-serif;background:#0b0f17;color:#dfe7f5;max-width:720px;margin:80px auto;padding:0 20px;line-height:1.7}a{color:#6aa6ff}</style>
+</head>
+<body>
+  <h1>Dispatch 41 · 详解 Prime Agent:REPL 即控制面、subagent 即函数调用,与 DeepSeek Harness 的两条演进路线</h1>
+  <p><em>2026-09-08 · NPU Frontier Dispatch · Prime-Agent / agent-harness / RLM / continual-harness / DeepSeek-Harness / evaluation / RL-on-NPU</em></p>
+  <p>详解篇 + 对照篇(官方 repo、RLM 与架构文档、ARC-AGI-3 复现仓库三路一手核对):Prime Agent 的贡献不是 RL 算法,而是两个 harness 抽象——**RLM**(持久 IPython kernel 是模型唯一的内建工具,上下文即变量、subagent 即 `rlm()` 函数调用)与 **Continual Harness**(harness 状态 H=(p,G,K,M) 由 agent 自身 CRUD)。最硬的证据在 ARC-AGI-3:**同一个 Opus 5,官方中立 harness 30.2%,换上 Prime</p>
+  <p><a href="https://lloo099.github.io/mission44/#blog/dispatch-41-prime-agent">→ 阅读全文(RL-on-NPU Research Dashboard)</a></p>
+</body>
+</html>
