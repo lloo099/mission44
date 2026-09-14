@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispatch 42 · 详解 DeepSeek-V4.1-Flash:因果编码器-解码器、CSA2 跨层复用与 FP4 KV——890 字节的账怎么算 · NPU Frontier Dispatch</title>
+  <meta name="description" content="详解篇(技术报告正文 + 模型卡 + 配置文件 + SGLang/vLLM/FlashMLA 源码逐项核对):V4.1-Flash(2026-09-10,MIT,552B 主干 + 196B Engram)不是更强的模型,是把 KV cache 从算力问题改写成存储与通信问题后的一整套解。三刀叠加:**CED** 把 40 层拆成 20 层因果编码器 + 20 层解码器,解码器全局 KV 由编码器末层隐状态投影(C_l = H_L/2 · W_l),prefill 只跑下半网络——**每 token 激活 8B(prefill)对 16B(decode)" />
+  <link rel="canonical" href="https://lloo099.github.io/mission44/p/dispatch-42-deepseek-v41-flash.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Dispatch 42 · 详解 DeepSeek-V4.1-Flash:因果编码器-解码器、CSA2 跨层复用与 FP4 KV——890 字节的账怎么算" />
+  <meta property="og:description" content="详解篇(技术报告正文 + 模型卡 + 配置文件 + SGLang/vLLM/FlashMLA 源码逐项核对):V4.1-Flash(2026-09-10,MIT,552B 主干 + 196B Engram)不是更强的模型,是把 KV cache 从算力问题改写成存储与通信问题后的一整套解。三刀叠加:**CED** 把 40 层拆成 20 层因果编码器 + 20 层解码器,解码器全局 KV 由编码器末层隐状态投影(C_l = H_L/2 · W_l),prefill 只跑下半网络——**每 token 激活 8B(prefill)对 16B(decode)" />
+  <meta property="og:url" content="https://lloo099.github.io/mission44/p/dispatch-42-deepseek-v41-flash.html" />
+  <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-42-deepseek-v41-flash.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-42-deepseek-v41-flash.png" />
+  <script>location.replace("https://lloo099.github.io/mission44/#blog/dispatch-42-deepseek-v41-flash");</script>
+  <meta http-equiv="refresh" content="0; url=https://lloo099.github.io/mission44/#blog/dispatch-42-deepseek-v41-flash" />
+  <style>body{font-family:system-ui,sans-serif;background:#0b0f17;color:#dfe7f5;max-width:720px;margin:80px auto;padding:0 20px;line-height:1.7}a{color:#6aa6ff}</style>
+</head>
+<body>
+  <h1>Dispatch 42 · 详解 DeepSeek-V4.1-Flash:因果编码器-解码器、CSA2 跨层复用与 FP4 KV——890 字节的账怎么算</h1>
+  <p><em>2026-09-14 · NPU Frontier Dispatch · DeepSeek-V4.1 / KV-cache / CED / CSA2 / FP4 / sparse-attention / agent-harness / RL-on-NPU</em></p>
+  <p>详解篇(技术报告正文 + 模型卡 + 配置文件 + SGLang/vLLM/FlashMLA 源码逐项核对):V4.1-Flash(2026-09-10,MIT,552B 主干 + 196B Engram)不是更强的模型,是把 KV cache 从算力问题改写成存储与通信问题后的一整套解。三刀叠加:**CED** 把 40 层拆成 20 层因果编码器 + 20 层解码器,解码器全局 KV 由编码器末层隐状态投影(C_l = H_L/2 · W_l),prefill 只跑下半网络——**每 token 激活 8B(prefill)对 16B(decode)</p>
+  <p><a href="https://lloo099.github.io/mission44/#blog/dispatch-42-deepseek-v41-flash">→ 阅读全文(RL-on-NPU Research Dashboard)</a></p>
+</body>
+</html>

@@ -1,7 +1,25 @@
 {
-  "updated": "2026-09-08",
+  "updated": "2026-09-14",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-42-deepseek-v41-flash",
+      "title": "Dispatch 42 · 详解 DeepSeek-V4.1-Flash:因果编码器-解码器、CSA2 跨层复用与 FP4 KV——890 字节的账怎么算",
+      "subtitle": "详解篇(技术报告正文 + 模型卡 + 配置文件 + SGLang/vLLM/FlashMLA 源码逐项核对):V4.1-Flash(2026-09-10,MIT,552B 主干 + 196B Engram)不是更强的模型,是把 KV cache 从算力问题改写成存储与通信问题后的一整套解。三刀叠加:**CED** 把 40 层拆成 20 层因果编码器 + 20 层解码器,解码器全局 KV 由编码器末层隐状态投影(C_l = H_L/2 · W_l),prefill 只跑下半网络——**每 token 激活 8B(prefill)对 16B(decode)**;**CSA2** 给每层静态指派 Full / Reindex / Reuse,**40 层只 4 层写全局 KV、8 层跑索引器、27 层只取数**,解码器再以 16,384 位置候选池把索引成本与上下文长度解耦;**FP4 main KV**(E2M1 + 每 16 通道 E4M3 scale,288 字节/条)配 68 字节 MXFP4 indexer K。本站按公开字节布局逐项复核官方的 890 字节/token:**(288 + 68) × (3 × 1/2 + 1) = 534 + 356 = 890,精确吻合**;对照 V4-Flash 约 3,514(1/4)与 V1 的 389,120(1/437);SWA Bounded Replay(只重放 128 个 token 而非精确所需的 2,560 个)再把持久 KV 压到 1/8。评测侧最有价值的是**厂商自己给出的 8 种 scaffold 对照**——同一模型 DeepSWE 在 Codex 下 65.6、mini-SWE 下 74.2,harness 即分数首次由厂商自证;分域结论:编码与 agent 执行类打平或小胜 Opus-5,难推理类差距 13 至 21 分。第三方口径相反:AA 指数 40 低于 GLM-5.3-Flash 的 42 且混合价更高,优势只剩速度。三处更正流传说法:V4-Pro 退役已被 DeepSeek 撤回;SWE-bench Verified 79.0 与 LiveCodeBench 91.6 是 V4-Flash 的数字;总参数含 196B Engram。对昇腾:FP4 main KV 是存储格式而非计算格式,官方明言不要求硬件原生 FP4 矩阵乘;CED/CSA2 改变的是 KV 归属与生命周期,昇腾侧尚无公开落地。",
+      "date": "2026-09-14",
+      "tags": [
+        "DeepSeek-V4.1",
+        "KV-cache",
+        "CED",
+        "CSA2",
+        "FP4",
+        "sparse-attention",
+        "agent-harness",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-42-deepseek-v41-flash.md",
+      "read": "reads/dispatch-42-deepseek-v41-flash.html"
+    },
     {
       "id": "dispatch-41-prime-agent",
       "title": "Dispatch 41 · 详解 Prime Agent:REPL 即控制面、subagent 即函数调用,与 DeepSeek Harness 的两条演进路线",

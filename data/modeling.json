@@ -1,6 +1,27 @@
 {
-  "updated": "2026-09-07",
+  "updated": "2026-09-14",
   "items": [
+    {
+      "title": "DeepSeek-V4.1-Flash:CED + CSA2 + FP4 KV 把每 token 全局 KV 压到 890 字节",
+      "org": "DeepSeek",
+      "year": "2026-09",
+      "category": "model-report",
+      "track": "open-source",
+      "innovation": "2026-09-10 发布,MIT,552B 主干 + 196B Engram,原生多模态,1M 上下文。三刀:CED 因果编码器-解码器(40 层 = 20 + 20,解码器全局 KV 由第 20 层隐状态投影,prefill 只跑下半网络,激活 8B 对 decode 16B);CSA2 三模式静态分配(Full / Reindex / Reuse,40 层只 4 层写全局 KV、8 层跑索引器,解码器 16,384 位置候选池);FP4 main KV(E2M1 + 每 16 通道 E4M3 scale,288 字节/条)。SWA Bounded Replay 只重放 128 个 token 使持久 KV 降到 V4-Flash 的 1/8",
+      "summary": "本站按 FlashMLA 与 SGLang 字节布局逐项复核官方 890 字节:(288 + 68) × (3 × 1/2 + 1) = 534 + 356 = 890,精确吻合;V4-Flash 约 3,514(1/4),V1 389,120(1/437)。厂商表(Max 档、DSH Minimal + 1M):TB 2.1 90.6、DeepSWE 74.2、CyberGym 88.1、AutomationBench 54.8 打平或小胜 Opus-5;TB 3.0 30.0 对 43.3、TB 4.0 31.2 对 51.8、HLE 36.8 对 56.3 差距显著。厂商自给八种 scaffold 对照:DeepSWE 65.5 至 74.2、TB 2.1 84.1 至 90.6。基座 LongBench-V2 45.2 对 V4-Pro 51.5 回退。45T token 预训练,稀疏注意力从头在 64K 上训。",
+      "analysis": "Innovation:KV 压缩的第四个维度(层)被用掉——条目(MLA)、精度(FP8)、序列(CSA/HCA)之后,V4.1 靠 4/40 层写 KV 再切一个数量级;FP4 main KV 是存储格式而非计算格式,报告明言反量化后计算、不要求硬件原生 FP4 矩阵乘,对昇腾直接可用。Performance:第三方 AA 指数 40(v4.3 口径),高于自家 V4-Pro 36 与 V4-Flash 35,低于 GLM-5.3-Flash 42,离前沿 13 分;Vals.ai 中立 harness 重跑 TB 2.1 得 74.53,比厂商 90.6 低 16 分——harness 即分数由厂商表 4 与第三方两侧证实;AA 评语 'notably fast, however very verbose',跑指数生成 250M token(中位 130M),按 token 便宜被冗长部分抵消。更正流传说法:V4-Pro 退役 09-11 撤回;SWE-bench Verified 79.0 与 LiveCodeBench 91.6 是 V4-Flash 的数字。对看板意义:vLLM-Ascend 有 W8A8 day-0 教程(2 × Atlas 800 A3 / 4 × A2,DP4/TP8/EP32),但 FP4 KV 与 CSA2 稀疏解码核未落地昇腾,890 字节的 HBM 收益尚未兑现;有界重放使 prompt logprob 不可精确复现,on-policy RL 须在训练侧模拟同一近似(报告已如此做)。",
+      "url": "https://raw.githubusercontent.com/wendadawen/dojo/main/wiki/deepseek-v4-1/research/official/README.md",
+      "tags": [
+        "DeepSeek-V4.1",
+        "KV-cache",
+        "CED",
+        "CSA2",
+        "FP4",
+        "sparse-attention",
+        "YOCO"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "GPT-6 Astra(Astra 以 GPT-6 之名发布;ARC-AGI-3 的 harness 分差 62.7 对 99.9)",
       "org": "OpenAI",

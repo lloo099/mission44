@@ -172,6 +172,8 @@ Prime Intellect 于 08-05 开源的 [Prime Agent](https://github.com/PrimeIntell
 
 **本节已在 D41 展开为完整详解**(2026-09-08):RLM 的准入-回流语义、TypeScript 主机与 Python kernel 的状态归属、Continual Harness 的 `H=(p,G,K,M)` 与 Refiner 四遍 CRUD、ARC-AGI-3 三次运行的完整表与成本账,以及本节四条分界的逐条对照。其中两处更正影响此处的引述:**95.5% 是三次运行中最好的一次,官方报告口径为中位数 95.24%**;Continual Harness 是先于 Prime Agent 的独立工作(arXiv 2605.09998,宝可梦环境),且该谱系**已经做过 θ 与 H 的联合训练**(online DAgger + 过程奖励模型)。
 
+**跟进(2026-09-14):厂商自证。** DeepSeek-V4.1-Flash 技术报告表 4 把**同一个模型在八种 scaffold 下**的分数并排印出:DeepSWE v1.1 从 Codex 的 65.6 到 mini-SWE 的 74.2(极差 8.7),Terminal Bench 2.1 从 Codex 的 84.1 到 DSH Minimal 的 90.6(极差 6.5);**DSH 自家三档相差 5 分,Minimal 最高**——本篇第 4 节"minimal 模式实质复现训练分布、分数在此产生"的判断由厂商数据证实。报告结论把 "model–harness co-design" 列为未来方向。详见 **D42 §10**。
+
 ---
 
 **来源与声明**:两路定向调研(2026-08-21),主要来源:[deepseek-harness repo](https://github.com/deepseek-ai/deepseek-harness) 及其架构文档、[V4-Pro GA 公告](https://api-docs.deepseek.com/news/news260813/)、[HN 讨论](https://news.ycombinator.com/item?id=49285244)、[harness 分差论文 2605.23950](https://arxiv.org/abs/2605.23950)、[K3 技术报告 2607.24653](https://arxiv.org/abs/2607.24653)、[Codex agent loop](https://openai.com/index/unrolling-the-codex-agent-loop/)、[Hermes 架构](https://hermes-agent.nousresearch.com/docs/developer-guide/architecture)、[MCP 2026-07-28 规范](https://blog.modelcontextprotocol.io/posts/2026-07-28/)等,文中逐处标注。star 数随时间快速变化,以检索时点为准;DSML 细节来自第三方解析器与社区报告(非官方文档);标注(推断)处为本看板分析。

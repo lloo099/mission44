@@ -204,6 +204,10 @@ V4 作为本看板反复提及的"基线"的原因:
 2. **MTP 投机解码在 NPU 上的加速比**:对 RL rollout 的端到端收益。
 3. **V4 vs MSA 的长上下文质量对照**:压缩(V4)与不压缩选块(MSA)在多跳推理 / 长检索上的稳定性对比。
 
+## 跟进(2026-09-14):V4.1-Flash 把 CSA + HCA 换成了 CSA2 + CED
+
+本篇详解的 CSA(压 4× + 选块)与 HCA(压 128× + 全看)交替结构,在 2026-09-10 发布的 DeepSeek-V4.1-Flash 中被**整体替换**:HCA 取消,改为纯 **CSA2**(编码器压缩比 2、解码器压缩比 1),并以 Full / Reindex / Reuse 三种静态模式做**跨层复用**——40 层里只有 4 层写全局 KV;再叠加 **CED**(解码器全局 KV 由第 20 层隐状态投影,prefill 只跑下半网络,激活 8B 对 16B)与 **FP4 main KV**。每 token 全局 KV 由 V4-Flash 的约 3,514 字节降到 **890 字节**。本篇第 5 节标出的"超长精确检索是压缩路线的固有风险点",在 V4.1 的基座表里有了第一个数据:LongBench-V2 45.2 对 V4-Pro-Base 的 51.5。机制拆解与 890 字节的逐项复核见 **D42**。
+
 ---
 
 *来源:DeepSeek-V4 技术报告与解析(HuggingFace deepseek-ai/DeepSeek-V4-Pro、DeepSeek API Docs、latent.space、morphllm、techjacksolutions 等);vLLM-Ascend 2026 支持矩阵。规格 / 评测分数为论文 / 厂商口径,provisional。相关卡片见本看板 LLM Modeling 标签页。*

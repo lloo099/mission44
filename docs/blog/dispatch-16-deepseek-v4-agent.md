@@ -178,6 +178,8 @@ DeepSeek-V4 的 agent 能力,关键在**两阶段后训练的工程哲学**:**�
 
 **最大的不确定性有三点**:**(1)** 所有 agent 评测分数都是 **provisional**,且 BFCL / tau-bench 类经典工具基准**没有 V4 官方数据**——同档结论建立在自报数之上;**(2)** OPD 的 reverse-KL / 全词表细节与 GRM 自评机制属 **provisional 二手**,尚无独立复现;**(3)** RL 训练是否跑在昇腾 950PR 上是 **RUMOR**——已证实的只有 rollout/serving 侧 EP 的 GPU+NPU 双验证与 1.96x,训练侧硬件未确认。现在用 V4 运行 agent,本质仍是将其以 Claude 兼容方式接入第三方 harness。
 
+> **跟进(2026-09-14)**:本篇第 4 节记录的"第一方 harness 缺位"已由 D29(DeepSeek Harness 发布)关闭;V4.1-Flash 的技术报告进一步给出**八种 scaffold 的同模型对照**,并明言后训练"不引入算法创新"、沿用本篇所述的 SFT → RL → OPD 流程,变化全部在数据管线与 agent 环境合成。见 **D42**。
+
 ---
 
 **Sources:** [DeepSeek-V4 技术报告 (arXiv 2606.19348)](https://arxiv.org/html/2606.19348v1) · [deepseek-ai/DeepSeek-V4-Pro · Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro) · [How DeepSeek V4's Two-Stage Post-Training Solves Multi-Domain Interference | BSWEN](https://docs.bswen.com/blog/2026-04-25-deepseek-v4-two-stage-post-training/) · [DeepSeek V4 Integrates Expert Models with On-Policy Distillation | Phemex News](https://phemex.com/news/article/deepseek-v4-adopts-onpolicy-distillation-integrates-expert-models-75479)

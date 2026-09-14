@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 42 精读版 · DeepSeek-V4.1-Flash</title>
+<meta name="description" content="逐节拆解 DeepSeek-V4.1-Flash:因果编码器-解码器(CED)、CSA2 三模式跨层复用、FP4 main KV,890 字节/token 的逐项复核,SWA Bounded Replay,厂商八种 scaffold 对照与第三方口径的分歧,以及对昇腾的含义。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-42-deepseek-v41-flash.html">
+<meta property="og:title" content="Dispatch 42 精读版 · DeepSeek-V4.1-Flash">
+<meta property="og:description" content="逐节拆解 DeepSeek-V4.1-Flash:因果编码器-解码器(CED)、CSA2 三模式跨层复用、FP4 main KV,890 字节/token 的逐项复核,SWA Bounded Replay,厂商八种 scaffold 对照与第三方口径的分歧,以及对昇腾的含义。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-42-deepseek-v41-flash.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-42-deepseek-v41-flash.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-42-deepseek-v41-flash">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-42-deepseek-v41-flash.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 42 · 精读版 · 2026-09-14</div>
+  <h1>DeepSeek-V4.1-Flash 精读:因果编码器-解码器、CSA2 跨层复用与 FP4 KV——890 字节的账怎么算</h1>
+  <p class="standfirst">技术报告的标题就是全部论点:《Pushing the Limits of KV Cache Compression》。V4.1-Flash 不是更强的模型,是把 <strong>KV cache 从"算力问题"改写成"存储与通信问题"</strong>后给出的一整套解——CED 让 prefill 只跑半个网络,CSA2 让 40 层里只有 4 层写全局 KV,FP4 把每条 KV 压到 288 字节,三者相乘得到 890 字节/token。本文把 D42 的十三节逐一拆开:每节先给"不看这份报告时的朴素直觉实现",再给报告与源码里的实际做法,最后写清差在哪、官方是否给了证据、对 RL-on-NPU 意味着什么。全文有三处对流传说法的更正。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D42</span>
+    <span>承接 D05 / D16 / D29 / D41</span>
+    <span>原图 0 张 · 本站图 8 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>问题:KV 是存储与通信瓶颈</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>V4 基座与 V4.1 增量</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>CED:解码器 KV 从编码器投影</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>CSA2:三模式与四个 KV 源层</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>FP4 main KV:存储用低精度</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>890 字节的账</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>部署:持久 KV 降到 1/8</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>其余组件与训练</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>评测:厂商表与 scaffold 对照</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>第三方口径</a></li>
+    <li><a href="#s11"><span class="tnum">11</span>产品、定价与撤回</a></li>
+    <li><a href="#s12"><span class="tnum">12</span>总表:基线 vs V4.1</a></li>
+    <li><a href="#s13"><span class="tnum">13</span>官方没给的东西</a></li>
+    <li><a href="#s14"><span class="tnum">14</span>判断与下一步</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">DeepSeek-V4.1-Flash 于 2026-09-10 发布(MIT,552B 主干 + 196B Engram,原生多模态,1M 上下文)。它的技术报告把先前稀疏注意力工作的后果说得很直白:算力降下来之后,<strong>持久存储与数据搬运成了瓶颈</strong>。于是这一代的目标不是分数,是每 token 的字节数。三刀叠加:<strong>CED</strong>(因果编码器-解码器,解码器全局 KV 由第 20 层隐状态投影,prefill 激活 8B 对 decode 16B)、<strong>CSA2</strong>(Full / Reindex / Reuse 三模式静态分配,40 层只 4 层写全局 KV)、<strong>FP4 main KV</strong>(E2M1 + 每 16 通道 E4M3 scale,288 字节/条)。官方数字 <strong>890 字节/token</strong>,本站按 FlashMLA 与 SGLang 的字节布局逐项复核,精确吻合;叠加 SWA Bounded Replay 后持久 KV 降到 V4-Flash 的 1/8。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段:<strong>朴素基线</strong>(左栏,灰)——不看这份报告、按直觉搭一个长上下文 MoE 会怎么做;<strong>它的做法</strong>(右栏,橙)——技术报告、模型卡、配置文件与 SGLang / vLLM / FlashMLA 源码里的实际做法;<strong>差在哪</strong>(下方色块)——差异的实质、官方是否给了理由或证据、对 RL-on-NPU 的含义。数字按来源分三类:<span class="chip c-tp">第三方</span> 独立测量或多方一致;<span class="chip c-vr">自报</span> DeepSeek 或其他厂商口径;<span class="chip c-inf">推断</span> 本站分析或按公开布局的重建。</p>
+  <p>贯穿全文有两条线索。其一是<strong>三个乘法维度</strong>:条目多大(GQA → MLA → 单头 MQA-512)、多少 token 合成一条(序列压缩比)、多少层各存一份(跨层复用)——CSA2 是第一个同时覆盖三维的设计,FP4 再乘一个精度因子。其二是<strong>harness 即分数的双侧证据</strong>:厂商自己印出了同一模型在八种 scaffold 下 8.7 分的极差,第三方 Vals.ai 用中立 harness 重跑头条基准低了 16 分。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">三处对流传说法的更正</span>
+  <p><strong>① V4-Pro 退役已被撤回。</strong> 09-10 公告"09-14 起 <code>deepseek-v4-pro</code> 路由到 V4.1-Flash",09-11 DeepSeek 宣布"继续为 V4 Pro 提供 API 服务,计费方式不变"。本站 09-11 转述的是初始公告,以此更正。<strong>② SWE-bench Verified 79.0 与 LiveCodeBench 91.6 是 V4-Flash 的数字</strong>,V4.1-Flash 的厂商表根本没有这两行;HMMT 2026 的 94.8 同样属于 V4-Flash。<strong>③ 总参数不是 552B</strong>:552B 是主干,另有 196B Engram 条件记忆,含 DSpark 专家的 checkpoint 约 763B、511 GB。</p>
+</div>
+
+<div class="formula">三刀 × 一个精度因子 → 890 字节
+  ├ CED    40 层 = 20 因果编码 + 20 解码 · 解码器全局 KV = H_20 · W_l · prefill 只跑下半 · 8B 对 16B
+  ├ CSA2   Full / Reindex / Reuse 静态分配 · KV 源层 [2, 8, 14, 20] · 索引层 8 个 · 27 层只取数
+  ├ FP4    main KV E2M1 + E4M3 每 16 通道 = 288 字节 · indexer K MXFP4 = 68 字节 · SWA 留 FP8
+  └ 账     (288 + 68) × (3 × 1/2 + 1) = 534 + 356 = 890  <span class="cmt">// 三个编码器 Full 层压缩比 2,一个解码器 Full 层压缩比 1</span></div>
+
+<h2 id="s1"><span class="hnum">01</span>问题陈述:agent 负载下,KV cache 是存储与通信瓶颈</h2>
+
+<p>报告开篇:先前的稀疏注意力(V3.2 的 DSA、V4 的 CSA/HCA)"显著降低了长序列处理的计算成本,<strong>使持久存储与数据搬运成为日益突出的瓶颈</strong>"。V4 的 KV 分两类:<strong>全局 KV</strong>(main KV + indexer K)随序列增长、受 HBM 约束;<strong>持久 KV</strong>(为前缀复用而落盘)受 SSD 与主机内存约束;I/O 与互连带宽再限制缓存迁移。窗口固定的 SWA KV 不随长度增长,序列足够长时全局 KV 主导运行时开销。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-1.svg" alt="三个乘法维度:条目维度列出 GQA、MLA、V4 与 V4.1 的单 KV 头 MQA;序列维度列出 V4 CSA 每 4 个一条、HCA 每 128 个一条、V4.1 CSA2 编码器每 2 个一条解码器每 1 个一条;层维度列出 CLA、YOCO、IndexCache 与 YOIO、V4.1 CSA2 只 4 层写 KV;三者汇入 CSA2 三维联乘加 FP4 得 890 字节">
+  <figcaption><span class="fnum">图 1</span>三个乘法维度。报告 §2.3 把成本拆成条目、序列、层三维,并指出既有工作各占一维;CSA2 是第一个同时覆盖三维的设计。<span class="chip c-inf">推断</span> 本站图,依原文图 A 由第 1 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是<strong>三列各自的最后一行</strong>:单 KV 头 MQA-512、编码器每 2 个 token 一条、40 层只 4 层写 KV——这三个数相乘再乘 FP4 的 0.5 字节/元素,就是全部的压缩来源。前两列 V4 已经做到,第三列(层维度)是 V4.1 真正新增的一维。</p>
+    <p>另一处要停留的是层维度那一列里的三个前驱:CLA 共享 KV 但不共享索引,IndexCache 与 YOIO 共享索引但省不了 KV 存储,YOCO 让上半复用下半但仍保留全注意力。报告的措辞是"没有一种方法覆盖全部三个维度",CSA2 的立场就是把缓存共享与索引复用<strong>解耦后同时做</strong>。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>长上下文降本 = 稀疏注意力省 FLOPs。KV cache 照存,靠更大的 HBM 与更多的 SSD 解决容量,靠前缀缓存命中率解决成本。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>把目标函数换成<strong>每 token 字节数</strong>:全局 KV 压到 890 字节(约 V4-Flash 的 1/4),持久 KV 压到 1/8。<span class="chip c-vr">自报</span> 手段是架构、缓存精度、部署策略的联合优化,宁可接受近似重建与选择错误的风险。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>瓶颈的重新定义</b>。官方给的证据是部署侧的观察(V4 部署里 SWA KV 占持久缓存近半、全局 KV 需 72 小时保留),不是理论推导。对 RL-on-NPU 的含义:<span class="chip c-inf">推断</span> 国产卡的单卡 HBM 与互连带宽恰是两处硬约束,一个以字节数为目标函数的架构比以 FLOPs 为目标的更贴近这类硬件的瓶颈。</p>
+
+<h2 id="s2"><span class="hnum">02</span>先看 V4 基座:V4.1 改的是什么</h2>
+
+<p>V4.1 的全部增量建立在 V4 的一套不寻常设计上,SGLang 主线的 <a href="https://raw.githubusercontent.com/sgl-project/sglang/main/python/sglang/srt/models/deepseek_v4.py">deepseek_v4.py</a> 与<a href="https://raw.githubusercontent.com/sgl-project/sglang/main/python/sglang/srt/configs/deepseek_v4.py">配置类</a>给出最可靠的读法:<strong>单 KV 头 MQA</strong>(<code>num_key_value_heads = 1</code>,<code>head_dim = 512</code>,64 个 query 头共读同一个 512 维向量,既当 K 也当 V,输出上再乘共轭 RoPE 抵消位置泄漏);低秩 Q 与分组低秩 O;<strong>CSA / HCA</strong> 逐层 <code>compress_ratio ∈ {0, 4, 128}</code>;每层 SWA-128 加注意力 sink;mHC 超连接(<code>hc_mult = 4</code>,20 步 Sinkhorn);前 3 个 MoE 层哈希路由;<code>sqrtsoftplus</code> + <code>noaux_tc</code> 路由。SGLang 内存池断言 V4 的 KV 为 <strong>584 字节/条</strong>(448 FP8 + 64 × 2 BF16 RoPE + 8 字节 scale)。</p>
+
+<div class="tbl">
+<table>
+<caption>V4 → V4.1-Flash 增量清单(<span class="chip c-vr">自报</span> 配置文件镜像 + 技术报告 §2、§4.2.1)</caption>
+<thead><tr><th>维度</th><th>V4-Flash</th><th>V4.1-Flash</th></tr></thead>
+<tbody>
+<tr><td>层数 / hidden</td><td>43 / 4,096</td><td><strong>40 = 20 编码 + 20 解码</strong> / 5,120</td></tr>
+<tr><td>路由专家 / 中间维</td><td>256 / 2,048</td><td><strong>384</strong> / 2,304(选 6 + 1 共享不变)</td></tr>
+<tr><td>注意力</td><td>CSA 比 4 + HCA 比 128 交替</td><td><strong>纯 CSA2</strong>:编码器比 2、解码器比 1;三模式静态分配;层级稀疏索引器</td></tr>
+<tr><td>压缩器</td><td>块重叠(8 token 步长 4)+ 块内绝对位置嵌入;indexer K 单独压一路</td><td>去重叠、去 APE;<strong>indexer K 由 main KV 投影</strong></td></tr>
+<tr><td>索引器头</td><td>64 × 128</td><td>32 × 128</td></tr>
+<tr><td>main KV 精度</td><td>FP8(584 字节)</td><td><strong>FP4(288 字节)</strong>;SWA KV 保持 FP8(528 字节)</td></tr>
+<tr><td>移除</td><td>—</td><td>每头 Q-norm、哈希路由层、预训练期 MTP</td></tr>
+<tr><td>新增</td><td>—</td><td>Engram 196B(第 1、14 层)、DSpark、Single-Pass mHC、head-wise Muon</td></tr>
+<tr><td>多模态</td><td>Vision-Exp 为后接实验版</td><td>DeepSeek-ViT 从预训练起联合(32 层、patch 14、3 × 3 pixel-unshuffle)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>V4.1 是 V4 的增量版:同架构、更多数据、微调后训练。压缩比 4/128 的 CSA/HCA 交替是 V4 的招牌,理应保留。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>HCA 整体取消,CSA 换成压缩比更小(2 与 1)的 CSA2,把省下的空间用在<strong>层维度</strong>上;transformers 以新模型类型 <code>deepseek_v41</code> 注册,vLLM 配方称之为"与 V4 分叉的兄弟"——<span class="chip c-vr">自报</span>"新架构家族中最小的模型"。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>压缩发生的维度</b>:V4 靠序列维度的重压缩(128×)换 KV 体积,V4.1 靠层维度的复用(4/40 层写 KV)换,序列压缩反而放松到 2× 与 1×。<span class="chip c-inf">推断</span> 这解释了为什么 D05 担心的"128× 丢 token 级细节"在 V4.1 的谱系里消失了——它没有 128× 的层;但代价转移到了"19 个解码层共读一份 512 维潜变量"这个新的容量瓶颈上。</p>
+
+<h2 id="s3"><span class="hnum">03</span>第一刀 CED:解码器的全局 KV 从编码器投影</h2>
+
+<p>报告 §2.2 的动机:agent 工作流中频繁的工具调用产生大量 prefill,KV 未命中时开销严重;设计<strong>受 YOCO 启发</strong>。核心是一条公式:对解码器(l > 20),全局注意力的 KV 不由本层 H_l 推出,而是用逐层投影矩阵直接从第 20 层隐状态 H_{L/2} 投影——<code>C_l = H_{L/2} · W_l^KV</code>,<code>Z_l = H_{L/2} · W_l^Z</code>。结论直接:<strong>prefill 阶段只需计算前一半的层</strong>。但 <strong>SWA 保持逐层计算</strong>:局部 K/V 仍来自本层 H_l,"有效增加了局部 KV 生成的计算深度"——CED 只折叠全局分支,局部分支保留 40 层深度。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-2.svg" alt="CED 的两条 KV 通路:提示 token 进入因果编码器第 0 至 19 层,末层隐状态 H 二十投影出解码器第 20 层 Full 的全局 KV 供 20 层共读;每一层各有自己的 SWA-128 局部 KV;prefill 只跑编码器激活约 8B,decode 每个新 token 走全部 40 层激活约 16B">
+  <figcaption><span class="fnum">图 2</span>CED 的两条 KV 通路。全局分支折叠到第 20 层的一次投影;局部 SWA 分支逐层保留。<span class="chip c-inf">推断</span> 本站图,依原文图 B 由第 2 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是<strong>从 H 二十出发的那条实线只进了一个方框</strong>(第 20 层 Full)。Eq. (1) 形式上允许每个解码层各有一组投影矩阵,但 CSA2 的模式分配让解码器只有第 20 层是 Full,所以"逐层投影"在生产模型里退化成一次投影、一份 KV、20 层共读。这是为什么图里第 21 至 39 层没有任何一条边通向全局 KV。</p>
+    <p>第二处要看的是<strong>右侧两个虚线框的激活参数</strong>:8B 恰是 20 层的量,16B 是 40 层。prefill 时提示 token 只过编码器——但解码器的 SWA KV 在解码前几步是需要的,精确重建要把 20 个解码层跑过最近 20 × 128 = 2,560 个提示 token。图中"仅重放最近 128 个 token"就是 Decoder SWA Bounded Replay:结果只供解码、不入前缀缓存,报告承认"在数学上不等价"。</p>
+  </div>
+</figure>
+
+<div class="formula">复杂度:O(N × L) → O(N × L/2 + n_win × L/2) ≈ O(N × L/2)   <span class="cmt">// N 为提示长度,L = 40,n_win = 128</span>
+精确重建解码器 SWA KV 需重放的 token 数:L/2 × n_win = 20 × 128 = 2,560
+有界重放实际重放:n_win = 128   <span class="cmt">// 状态为近似;后训练中模拟同一重放做适配</span></div>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>要省 prefill 就用 YOCO:下半网络算 KV,上半网络交叉注意力读它,prefill 提前退出。或者用 T5 式编码器-解码器,编码器双向以获得更好的表示。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>编码器必须<strong>因果</strong>:第 i 个 token 的编码器状态与投影出的 KV 只依赖 ≤ i 的 token,所以前缀缓存只依赖全局 KV、追加后缀时"无需重算或覆写",分块 prefill 与多轮追加成立,整个网络照常按下一 token 预测训练。与 YOCO 的差别:无交叉注意力模块,同一条流上的自注意力;SWA 分支逐层保留。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>"因果"二字的工程后果</b>:T5 式双向编码器会在每次追加时让全部缓存作废,与前缀缓存不相容。官方对 CED 本身<strong>没有独立消融</strong>——"保持与基线相当的性能"是在 CSA2 与 FP4 同时变化下的整体表述;有界重放的证据是 <span class="chip c-tp">第三方</span> SGLang 的 AIME 2026 pass@1 开关重放均为 453/480,以及 <span class="chip c-vr">自报</span>"负面影响可忽略"。<span class="chip c-inf">推断</span> 对 RL 的含义在 §14:有界重放使 prompt 的 logprob 与隐状态不可精确复现,训练侧必须模拟同一近似。</p>
+
+<h2 id="s4"><span class="hnum">04</span>第二刀 CSA2:三模式、四个 KV 源层、一个候选池</h2>
+
+<p>每个 CSA2 层被<strong>静态</strong>指派一种模式,三种模式下每层都算自己的 query 与 SWA KV,区别只在如何获得 main KV、indexer K 与 Top-K 索引。<strong>Full</strong>:自算 main KV,由它投影 indexer K,自己的 indexer Q 打分选新的 Top-512。<strong>Reindex</strong>:复用最近 Full 层的 main KV 与 indexer K,但用自己的 indexer Q <strong>重新打分</strong>、选新 Top-512——缓存共享不变、选择可逐层变化。<strong>Reuse</strong>:复用 main KV 与最近 Full 或 Reindex 层的 Top-K,不算 indexer Q、不评分。当 CSA2 与 CED 叠加,解码器中被指派 Full 的那一层用第 20 层隐状态算全局 KV。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-3.svg" alt="CSA2 三模式数据流:Full 模式自算 main KV 投影 indexer K 打分全部位置选 Top-512;Reindex 模式复用 main KV 与 indexer K 用本层 indexer Q 在候选池内重新打分得新 Top-512;Reuse 模式复用 main KV 与最近的 Top-512 直接做核心注意力">
+  <figcaption><span class="fnum">图 3</span>CSA2 三模式的数据流。绿色为本层计算、黄色为复用最近 Full 层的缓存、红色为复用最近索引层的 Top-K(对应报告图 4 的配色语义)。<span class="chip c-inf">推断</span> 本站图,依原文图 C 由第 3 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是<strong>三个模式各自省了什么</strong>。Full 什么都不省;Reindex 省了 main KV 与 indexer K 的<strong>存储</strong>,但保留索引<strong>计算</strong>;Reuse 两者都省。报告的关键词是"缓存共享与索引复用解耦"——IndexCache 只做后者,CLA 只做前者,CSA2 用两个独立的开关把它们分开。</p>
+    <p>再看 Reindex 框里"候选池内"三个字:在解码器里 Reindex 层不再对全部可见上下文打分,而是在第 20 层构造的 16,384 位置候选池内打分,每 query 成本由随上下文线性变为常数。代价是<strong>Reindex 的召回上限被第 20 层的选择封顶</strong>——它能改变选择,但只能在第 20 层看过的范围内改。</p>
+  </div>
+</figure>
+
+<div class="formula">生产模型的层拓扑(配置文件):
+compress_ratios      = [0, 0] + [2] × 18 + [1] × 20      <span class="cmt">// + [0, 0, 0] 给 3 个 DSpark 层</span>
+kv_source_layer_ids  = [2, 8, 14, 20]                    <span class="cmt">// 只有 4 层写全局 KV</span>
+index_source_layers  = [2, 8, 14, 20, 24, 28, 32, 36]    <span class="cmt">// 8 层跑索引器</span>
+candidate_source = 20 · 2048 blocks × 8 = 16,384 候选 · index_topk = 512 · sliding_window = 128</div>
+
+<figure>
+  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-4.svg" alt="40 层的模式分配:编码器第 0 至 1 层纯 SWA,第 2、8、14 层 Full 各带 5 个 Reuse 层,压缩比 2;解码器第 20 层 Full 并构造候选池带 3 个 Reuse,第 24、28、32、36 层 Reindex 各带 3 个 Reuse,压缩比 1;合计 4 层写全局 KV、8 层跑索引器、27 层只取数">
+  <figcaption><span class="fnum">图 4</span>40 层的模式分配。编码器 3 组 × 6(1 Full + 5 Reuse),解码器 5 组 × 4(Full + 3 Reuse,再 4 × Reindex + 3 Reuse)。<span class="chip c-vr">自报</span> 配置文件镜像;<span class="chip c-inf">推断</span> 本站图,依原文图 D 由第 4 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要数的是<strong>写 KV 的方框</strong>:只有四个(2、8、14、20)。这就是 890 字节里 "3 × 1/2 + 1" 的来历——三个在编码器、压缩比 2,一个在解码器、压缩比 1。再数<strong>带索引器的方框</strong>:四个 Full 加四个 Reindex 共八个;其余 27 个 CSA2 层加 2 个纯 SWA 层,合计 40。</p>
+    <p>注意解码器的组内结构:每组 4 层里只有第一层有索引器,后三层 Reuse。也就是说<strong>解码器 20 层里只有 5 次"重新选择"的机会</strong>,其中 4 次还限制在候选池内。这是这套设计对长上下文检索能力的真实约束,也是基座表里 LongBench-V2 回退 6.3 分最可能的来源(<span class="chip c-inf">推断</span>)。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>每层各自压缩、各自索引、各自存 KV。层间独立,便于训练与实现;KV 体积随层数线性增长,索引计算随层数与上下文长度双线性增长。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>4 层写 KV、8 层跑索引、27 层只按继承的索引取数;解码器的 Reindex 层只在 16,384 位置的候选池内打分。<span class="chip c-vr">自报</span> Reuse 模式的层 prefill 只 15 个 kernel、decode 11 个。压缩器同时简化:去重叠、去 APE、indexer K 由 main KV 投影。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异是<b>把层维度当成可压缩的维度</b>。官方给的可行性证据是间接的:报告引 IndexCache、YOIO、HySparse 三篇前驱;<span class="chip c-tp">第三方</span> IndexCache 测得相邻 DSA 层的 top-k 重叠 70% 至 100%,是"复用索引损失可控"的旁证,但<strong>不是本模型的数据</strong>。Reuse 对 Reindex 的质量差、候选池召回率,报告未量化。<span class="chip c-inf">推断</span> 对昇腾的含义:模式是编译期已知的静态信息,比 V4 的 CSA/HCA 交替更易做整图优化。</p>
+
+<h2 id="s5"><span class="hnum">05</span>第三刀 FP4 main KV:存储用低精度,计算不用</h2>
+
+<p>报告 §2.4.4 先划清一件事:V4 已用 QAT 把<strong>索引器</strong>的 Q/K 做成 FP4,那是为了<strong>加速索引计算</strong>;V4.1 把 QAT 扩展到 <strong>main KV</strong>,这里 FP4"减少存储而不是加速矩阵乘"——缓存值在注意力前先反量化,所以可以选更准的格式,而<strong>不要求硬件原生支持该格式的矩阵乘</strong>。格式选 <strong>E2M1 + 每 16 通道一个 E4M3 scale</strong>,"遵循 NVFP4 但省略其第二级全局 scale"。省略的理由是算术:格式上界 448 × 6 = <strong>2,688</strong>;RMS 归一化后 512 维潜变量的 L2 范数至多约 √512 ≈ <strong>22.6</strong>,RoPE 保范;训练中观测到的最大幅值约 <strong>10</strong>。上界比需求高两个数量级。QAT 在<strong>后训练</strong>引入;RoPE 之后量化;<strong>SWA KV 保留 FP8</strong>"因其对量化敏感"。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>KV 量化 = 训练后量化(KIVI / KVQuant 一类),逐通道或逐 token 校准,接受一点精度损失;或者等硬件原生 FP4 矩阵乘,把注意力也算在低精度里。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p><strong>训练期</strong>让模型学会容忍(QAT),<strong>存储</strong>用 FP4,<strong>计算</strong>前反量化回高精度。两种 FP4 布局并存:indexer K 用 <strong>OCP MXFP4</strong>(E2M1 + 每 32 个值一个 UE8M0 scale,128 维 → 68 字节),因为它要参与索引器的低精度点积、选硬件通用格式;main KV 用 <strong>NVFP4 微块</strong>(E4M3 scale、每 16 个值,512 维 → 288 字节),因为只是存储、可以更准。SGLang 与 vLLM 都实现了这两套字节数。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异是<b>把"存储精度"与"计算精度"分开</b>,这一点几乎没有报道指出。官方证据是定性的:<span class="chip c-vr">自报</span>"边际性能退化"、"无可测的精度下降"、"RoPE 前量化只带来边际改善";<strong>没有 FP4 对 FP8 的量化消融表</strong>。对昇腾的含义在报告原文里:"保持跨硬件平台的兼容性"——<span class="chip c-inf">推断</span> 昇腾侧只需 E2M1 → BF16/FP8 的反量化核与 288 字节页布局,不依赖 FP4 tensor core;需要参与低精度点积的 indexer K 用的是硬件通用的 MXFP4。</p>
+
+<h2 id="s6"><span class="hnum">06</span>890 字节的账</h2>
+
+<p>官方只给结论:全局 KV"始终在 HBM"的占用降到 <strong>890 字节/token</strong>,约为 V4-Flash 的 1/4。本站按 <a href="https://raw.githubusercontent.com/deepseek-ai/FlashMLA/main/README.md">FlashMLA README</a> 的 V4.1 字节布局(FP4 main KV 288 字节 = 256 字节 E2M1 数据 + 32 字节 E4M3 scale;indexer K MXFP4 68 字节)与 §4 的层拓扑逐项复核。</p>
+
+<div class="formula">每条全局 KV(Full 层)     = 288 (FP4 main KV) + 68 (MXFP4 indexer K) = 356 字节
+编码器 3 个 Full 层,压缩比 2:   3 × 356 / 2 = 534 字节 / 原始 token
+解码器 1 个 Full 层,压缩比 1:   1 × 356 / 1 = 356 字节 / 原始 token
+合计                                        = 890 字节 / 原始 token   <span class="cmt">// 精确吻合;SGLang 团队给出同一恒等式</span>
+
+两个基线:
+V4-Flash ≈ 21 × (584 + 68) / 4 + 20 × 584 / 128 = 3,514.25 字节  <span class="cmt">// 比值 3.95×;SGLang 表 3,514</span>
+DeepSeek-V1 = 2 × 95 层 × 8 KV 头 × 128 × 2 字节 = 389,120 字节     <span class="cmt">// 389,120 / 890 = 437.2,与图 1(b) 的 437 吻合</span></div>
+
+<figure>
+  <img src="img/dispatch-42-deepseek-v41-flash/fig-6.svg" alt="五代 DeepSeek 模型每 token KV 字节数的对数轴条形图:V1 389,120、V2/V3 约 70,000、V3.2 40,016、V4-Flash 3,514、V4.1-Flash 890">
+  <figcaption><span class="fnum">图 5</span>五代模型每 token 的 KV 字节数(对数轴)。V1 至 V3.2 为全层 KV(<span class="chip c-inf">推断</span> 本站按公开维度重建);V4-Flash 与 V4.1-Flash 为不随长度增长的全局 KV 口径(<span class="chip c-vr">自报</span> 技术报告与 SGLang 团队表),不含有界的 SWA KV。两种口径只可比量级。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是<strong>相邻两根条的间距在对数轴上大致相等</strong>:每一代都在一个数量级上下切。V1 → MLA 是条目维度(576 维潜变量替代 8 头 × 128 × K/V),MLA → V3.2 是精度(BF16 → FP8)加稀疏,V3.2 → V4 是序列压缩(4× / 128×),V4 → V4.1 是层维度(4/40 层)加 FP4。<strong>四代四个维度,V4.1 用的是最后一个还没用过的</strong>。</p>
+    <p>要警惕的是<strong>前三根与后两根不是同一口径</strong>:前三根算的是全部层的 KV,后两根只算随长度增长的全局 KV,每层 128 位置的 SWA KV 不在内。如果把 V4.1 每层 528 字节 × 128 位置 × 40 层的 SWA 环也算进去,那是固定的约 2.7 MB,与序列长度无关——1M token 时可以忽略,4K token 时不能。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>"KV cache 压缩 437 倍",一个模型把上一代的 KV 砍到四分之一。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>890 可以从公开字节布局与层拓扑<strong>精确重建</strong>,437 与 3.95 两个比值也能复核。但 890 是<strong>逻辑大小</strong>:不含 SWA KV(FP8,每层 128 位置)、压缩比 2 层的待配对状态、页对齐填充(FlashMLA 按 512 字节倍数分页)。<span class="chip c-tp">第三方</span> SGLang 团队明确提醒实际 HBM 用量有别。V4-Flash 的 3,514 来自 SGLang 而非报告正文(图 1(b) 是图片)。<strong>更要紧的是 890 假设 FP4 存储</strong>:FlashMLA 的 V4.1 稀疏解码核只支持 SM100,退回 FP8 主行(528 B)与 FP8 indexer K(132 B)后同一层拓扑给出 (528 + 132) × 2.5 ≈ 1,650 B,<span class="chip c-tp">第三方</span> 一个运行中的 SGLang FP8 部署实测 <strong>1,670.75 B/token</strong>。</p></div>
+</div>
+
+<p class="delta"><span class="dl">本站判断</span><b>890 与 1,670 之间差的不是架构,是部署精度</b>——而 SGLang 与 vLLM 都验证了 8 × H200(Hopper,非 SM100)。DeepSeek 自家机队实际有多大比例跑在 FP4 上,无公开信息。除此之外,这笔账最值得带走的是<b>它揭示的分工</b>:解码器 19 层对全局 KV 的贡献为零,整个解码器的全局视野是每 token 一条 512 维 FP4 潜变量。这是一个很强的容量瓶颈,由 Reindex 模式与层级索引器部分补偿——LongBench-V2 基座回退 6.3 分是目前唯一一处公开的负面信号。</p>
+
+<h2 id="s7"><span class="hnum">07</span>部署:持久 KV 降到 1/8 的机制</h2>
+
+<p>V4 的部署里 <strong>SWA KV 占持久 KV 容量近半</strong>,因为多轮会话与重生成需要在提示末尾与输出末尾恢复状态。但它的访问模式与长保留策略不匹配:全局 KV 有长尾复用,SWA KV 只在活跃会话内分钟级的窄窗口里被复用。V4 报告的 <strong>Zero SWA Caching</strong>(不存、缺了精确重算 L × n_win 个 token)"在生产部署中成本过高"。V4.1 的答案是<strong>只重放最近 128 个 token 并把 SWA 截断在重放段内</strong>,接受近似状态。两个应用面:<strong>Encoder</strong> 侧让前缀缓存只依赖全局 KV,SWA KV 可以不再持久化;<strong>Decoder</strong> 侧让 prefill 在编码器处结束。</p>
+
+<figure>
+  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-5.svg" alt="两种重放与持久缓存的分层:持久 KV 层存全局 KV 寿命至少 72 小时;分布式内存池存编码器 SWA KV 每机 10% DRAM 分钟级 TTL;前缀命中直接复用全局 KV,SWA 缺失则重放最近 128 个 token;编码器处理未缓存后缀后进入解码器有界重放再开始 decode">
+  <figcaption><span class="fnum">图 6</span>两种重放与持久缓存的分层。全局 KV 与 SWA KV 分属两个寿命完全不同的存储层。<span class="chip c-inf">推断</span> 本站图,依原文图 E 由第 5 个 mermaid 块渲染。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是<strong>两个存储层的寿命标签</strong>:全局 KV"至少 72 小时"、SWA 池"分钟级"。1/8 的来源就是这两层的分离:不再持久化 SWA KV 约减半,全局 KV 本身压到 1/4,相乘得 1/8。SWA 池只用每台机器 10% 的 DRAM,靠高周转而非大容量服务绝大多数并发会话。</p>
+    <p>再看底部的说明框:精确重建需要 2,560 个 token,有界重放只需 128 个——这是 20 倍的计算差,买到的是"把灾难性的缓存缺失变成可承受的优雅退化"。官方称此为"设计的基石",因为正是它让 SWA KV 从持久缓存里移除成为合理决定。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>前缀缓存把全部 KV(含 SWA)落盘;命中即恢复;缺失则从头 prefill。存储按最长保留策略配置。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>全局 KV 持久化(SSD,≥ 72 小时);SWA KV 进每机 10% DRAM 的分布式池(分钟级 TTL,过期即回收);缺失时有界重放 128 个 token。<span class="chip c-tp">第三方</span> SGLang <code>dsv4.1</code> 分支实现了解码器侧重放:第 0 至 20 层跑全部 token、第 21 至 39 层只跑每请求最后 128 个,prefill 吞吐 1.56×(8 × H200)、1.37×(4 × GB300);vLLM 主线目前仍跑全 40 层。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异是<b>按访问模式分层存储</b>,这在数据库里是常识,在 KV cache 管理里是第一次被写进模型架构的报告。代价被官方写明:后缀的全局 KV 与 SWA KV"依赖缓存命中位置、跨位置不逐位相同";SGLang 已声明 prompt logprobs 不可用、拒绝确定性推理。<span class="chip c-inf">推断</span> 对 RL 训练的含义:on-policy 的训推一致性要求训练侧模拟同一重放,报告正是这么做的("train-aware adaptation")——推理侧的近似必须被训练侧看见。</p>
+
+<h2 id="s8"><span class="hnum">08</span>其余组件与训练</h2>
+
+<p><strong>Engram 条件记忆(196B)</strong>:第 1 与第 14 层,按 token 的 n-gram(阶 2 至 4)哈希查表,8 个哈希头 × 256 维,每表约 3.84 亿条,FP8。<strong>DSpark</strong>:3 个 Transformer 块的草稿器一次前向给出 5 个草稿位置,Markov 头建模草稿间依赖,置信度头预测各位置接受概率,调度器按引擎吞吐曲线为每请求动态选择验证长度;<strong>在预训练后单独训练、主干冻结</strong>,后训练期继续训但不把梯度传回主干。<strong>Single-Pass mHC</strong>:混合系数后移一块,残差更新、系数预测与混合融合为一个 kernel,激活流量 (4n + 4)d → (2n + 2)d。<strong>head-wise Muon</strong>:Query 权重按头拆分后做 Muon 更新,报告称该优势在 GLM 5 与 Kimi-K3 中亦得到验证。</p>
+
+<p><strong>训练</strong>:45T 多模态 token,批 100.6M,学习率 2.6e-4 至 28T、余弦降至 2.6e-5 于 40T、平稳到 45T;<strong>稀疏注意力从头在 64K 上训练,不经稠密预热</strong>;34T 处扩到 1M。基座以 1/3 总参数与 1/4 激活参数取得与 V4-Pro-Base 相当的能力:MMLU-Pro 74.1(V4-Pro 73.5)、HumanEval 79.4(76.8)领先;SimpleQA-Verified 42.3 对 55.2、<strong>LongBench-V2 45.2 对 51.5</strong> 落后。<strong>后训练"不引入算法创新"</strong>,SFT → RL → OPD 沿用 V4,变化全在数据管线;<strong>可连续控制的推理努力 1 至 100</strong>,API 的 low / high / max 对应 50 / 75 / 100;25 → 100 时八项推理平均 67.1 → 76.3、DeepSWE 66.0 → 74.2、TB 2.1 82.4 → 90.6,输出 token 约 2.5×——<strong>所有头条数字都是 max 档的数字</strong>。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>新一代旗舰 = 新的 RL 算法或新的奖励模型;投机解码用 MTP 与主干联合预训练;参数全部在主干里。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p><span class="chip c-vr">自报</span> 后训练无算法创新;196B 参数放在主干之外的查表里(Engram),激活时不算入 8B/16B;草稿器与主干解耦训练以便随策略演进而不污染主干;推理努力做成连续标量并以指数 token 惩罚训练。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异是<b>把复杂度从算法挪到系统</b>:架构、缓存、部署、数据管线是变化所在,RL 配方本身不动。<span class="chip c-inf">推断</span> 对本看板的一条直接推论:D16 记录的两阶段后训练(隔离专家 → OPD 合并)在 V4.1 上被原样沿用并声明有效,这一配方的稳定性得到了第二个数据点。Engram 的 183 GiB 表也是部署门槛的主要来源——SGLang 把它卸载到主机后 KV 容量 +36%。</p>
+
+<h2 id="s9"><span class="hnum">09</span>评测:厂商表与 scaffold 对照</h2>
+
+<p>技术报告表 3(模型卡"与前沿模型对比",全部 Max 档,<span class="chip c-vr">自报</span>)是一张 20 行 × 7 列的表。分域结论清晰:<strong>编码与 agent 执行类打平或小胜闭源前沿</strong>——Terminal Bench 2.1 90.6(Opus-5 89.1、Sol 88.8)、DeepSWE v1.1 74.2(74.0)、CyberGym 88.1、AutomationBench 54.8(50.3)、Agents' Last Exam 31.8(28.6)、HLE 带工具 63.9(63.6);<strong>难推理与专家知识类差距显著</strong>——TB 3.0 30.0 对 43.3、TB 4.0 31.2 对 51.8、ProgramBench 20.3 对 37.0、NL2Repo 64.0 对 75.3、HLE 36.8 对 56.3。报告自述:"科学导向、需要专家级领域知识的 agent 任务与巨型模型仍有差距"。设置:<code>reasoning_effort = 100</code>,代码 agent 基准在 <strong>DeepSeek Harness Minimal + 1M 上下文</strong>下测,DeepSWE 头条用 mini-SWE,视觉 agent 用 Claude Code + 512K。</p>
+
+<figure>
+  <img src="img/dispatch-42-deepseek-v41-flash/fig-7.svg" alt="V4.1-Flash 相对 Opus-5 在 15 项基准上的分差,分歧型条形图:领先项 AutomationBench +4.5 至 DeepSWE +0.2,落后项 GPQA −2.5 至 Terminal Bench 4.0 −20.6">
+  <figcaption><span class="fnum">图 7</span>与 Opus-5 逐项的分差。右侧蓝色为 V4.1 领先,左侧红色为落后。<span class="chip c-vr">自报</span> 厂商表 3,Max 档;<span class="chip c-inf">推断</span> 本站图。Opus-5 在 Codeforces、MathArena Apex、CyberGym、SEC-Bench Pro 无数据,未列。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是<strong>零线两侧的不对称</strong>:右侧五根都在 +4.5 以内,左侧十根最深到 −20.6。赢得少、输得多——但赢的五项(AutomationBench、ALE、TB 2.1、HLE 带工具、DeepSWE)恰是日常编码与白领工作流里使用频率最高的几项,输的深处(TB 4.0、HLE、ProgramBench)是科学与专家知识类。这与报告自己的分域表述完全一致。</p>
+    <p>要警惕的是<strong>竞品列的来源</strong>:报告没有逐格说明 Opus-5 的数字是 DeepSeek 在同一 DSH Minimal 协议下重跑的,还是从厂商卡片抄录的;HLE 一行更是全集与文本子集混用。这张图的每一根条都是"厂商表口径",不是受控对比。</p>
+  </div>
+</figure>
+
+<p><strong>表 4 是本篇最值得带走的一张表。</strong> 同一个 V4.1-Flash、同一组设置(Max 档、N = 8 / N = 3、Linux 容器、1M 上下文、max_steps = 500),八种 scaffold:</p>
+
+<div class="tbl">
+<table>
+<caption>同一模型在八种 scaffold 下的分数(<span class="chip c-vr">自报</span> 技术报告表 4)</caption>
+<thead><tr><th>基准</th><th>Claude Code</th><th>Codex</th><th>OpenCode</th><th>Pi</th><th>mini-SWE</th><th>DSH Minimal</th><th>DSH Standard</th><th>DSH PTC</th></tr></thead>
+<tbody>
+<tr><td>DeepSWE v1.1</td><td>69.8</td><td>65.6</td><td>65.5</td><td>66.2</td><td><strong>74.2</strong></td><td>72.6</td><td>70.5</td><td>67.6</td></tr>
+<tr><td>Terminal Bench 2.1</td><td>88.0</td><td>84.1</td><td>85.0</td><td>86.1</td><td>90.3</td><td><strong>90.6</strong></td><td>85.8</td><td>85.8</td></tr>
+</tbody>
+</table>
+</div>
+
+<figure>
+  <img src="img/dispatch-42-deepseek-v41-flash/fig-8.svg" alt="同一 V4.1-Flash 在八种 scaffold 下的 DeepSWE 与 Terminal-Bench 2.1 分数点图,mini-SWE 与 DSH Minimal 居首,Codex 与 OpenCode 居末">
+  <figcaption><span class="fnum">图 8</span>八种 scaffold 下的两项分数。蓝点 DeepSWE v1.1,橙点 TB 2.1,按 DeepSWE 降序。<span class="chip c-vr">自报</span> 技术报告表 4;<span class="chip c-inf">推断</span> 本站图。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是<strong>纵向排序里 DSH 三档的位置</strong>:Minimal 第二、Standard 第三、PTC 第五。加了工具与程序化工具调用的两档反而更低——D29 的判断"Minimal 是训练分布的复现,分数在此产生"由厂商数据证实。DeepSWE 极差 8.7 分、TB 2.1 极差 6.5 分,与 D29 记录的"同一模型跨 harness 分差 5 至 15 分"同一量级。</p>
+    <p>再把这张图和 D41 的 ARC-AGI-3 哑铃图放在一起:那里是开源 harness 把 Opus 5 从 30.2 抬到 95.24,D39 是厂商适配层把 Astra 从 62.7 抬到 99.9,这里是<strong>厂商在自己的技术报告里把八种 harness 并排印出来</strong>。三个样本、三种来源,结论一致。报告结论把 "model–harness co-design" 列为未来方向。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>"V4.1-Flash 在 Terminal-Bench 2.1 与 DeepSWE 上超过 Opus 5 与 GPT-5.6 Sol"——一个 16B 激活的模型追平了闭源前沿。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>成立的前提是 DSH Minimal / mini-SWE 与 Max 档。同一模型换到 Codex 是 65.6 / 84.1;<span class="chip c-tp">第三方</span> Vals.ai 中立 harness 重跑 TB 2.1 得 74.53。表 5 还显示 Claude Code 换版本即漂移约 1.5 分。厂商表里没有 AIME、LiveCodeBench、SWE-bench Verified/Pro、tau-bench、MMMU——报告的解释是"知识型能力由预训练决定、见基座表"。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异是<b>"在哪个 harness 上"从脚注变成了正文</b>。官方给出的是本看板见过的最完整的 harness 披露:八种 scaffold、Claude Code 四个版本、努力档扫描、每项的 N 与 max_steps。<span class="chip c-inf">推断</span> 与 D41 的判断相同:harness 与协议必须与分数同时披露,这张表是国产模型评测可直接照抄的模板;而"哪个 harness 是中立的"仍无共识——DeepSeek 认为 Minimal(单一 bash 工具)最中立,Vals.ai 的中立 bash-only harness 却低 16 分。</p>
+
+<h2 id="s10"><span class="hnum">10</span>第三方口径</h2>
+
+<p><strong>先说标度。</strong> Artificial Analysis 09-04 发 v4.2 后,约 <strong>09-06 又发 v4.3</strong>(Terminal-Bench 2.1 换 4.0、τ³-Banking 换 AutomationBench-AA)。三套标度并行流通:Fable 5.1 在 v4.1 / v4.2 / v4.3 上分别是 66 / 57 / 53;Flash 档模型跨版本掉 15 至 18 分。V4.1-Flash 的 <strong>40 是 v4.3 数字</strong>。同标度下:Fable 5.1 与 Astra 53、Opus 5 51、GLM-5.3 45、Kimi K3 44、GLM-5.3-Flash 42、Gemini 3.8 Flash 41、<strong>V4.1-Flash 40</strong>、两款 Qwen3.8 40、V4-Pro 36、V4-Flash 35。</p>
+
+<div class="tbl">
+<table>
+<caption>第三方测量汇总(<span class="chip c-tp">第三方</span>,2026-09-06 至 09-14)</caption>
+<thead><tr><th>来源</th><th>指标</th><th>V4.1-Flash</th><th>对照</th></tr></thead>
+<tbody>
+<tr><td>Artificial Analysis</td><td>智能指数 v4.3</td><td>40</td><td>GLM-5.3-Flash 42;V4-Pro 36;V4-Flash 35;Fable 5.1 53</td></tr>
+<tr><td>Artificial Analysis</td><td>跑指数生成的 token / 成本</td><td>250M / $476.89</td><td>GLM-5.3-Flash 180M / $280.28;Qwen3.8-Flash-Next 240M / $362.72;中位 130M</td></tr>
+<tr><td>Artificial Analysis</td><td>输出速度 / 首 token / 首答案 token</td><td>218.7 tok/s / 1.17 s / 10.36 s</td><td>GLM-5.3-Flash 103.5;Qwen3.8-Flash-Next 50.4;Baseten 托管 283.9</td></tr>
+<tr><td>Vals.ai</td><td>Terminal-Bench 2.1,中立 harness,三次</td><td><strong>74.53</strong></td><td>厂商 DSH Minimal <strong>90.6</strong>——差 16 分</td></tr>
+<tr><td>Vals.ai</td><td>Vals Index / 每测试成本</td><td>57.86%(第 15 / 56,开放权重第 1)/ $0.30</td><td>Kimi K3 57.81% / $6.47</td></tr>
+<tr><td>虎嗅 / 凤凰 beta 测试</td><td>14 组任务、约 3 亿 token</td><td>约 284 tok/s;自发起 37 个子代理;总成本 <strong>+36%</strong></td><td>对 V4-Flash,同价</td></tr>
+<tr><td>OpenDesign Arena</td><td>设计任务 / 每设计成本</td><td>81.2 / $0.023</td><td>Astra 82.7 / $1.61</td></tr>
+<tr><td>SuperCLUE 7 月补充</td><td>综合</td><td>71.81</td><td>未给排名</td></tr>
+<tr><td>LMArena / Epoch / swebench.com / TB 官方榜</td><td>—</td><td>截至 09-14 均无条目</td><td>Agent Arena 显示 "scores coming soon"</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>"每百万 token 0.15 美元的前沿级 agent 模型",按 token 计价比闭源便宜两个数量级,是当前性价比之王。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>三条互相牵制的证据。<strong>能力</strong>:AA v4.3 上 40,高于自家两款 V4(+4 / +5),低于 GLM-5.3-Flash 与 Gemini 3.8 Flash,离前沿 13 分。<strong>成本</strong>:AA 跑指数成本比 GLM-5.3-Flash 高 70%,因为多生成 39% 的 token;虎嗅测得总成本反超 V4-Flash 36%。<strong>速度</strong>:约 219 tok/s,是同档国产 Flash 的 2 至 4 倍,但首个答案 token 要 10 秒。Vals.ai 的口径下它仍是前 15 名里最便宜的模型。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异是<b>"每 token 便宜"与"每任务便宜"不是一回事</b>。AA 的评语 "notably fast, however very verbose" 概括得准确:它的真正卖点是每单位时间的吞吐,而按 token 计价的优势被冗长吃掉一部分。<span class="chip c-inf">推断</span> 这与 D40 记录的 Astra"用 Sol 三分之一 token 换同级分数"恰成对照——两家在推理效率这条线上走的是相反方向。Vals.ai 的 16 分是本篇最重要的第三方数字:它是头条基准第一次被中立 harness 独立重跑。</p>
+
+<h2 id="s11"><span class="hnum">11</span>产品、定价与撤回</h2>
+
+<p><strong>模型名</strong>:API 改用 <code>deepseek-flash</code>;V4 Flash 与 V4 Flash Vision Exp 退役并临时路由到 V4.1 Flash。<strong>V4-Pro 退役被撤回</strong>:09-10 公告的规则是 09-14 12:00(北京时间)起 <code>deepseek-v4-pro</code> 路由到 V4.1-Flash 并按 Flash 单价计费,理由"多方测试显示 V4.1-Flash 在性能、成本、速度与总用时上均优于 V4-Pro"——后两项没有公布任何数字;09-11 撤回:"应用户需求,继续为 V4 Pro 提供 API 服务,计费方式不变"。V4.1-Pro 无日期。HN 首日 409 分的讨论聚焦的正是"把付费流量静默路由到 Flash"。</p>
+
+<div class="tbl">
+<table>
+<caption>定价(<span class="chip c-tp">第三方</span> 官方定价页抓取,观测 2026-09-11;美元 / 百万 token)</caption>
+<thead><tr><th>模型</th><th>缓存命中输入</th><th>缓存未命中输入</th><th>输出</th><th>高峰</th></tr></thead>
+<tbody>
+<tr><td><strong>deepseek-flash(V4.1)</strong></td><td><strong>0.003</strong></td><td><strong>0.15</strong></td><td><strong>0.60</strong></td><td>× 2</td></tr>
+<tr><td>deepseek-v4-flash(0731,已退役)</td><td>0.007</td><td>0.22</td><td>0.66</td><td>× 2</td></tr>
+<tr><td>deepseek-v4-pro(0813,保留)</td><td>0.022</td><td>0.66</td><td>1.98</td><td>× 2</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>对照 V4-Flash 的人民币表价:<strong>缓存命中 0.05 → 0.02(−60%)、未命中 1.5 → 1(−33%)、输出 4.5 → 4(−11%)</strong>——降幅最大的一行是缓存命中,DeepSeek 发布推文的表述是"缓存命中费用往往占 agent 成本的大头,压缩缓存即显著降低这部分成本"。高峰时段为工作日 <strong>UTC 01:00 至 04:00 与 06:00 至 10:00</strong>(北京时间 09 至 12 时与 14 至 18 时),周末全天非高峰。<strong>权重</strong>:checkpoint 约 511 GB(MXFP4 专家 259.5 GiB、FP8 Engram 183.1 GiB、注意力与稠密 6.9 GiB、块 scale 21.9 GiB);vLLM 最低显存 614 GB(TP4 GB200 NVL4 / 8 × H200 / 4 × MI350X);SGLang 验证 4 × B200/B300/GB300;<strong>vLLM-Ascend 给出 W8A8 部署</strong>(2 × Atlas 800 A3 或 4 × Atlas 800 A2,DP4 / TP8 / EP32,INT8 Engram,DSpark 5 个草稿 token 以 eager 运行,<code>FULL_DECODE_ONLY</code> ACL Graph;教程明言未发布任务级精度结果与性能基线)。</p>
+
+<div class="vs">
+  <div class="base"><h5>朴素基线</h5>
+  <p>新模型发布 = 加一个模型名、降一档价。旧旗舰继续卖,直到下一代旗舰出来。</p></div>
+  <div class="real"><h5>它的做法</h5>
+  <p>用一个 16B 激活的模型<strong>替换</strong>旗舰(后撤回),把 API 名收敛为 <code>deepseek-flash</code>,把降价集中在与架构收益直接对应的那一行(缓存命中 −60%),用高峰 2× 做需求整形。<span class="chip c-vr">自报</span>"新架构家族中最小的模型……为扩展到更大模型而设计"是关于家族的全部公开表述。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异是<b>定价结构与架构结构对齐</b>:890 字节/token 让服务端能存得起更多缓存前缀,于是缓存命中那一行降得最多。撤回一事说明"小模型替旗舰"的产品判断跑在了用户接受度前面;<span class="chip c-inf">推断</span> 在 V4.1-Pro 出现前,DeepSeek 在高端档实际是用一款 2026-08 的模型在守。</p>
+
+<h2 id="s12"><span class="hnum">12</span>总表:朴素基线 vs V4.1-Flash</h2>
+
+<div class="tbl">
+<table>
+<caption>各节双栏对照汇总</caption>
+<thead><tr><th>维度</th><th>朴素基线</th><th>V4.1-Flash 的做法</th><th>官方证据</th></tr></thead>
+<tbody>
+<tr><td>目标函数</td><td>省 FLOPs</td><td>省每 token 字节数(890 全局 / 持久 1/8)</td><td>部署侧观察;数字可复核</td></tr>
+<tr><td>压缩维度</td><td>序列(V4 的 4× / 128×)</td><td>层(4/40 层写 KV)+ 精度(FP4),序列放松到 2× / 1×</td><td>配置文件;无独立消融</td></tr>
+<tr><td>prefill</td><td>全部层过全部 token</td><td>只跑编码器 20 层;解码器重放最近 128 个 token</td><td>SGLang 1.56×;AIME 453/480 两侧相同</td></tr>
+<tr><td>解码器全局 KV</td><td>每层自算</td><td>第 20 层一次投影,20 层共读</td><td>Eq. (1);配置 kv_source</td></tr>
+<tr><td>索引</td><td>每层对全上下文打分</td><td>8 层打分;解码器 Reindex 限于 16,384 候选池</td><td>报告 §2.3.2;召回率未量化</td></tr>
+<tr><td>KV 精度</td><td>训练后量化或等硬件 FP4</td><td>QAT + FP4 存储 + 反量化后计算;SWA 留 FP8</td><td>"边际退化";无消融表</td></tr>
+<tr><td>持久缓存</td><td>全部 KV 落盘</td><td>全局 KV ≥ 72 小时;SWA 进分钟级 DRAM 池</td><td>V4 部署数据(SWA 占近半)</td></tr>
+<tr><td>后训练</td><td>新算法</td><td>沿用 SFT → RL → OPD;变化在数据管线</td><td>自述"无算法创新"</td></tr>
+<tr><td>评测</td><td>一张表、一个 harness</td><td>八种 scaffold 并排;Max 档;DSH Minimal 为主</td><td>表 4;Vals.ai 中立重跑低 16 分</td></tr>
+<tr><td>定价</td><td>整体降一档</td><td>缓存命中 −60%、未命中 −33%、输出 −11%;高峰 2×</td><td>官方定价页(第三方抓取)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="s13"><span class="hnum">13</span>官方没给的东西</h2>
+
+<ul>
+  <li><strong>CED 的独立消融缺失。</strong>"保持与基线相当"是在 CSA2、FP4 同时变化下的整体表述;有界重放的量化证据只有 AIME 一项。</li>
+  <li><strong>FP4 对 FP8 main KV 的量化消融缺失。</strong>只有"边际退化"、"无可测下降";图 6 的 BPB 对比是整模型口径。</li>
+  <li><strong>Reuse 对 Reindex 的质量差、候选池召回率</strong>未量化;IndexCache 的 70% 至 100% 重叠是旁证非本模型数据。</li>
+  <li><strong>V4-Flash 的 3,514 字节基线</strong>来自 SGLang 团队;本站重建假设 21 个 CSA 层 + 20 个 HCA 层。</li>
+  <li><strong>总参数口径</strong>:vLLM recipes 印 522B,模型卡与报告印 552B 主干 + 196B Engram;配置 <code>rms_norm_eps = 1e-20</code> 异常,镜像值未与官方文件核对。</li>
+  <li><strong>第三方复现只有一处</strong>(Vals.ai 的 TB 2.1);无 LMArena 文本/代码榜、Epoch ECI、swebench.com、TB 官方榜;SuperCLUE 有分无名。AA 的 250M token 冗长与虎嗅的 +36% 提示:按 token 计价的便宜需要按任务重新核算。</li>
+  <li><strong>"速度"与"总用时"优于 V4-Pro 无官方数字</strong>;Hopper 上 FP4 压缩缓存的回退路径无官方文字。</li>
+  <li><strong>昇腾侧的 W8A8 路径未提 FP4 KV 与稀疏解码核</strong>是否落地,有界重放是否实现;890 字节的 HBM 收益在昇腾上尚未兑现。</li>
+  <li><strong>技术报告不在 arXiv 上</strong>:它是 HF 模型库里的 <code>DeepSeek_V41_Tech_Report.pdf</code>,本站经多个 GitHub 镜像的文本转写读取,六个独立镜像的架构段落逐字一致。</li>
+  <li><strong>基座有一处未解释的回退</strong>:MGSM 80.2 对 V4-Flash-Base 的 85.7,是唯一一项低于两个前代的基准,报告未讨论;instruct 模型没有 MMMU / MathVista / OCRBench / ChartQA / ScreenSpot 的独立数字,视觉只有基座表与三项带工具的 agent 任务。</li>
+  <li><strong>默认档就是最费 token 的档</strong>:报告称努力档 60 至 80 能以不到一半的 token 取回大部分 max 档精度,但所有公布数字用的是 100;vLLM 未设置时默认 thinking 开、努力 50,小 <code>max_tokens</code> 下会出现 <code>content</code> 为空而 <code>finish_reason = length</code>。</li>
+  <li><strong>昇腾侧无精度与吞吐数据</strong>:vLLM-Ascend 教程明言未发布任务级精度结果与生产性能基线;V4.1 不在任何正式发布中,只在 main / nightly 与专用验证镜像里。</li>
+  <li><strong>代理网络限制</strong>:arXiv、Hugging Face、deepseek.com 与 api-docs 不可达;技术报告、模型卡、配置与变更日志均经 GitHub 镜像读取并多源交叉核对;定价来自第三方抓取器;AA 与 Vals.ai 数字经搜索合成读取。</li>
+</ul>
+
+<h2 id="s14"><span class="hnum">14</span>判断与下一步</h2>
+
+<div class="note">
+  <span class="ntitle">可搬走的三条判断</span>
+  <p><strong>一、KV 压缩的第四个维度已经用掉。</strong> 条目(MLA)、精度(FP8)、序列(CSA/HCA)、层(CSA2)——四代模型各切一个数量级,V4.1 用的是最后一个还没用过的维度。下一代要再降一个量级,只能在"多少 token 合成一条"上更激进,或者接受更强的近似。</p>
+  <p><strong>二、在昇腾上"能跑"与"跑出 890 字节"是两件事。</strong> 报告明言 FP4 main KV "不要求硬件原生支持该格式的矩阵乘,保持跨硬件平台兼容",这对昇腾本是好消息;但本站从源码核实的三点说明收益尚未兑现:① vLLM-Ascend 支持矩阵里 <strong>V4.1-Flash 只在 A2/A3 表</strong>(W8A8),而 V4-Flash 与 V4-Pro 各有一行 Ascend 950 并注明"<strong>Native mixed MXFP8/MXFP4 weights</strong>"——上一代已吃上 950 的原生 MXFP4,这一代还没有;② SGLang 的 Ascend 原生 DSV4 后端(约 95 KB)对 <code>fp4</code> 的引用数为 <strong>0</strong>,其 indexer KV 在新一代上是 FP8、更早的是 INT8;③ 两种 FP4 布局不兼容——DeepSeek 用 E4M3 scale/每 16 通道且 RoPE 维一并量化,昇腾现有 V4 核按 64 宽分组量化 nope、<strong>保留 64 维 RoPE 不量化</strong>(<code>kv_quant_mode = 1, tile_size = 64, rope_head_dim = 64</code>),而 950 的 MXFP4 是 E8M0/每 32。要补的三项按优先级:E2M1 反量化核与 288 字节页布局、按 <code>kv_source_layer_ids</code> 而非按层的 KV 分配、"部分层只跑尾部 128 token"的 prefill 调度。另外教程把 <code>enable_npugraph_ex</code> 与 <code>enable_static_kernel</code> 都设为 <code>false</code>,<strong>CSA2 静态模式最适合的整图融合这条收益目前完全未取</strong>。</p>
+  <p><strong>三、harness 即分数现在有三个来源的样本。</strong> D39/D40 的厂商适配层、D41 的开源 harness、本篇的厂商自证加第三方中立重跑(90.6 对 74.53)。任何国产模型的 agent 评测,不披露 scaffold、努力档、N 与 max_steps 的分数不应被引用;DeepSeek 的表 4 是可直接照抄的披露模板。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>1. 长上下文稀疏检索的第三方压测</strong>:LongBench-V2 基座回退 6.3 分是唯一公开的负面信号,报告承诺重点压测"长上下文稀疏检索与缓存恢复边界的 SWA 状态重建";1M 级 needle / MRCR 的独立复测尚无。<br>
+  <strong>2. V4.1-Pro</strong>:家族第二款何时出现,CED 的 L/2 切分在更深网络上是否保持。<br>
+  <strong>3. vLLM 主线的尾部重放</strong>:目前 prefill 跑全 40 层,CED 的 prefill 收益只在 SGLang 分支兑现。<br>
+  <strong>4. 昇腾上的 FP4 KV 与稀疏解码</strong>:从 W8A8 到官方 MXFP4 + FP4 KV 路径的差距,是国产栈上可独立开展的工作。<br>
+  <strong>5. DSH 完整版发布与第二家中立重跑</strong>:Minimal 已被表 4 证明是分数最高的 scaffold;Vals.ai 之外是否有第二家独立重跑头条基准,决定 90.6 与 74.53 之间哪个数字被引用。<br>
+  <strong>6. LMArena / Epoch / swebench.com 正式条目</strong>:补齐第三方口径。</p>
+</div>
+
+</main>
+
+<footer>
+  <p><strong>来源与声明</strong>:本页与 <a href="../docs/blog/dispatch-42-deepseek-v41-flash.md">Dispatch 42 原文</a>同源,为逐节拆解重写,不新增原文之外的事实与数字。一手来源:技术报告《DeepSeek-V4.1-Flash: Pushing the Limits of KV Cache Compression》正文(GitHub 镜像 <a href="https://raw.githubusercontent.com/SthMax/ms-intern/main/knowledge-base/models/deepseek-v4.1-flash/technical-report/original.md">OCR 全文</a>)、<a href="https://raw.githubusercontent.com/wendadawen/dojo/main/wiki/deepseek-v4-1/research/official/README.md">模型卡镜像</a>、<a href="https://raw.githubusercontent.com/PipeNetwork/deepseek-v41-mlx/main/docs/reference/hub_config.json">配置文件镜像</a>、<a href="https://raw.githubusercontent.com/uwuclxdy/ai-pricelog/master/state/announce/deepseek/updates.md">API 变更日志镜像</a>、<a href="https://raw.githubusercontent.com/deepseek-ai/FlashMLA/main/README.md">FlashMLA README</a>(2026-09-10)、SGLang 主线 <a href="https://raw.githubusercontent.com/sgl-project/sglang/main/python/sglang/srt/models/deepseek_v4.py">deepseek_v4.py</a> 与 <a href="https://raw.githubusercontent.com/sgl-project/sglang/main/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py">KV 内存池</a>、vLLM 主线 <a href="https://raw.githubusercontent.com/vllm-project/vllm/main/vllm/models/deepseek_v4_1/attention.py">deepseek_v4_1</a> 包、<a href="https://raw.githubusercontent.com/vllm-project/vllm-ascend/main/docs/source/tutorials/models/DeepSeek-V4.1-Flash.md">vLLM-Ascend V4.1-Flash 教程</a>、<a href="https://www.lmsys.org/blog/2026-09-10-deepseek-v41">LMSYS day-0 博客</a>。第三方:<a href="https://artificialanalysis.ai/models/deepseek-v4-1-flash">Artificial Analysis</a>、<a href="https://www.vals.ai/models/deepseek_deepseek-v4.1-flash">Vals.ai</a>、<a href="https://github.com/uwuclxdy/ai-pricelog">ai-pricelog 定价索引</a>。dsh 侧见 <a href="dispatch-29-deepseek-harness.html">D29 精读版</a>,V4 架构见 <a href="dispatch-05-deepseek-v4.html">D05</a>,Prime Agent 的 harness 论证见 <a href="dispatch-41-prime-agent.html">D41</a>。arXiv、Hugging Face 与 deepseek.com 在本环境的网络代理下不可达,官方文本均经 GitHub 镜像读取并多源交叉核对;标注<span class="chip c-vr">自报</span> 处为厂商口径,<span class="chip c-inf">推断</span> 处为本看板分析或按公开布局的重建。890 字节的分解与 SGLang 团队的恒等式一致但非官方分项。</p>
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>
