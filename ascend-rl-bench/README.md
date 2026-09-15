@@ -33,8 +33,14 @@ ascend-rl-bench/
 │   └── run_grpo.sh         # one command to launch GRPO; DEVICE=gpu|npu switch
 ├── eval/
 │   └── eval_gsm8k.py       # post-training pass@1 on the test set
-└── logs/                   # training curves / outputs land here
+├── tools/
+│   └── logs_to_dashboard.py # train.log + env.json -> data/curves.json (with provenance)
+└── logs/                   # train.log / env.json / run.json land here, one dir per run
 ```
+
+**Running a real experiment? Follow [`RUNBOOK.md`](RUNBOOK.md)** — it is the
+step-by-step protocol, including what each step should look like when it works,
+and the publishing checklist that `scripts/validate_data.py` enforces.
 
 ## Quick start
 
@@ -65,9 +71,12 @@ python3 eval/eval_gsm8k.py --model <path-to-checkpoint> --data data/gsm8k/test.p
   generated completion. If it prints `cpu`, the accelerator libs aren't picked up.
 - **prepare_gsm8k.py**: writes ~7.47k train / ~1.32k test rows; each row has a chat-format
   `prompt` and `reward_model.ground_truth`.
-- **run_grpo.sh**: verl logs `step`, `critic/rewards/mean`, `actor/kl`, `response_length`.
-  On a 0.5B model the mean reward should start near chance and trend up within tens of steps.
-- **logs/**: point the dashboard at these later (export to the `data/feed.json` JSON shape).
+- **run_grpo.sh**: writes `env.json` + `run.json` before training, then verl logs `step`,
+  `critic/rewards/mean`, `actor/kl`, `response_length`. On a 0.5B model the mean reward
+  should start near chance and trend up within tens of steps.
+- **logs/**: one directory per run holding `train.log`, `env.json`, `run.json`. Publish with
+  `tools/logs_to_dashboard.py --log … --env …`; the Training Curves tab on the dashboard
+  reveals itself as soon as `data/curves.json` contains a measured (non-synthetic) run.
 
 ## GPU ↔ NPU switch
 

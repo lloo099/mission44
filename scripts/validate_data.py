@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate data/*.json for the dashboard. Run in CI to block broken commits.
 Only files that have an "items" list are item-validated (compare/curves skipped)."""
-import glob, hashlib, json, sys
+import glob, hashlib, json, re, sys
 
 # 可信度分级(与 js/app.js 的 confBadge 一一对应,改动时必须同步):
 #   confirmed    确证    多方独立证实
@@ -61,7 +61,27 @@ if os.path.exists("data/curves.json"):
                     missing = [k for k in CURVE_META_KEYS if meta.get(k) in (None, "")]
                     if missing:
                         errs.append(f"{tag}: meta missing {missing}")
+                    # A run presented as measured must carry evidence it can be
+                    # traced back to: which log file, its hash, how many steps.
+                    if meta.get("synthetic") is False:
+                        src = e.get("source")
+                        if not isinstance(src, dict):
+                            errs.append(f"{tag}: non-synthetic run needs a 'source' block "
+                                        f"(logPath/logSha256/steps) — regenerate with logs_to_dashboard.py")
+                        else:
+                            for k in ("logPath", "logSha256", "steps"):
+                                if src.get(k) in (None, ""):
+                                    errs.append(f"{tag}: source missing {k!r}")
+                            sha = src.get("logSha256")
+                            if sha is not None and not re.fullmatch(r"[0-9a-f]{64}", str(sha)):
+                                errs.append(f"{tag}: source.logSha256 is not a sha256 hex digest")
 
+        # The key must be present, not merely valid-if-present: a tool that
+        # rewrites this file used to drop it entirely, and a default of [] made
+        # that loss invisible here.
+        if "publishedEvidence" not in cv:
+            errs.append("data/curves.json: 'publishedEvidence' key is missing "
+                        "(a writer dropped it — cited real-world runs must survive rewrites)")
         published = cv.get("publishedEvidence", [])
         if not isinstance(published, list):
             errs.append("data/curves.json: 'publishedEvidence' is not a list")

@@ -2,6 +2,17 @@
 captures/
 logs/*
 !logs/.gitkeep
+
+# …but the provenance records ARE the point: they are small, and a curve whose
+# env.json is not in the repo cannot be checked by anyone else.
+!logs/*/
+logs/*/*
+!logs/*/env.json
+!logs/*/run.json
+# the raw log is the integrity anchor behind source.logSha256 — commit it
+# compressed (`gzip -k train.log`) so the evidence travels with the claim
+!logs/*/train.log.gz
+
 data/gsm8k/
 *.npz
 __pycache__/

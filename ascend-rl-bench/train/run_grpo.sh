@@ -31,6 +31,29 @@ fi
 
 echo "[train] config=$CONFIG model=$MODEL_PATH n_devices=$N_DEVICES out=$OUTPUT_DIR"
 
+# --- provenance ------------------------------------------------------------
+# Capture the machine BEFORE training, not from memory afterwards: device models,
+# CANN/torch_npu versions and the repo commit are what make the curve checkable.
+python3 env/check_env.py --skip-generate --json "$OUTPUT_DIR/env.json" || \
+  echo "[train] WARN: env capture failed — the run record will be incomplete"
+
+cat > "$OUTPUT_DIR/run.json" <<JSON
+{
+  "startedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "config": "$CONFIG",
+  "device": "$DEVICE",
+  "nDevices": $N_DEVICES,
+  "model": "$MODEL_PATH",
+  "seed": ${SEED:-null},
+  "precision": "${PRECISION:-bf16}",
+  "rolloutBackend": "$ROLLOUT_BACKEND",
+  "trainBatchSize": $TRAIN_BATCH_SIZE,
+  "klCoef": $KL_COEF,
+  "lr": "$LR"
+}
+JSON
+echo "[train] provenance -> $OUTPUT_DIR/env.json, $OUTPUT_DIR/run.json"
+
 # --- verl GRPO -------------------------------------------------------------
 # NOTE: flags follow verl's GRPO example; if a key was renamed in your verl
 # version, check `python3 -m verl.trainer.main_ppo --help` / the docs.
@@ -50,6 +73,8 @@ python3 -m verl.trainer.main_ppo \
   actor_rollout_ref.rollout.name="$ROLLOUT_BACKEND" \
   actor_rollout_ref.rollout.gpu_memory_utilization="$GPU_MEM_UTIL" \
   actor_rollout_ref.rollout.n="$ROLLOUT_N" \
+  actor_rollout_ref.rollout.seed="$SEED" \
+  data.seed="$SEED" \
   custom_reward_function.path="$REWARD_PATH" \
   custom_reward_function.name=compute_score \
   trainer.n_gpus_per_node="$N_DEVICES" \
@@ -64,3 +89,10 @@ python3 -m verl.trainer.main_ppo \
   2>&1 | tee "$OUTPUT_DIR/train.log"
 
 echo "[train] done -> $OUTPUT_DIR (see train.log for the reward curve)"
+echo
+echo "[train] publish the curve with the captured provenance:"
+echo "  python3 tools/logs_to_dashboard.py \\"
+echo "    --log $OUTPUT_DIR/train.log --env $OUTPUT_DIR/env.json \\"
+echo "    --name ${EXP_NAME} --device $DEVICE \\"
+echo "    --model $MODEL_PATH --dataset GSM8K --precision ${PRECISION:-bf16} --seed ${SEED:-0}"
+echo "  python3 ../scripts/validate_data.py      # must pass before committing"

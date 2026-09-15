@@ -21,6 +21,11 @@ ROLLOUT_N=8
 ROLLOUT_BACKEND="vllm"
 GPU_MEM_UTIL=0.6
 
+# reproducibility — wired to verl's real keys (data.seed shuffles the dataset,
+# rollout.seed seeds vLLM sampling). Change it to get an independent run.
+SEED=42
+PRECISION="bf16"
+
 # trainer
 EPOCHS=1
 SAVE_FREQ=20

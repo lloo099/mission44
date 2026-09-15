@@ -200,6 +200,12 @@ main { padding: 28px; max-width: 1280px; margin: 0 auto; }
 .curve-meta { margin-bottom: 14px; }
 .curve-synth { font-size: 12px; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--warn-bd); color: var(--warn-fg); background: var(--warn-bg); }
 .curve-synth.real { border-color: var(--ok-bd); color: var(--ok-fg); background: var(--ok-bg); }
+/* per-run traceability: log hash + captured stack + commit */
+.curve-source { margin-top: 12px; font-size: 12px; color: var(--muted, var(--text-soft)); }
+.curve-source-title { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+.curve-source ul { margin: 0; padding-left: 18px; }
+.curve-source li { margin-bottom: 5px; line-height: 1.6; }
+.curve-source code { font-size: 11.5px; background: var(--blue-bg); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
 
 /* keyboard focus for the ARIA tablist */
 .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

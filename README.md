@@ -148,13 +148,18 @@ real-logs** banner. Generate curves with:
 # synthetic demo (no run needed) — clearly flagged as synthetic in the UI
 python3 ascend-rl-bench/tools/logs_to_dashboard.py --synthetic
 
-# real run — record full provenance
+# real run — hardware/framework come from the captured env record, not from memory
 python3 ascend-rl-bench/tools/logs_to_dashboard.py \
-  --log logs/run/train.log --name qwen0.5b_gsm8k_grpo --device npu \
-  --model Qwen2.5-0.5B-Instruct --dataset GSM8K \
-  --hardware "1× Ascend 910B 64GB" --framework "MindSpeed-RL + vLLM-Ascend" \
-  --precision bf16 --seed 42
+  --log logs/run/train.log --env logs/run/env.json \
+  --name qwen0.5b_gsm8k_grpo --device npu \
+  --model Qwen2.5-0.5B-Instruct --dataset GSM8K --precision bf16 --seed 42
 ```
+
+`env.json` is written by `ascend-rl-bench/env/check_env.py --json` (and automatically by
+`train/run_grpo.sh`): real device names, CANN / torch_npu / vLLM versions, repo commit.
+A run marked non-synthetic must also carry a `source` block (log path, **log sha256**, step
+count) or `validate_data.py` rejects it, and the **Training Curves** tab stays hidden until
+at least one measured run exists. Full protocol: **[`ascend-rl-bench/RUNBOOK.md`](ascend-rl-bench/RUNBOOK.md)**.
 
 ## Local validation
 

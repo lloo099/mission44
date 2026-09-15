@@ -1148,6 +1148,14 @@ async function wireCurves() {
     return;
   }
   curvesData = payload;
+  // The tab ships hidden so a synthetic demo never looks like a result. It
+  // reveals itself the moment curves.json carries a measured run, so publishing
+  // a real experiment is the only step needed to surface the page.
+  const hasMeasured = (payload.experiments || []).some((e) => e.meta && e.meta.synthetic === false);
+  if (hasMeasured) {
+    const tabBtn = document.getElementById("tab-training");
+    if (tabBtn) tabBtn.hidden = false;
+  }
   renderCurveMeta(payload);
   renderPublishedCurves(payload);
   const metrics = [];
@@ -1175,7 +1183,7 @@ function renderCurveMeta(payload) {
     ["framework", "Framework"], ["precision", "Precision"], ["seed", "Seed"],
   ];
   const banner = isSynthetic
-    ? `<div class="curve-synth">⚠ Synthetic demo data — illustrative shapes, not measured results. Replace via <code>logs_to_dashboard.py --log train.log</code>.</div>`
+    ? `<div class="curve-synth">⚠ Synthetic demo data — illustrative shapes, not measured results. Replace via <code>ascend-rl-bench/tools/logs_to_dashboard.py --log train.log --env env.json</code>.</div>`
     : `<div class="curve-synth real">✓ Parsed from real training logs.</div>`;
   const head = `<tr><th>Run</th>${COLS.map(([, l]) => `<th>${escapeHtml(l)}</th>`).join("")}</tr>`;
   const rows = exps.map((e) => {
@@ -1183,7 +1191,28 @@ function renderCurveMeta(payload) {
     const cells = COLS.map(([k]) => `<td>${m[k] !== undefined && m[k] !== "" ? escapeHtml(String(m[k])) : "—"}</td>`).join("");
     return `<tr><td class="rowhead">${escapeHtml(e.name)} · ${escapeHtml(e.device || "")}</td>${cells}</tr>`;
   }).join("");
-  el.innerHTML = `${banner}<div class="cmp-scroll"><table class="cmp">${head}${rows}</table></div>`;
+  el.innerHTML = `${banner}<div class="cmp-scroll"><table class="cmp">${head}${rows}</table></div>${runSourceHTML(exps)}`;
+}
+
+/* Per-run traceability: which log produced the curve, its hash, and the stack it
+   ran on. A measured curve without this is just a shape. */
+function runSourceHTML(exps) {
+  const withSource = exps.filter((e) => e.source && e.source.logSha256);
+  if (!withSource.length) return "";
+  const items = withSource.map((e) => {
+    const s = e.source;
+    const env = s.env || {};
+    const stack = Object.entries(env.stack || {}).map(([k, v]) => `${k} ${v}`).join(", ");
+    const bits = [];
+    if (s.steps) bits.push(`${s.steps} steps${s.stepRange ? ` (${s.stepRange[0]}–${s.stepRange[1]})` : ""}`);
+    bits.push(`log sha256 <code>${escapeHtml(String(s.logSha256).slice(0, 12))}…</code>`);
+    if (stack) bits.push(escapeHtml(stack));
+    if (env.git && env.git.commit) {
+      bits.push(`commit <code>${escapeHtml(env.git.commit.slice(0, 7))}</code>${env.git.dirty ? " <em>(dirty tree)</em>" : ""}`);
+    }
+    return `<li><strong>${escapeHtml(e.name)} · ${escapeHtml(e.device || "")}</strong> — ${bits.join(" · ")}</li>`;
+  }).join("");
+  return `<div class="curve-source"><div class="curve-source-title">Run provenance</div><ul>${items}</ul></div>`;
 }
 
 function renderPublishedCurves(payload) {
