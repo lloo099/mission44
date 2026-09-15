@@ -1,8 +1,21 @@
 {
-  "updated": "2026-09-14T12:54:47.218410Z",
+  "updated": "2026-09-13T11:58:00.009416Z",
+  "checked": "2026-09-15T03:35:05Z",
+  "stale": true,
   "source": "curated (data/feed_pinned.json) + arXiv API",
   "count": 25,
   "pinned": 25,
+  "live": 0,
+  "buckets_ok": [],
+  "buckets_failed": [
+    "rl-llm",
+    "reasoning-rl",
+    "agentic-rl",
+    "ascend-npu",
+    "sparse-attention",
+    "fp8-lowprec",
+    "efficient-llm"
+  ],
   "items": [
     {
       "title": "Xiaomi 开源 MiMo-V2.5-Pro (1.02T MoE, 强 Agent 编码)",

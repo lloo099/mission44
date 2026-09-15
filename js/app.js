@@ -11,6 +11,7 @@ const DATA_SOURCES = {
 
 const store = {}; // key -> array of entries
 const storeUpdated = {}; // key -> ISO date string (from each file's "updated")
+const storeMeta = {};    // key -> that file's top-level payload (for stale/checked flags)
 const activeFilters = {}; // key -> Set of active tags
 let searchTerm = "";
 let agenticTrends = []; // {title, body} blurbs for the Agentic RL section
@@ -39,6 +40,7 @@ async function init() {
     const payload = results[i];
     store[k] = (payload && payload.items) ? payload.items : (Array.isArray(payload) ? payload : []);
     storeUpdated[k] = (payload && payload.updated) ? String(payload.updated).slice(0, 10) : "";
+    storeMeta[k] = payload || null;
     if (k === "agentic" && payload) agenticTrends = payload.trends || [];
     activeFilters[k] = new Set();
   });
@@ -238,12 +240,18 @@ async function wireBlog() {
       idx.innerHTML = '<div class="empty">没有匹配 "' + escapeHtml(searchTerm) + '" 的 Dispatch。</div>';
       return;
     }
-    idx.innerHTML = visible.map((p) => `<a class="blog-card" href="#blog/${escapeAttr(p.id)}">
-      <div class="blog-card-date">${escapeHtml(p.date || "")}${p.read ? ' <span class="blog-card-read" title="有独立精读页">精读</span>' : ""}</div>
-      <h3>${escapeHtml(p.title)}</h3>
-      <p>${escapeHtml(p.subtitle || "")}</p>
-      <div class="blog-card-tags">${(p.tags || []).map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
-    </a>`).join("");
+    // <article> rather than a wrapping <a>: the read-page link must be separately
+    // reachable, and an <a> inside an <a> is invalid. The title link is stretched
+    // over the card in CSS so the whole card stays clickable.
+    idx.innerHTML = visible.map((p) => `<article class="blog-card">
+      <div class="blog-card-date">${escapeHtml(p.date || "")}</div>
+      <h3><a class="blog-card-title" href="#blog/${escapeAttr(p.id)}">${escapeHtml(p.title)}</a></h3>
+      <p>${escapeHtml(clampText(plainText(p.subtitle), 110))}</p>
+      <div class="blog-card-foot">
+        <div class="blog-card-tags">${(p.tags || []).map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
+        ${p.read ? `<a class="blog-card-read" href="${escapeAttr(p.read)}" title="独立精读页:逐节拆解与图解">📖 精读版 →</a>` : ""}
+      </div>
+    </article>`).join("");
   }
 
   // re-render the blog index with the current search term (only when the index is visible)
@@ -281,7 +289,7 @@ async function wireBlog() {
       buildBlogLayout(post);
       renderMermaidIn(post);
       document.title = p.title + " · NPU Frontier Dispatch";
-      if (metaDesc) metaDesc.content = (p.subtitle || "").slice(0, 200);
+      if (metaDesc) metaDesc.content = clampText(plainText(p.subtitle), 200);
     } catch (e) {
       post.innerHTML = `<a class="blog-back" href="#blog">← 返回</a><div class="empty">Couldn't load post (${escapeHtml(String(e.message || e))}).</div>`;
     }
@@ -328,14 +336,21 @@ function buildBlogLayout(post) {
   toc.innerHTML = '<div class="toc-title">目录</div>' + [...heads].map((h, i) => {
     let t = h.textContent.trim();
     if (t.length > 44) t = t.slice(0, 44) + "…";
-    return '<a class="toc-link' + (h.tagName === "H3" ? " toc-h3" : "") + '" data-target="sec-' + i + '">' + escapeHtml(t) + "</a>";
+    // real href so the entry is focusable and Enter-activatable; the click
+    // handler preventDefaults, so the SPA's #blog/<id> route is never clobbered.
+    return '<a class="toc-link' + (h.tagName === "H3" ? " toc-h3" : "") + '" href="#sec-' + i +
+      '" data-target="sec-' + i + '">' + escapeHtml(t) + "</a>";
   }).join("");
   toc.addEventListener("click", (e) => {
     const a = e.target.closest(".toc-link");
     if (!a) return;
     e.preventDefault();
     const el = document.getElementById(a.dataset.target);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    // move focus to the heading so keyboard and screen-reader users land there too
+    el.setAttribute("tabindex", "-1");
+    el.focus({ preventScroll: true });
   });
   layout.appendChild(toc);
 }
@@ -431,6 +446,26 @@ function wireTimeline() {
 }
 
 /* ---------- markdown renderer (no deps; used by the blog) ---------- */
+
+/* Subtitles are written as markdown for the post body. Anywhere they are shown
+   as plain text (index cards, <meta name="description">, share snapshots) the
+   markup has to come off first, or readers see literal ** and ` characters. */
+function plainText(md) {
+  return String(md || "")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function clampText(s, n) {
+  s = String(s || "");
+  if (s.length <= n) return s;
+  return s.slice(0, n).replace(/[\s,、;:·—-]+$/u, "") + "…";
+}
 
 function mdInline(s) {
   const SENT = "\u0000";
@@ -703,11 +738,15 @@ function inferSource(e) {
   };
   return MAP[host] || host;
 }
-function provenanceLine(e, key) {
+/* "verified" must come from the entry itself. Falling back to the file's own
+   "updated" date made every untouched card look freshly re-checked whenever any
+   sibling entry changed — so when an entry carries no verification date, show
+   none. */
+function provenanceLine(e) {
   const src = inferSource(e);
   if (!src) return "";
-  const verified = e.verified || storeUpdated[key] || "";
-  return `<div class="provenance" title="数据来源与最近校验日期">source: ${escapeHtml(src)}${verified ? ` · verified ${escapeHtml(verified)}` : ""}</div>`;
+  const verified = e.verified || "";
+  return `<div class="provenance" title="${verified ? "数据来源与该条目的核验日期" : "数据来源(该条目尚无独立核验日期)"}">source: ${escapeHtml(src)}${verified ? ` · verified ${escapeHtml(verified)}` : ""}</div>`;
 }
 
 function cardHTML(e, key) {
@@ -719,7 +758,7 @@ function cardHTML(e, key) {
     <div class="card-top">${e.category ? `<span class="cat">${escapeHtml(e.category)}</span>` : "<span></span>"}<span class="card-badges">${trackBadge(e.track)}${confBadge(e)}${ascendBadge(e)}</span></div>
     <h3>${hl(e.title || "Untitled")}</h3>
     ${meta ? `<div class="meta">${escapeHtml(meta)}</div>` : ""}
-    ${provenanceLine(e, key)}
+    ${provenanceLine(e)}
     ${e.innovation ? `<div class="innov">▸ ${hl(e.innovation)}</div>` : ""}
     ${e.summary ? `<p class="summary">${hl(e.summary)}</p>` : ""}
     <div class="tags">${tags}</div>
@@ -746,9 +785,12 @@ function hl(s) {
 /* source-confidence badge: confirmed / secondary / self-reported */
 function confBadge(e) {
   if (!e.confidence) return "";
+  // keep in sync with OK_CONF in scripts/validate_data.py
   const map = {
     confirmed: ["确证", "conf"], secondary: ["二手", "sec"], "self-reported": ["自报", "self"],
+    provisional: ["待核实", "prov"],
     "确证": ["确证", "conf"], "二手": ["二手", "sec"], "自报": ["自报", "self"],
+    "待核实": ["待核实", "prov"],
   };
   const m = map[e.confidence];
   if (!m) return "";
@@ -926,15 +968,41 @@ function wireSearch() {
 }
 
 /* ---------- live papers (best-effort client-side) ---------- */
+
+/* The feed distinguishes "checked" (last refresh attempt) from "updated" (last
+   attempt that actually returned papers). When a refresh fails the script keeps
+   the previous items and sets stale=true — say so rather than showing a fresh
+   timestamp over unchanged content. */
+function renderFeedStatus(status, payload) {
+  if (!status) return;
+  const meta = payload || storeMeta.live || {};
+  const n = (store.live || []).length;
+  if (!n) {
+    status.textContent = "No cached feed. Run scripts/fetch_arxiv.py or the GitHub Action.";
+    return;
+  }
+  const pinned = Number(meta.pinned) || 0;
+  const live = meta.live != null ? Number(meta.live) : Math.max(0, n - pinned);
+  const parts = [`${n} entries`];
+  if (pinned || live) parts.push(`${pinned} 置顶 + ${live} 自动`);
+  if (meta.updated) parts.push(`内容更新于 ${String(meta.updated).slice(0, 10)}`);
+  if (meta.stale) {
+    const checked = meta.checked ? String(meta.checked).slice(0, 10) : "";
+    const failed = (meta.buckets_failed || []).length;
+    status.innerHTML = `${escapeHtml(parts.join(" · "))}
+      <span class="feed-stale" title="上次刷新未取回新论文,显示的是最后一次成功的数据">
+        ⚠ 上次刷新失败${checked ? `(${escapeHtml(checked)} 尝试)` : ""}${failed ? ` · ${failed} 个查询全部失败` : ""} — 内容未变
+      </span>`;
+  } else {
+    status.textContent = parts.join(" · ");
+  }
+}
+
 function wireLive() {
   const btn = document.getElementById("live-refresh");
   const reloadBtn = document.getElementById("live-reload");
   const status = document.getElementById("live-status");
-  if (store.live && store.live.length) {
-    status.textContent = `Showing ${store.live.length} entries from data/feed.json`;
-  } else {
-    status.textContent = "No cached feed. Run scripts/fetch_arxiv.py or the GitHub Action.";
-  }
+  renderFeedStatus(status);
   if (reloadBtn) {
     reloadBtn.addEventListener("click", async () => {
       status.textContent = "Reloading data/feed.json…";
@@ -942,10 +1010,10 @@ function wireLive() {
       const items = payload && (payload.items || (Array.isArray(payload) ? payload : null));
       if (items) {
         store.live = items;
+        storeMeta.live = payload;
         renderPanel("live");
         buildFilterbars();
-        const upd = payload.updated ? ` · updated ${String(payload.updated).slice(0, 10)}` : "";
-        status.textContent = `Loaded ${items.length} entries${upd}.`;
+        renderFeedStatus(status, payload);
       } else {
         status.textContent = "Couldn't load data/feed.json.";
       }

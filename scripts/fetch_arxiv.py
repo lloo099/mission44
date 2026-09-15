@@ -136,16 +136,30 @@ def parse(xml_bytes: bytes, bucket: str):
     return items
 
 
+def load_previous():
+    """The last written feed, so a failed refresh can fall back to it."""
+    try:
+        with open(OUT, encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else None
+    except (FileNotFoundError, ValueError):
+        return None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--max", type=int, default=12, help="max results per query bucket")
     args = ap.parse_args()
 
     pinned = load_pinned()
+    prev = load_previous()
+    prev_auto = [it for it in (prev or {}).get("items", [])
+                 if isinstance(it, dict) and "auto" in (it.get("tags") or [])]
     pinned_urls = {it.get("url") for it in pinned if it.get("url")}
     skip_urls = pinned_urls | curated_urls()  # avoid duplicating curated cards
 
     live, seen = [], set()
+    ok_buckets, failed_buckets = [], []
     for bucket, q in QUERIES.items():
         try:
             print(f"[fetch] {bucket} …", file=sys.stderr)
@@ -156,23 +170,53 @@ def main():
                     seen.add(key)
                     it.setdefault("tags", []).append("auto")
                     live.append(it)
+            ok_buckets.append(bucket)
         except Exception as exc:  # noqa: BLE001
+            failed_buckets.append(bucket)
             print(f"[warn] {bucket} failed: {exc}", file=sys.stderr)
+
+    # A failed refresh must never silently empty the feed: fall back to the last
+    # good auto items and mark the payload stale instead of publishing a hole.
+    reused = 0
+    if not live and prev_auto:
+        live = prev_auto
+        reused = len(prev_auto)
+        print(f"[warn] no live results — keeping {reused} auto item(s) from the last successful run",
+              file=sys.stderr)
 
     live.sort(key=lambda x: x["year"], reverse=True)
     items = pinned + live  # curated highlights first, then freshest arXiv
+
+    now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    # `updated` = last run that actually produced live data; `checked` = last attempt.
+    # They diverge exactly when a refresh fails, which is what the UI surfaces.
+    fresh = bool(ok_buckets) and reused == 0
+    updated = now if fresh else ((prev or {}).get("updated") or now)
+
     payload = {
-        "updated": dt.datetime.utcnow().isoformat() + "Z",
+        "updated": updated,
+        "checked": now,
+        "stale": not fresh,
         "source": "curated (data/feed_pinned.json) + arXiv API",
         "count": len(items),
         "pinned": len(pinned),
+        "live": len(live),
+        "buckets_ok": ok_buckets,
+        "buckets_failed": failed_buckets,
         "items": items,
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
-    print(f"[done] wrote {len(items)} items ({len(pinned)} pinned + {len(live)} live) -> {os.path.relpath(OUT)}", file=sys.stderr)
+    state = "fresh" if fresh else f"STALE (reused {reused} auto item(s))"
+    print(f"[done] wrote {len(items)} items ({len(pinned)} pinned + {len(live)} live) — {state}; "
+          f"{len(ok_buckets)}/{len(QUERIES)} buckets ok -> {os.path.relpath(OUT)}", file=sys.stderr)
+
+    if failed_buckets and not ok_buckets:
+        print("[error] every bucket failed — feed left at its last good state", file=sys.stderr)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

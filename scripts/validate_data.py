@@ -3,7 +3,16 @@
 Only files that have an "items" list are item-validated (compare/curves skipped)."""
 import glob, hashlib, json, sys
 
-OK_CONF = {"confirmed", "secondary", "self-reported", "确证", "二手", "自报", None}
+# 可信度分级(与 js/app.js 的 confBadge 一一对应,改动时必须同步):
+#   confirmed    确证    多方独立证实
+#   secondary    二手    单一转述/媒体报道
+#   self-reported 自报   厂商或作者口径
+#   provisional  待核实  已收录但尚未核验,后续需回补证据
+OK_CONF = {
+    "confirmed", "secondary", "self-reported", "provisional",
+    "确证", "二手", "自报", "待核实",
+    None,
+}
 errs = []
 for f in sorted(glob.glob("data/*.json")):
     try:

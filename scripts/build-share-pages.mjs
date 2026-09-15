@@ -16,11 +16,16 @@
  */
 import fs from "fs";
 import path from "path";
+import crypto from "node:crypto";
 import { fileURLToPath } from "url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BASE = "https://lloo099.github.io/mission44";
 const FORCE = process.argv.includes("--force");
+// CI passes --require-og so a missing browser fails the build instead of
+// silently shipping posts whose share image was never drawn.
+const REQUIRE_OG = process.argv.includes("--require-og");
+const OG_MANIFEST = path.join(ROOT, "assets/og/manifest.json");
 const CHROME_CANDIDATES = [
   "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
   process.env.PLAYWRIGHT_CHROMIUM || "",
@@ -32,6 +37,16 @@ fs.mkdirSync(path.join(ROOT, "assets/og"), { recursive: true });
 fs.mkdirSync(path.join(ROOT, "p"), { recursive: true });
 
 const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/* subtitles are markdown; share descriptions must not leak ** and ` (mirrors plainText in js/app.js) */
+const plainText = (md) => String(md || "")
+  .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+  .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+  .replace(/`([^`]+)`/g, "$1")
+  .replace(/\*\*([^*]+)\*\*/g, "$1")
+  .replace(/\*([^*]+)\*/g, "$1")
+  .replace(/\s+/g, " ")
+  .trim();
 
 /* ---------- og card template ---------- */
 function ogHtml(post) {
@@ -64,7 +79,7 @@ function ogHtml(post) {
 function snapshotHtml(post) {
   const id = post.id;
   const title = esc(post.title);
-  const desc = esc((post.subtitle || "").slice(0, 280));
+  const desc = esc(plainText(post.subtitle).slice(0, 280));
   const og = `${BASE}/assets/og/${id}.png`;
   const spa = `${BASE}/#blog/${encodeURIComponent(id)}`;
   const self = `${BASE}/p/${id}.html`;
@@ -107,19 +122,38 @@ if (chromePath) {
   console.warn("! Chromium not found — skipping og image rendering (snapshots + sitemap only)");
 }
 
+/* An og image is stale whenever the html it was drawn from changes — that covers
+   edited titles/dates and edits to the card template itself, both of which used
+   to leave the old png in place forever. */
+let manifest = {};
+try { manifest = JSON.parse(fs.readFileSync(OG_MANIFEST, "utf8")); } catch { manifest = {}; }
+
 let rendered = 0, snapshots = 0;
+const pending = [];
 for (const post of posts) {
   if (!post.id) continue;
   const pngPath = path.join(ROOT, "assets/og", `${post.id}.png`);
-  if (page && (FORCE || !fs.existsSync(pngPath))) {
-    await page.setContent(ogHtml(post), { waitUntil: "load" });
-    await page.screenshot({ path: pngPath });
-    rendered++;
+  const html = ogHtml(post);
+  const key = crypto.createHash("sha1").update(html).digest("hex").slice(0, 16);
+  const missing = !fs.existsSync(pngPath);
+  const changed = manifest[post.id] !== key;
+  if (FORCE || missing || changed) {
+    if (page) {
+      await page.setContent(html, { waitUntil: "load" });
+      await page.screenshot({ path: pngPath });
+      manifest[post.id] = key;
+      rendered++;
+    } else {
+      pending.push(`${post.id} (${missing ? "missing" : "outdated"})`);
+    }
+  } else {
+    manifest[post.id] = key;
   }
   fs.writeFileSync(path.join(ROOT, "p", `${post.id}.html`), snapshotHtml(post));
   snapshots++;
 }
 if (browser) await browser.close();
+fs.writeFileSync(OG_MANIFEST, JSON.stringify(manifest, null, 2) + "\n");
 
 /* sitemap */
 const urls = [`${BASE}/`, ...posts.filter((p) => p.id).map((p) => `${BASE}/p/${p.id}.html`),
@@ -130,3 +164,9 @@ fs.writeFileSync(path.join(ROOT, "sitemap.xml"), sitemap);
 fs.writeFileSync(path.join(ROOT, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${BASE}/sitemap.xml\n`);
 
 console.log(`og rendered: ${rendered}, snapshots: ${snapshots}, sitemap urls: ${urls.length}`);
+if (pending.length) {
+  console.error(`! ${pending.length} og image(s) missing or outdated and no browser to draw them:`);
+  for (const p of pending) console.error(`    - ${p}`);
+  console.error("  install playwright-core + Chromium, then re-run this script.");
+  if (REQUIRE_OG) process.exit(1);
+}

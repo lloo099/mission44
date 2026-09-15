@@ -26,10 +26,16 @@ jobs:
         with:
           python-version: "3.x"
 
+      # Exits 1 when every query bucket failed. The feed still keeps its last
+      # good items and records stale/checked, so commit that state first and
+      # only then let the job go red.
       - name: Refresh feed from arXiv
+        id: fetch
+        continue-on-error: true
         run: python3 scripts/fetch_arxiv.py --max 10
 
       - name: Commit & push if changed
+        if: always()
         run: |
           if [ -n "$(git status --porcelain data/feed.json)" ]; then
             git config user.name "github-actions[bot]"
@@ -40,3 +46,9 @@ jobs:
           else
             echo "No feed changes."
           fi
+
+      - name: Fail if the refresh brought back nothing
+        if: steps.fetch.outcome == 'failure'
+        run: |
+          echo "::error::arXiv refresh failed for every bucket — feed kept its last good state (stale=true)."
+          exit 1

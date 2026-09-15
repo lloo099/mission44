@@ -39,6 +39,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add p/ sitemap.xml robots.txt
+          git add p/ sitemap.xml robots.txt assets/og/manifest.json
           git diff --cached --quiet && echo "no changes" || git commit -m "chore: rebuild share snapshots + sitemap"
           git push
+
+      # og images are drawn locally (Chromium lives on the authoring machine, and
+      # node_modules is not committed). This step turns "a title changed but its
+      # share card was never redrawn" into a red build instead of a stale preview.
+      - name: Verify og images are current
+        run: node scripts/build-share-pages.mjs --require-og
