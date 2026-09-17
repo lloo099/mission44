@@ -15,6 +15,7 @@ flowchart LR
         N38["D38 · 蒸馏能否取代 RL"]
         N39["D39 · GPT-6 与 Fable 5.1"]
         N40["D40 · GPT-6 基准全表"]
+        N43["D43 · 自进化全景"]
     end
     subgraph MODEL ["模型与架构"]
         N01["D01 · Seed 与开源 1M 浪潮"]
@@ -28,6 +29,7 @@ flowchart LR
         N24["D24 · Kimi K3"]
         N28["D28 · 原生多模态两路线"]
         N34["D34 · GLM 5.2 到 5.3"]
+        N42["D42 · DeepSeek-V4.1-Flash"]
     end
     subgraph SWE ["SWE 与训练数据"]
         N12["D12 · SWE Agents 上手"]
@@ -44,6 +46,7 @@ flowchart LR
         N31["D31 · OLMo 3 全开放体系"]
         N32["D32 · MindSpeed-RL 谢幕"]
         N33["D33 · verl 接棒"]
+        N41["D41 · Prime Agent 与持续 Harness"]
     end
     subgraph NPU ["昇腾落地"]
         N03["D03 · 昇腾 950"]
@@ -94,3 +97,11 @@ flowchart LR
     N38 -. "反蒸馏的评测代价" .-> N39
     N39 -. "分析到数据附卷" .-> N40
     N30 -. "两个总分互相矛盾" .-> N40
+    N29 -. "闭源 harness 的开源对照" .-> N41
+    N37 -. "权重不动的持续学习" .-> N41
+    N05 -. "KV 压缩的下一代" .-> N42
+    N29 -. "厂商自证八种 scaffold" .-> N42
+    N37 -. "RSI 专题到自进化全景" .-> N43
+    N41 -. "H 与 Sigma 是同一对象" .-> N43
+    N30 -. "等预算与密封评测" .-> N43
+    N42 -. "长上下文底座的昇腾缺口" .-> N43

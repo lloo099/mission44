@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-14",
+  "updated": "2026-09-17",
   "doc": "docs/2026-frontier-models.md",
   "note": "Benchmark numbers are vendor/media/third-party and provisional — coverage varies per metric; verify against official reports. Seed 2.x is ByteDance's closed/API line (not open-weight, no Ascend port); Seed 2.0 Pro numbers are Feb-2026 confirmed, Seed 2.1 Pro is a Jun-19 preview with only Code-Arena public so far. LongCat-2.0 数字为厂商自报,'全训练周期在国产芯片完成'的训练闭环主张待技术报告确认。 Kimi K3 权重与技术报告(2607.24653)均已放出,AA 智能指数 60 为第三方独立评分。 GLM-5.3(08-14)与 5.2 同基座、全部提升来自后训练,AA 指数 60 与 K3 并列开源第一,权重 08-29 前后上 HF(详见 D34),本表 GLM 列仍以 5.2 为口径。 V4 列口径已含 V4-Flash-0731 与 V4-Pro-0813 GA(0813 公榜为自家 harness minimal 模式)。 Qwen3.8-Max 权重 08-12 已放(纯文本/thinking 强制/专有许可),自报 OSWorld 86.1 无第三方复跑。 【指数版本与新旗舰(2026-09-07,已更正)】Artificial Analysis 于 09-04 发布智能指数 v4.2(10 项评测、私有留出集权重由 20% 升至 40%、新增 AA-Briefcase 与 GDP.pdf、移除已饱和的 GPQA Diamond)。**两套标度目前同时在流通,跨版本分数不可比**:v4.1 口径下 Fable 5.1 记 66、Opus 5 63、Fable 5 62、GPT-6 Astra 与 GPT-5.6 Sol 各 61、Kimi K3 59.7、GLM-5.3 59.5;v4.2 口径下同一批模型整体低 8 到 11 分(Fable 5.1 57、Astra 55、Opus 5 54、Sol 51、K3 50)。二级来源混用两者,引用时须标注版本;两套标度下的排序基本一致。 09-01 至 09-03 连续发布 Claude Fable 5.1、GPT-6 Astra(即此前代号 Astra,非传闻的 GPT-5.7)、Gemini 3.8 Flash、Muse Spark 1.3;上方开放权重对照表未收录四者,但下方各指标榜已按全阵容重建。 GPT-6 Astra 的 ARC-AGI-3 成绩存在 99.9%(OpenAI provider harness,动作间保留推理状态)与 62.7%(标准中立 harness)两个数字——跨 harness 分差的公开上限,读任何 agent 分数前须先确认 harness。",
   "models": {
@@ -975,6 +975,39 @@
             "model": "DeepSeek V4-Flash 0731 (max)",
             "score": 35,
             "open": true
+          }
+        ]
+      },
+      {
+        "id": "evobudget",
+        "label": "等 rollout 预算对照：harness 演化 vs 并行采样",
+        "unit": "%",
+        "neutral": true,
+        "note": "越高越好。本榜的自变量是“同一份 rollout 预算花在哪里”——花在任务本身的推理时搜索，还是花在 harness 搜索。设置：89 个 Terminal-Bench 2.1 任务，每题 5 次 rollout，pass@1。后两行是作者划出真正的 45/10/34 训练-验证-测试划分后的结果，68.3 对 67.7 在误差内。同类对照：HARNESSEVO 在 ALFWorld 上 0.657 对 0.642，无显著增益。演化一侧的辩护是摊销：演化后的 harness 是可复用的固定成本，因此诚实的比较需要一个生命周期分母，且 rollout 对齐不等于 token、美元或延迟对齐。详见 D43。",
+        "items": [
+          {
+            "model": "朴素并行采样 · 有测试可用",
+            "score": 86.0
+          },
+          {
+            "model": "harness 演化 · 有测试可用",
+            "score": 75.8
+          },
+          {
+            "model": "朴素并行采样 · 无测试",
+            "score": 72.3
+          },
+          {
+            "model": "harness 演化 · 无测试",
+            "score": 67.4
+          },
+          {
+            "model": "演化后 harness · 真划分测试集",
+            "score": 68.3
+          },
+          {
+            "model": "初始 harness · 真划分测试集",
+            "score": 67.7
           }
         ]
       }

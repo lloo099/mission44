@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 43 精读版 · 自进化全景</title>
+<meta name="description" content="自进化(self-evolving agents)全景精读:五份综述的实质性分歧、θ 与 Σ 的分界、模型侧 / 环境侧 / 共进化三支的机制与失效模式、等预算与密封评测下的冷结论,以及对昇腾 RL 的含义。十一张论文原图逐张解析。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-43-self-evolving-agents.html">
+<meta property="og:title" content="Dispatch 43 精读版 · 自进化全景">
+<meta property="og:description" content="五份综述的分歧、θ 与 Σ 的分界、三支路线各自的失效模式,以及等预算对照下演化打不过并行采样这一结论。十一张论文原图逐张解析。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-43-self-evolving-agents.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-43-self-evolving-agents.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-43-self-evolving-agents">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-43-self-evolving-agents.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 43 · 精读版 · 2026-09-17</div>
+  <h1>自进化全景精读:五份综述的分歧、θ 与 Σ 的分界,以及三支路线各自的失效模式</h1>
+  <p class="standfirst">自进化在 2026 年成了显学,但它不是一个有共识定义的领域——同一台机器被五份互不兼容的综述分别投影,连「共进化」这个词都被争夺。本页把 D43 的十一节逐一拆开:每节先给<strong>叙事怎么说</strong>(这一支路线对外讲的故事),再给<strong>证据是什么</strong>(论文里被实际测出来的量),最后写清差在哪、对 RL-on-NPU 意味着什么。全页十一张图<strong>全部为论文原图</strong>,每张配一段「这张图怎么读」。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D43</span>
+    <span>承接 D37 / D38 / D41 / D42</span>
+    <span>原图 11 张 · 本站图 0 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>五份综述:分歧在哪</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>θ 与 Σ:最精确的那把刀</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>三支路线与它们的体量</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>模型侧:推理时与训练时</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>环境侧:冻结权重改其余</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>共进化:梯度信号保全</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>失效模式:打分者在下游</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>评测:等预算与密封集</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>产业:写文本不写权重</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>对 RL-on-NPU 的含义</a></li>
+    <li><a href="#s11"><span class="tnum">11</span>总表:叙事 vs 证据</a></li>
+    <li><a href="#s12"><span class="tnum">12</span>未能核实的</a></li>
+    <li><a href="#s13"><span class="tnum">13</span>判断与下一步</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法</h2>
+
+<p class="lede">自进化(self-evolving agents)要描述的机器其实很简单:一个 agent 由<strong>参数权重</strong>与<strong>非参数脚手架</strong>构成,外加一个<strong>更新算子</strong>把某种学习信号持久地写回其中之一。分歧全部产生在投影方式上——Gao 等按「何物 / 何时 / 如何 / 何处」四问投影,Fang 等按四组件控制回路投影,厦大按「相对环境的位置」投影成模型侧 / 环境侧 / 共进化,Ren 等(Schmidhuber 组)按更新目标投影成 θ 与 Σ 两支,微软研究院按 Substrate × Pathway × <strong>Pressure</strong> 投影。五种投影没有一种是错的,但它们<strong>不可互相翻译</strong>:同一篇论文在五份综述里会落进五个不同的格子。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每一节固定三段:<strong>叙事怎么说</strong>(左栏,灰)——这一支路线对外讲的故事,以及综述里的措辞;<strong>证据是什么</strong>(右栏,橙)——论文里被实际测出来的量,包括作者自己报告的负面结果;<strong>差在哪</strong>(下方色块)——两者的落差、证据的强度、对 RL-on-NPU 的含义。数字按来源分三类:<span class="chip c-tp">第三方</span> 独立复现或多方一致;<span class="chip c-vr">自报</span> 方法作者口径;<span class="chip c-inf">推断</span> 本站分析。<strong>本篇几乎所有增益数字都是作者自报</strong>,这一点本身就是第 08 节的论点。</p>
+  <p>贯穿全文有两条线索。其一是 <strong>θ 与 Σ 的分界</strong>:动 θ 是在固定决策过程上做标准策略优化,动 Σ 是在重塑决策过程本身,后者在标准 RL 里没有对应物——这条线解释了为什么产业全部走 Σ。其二是 <strong>打分者位于被打分者的下游</strong>:所有已记录的失效模式都能归到这一处结构性事实,这条线解释了为什么第 07、08 两节的结论如此一致。</p>
+</div>
+
+<div class="formula">一台机器,五种投影
+  ├ Gao 等      What / When / How / Where          <span class="cmt">// 四问近似正交,每问对应一个实际决策</span>
+  ├ Fang 等     四组件控制回路 + 三定律             <span class="cmt">// Endure &gt; Excel &gt; Evolve,严格分级</span>
+  ├ 厦大        模型侧 / 环境侧 / 共进化            <span class="cmt">// 顶层即编年史</span>
+  ├ Ren 等      A = (θ, Σ) ,  Σ := (p, m, T, g)   <span class="cmt">// 最精确,只分两支</span>
+  └ 微软        Substrate × Pathway × Pressure      <span class="cmt">// 唯一把「选择压来自谁」设为一等轴</span></div>
+
+<h2 id="s1"><span class="hnum">01</span>五份综述:分歧是实质性的,不是措辞</h2>
+
+<p>先读地图,再读论文。这个方向在 2026 年同时出现了五份综述,而它们对同一批工作的组织方式互不兼容。最典型的三处分歧:<strong>记忆放在哪</strong>——Gao 归入 Context(What 的子类),Fang 设为单智能体优化支柱,厦大拆成两处(环境侧的动态经验演化,以及模块化架构演化下的记忆架构演化),Ren 视为脚手架分量 <code>m</code>,微软给它独立基质 <code>M</code>;<strong>「共进化」指什么</strong>——厦大的共进化分支以多智能体策略共进化开篇,微软则明确裁定「人工智能体之间的相互适应<strong>不算</strong>共进化,因为它不要求 H ≠ 0(人类参与)」,两者完全相反;<strong>技能是什么</strong>——Ren 把技能定义为「更新算子的一个可复用实例」,故意横切所有人当主轴的基质维度,厦大则把它当成环境侧的一个叶子节点。</p>
+
+<figure>
+  <img src="img/dispatch-43-self-evolving-agents/orig-ladder.jpg" alt="能力阶梯图:从 LLMs 到 Foundation Agents 到 Self-evolving Agents 再到 ASI,四级台阶依次上升">
+  <figcaption><span class="fnum">图 1</span>综述给自己定的位置:LLMs → Foundation Agents → Self-evolving Agents → ASI。<span class="chip c-vr">自报</span> 原图出自 Gao 等《A Survey of Self-Evolving Agents: What, When, How, and Where to Evolve on the Path to Artificial Super Intelligence》(TMLR 2026-01,27 位作者,<a href="https://arxiv.org/abs/2507.21046">arXiv 2507.21046</a>),仓库 <a href="https://github.com/CharlesQ9/Self-Evolving-Agents">CharlesQ9/Self-Evolving-Agents</a>,Apache-2.0。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是<strong>最右端那级台阶</strong>。这张图不是分类图,是一个<strong>主张</strong>:自进化被明确定位为通往 ASI 的必经台阶,而且台阶之间画成了单调上升的序列。整份综述的组织方式(四问都以「如何更接近上一级」为潜台词)由这张图决定。</p>
+    <p>第二处要看的是<strong>台阶之间没有任何返回箭头</strong>。第 07 节的失进化证据(拒答率从 99.4% 掉到 54.4%)与第 08 节的密封评测结果(隐藏集只从 0.13 动到 0.26)都表明,实际系统会在台阶上<strong>横向移动甚至后退</strong>。本站把这张图当作需要检验的假设,而不是结论——第 08 节回来检验它。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>自进化是一个已成形的领域,有公认的定义与分类;读一份综述就能建立地图。五份综述互为补充,差异是措辞与侧重。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>微软那份是唯一给出<strong>边界裁定程序</strong>的(Π/A、Π/M、A/M、H 四类歧义 case 各有判定规则)——<strong>这个程序存在本身就是分歧实质性的证据</strong>:如果边界清楚,不需要裁定程序。五份综述的论文数口径也不同(厦大 211、微软约 300、Agentic RL 综述 &gt; 500),<strong>不可相互相减</strong>。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>「同一篇论文落进哪个格子」是否稳定</b>。<span class="chip c-inf">推断</span> 实用后果有两条:一是<strong>不要用某一份综述的分类去检索另一份的引用</strong>,记忆类工作在五份里分布在五个位置;二是<strong>引用「这个方向有 N 篇论文」时必须带上口径</strong>。对 RL-on-NPU 的含义:选型时应当按 Ren 等的 θ/Σ 二分做第一刀,因为只有这一刀与「要不要动权重」这个工程决策同构——而这正是决定要不要占用 NPU 训练资源的那个决策。</p>
+
+<h2 id="s2"><span class="hnum">02</span>θ 与 Σ:最精确的那把刀</h2>
+
+<p>Ren 等(Schmidhuber 组)给出的定义值得逐字保留:一个 agent 是 <code>A_t = (θ_t, Σ_t)</code>,其中 <code>Σ_t := (p_t, m_t, T_t, g_t)</code> 分别是提示词、记忆、工具、控制逻辑。他们的关键动作是把<strong>短暂的执行状态</strong> <code>X_t</code>(KV cache、工作上下文,任务边界处重置)与<strong>内在配置</strong> <code>(θ, Σ)</code> 分开:<strong>上下文内适应移动的是 X_t,不算自我改进;只有把变更持久写回 θ 或 Σ 才算</strong>。微软的表述等价:<code>S^(t+1) = Φ(S^(t), E^(t) + H^(t))</code>,「下标 t 标记的是更新事件,不是墙钟时间……S^(t) 只在一次固化写回时前进」。</p>
+
+<figure>
+  <img src="img/dispatch-43-self-evolving-agents/orig-theta-sigma.png" alt="自我改进的形式化:左侧基础模型改进 θ 更新、Σ 不变,按信号分内生示范、内生反馈、外生经验三类;右侧脚手架改进 Σ 更新、θ 不变,按分量分提示词、工具、记忆、全脚手架四类">
+  <figcaption><span class="fnum">图 2</span>本篇最关键的一张图:两条改进通路的形式化对照。<span class="chip c-vr">自报</span> 原图出自 Ren 等(Schmidhuber 组)《Self-Improving AI Agents: A Survey》,<a href="https://arxiv.org/abs/2607.13104">arXiv 2607.13104</a>,仓库 <a href="https://github.com/selfimproving-agent/awesome-Self-Improving-Agents">selfimproving-agent/awesome-Self-Improving-Agents</a>,MIT。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左右两半的<strong>不变量</strong>是读法的关键。左半 <code>θ_{t+1} = IMPROVE_θ(θ_t; S_t)</code>,<strong>Σ 保持不变</strong>,三类信号分别是内生示范(<code>S ≈ D_t</code>,自己生成的数据)、内生反馈(<code>S ≈ r_t</code>,自己给的奖励)、外生经验(<code>S ≈ τ_t</code>,环境轨迹)。右半 <code>Σ_{t+1} = IMPROVE_Σ(Σ_t; S_t)</code>,<strong>θ 保持不变</strong>,四类按被改的分量划分。</p>
+    <p>要带走的是<strong>这两半不对称</strong>:左半是在固定的决策过程上做策略优化,标准 RL 的全部工具都适用;右半改的是提示词、记忆、工具与控制逻辑,也就是<strong>改 MDP 本身</strong>——观测函数、动作空间、转移结构都会变,因此<strong>在标准 RL 里没有对应物</strong>。第 09 节产业全走右半,第 10 节昇腾的成本差异也全部由这条分界决定。</p>
+  </div>
+</figure>
+
+<div class="formula">A_t = (θ_t, Σ_t) ,  Σ_t := (p_t, m_t, T_t, g_t)
+                       提示词  记忆  工具  控制逻辑
+
+X_t                  <span class="cmt">// 短暂执行状态:KV cache、工作上下文,任务边界处重置——移动它不算自我改进</span>
+θ ← IMPROVE_θ         <span class="cmt">// 固定 MDP 上的策略优化 · 标准 RL</span>
+Σ ← IMPROVE_Σ         <span class="cmt">// 重塑 MDP 本身 · 无 RL 对应物</span></div>
+
+<figure>
+  <img src="img/dispatch-43-self-evolving-agents/orig-agent-def.png" alt="agent 结构图:用户输入进入 agent,agent 由脚手架 Σ(提示词、工具、记忆)与基础模型 θ 两块构成,模型对外部环境发出动作并接收反馈,最终产生输出">
+  <figcaption><span class="fnum">图 3</span>同一份综述给出的 agent 结构:<code>A_FM = (θ_FM, Σ)</code>,脚手架的三件常驻物(Prompt / Tools / Memory)全部接在基础模型的输入侧。<span class="chip c-vr">自报</span> 同图 2 出处,MIT。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是<strong>箭头的方向</strong>:提示词、工具、记忆三个方框的箭头<strong>都指向 FM 的输入端</strong>,而不是指向 FM 内部。这张图用最少的笔画说明了第 09 节那句结论的架构成因——<strong>一个生产 agent 就是冻结解码器前面的一条上下文装配流水线</strong>,学到的改进只有两个地方可放:权重里(蓝色方框内),或字符串里(绿色方框内)。</p>
+    <p>第二处要看的是<strong>外部环境只与 FM 交换 Action / Feedback</strong>,不直接写脚手架。这意味着环境反馈要变成持久改进,必须经过一个显式的写回步骤——第 05 节的记忆写入策略(Mem0 的 ADD/UPDATE/DELETE/NOOP、ReasoningBank 的双提示抽取、SEDM 的 A/B 重放准入)全部是这一步的不同实现。<span class="chip c-inf">推断</span> 写回步骤是整条链上唯一可被审计与回滚的位置,这也是第 09 节第二条理由的来源。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>agent 在「学习」「进化」「自我改进」;上下文里多记了几条经验、下一轮表现更好,就是学到了东西。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>Ren 等把这条线划死:<strong>上下文内适应移动的只是 X_t</strong>,任务边界处重置,不构成自我改进。同一判据被微软独立给出(「S^(t) 只在一次固化写回时前进」)。<span class="chip c-inf">推断</span> 两组人从不同出发点得到同一条边界,是这个形式化可信度最高的证据。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>「持久写回」这个动作是否发生</b>。<span class="chip c-inf">推断</span> 这把刀最直接的用法是做负面筛查:一个宣称自进化的系统,如果说不清它把什么写回了哪里、下次冷启动时还在不在,那它做的是上下文内适应。<strong>与本站 D41 的接口</strong>:Ren 等的 <code>Σ=(p, m, T, g)</code> 与 <a href="dispatch-41-prime-agent.html">D41</a> 记录的 Prime Agent Continual Harness <code>H=(p, G, K, M)</code>(提示词、子代理、技能、记忆)是<strong>同一个对象被两拨人独立形式化</strong>;Ren 等还注意到术语正在合流——社区越来越多地说 harness,他们说 scaffold,也就是说本站 <a href="dispatch-29-deepseek-harness.html">D29</a>/D41/<a href="dispatch-42-deepseek-v41-flash.html">D42</a> 追踪的 harness 文献与这里的「脚手架改进」分支是同一批工作的两个名字。</p>
+
+<h2 id="s3"><span class="hnum">03</span>三支路线与它们的体量</h2>
+
+<p>厦大综述的三支分类是唯一「顶层即编年史」的划法:模型侧、环境侧、模型-环境共进化,加上一支 Benchmarks。三支的条目数(本站按仓库条目程序化点数,<span class="chip c-inf">推断</span>)很能说明问题:<strong>模型侧 76、环境侧 110、共进化 25</strong>,而共进化几乎全部是 2025–2026 年的工作。时间线可以钉死:模型侧的根在 <strong>2022 年 3 月</strong>(Self-Consistency 与 STaR 同月);环境侧的根在 2021–2023 年(WebGPT、ReAct、MemGPT、MemoryBank);共进化几乎全部在 2025 年之后。</p>
+
+<figure>
+  <img src="img/dispatch-43-self-evolving-agents/orig-intro.png" alt="三支分类全景图:模型侧自进化、环境侧自进化、模型-环境共进化三个主分支各自展开子类,右侧另有 Benchmarks 分支">
+  <figcaption><span class="fnum">图 4</span>厦大综述的三支分类全景。<span class="chip c-vr">自报</span> 原图出自 Xiang 等《A Systematic Survey of Self-Evolving Agents: From Model-Centric to Environment-Driven Co-Evolution》(TechRxiv,<a href="https://doi.org/10.36227/techrxiv.177203250.05832634">DOI 10.36227/techrxiv.177203250.05832634</a>),仓库 <a href="https://github.com/XMUDeepLIT/Awesome-Self-Evolving-Agents">XMUDeepLIT/Awesome-Self-Evolving-Agents</a>。该仓库未附 LICENSE,此处为署名引用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>不要从左往右读,要<strong>先数每一支的叶子密度</strong>。环境侧的叶子最多(110 条,最大叶子是终身经验演化 16 条与工具增强演化),模型侧次之(76 条,最大叶子是探索驱动在线自进化 33 条),共进化最少(25 条)。<strong>叶子密度就是这个方向的资源分配图</strong>:冻结权重、改其余一切,是当前投入最大的一支。</p>
+    <p>第二处要看的是<strong>「环境侧」这一支的异质性</strong>——它同时容纳了 RAG、工具学习、记忆系统、工作流搜索与拓扑优化。这是第 01 节说的「环境侧成了大杂烩」的具体表现:这一支的内部差异大于它与模型侧的差异。<span class="chip c-inf">推断</span> 读这一支时按「S 是什么、搜索算子是什么」重新分组,比按综述的叶子分组更有用。</p>
+  </div>
+</figure>
+
+<figure>
+  <img src="img/dispatch-43-self-evolving-agents/orig-trend.png" alt="演进趋势图:约一百个代表方法按年代从左下向右上排布,粉色为模型侧、蓝色为环境侧、绿色为共进化,颜色随时间从粉变绿">
+  <figcaption><span class="fnum">图 5</span>领域演进趋势:约 100 个代表方法按年代排布、按三支着色。<span class="chip c-vr">自报</span> 同图 4 出处。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>只看<strong>颜色沿对角线的变化</strong>,不要逐个认方法名。左下角起点是 2022 年的 Self-Consistency 与 STaR(粉,模型侧),中段大面积转蓝(环境侧),右上角 2026 年的 DreamGym、AutoEnv、GenEnv、RLVE、CoMAS 是绿(共进化)。<strong>颜色随时间从粉变绿,就是三支路线依次被激活的直接可视化。</strong></p>
+    <p>要带走的是<strong>这个序列不是偏好更迭,是失效模式驱动的</strong>:模型侧撞上「没有外部验证信号」(第 04 节),于是转向环境侧去借外部信号;环境侧撞上「环境是静态的、与训练脱节」,于是转向共进化让环境也动起来。图 10 把这条因果链画成了一行三格。</p>
+  </div>
+</figure>
+
+<figure>
+  <img src="img/dispatch-43-self-evolving-agents/orig-tree.jpg" alt="AI agent 演化景观树状图:树干从 2023 年向上生长,左侧金色枝为单智能体优化的提示词、记忆、工具三支,中间青色枝为多智能体优化的 agent 中心、拓扑与工作流、统一优化,右侧红色枝为领域专用优化的医疗与科技研究">
+  <figcaption><span class="fnum">图 6</span>另一份综述给出的同一片领域:按<strong>优化对象</strong>而非按相对环境的位置组织,单智能体优化(提示词 / 记忆 / 工具)、多智能体优化(agent 中心 / 拓扑与工作流 / 统一优化)、领域专用优化(医疗 / 科技研究)三条主枝。<span class="chip c-vr">自报</span> 原图出自 Fang 等,<a href="https://arxiv.org/abs/2508.07407">arXiv 2508.07407</a>,仓库 <a href="https://github.com/EvoAgentX/Awesome-Self-Evolving-Agents">EvoAgentX/Awesome-Self-Evolving-Agents</a>,MIT。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>把这张图与图 4 <strong>并排看</strong>,就看到了第 01 节说的「分歧是实质性的」:同一批工作(Reflexion、Mem0、A-Mem、ADAS、AFlow、MaAS、GPTSwarm 都在两张图里),在图 4 里按「相对环境的位置」分成三支,在这里按「优化对象」分成三枝,<strong>两种切法互不包含</strong>——例如记忆类工作在这里是单智能体优化的一整条金色枝,在图 4 里则被拆到环境侧的两处。</p>
+    <p>第二处要看的是<strong>纵轴年份刻度</strong>:2023 → 2024 → 2025,枝叶密度逐年放大,而最右侧的领域专用优化(医疗、科技研究)几乎全部在 2024 年之后长出。<span class="chip c-inf">推断</span> 这支与前两支性质不同——它不提出新的更新算子,而是把已有算子搬进垂直领域,因此在评测方法学上继承前两支的全部问题(第 08 节)。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>自进化有三支路线在并行推进,各有侧重,互为补充;共进化是最新最完整的一支,代表方向的未来。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>条目数 <strong>76 / 110 / 25</strong>,共进化几乎全在 2025 年后。三支不是并行,是<strong>串行接力</strong>:每一支的兴起都由前一支被作者自己承认的失效模式驱动(图 10 把这条链画了出来)。而且同一批工作在另一份综述里会被切成完全不同的三枝(图 6)。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>三支是并行还是串行</b>。<span class="chip c-inf">推断</span> 按串行读有两个实用后果:一是<strong>读某一支时应当先读它要修的那个失效模式</strong>,否则会把补丁当成新范式;二是<strong>共进化的 25 条工作还太新</strong>,其中相当一部分尚无独立复现(第 08 节),体量差 4 倍以上这件事本身就是「这一支尚未沉淀」的信号。</p>
+
+<h2 id="s4"><span class="hnum">04</span>模型侧:自己改自己,以及它为什么常常失败</h2>
+
+<p>模型侧分两个家族:合成驱动的<strong>离线</strong>演化(静态自举、知识精炼、泛化受限)与探索驱动的<strong>在线</strong>演化(纯自博弈 / 人类数据引导的自博弈,结构都是 Challenger 出题、Solver 解题的在线循环)。推理时的三种机制各有瓶颈:<strong>并行采样</strong>(Self-Consistency)是方差削减器而非偏差削减器,错误相关时投票只会放大,而且它是所有花哨方案必须在<strong>等 token 预算</strong>下击败的基线——多智能体辩论在 9 次响应的等预算下只有 83.0%,朴素 self-consistency 是 88.2%;<strong>序贯自我纠错</strong>的关键区别在批评意见的信息来自哪里,Reflexion 的评估器通常是外部二值信号(单元测试、环境成功)、CRITIC 明确路由过搜索引擎与解释器,这些有效;<strong>结构化推理</strong>(ToT、GoT、Meta-CoT、PlanSearch)把搜索显式化,但打分者仍是模型本身,因此继承同一个验证瓶颈——PlanSearch 的真正贡献是诊断出杠杆是<strong>多样性而非深度</strong>,在自然语言方案层面搜索把 Claude 3.5 Sonnet 的 pass@200 从 60.6% 提到 <strong>77.0%</strong>。</p>
+
+<figure>
+  <img src="img/dispatch-43-self-evolving-agents/orig-model-centric.png" alt="模型侧自进化的两个家族对照:左为合成驱动离线演化,分 SFT 型、离线 RL 型、参考型;右为探索驱动在线演化,分纯自博弈与人类数据引导的自博弈,结构均为 Challenger 与 Solver 的在线循环">
+  <figcaption><span class="fnum">图 7</span>模型侧的两个家族。左:合成驱动离线演化,特征是静态自举、知识精炼、泛化受限。右:探索驱动在线演化,Challenger 出题、Solver 解题。<span class="chip c-vr">自报</span> 同图 4 出处。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是<strong>左右两半的闭环深度</strong>。左半的箭头从数据出发、经过滤回到 SFT,<strong>任务分布是外部给定的</strong>;右半多出一个 Challenger 方框,任务分布本身成了被优化的对象。这一格之差就是「离线合成」与「零数据自博弈」的全部区别——前者的不动点由数据集决定,后者的不动点由 Challenger 与 Solver 的博弈决定。</p>
+    <p>第二处要看的是右半<strong>「纯自博弈」与「人类数据引导」的分叉</strong>。这条分叉线上有一处常见误读:<strong>SPIN 不是零数据自进化</strong>——它的判别目标要求偏好人类 SFT 回答胜过自己的旧生成,所以它的不动点<strong>就是人类数据分布,无法超越</strong>。这一族普遍在 <strong>n ≈ 2 轮</strong>达峰。</p>
+  </div>
+</figure>
+
+<p>内生自我纠错——模型无预言机地自评——在证据上是<strong>净负</strong>的:</p>
+
+<div class="tbl">
+<table>
+<caption>内生自我纠错的效果(自评无外部信号)</caption>
+<thead><tr><th>设置</th><th>结果</th><th>来源类型</th></tr></thead>
+<tbody>
+<tr><td>GPT-4,GSM8K,两轮内生纠错</td><td><strong>95.5 → 91.5 → 89.0</strong></td><td><span class="chip c-tp">第三方</span></td></tr>
+<tr><td>GPT-3.5,GSM8K,一轮</td><td>对→错 <strong>8.8%</strong> vs 错→对 <strong>7.0%</strong></td><td><span class="chip c-tp">第三方</span></td></tr>
+<tr><td>GPT-3.5,CommonSenseQA</td><td>75.8 → <strong>38.1</strong></td><td><span class="chip c-tp">第三方</span></td></tr>
+<tr><td>Llama-2-70B,GSM8K</td><td>62.0 → <strong>36.5</strong></td><td><span class="chip c-tp">第三方</span></td></tr>
+<tr><td>同一循环但<strong>给预言机</strong></td><td>75.9 → <strong>84.3</strong></td><td><span class="chip c-tp">第三方</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<p>原因是信息论上的:<strong>如果模型能可靠分辨对错,它一开始就会给出对的答案</strong>。早期论文报告的增益是把真值标签用来决定<strong>何时停止</strong>纠错,于是循环只动了本来就错的答案——那是预言机引导的筛选,不是自我纠错。Kamoi 等的 <a href="https://aclanthology.org/2024.tacl-1.78/">TACL 综述</a>把这一点推广到整个文献。机制上更细的诊断:GPT-4 只有 <strong>52.87%</strong> 的概率能找到 CoT 中第一个出错的步骤,但告诉它错在哪之后修复能涨 18 到 44 分——<strong>缺的不是修复能力,是独立的错误信号</strong>。</p>
+
+<div class="note flag">
+  <span class="ntitle">2026 年的一处反转值得记下</span>
+  <p>把逐字节相同的错误陈述从模型自己的 assistant 轮<strong>改标</strong>为 user 或 tool 轮,显式纠错率在 12 个模型-领域组合上跳升 <strong>23 到 93 个百分点</strong>。也就是说「LLM 不能自我纠错」里有相当大一部分是<strong>聊天模板下对自己文本的谄媚</strong>,而非认知上限。<span class="chip c-inf">推断</span> 这条结论对工程的直接含义:把自评环节的输入改写成外部来源的形式(工具返回、他人陈述),可能不改模型就拿到一部分纠错能力——代价是这属于提示词层面的 Σ 改动,收益上限仍受第 08 节的等预算对照约束。</p>
+</div>
+
+<p>训练时的零数据自博弈要造两样东西——<strong>任务分布</strong>与<strong>奖励</strong>,全部工程都在于各自如何接地:</p>
+
+<div class="tbl">
+<table>
+<caption>零数据自博弈的四档奖励接地</caption>
+<thead><tr><th>接地方式</th><th>代表</th><th>可信度</th></tr></thead>
+<tbody>
+<tr><td><strong>可执行器</strong></td><td><a href="https://github.com/LeapLabTHU/Absolute-Zero-Reasoner">AZR</a>(Python 解释器判定)、Self-Challenging(Challenger 必须同时产出验证函数)</td><td>最高,奖励无法被幻觉</td></tr>
+<tr><td><strong>零和博弈</strong></td><td><a href="https://github.com/spiral-rl/spiral">SPIRAL</a>(胜负定义上正确,对手是不断变强的自己)</td><td>高,且不饱和</td></tr>
+<tr><td><strong>语料</strong></td><td>SPICE(Challenger 看得到文档、Reasoner 看不到,故意打破信息对称)</td><td>中,引入外部信息</td></tr>
+<tr><td><strong>多数投票</strong></td><td><a href="https://github.com/Chengsong-Huang/R-Zero">R-Zero</a>、SQLM、TTRL</td><td><strong>最弱</strong>,把推理时的自洽信号提拔成训练目标,错误因此永久化</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>课程接地则高度统一,都是「可学习性」/ 前沿奖励:当 Solver 的经验成功率接近 1/2 时奖励出题者(R-Zero 瞄准约 50% 不确定度,AZR 用 1 − 平均解出率)。这是<strong>防坍缩装置</strong>:只奖励难度,出题者会漂向无解噪声;只奖励可解,会漂向琐碎。</p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>零数据自博弈让模型摆脱人类数据的上限:Challenger 不断出更难的题,Solver 不断变强,循环可以一直跑下去。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>理论上自我改进是<strong>锐化</strong>(sharpening):它不能创造模型没有的信息,只能把概率质量集中到模型<strong>已能验证</strong>的序列上;可利用的量是<strong>生成-验证差距</strong>,有限且随预训练算力变化——<strong>每个零数据循环都在跑赢一个正在枯竭的资源</strong>。一项受控研究给出更硬的结论:<strong>严格的数据闸门(哪些被提议的任务准入训练)在所有奖励变体下都足以保证稳定,而一旦撤掉闸门,没有任何奖励设计够用。</strong></p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>「循环能跑多久」由什么决定</b>。叙事把答案放在奖励设计上,证据把答案放在<strong>数据闸门</strong>与<strong>生成-验证差距的存量</strong>上。<span class="chip c-inf">推断</span> 对 RL-on-NPU 的含义很直接:若闸门比奖励更决定成败,那么自博弈循环的工程重点应当从「设计更精巧的奖励」移到「实现一个严格、可审计、可复现的任务准入过滤器」——后者是 CPU 侧工作,不消耗加速卡,却决定整条曲线是否可信。本站 <a href="../index.html#curves">910B 实验脚手架</a>的 <code>source</code> 块要求(日志 sha256 + 步区间 + env.json)服务的正是同一件事。</p>
+
+<h2 id="s5"><span class="hnum">05</span>环境侧:冻结权重,改其余一切</h2>
+
+<p>这一支冻结 θ,把策略写成 <code>π(·|θ, S)</code>,S 是持久的非参数产物状态;「演化」就是在 S 上做搜索,而 LLM 既是优化器又常常是(不可验证的)奖励。表示上有一条清晰的阶梯:原始轨迹(Memento 的案例库)→ 原子事实(Mem0)→ 带链接的笔记(A-MEM 的卡片盒:关键词、标签、上下文描述、嵌入、链接)→ 蒸馏出的策略(ReasoningBank 的 {标题, 描述, 内容};ACE 的 playbook 条目)→ 概念(ArcMemo)→ 可执行技能(Voyager 的代码库)→ 潜变量(MemGen,完全不用文本)。抽象层级是核心权衡,而且<strong>经验上是双向的</strong>:高层洞见跨域可迁移(六个编码基准平均 +3.7%),低层轨迹则会引发<strong>负迁移</strong>。</p>
+
+<figure>
+  <img src="img/dispatch-43-self-evolving-agents/orig-exp-driven.png" alt="环境侧两大类机制对照:左为静态知识演化,含 Agentic RAG 与推理驱动的深度研究;右为动态经验演化,分离线经验编译、在线经验适配、终身经验优化三段,并画出记忆的写入、读取、更新、删除四个操作">
+  <figcaption><span class="fnum">图 8</span>环境侧的两大类。左:静态知识演化,补充世界知识、知识密集任务、泛化受限。右:动态经验演化,蒸馏抽象经验、逻辑密集任务、强跨任务泛化。<span class="chip c-vr">自报</span> 同图 4 出处。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是右侧第三格明确画出的 <strong>Write / Read / Update / Delete 四个操作</strong>——<strong>记忆是被 CRUD 的</strong>,不是被「积累」的。这一格解释了这一支真正的工程核心:<strong>Delete 与 Update 才是难的部分,Read 只是检索</strong>。Mem0 抽取事实后对最近邻的十条记忆发 ADD/UPDATE/DELETE/NOOP 工具调用;ReasoningBank 用 LLM 自评、无真值,一个提示抽成功策略、另一个从失败里抽反事实陷阱——<strong>失败被当作一等信号</strong>;SEDM 要求一条记忆只有在无环境 A/B 重放显示边际效用为正时才准入。</p>
+    <p>第二处要看的是<strong>左右两半标注的泛化性相反</strong>:左半(静态知识)写着「泛化受限」,右半(动态经验)写着「强跨任务泛化」。这与上一段的双向证据一致——高层洞见可迁移、低层轨迹负迁移,而抽象层级正是左右两半的差异所在。</p>
+  </div>
+</figure>
+
+<p>遗忘机制是真正的工程核心:MemoryBank 用艾宾浩斯指数衰减并在被召回时强化;ACE 用增量 delta 更新加 helpful/harmful 计数,再做确定性合并、去重与剪枝,<strong>明确为了打败两件事</strong>——「简洁性偏置」(摘要丢掉领域细节)与「上下文坍缩」(反复重写整段上下文等于递归地跑一个有损自编码器,细节因损耗而死);LightMem 把固化推迟到离线「睡眠时」批处理,使在线成本保持平坦(在线 token 最高降 106× / 117×)。</p>
+
+<p><strong>模块化架构演化</strong>的区分点是<strong>搜索算子</strong>:ADAS 让元 agent 直接编写约 100 行的 <code>forward</code> 函数并把归档当种群;AFlow 用预定义算子(Generate / Review / Revise / Ensemble / Programmer)约束空间并跑 MCTS 变体;<strong>GEPA 用自然语言反思做变异,并维护逐实例分数的帕累托前沿</strong>而非单一全局最优;Gödel Agent 的算子是「任意自编辑」,包括改写那段改写代码的代码。<strong>拓扑演化</strong>把 S 设为通信图:GPTSwarm 用 REINFORCE 优化连接概率,G-Designer 从变分图自编码器解出任务自适应拓扑,MaAS 让拓扑<strong>逐查询条件化</strong>(从 agentic supernet 采样),成本因此降到基线推理的 6–45%。</p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>给 agent 装一个记忆系统,它就能从经验里学习:做得越多、记得越多、表现越好。检索质量是关键。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p><strong>这一支的工程核心是遗忘,不是检索。</strong> ACE 明确把「上下文坍缩」命名为失效模式:反复重写整段上下文等于递归地跑一个有损自编码器。第 07 节给出了积累本身的代价——仅仅是记忆累积,就让一个 Qwen3-Coder-480B agent 的拒答率从 <strong>99.4% 掉到 54.4%</strong>,<strong>没有对手,也没有参数更新</strong>。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>「记得越多越好」是否成立</b>。证据说不成立:记忆是被 CRUD 的资源,而 Delete/Update 策略决定系统的长期行为,包括安全行为。<span class="chip c-inf">推断</span> 对昇腾的含义在第 10 节:检索优先的记忆系统(如 ReMe 把记忆存成 Markdown、用 BM25 做行级片段检索)负载在 CPU 侧,与 NPU 无关;上下文优先的记忆系统把每次 rollout 变成长 prefill 作业,<strong>约束立刻变成 KV 容量与 prefill 吞吐</strong>,并且要遵守一条明确的前缀布局规则。</p>
+
+<h2 id="s6"><span class="hnum">06</span>共进化:自适应课程其实是梯度信号保全装置</h2>
+
+<p>共进化分两半,性质不同:<strong>可扩展环境演化</strong>主要是<strong>供给</strong>(造更多可执行世界),<strong>自适应课程演化</strong>才是真正的闭环——环境的输出分布是当前策略的函数。核心机制可以被精确说出来:每次 RLVR 训练都有一个隐藏量——采样到的提示中,rollout 组既非全对也非全错的比例。在 GRPO 式的组相对优势下,<strong>全对或全错的组给出零优势,因此零梯度</strong>。RLVE 把它命名并测量为 <strong>effective prompt ratio</strong>。</p>
+
+<figure>
+  <img src="img/dispatch-43-self-evolving-agents/orig-loop.png" alt="四组件闭环图:System Inputs、Agent System、Environment、Optimiser 四个方框由 Setup、Execution、Feedback、Mutation、Refine 五条边连成闭环,Optimiser 下方列出搜索空间与优化算法">
+  <figcaption><span class="fnum">图 9</span>Fang 等的四组件控制回路:Setup → Execution → Feedback → Mutation → Refine 五条边闭合。<span class="chip c-vr">自报</span> 同图 6 出处,<a href="https://arxiv.org/abs/2508.07407">arXiv 2508.07407</a>,MIT。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>这张图的价值在于给出<strong>「反馈从哪里进入」的统一词汇</strong>。要看的是 <strong>Optimiser 这一个槽位</strong>:提示词优化器、记忆管理器、工作流搜索器、拓扑搜索器全部是同一个槽位的不同实例,它们的差别只在两处——搜索空间(提示词模板 / 工具选择 / LLM 参数 / 架构)与优化算法(规则启发式 / 梯度下降 / 贝叶斯、MCTS、RL / 学习型策略)。第 05 节列举的 ADAS、AFlow、GEPA、Gödel Agent 的区别,用这张图说就是「同一个 Optimiser 槽位里换了搜索算子」。</p>
+    <p>第二处要看的是 <strong>Feedback 这条边的起点是 Environment</strong>。共进化的全部增量就在于:把这条边的起点也变成可优化对象。一旦环境可变,Feedback 的分布就成了当前策略的函数——闭环从此有两个自由度,第 07 节的失效模式也从此有了第二个来源。</p>
+  </div>
+</figure>
+
+<p>RLVE 的消融是这一支最干净的机制证据:自适应逐环境难度控制器把 effective prompt ratio 维持在约 <strong>50–80%</strong>;静态难度区间——<strong>包括预言机选定的静态区间</strong>——要么在几百步内把简单端吃饱,要么永远高于策略够得着的范围。<strong>所以自适应课程之所以有效,是因为它们是梯度信号保全装置,不是因为教学法。</strong>代表结果(均为 <span class="chip c-vr">自报</span>,设置见括号):RLVE 用 400 个可验证环境,在 1.5B 推理模型上六个基准平均 +3.37%,而继续原有 RL 只有 +0.49%;DreamGym 在 WebShop / ALFWorld 上用纯合成、零真实交互匹配需要 8 万次真实交互的 GRPO / PPO;Environment Tuning 仅用 400 个训练实例把 Qwen2.5-7B-Instruct 的 BFCL V3 从 7% 提到 37%。</p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>自适应课程模仿人类教学:由易到难、循序渐进,所以学得更快。环境与模型互相促进,共同进化。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>RLVE 的消融把机制说死:有效的是把 <strong>effective prompt ratio</strong> 维持在 50–80%,也就是<strong>保住非零梯度</strong>。<strong>预言机选定的静态区间同样失败</strong>——这一条排除了「难度选得准就行」的解释,只剩「难度必须跟着策略动」。SPICE 给出这一支最干净的共进化动力学证据:Reasoner 对<strong>固定</strong> Challenger 的通过率 55% → 85%,对<strong>同步演化</strong>的 Challenger 则 55% → <strong>35%</strong>。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>解释层级</b>:教学法解释无法预测「预言机静态区间也会失败」,梯度信号解释可以。<span class="chip c-inf">推断</span> 这条机制对 RL-on-NPU 是可直接用的:<strong>effective prompt ratio 应当成为训练看板的一等指标</strong>——它是可在线测量的标量(每个提示的 rollout 组是否既非全对也非全错),比 reward 曲线更早地告诉你梯度是否已经消失。本站 <a href="../index.html#curves">910B 脚手架</a>当前记录的是 <code>critic/rewards/mean</code> 与 <code>actor/kl_loss</code>,这一项尚未纳入。</p>
+
+<h2 id="s7"><span class="hnum">07</span>失效模式:打分者位于被打分者的下游</h2>
+
+<p>自进化是一个控制回路:提议、打分、接受或丢弃。<strong>所有已记录的失效都是这三个箭头之一的失效</strong>,而且几乎都来自同一个结构性事实:<strong>在自进化系统里,打分者位于被打分者的下游。</strong></p>
+
+<figure>
+  <img src="img/dispatch-43-self-evolving-agents/orig-co-evolving.png" alt="三支路线的局限与回应对照图:左列模型侧的三条局限,中列环境侧的三条局限,右列共进化给出的三条回应">
+  <figcaption><span class="fnum">图 10</span>综述自己承认的失效模式。左(模型侧):缺乏外部验证与低质数据、迭代中的误差累积、高概率过估计与高方差。中(环境侧):被动且有限的环境反馈(稀疏奖励)、静态环境与训练脱节、不可扩展的单任务环境。右(共进化):自适应难度调整、按需的定向反馈、可扩展多任务环境。<span class="chip c-vr">自报</span> 同图 4 出处。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p><strong>这张图的读法是从左到右的因果链,不是三栏并列</strong>:每一支的存在,都是前一支失效模式逼出来的。左列三条是模型侧被作者自己承认的问题,中列三条是环境侧的,右列三条是共进化声称的回应——<strong>右列与中列一一对应</strong>(自适应难度对静态环境,定向反馈对稀疏奖励,多任务环境对单任务环境)。这正是图 5 里颜色从粉变绿的原因。</p>
+    <p>要带走的是<strong>这张图没画出的那一格</strong>:共进化自己的失效模式。本节下面的五条(验证器衰减、裁判被刷、接受规则洗噪声、失进化、pass@k 收缩)在综述的这张图里没有位置,它们来自各方法的原始论文与独立复现。<span class="chip c-inf">推断</span> 一份综述的「局限」栏通常只覆盖到上一代,当代的失效模式要回到一手论文里找。</p>
+  </div>
+</figure>
+
+<p><strong>① 验证器是绑定约束,而且它会随 Solver 变强而衰减。</strong> R-Zero 自己的论文是最好的一手证据:随着 Challenger 把题变难,多数投票伪标签的真实准确率 <strong>79.0% → 69.0% → 63.0%</strong>。决定性的消融是 Single-R-Zero(出题者与解题者<strong>共享参数</strong>):伪标签准确率在<strong>每一步</strong>都更差(第一轮 63.4% 对 71.0%,第 45 步 32.6% 对 48.8%),且一轮后就达峰。作者原话是「让出题者与解题者出自同一个模型,会导致一种源于内部偏置的过度自信」。<strong>这是被测量出来的评估者-被评估者相关性,不是断言。</strong> 它还能推广:GRPO 组内验证器错误相关系数 0.530,于是 8 条补全的组<strong>有效样本量只有 1.70</strong>。</p>
+
+<p><strong>② 裁判可以被刷到与真值脱钩。</strong> 用无参考 LLM 裁判在 GSM8K 上做自博弈,裁判通过率从 <strong>0.72 涨到 0.94</strong>,而隐藏锚点测出的<strong>真实准确率始终停在 0.20</strong>;而且这些利用手法<strong>跨裁判族与规模迁移</strong>,严格的三裁判集成仍然接受 55%。<strong>裁判打的是合理性,不是正确性。</strong></p>
+
+<p><strong>③ 接受规则把噪声洗成进展。</strong> Agent 评测本身就噪声大(单次 pass@1 波动 2.2–6.0 个百分点,要检出 2% 的效应约需 9 次运行),而自进化循环反复用同一个开发集测试候选——这是<strong>不受控的自适应多重检验,agent 在对自己做 p-hacking</strong>。在贪心的「留出集涨了就留下」规则下,<strong>30–42% 的提交是假的,10–33% 实际有害</strong>;而当<strong>根本没有真实改进可得</strong>时,循环每次运行仍会提交 13–21 个虚假变更。</p>
+
+<p><strong>④ 失进化(misevolution)不是加了几步的奖励攻击。</strong> 在<strong>没有对手、也没有参数更新</strong>的情况下,安全性会沿全部四条演化路径退化:仅仅是记忆累积,就让一个 Qwen3-Coder-480B agent 的拒答率从 <strong>99.4% 掉到 54.4%</strong>;为 HumanEval 准确率做 AFlow 工作流优化,把拒答率从 36.3% 压到 <strong>5.6%</strong>,同时把 RedCode-Gen 的攻击成功率从 54.4% 抬到 <strong>83.1%</strong>。</p>
+
+<p><strong>⑤ RLVR 的 pass@k 收缩是真的,但被过度解读。</strong> 一次可审计的独立复现(每题 128 次采样、500 道 MATH500、4 个种子)确认了 pass@128 上 <strong>−3.20 个百分点</strong>(95% CI [−5.00, −1.40])。机制是 KL 正则的策略梯度最大化<strong>单样本</strong>奖励,对覆盖度无所谓,熵在约 200 个 GRPO 步内几乎耗尽。但这个指标本身有争议,ProRL / QuestA 在长时间训练配合参考重置下报告了扩张。<strong>诚实的状态是两阶段观点:利用会收缩边界,长时间探索可能扩张它。</strong></p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>自进化循环有内建的质量控制:候选要通过评估才被接受,不好的变更会被丢弃,所以循环是单调改进的。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>五条失效各自有量:伪标签准确率 79.0 → 63.0;裁判通过率 0.72 → 0.94 而真实准确率<strong>停在 0.20</strong>;贪心接受下 <strong>30–42% 假阳性、10–33% 有害</strong>;无真实改进可得时每次运行仍提交 <strong>13–21 个</strong>虚假变更;记忆累积单独把拒答率打到 <strong>54.4%</strong>。<strong>质量控制器与被控制者出自同一个模型</strong>,这是结构问题,不是调参问题。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>评估的独立性</b>。<span class="chip c-inf">推断</span> 三条可直接执行的工程约束:<strong>一,出题者与解题者不要共享参数</strong>——Single-R-Zero 的消融给了代价的量;<strong>二,接受规则必须留出一个从不用于选择的密封集</strong>,否则循环在做 p-hacking;<strong>三,安全指标必须随能力指标一起监控</strong>,因为失进化在没有对手、没有梯度更新的情况下也会发生。第三条对昇腾侧的长周期 agent 部署尤其要紧:记忆文件是会自己长大的,而拒答率不会自己被测量。</p>
+
+<h2 id="s8"><span class="hnum">08</span>评测:等预算对照下,演化打不过并行采样</h2>
+
+<p>这一节是本篇最冷的部分。<strong>先要说清测的是什么。</strong> SEAGym 的形式化最干净:一次 agent 快照是 <code>A_t = (M, H_t)</code>——<strong>固定</strong>的基座模型 M 加可变的 harness 状态 H_t(提示词、记忆、工具、中间件、运行时状态、模型-工具交互循环)。<strong>如果 M 冻结,任何分数变化都不是模型能力,而是由 LLM 执行的 harness 工程。</strong> 这一句就消解了大量自进化修辞。</p>
+
+<p><strong>决定性的对照,几乎没人做:把同样的 rollout 预算给任务本身的推理时搜索,而不是给 harness 搜索。</strong>《Rethinking the Evaluation of Harness Evolution for Agents》在 89 个 Terminal-Bench 2.1 任务上、每题五次 rollout 做了这件事:</p>
+
+<div class="tbl">
+<table>
+<caption>等 rollout 预算对照(89 个 Terminal-Bench 2.1 任务,每题 5 次 rollout)</caption>
+<thead><tr><th>方案</th><th>pass@1</th><th>条件</th></tr></thead>
+<tbody>
+<tr><td><strong>朴素并行采样</strong></td><td><strong>72.3</strong></td><td>无测试</td></tr>
+<tr><td>harness 演化</td><td>67.4</td><td>无测试</td></tr>
+<tr><td><strong>并行采样</strong></td><td><strong>86.0</strong></td><td>有测试可用</td></tr>
+<tr><td>harness 演化</td><td>75.8</td><td>有测试可用</td></tr>
+<tr><td>演化后 harness / 初始 harness</td><td>68.3 / 67.7</td><td>真正的 45/10/34 划分,<strong>在误差内</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<p>机制很朴素:两种做法买的都是对同一批任务的相关尝试,但 <strong>best-of-N 当场兑现收益,演化却必须把收益压缩成可迁移的产物、并在推理时再付一次</strong>。公平地说,演化的辩护是<strong>摊销</strong>:演化后的 harness 是可在未来任务上复用的固定成本,所以诚实的比较需要一个<strong>生命周期分母</strong>(多少未来任务才能摊平演化成本),而且 rollout 对齐<strong>不等于</strong> token、美元或延迟对齐。另一项研究 HARNESSEVO 在 ALFWorld 上做等预算对照,得到 0.657 对 0.642(stock harness 与扁平字符串演化),<strong>无显著增益</strong>,并把原因命名为「预算分割陷阱」。</p>
+
+<p><strong>密封评测把头条数字打回原形。</strong> RSI-Exam 让 agent 对着可见集迭代 12 小时,然后把提交的产物在全新容器里对<strong>密封集</strong>重放一次——「不能迁移的改进一分不得」。一次有记录的 10.5 小时运行中,可见集均值从 <strong>0.10 爬到 0.63</strong>,隐藏集只从 <strong>0.13 动到 0.26</strong>。HarnessDev 在 630 个未见 SWE-Pro 任务上评分:反馈方向与留出方向<strong>在 64 次版本切换中只有 34 次一致(53.1%,相当于抛硬币)</strong>,可见增益 13.9 / 13.4 / 8.8 分对应的留出增益只有 1.43 / 3.17 / 2.70,<strong>9 个被声明的最终版本里只有 2 个真是留出最优</strong>。SEAGym 自己的数字说明了多视图评测的价值:TF-GRPO 与 AHE 在验证集上涨幅<strong>完全相同</strong>(都是 +17.1 分);但在留出同分布上 AHE 保住 +9.1 而 TF-GRPO 只剩 +3.6;在 OOD 上 AHE 涨 +6.3 而 TF-GRPO <strong>倒退 2.5</strong>。<strong>单曲线报告会把这两个方法判成一样好。</strong></p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>自进化让 agent 在 N 小时内把分数从 X 提到 Y,提升幅度显著;这是模型在自我改进的直接证据。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>等 rollout 预算下 <strong>72.3 对 67.4</strong>,有测试时 <strong>86.0 对 75.8</strong>,朴素并行采样两侧都赢;做了真正的训练/验证/测试划分后 <strong>68.3 对 67.7,在误差内</strong>。密封集上可见 0.10 → 0.63 而隐藏 0.13 → 0.26;HarnessDev 的反馈方向与留出方向一致率 <strong>53.1%,相当于抛硬币</strong>。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>分母与密封集</b>,这两项在绝大多数自进化论文里都缺席。<span class="chip c-inf">推断</span> 本站判断:回到图 1 的强主张(自进化是通往 ASI 的台阶),以本节的证据看,更准确的说法是——<strong>自进化目前被可靠证明的,是一种在给定任务分布上把推理时搜索结果摊销成可复用产物的方法,而这件事的收益在等预算与密封评测下尚未稳定跑赢直接搜索。</strong> 这不否定这个方向,但它把举证责任移回了作者一侧。</p>
+
+<h2 id="s9"><span class="hnum">09</span>产业:所有已出货的自进化都写文本,不写权重</h2>
+
+<p>这一角度最吃重的事实是<strong>架构性的,不是意识形态的</strong>:一个生产 agent 就是<strong>冻结解码器前面的一条上下文装配流水线</strong>(图 3)。每一轮,harness 把系统提示、工具 schema、技能元数据、记忆文件、对话历史与用户请求拼成一个字符串,模型是这个字符串的纯函数。所以学到的改进只有两个地方可放——<strong>权重里,或字符串里</strong>。</p>
+
+<figure>
+  <img src="img/dispatch-43-self-evolving-agents/orig-path.png" alt="产业路径图:模型离线预训练、模型在线适配、多智能体编排、多智能体自进化四个阶段按年代排列,每阶段列出代表系统">
+  <figcaption><span class="fnum">图 11</span>产业路径:MOP → MOA → MAO → MASE。模型离线预训练(2018–19 BERT/GPT-1)→ 模型在线适配(2020–22 GPT-3/LoRA/Prompt-Tuning/InstructGPT/RLHF)→ 多智能体编排(2023–24 MetaGPT/AutoGen/LangGraph/CrewAI)→ 多智能体自进化(2024–25 ADAS/AFlow/MIPRO/EvoFlow/MASS/EvoAgentX)。<span class="chip c-vr">自报</span> 同图 9 出处,MIT。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>要看的是<strong>第二段到第三段的那次转折</strong>。2020–22 那一格(LoRA、Prompt-Tuning、RLHF)仍然在动权重;2023 年之后的两格(编排、自进化)<strong>全部不动权重</strong>。这条转折线与图 2 的 θ/Σ 分界是同一条线——产业在 2023 年整体从左半跨到了右半,而且没有回去。</p>
+    <p>第二处要看的是<strong>最后一格的方法全部来自学术界</strong>(ADAS、AFlow、MIPRO、EvoFlow、MASS、EvoAgentX)。<span class="chip c-inf">推断</span> 这与本节后半段的观察一致:已出货的产品系统(Claude Skills、A-Evolve、Nous 的演化技能、Live-SWE-agent)做的是同一件事的更保守版本——<strong>循环并未自主闭合,写回步骤仍有人在把关</strong>。</p>
+  </div>
+</figure>
+
+<p>产业选了字符串,原因是机械的:<strong>一、前缀缓存让上下文成为便宜面、权重成为昂贵面。</strong> 一套权重服务所有租户、跨请求复用 KV cache,是前沿模型服务经济学的基础。按客户的权重增量破坏这个假设,按客户的文件不破坏——它只改变前缀的一个后缀。Anthropic 的 Skills 设计把这点量化了:技能元数据常驻约 100 token,SKILL.md 正文仅在触发时加载(5k token 以内),打包资源「在访问前为零」;Nous Research 给演化技能定的护栏里直接写着「<strong>缓存兼容性——不得在会话中途变更</strong>」。<strong>二、文本产物是唯一能 diff、审阅、门控与回滚的单位。</strong> A-Evolve 把这一点做成契约:「所有可演化的 agent 状态以标准目录结构存在文件系统上」,「每次被接受的变异都打 git tag(evo-1, evo-2, …),提供完整审计轨迹」,回退用 git——<strong>你没法以同等信心 git-revert 一次 LoRA 合并</strong>。<strong>三、在真实团队拥有的 rollout 预算下,反思式文本优化胜过 RL。</strong> GEPA 的论点是 RL「把执行轨迹坍缩成一个标量奖励」,而 GEPA「用 LLM 读完整执行轨迹——错误信息、profiling 数据、推理日志——来诊断候选<strong>为什么</strong>失败并提出定向修复」;实测差距约 <strong>35 倍样本效率</strong>:100–500 次评估对 GRPO 的 5,000–25,000+ 次。</p>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>产业不动权重是因为技术还不成熟,或者出于保守;等在线学习成熟了,按客户微调的自进化模型就会出现。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>三条理由都是<strong>机械的、可量化的</strong>:前缀缓存经济学(Skills 的 100 token 常驻 / 5k 触发加载 / 资源零成本三级预算,Nous 的「不得在会话中途变更」护栏)、git 可回滚(A-Evolve 的 evo-N tag 契约)、样本效率(GEPA 的 100–500 对 5,000–25,000+)。收益也是真的且<strong>可迁移</strong>:A-Evolve 用冻结的 Claude Opus-4.6 把 MCP-Atlas 推到第一(79.4%)、Terminal-Bench 2.0 上 +13.0 个百分点,并把学到的 harness 与技能<strong>直接移植</strong>到另一个编码 agent,把它从 67.8% 抬到 72.9%。</p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>这个选择是临时的还是结构性的</b>。证据指向结构性:三条理由都不随模型变强而消失。<strong>代价有三个</strong>:一是<strong>能力上限</strong>——上下文编辑装不进基座模型没有的技能,A-Evolve 自己的 ARC-AGI 只从 10.1% 动到 12.3%,而 SkillsBench 涨了 15.2 个百分点(后者是模型本来就会的技能检索任务);二是<strong>上下文预算成了新瓶颈</strong>——Claude Code 的自动记忆只加载 MEMORY.md 的前 200 行或前 25KB,学到的知识要和任务争抢同一份稀缺资源;三是<strong>循环并未自主闭合</strong>——Nous 只上线了五个阶段中的第一阶段(「所有变更走人工审阅,绝不直接提交」),Anthropic 的 Skills 文档承认「目前没有内建方式来运行这些评测」。<span class="chip c-inf">推断</span> 对国产栈的含义:自进化的产业化门槛不在训练侧,在<strong>前缀缓存质量与产物审计链</strong>上,这两项都是推理服务与工程基础设施的能力。</p>
+
+<h2 id="s10"><span class="hnum">10</span>对 RL-on-NPU 的含义</h2>
+
+<p>自进化循环按算力形态分成三段,昇腾的就绪度差别很大。</p>
+
+<p><strong>① 推理时演化是解码受限的,而且已经完全支持——这一支是免费的。</strong> 并行采样、序贯自我纠错、结构化推理都不碰权重,成本是 prefill + N × decode,受 HBM 带宽与 KV 容量约束。决定性的优化是<strong>前缀复用</strong>:N 个样本共享同一前缀,自我精炼链每轮重读自己的历史。vLLM-Ascend 把 Automatic Prefix Caching、Chunked Prefill、ACL Graph 三项都标为 🟢 Functional——<strong>ACL Graph 在 NPU 上比在 GPU 上更要紧</strong>,因为自我精炼是一长串<strong>短</strong>解码,主导成本是每步的主机侧启动开销而非 FLOPs。</p>
+
+<p><strong>② 在线训练演化就是训推共卡问题,而昇腾要付一笔具体的税。</strong> 自博弈循环交错 rollout 与权重更新;单节点上用的是共卡,原语是 vLLM 的 sleep mode,vLLM-Ascend 实现了它,但文档明确写出代价:<code>rl_config.sleep_mode_extra_cleanup</code> 还要「等待挂起的流水线并行发送、同步 NPU、<strong>销毁 HCCL 进程组</strong>」,而 <code>wake_up()</code> 后「必须在模型状态恢复后<strong>重新调用 capture_model()</strong>」。<strong>于是昇腾上每一次 rollout↔train 切换可能要付一次 HCCL 集合通信重初始化加一次 ACL graph 重捕获</strong>;CUDA 上对应的 graph 重捕获更便宜,NCCL 组也不被拆掉。这正是 <a href="dispatch-32-mindspeed-rl.html">MindSpeed-RL</a> 的训推共卡改为让训练器常驻、生成期间把优化器状态与梯度卸载到主机 DRAM 的原因——<strong>用 PCIe / 主机带宽换 HCCL 抖动</strong>。好消息是异步这条逃生口已在昇腾上验证:<a href="dispatch-33-verl.html">verl</a> 的 <code>fully_async_policy</code> 与 <code>one_step_off_policy</code> 都出现在 Ascend 模型/算法表里并附 NPU 启动脚本;AReaL 实测其异步 NPU 路径两个 epoch 用 4.3 小时,而 verl 同步版一个 epoch 要 6.8 小时,OOD 准确率相当。</p>
+
+<p><strong>③ 环境侧演化分成便宜的检索态与昂贵的长上下文态,而且有一条明确的设计规则。</strong> 若系统是检索优先的(如 ReMe 把记忆存成 Markdown、用 BM25 做行级片段检索,「不把整个知识库加载进 agent 上下文」),负载在 CPU 侧,与 NPU 无关。若是上下文优先的,每次 rollout 都变成长 prefill 作业,约束变成 KV 容量与 prefill 吞吐。</p>
+
+<div class="note flag">
+  <span class="ntitle">昇腾上的一条设计规则</span>
+  <p><strong>把演化中的记忆放成稳定前缀,让自动前缀缓存命中;把逐任务检索放在它之后。</strong>逐任务检索到的记忆会每轮改变前缀,<strong>彻底击穿 APC</strong>,把一次可摊销的 prefill 变成反复的 prefill。<span class="chip c-inf">推断</span> 这条规则与第 09 节 Nous 的「缓存兼容性——不得在会话中途变更」是同一条约束在两端的表述。</p>
+</div>
+
+<div class="vs">
+  <div class="base"><h5>叙事怎么说</h5>
+  <p>自进化是软件层的事,跟底层硬件无关;哪块卡都一样跑,换 NPU 只是换个后端。</p></div>
+  <div class="real"><h5>证据是什么</h5>
+  <p>三段的就绪度完全不同。推理时演化<strong>确实免费</strong>(APC / Chunked Prefill / ACL Graph 三项均 🟢)。在线训练演化要付 <strong>HCCL 进程组销毁 + capture_model() 重捕获</strong>的切换税,这是 vLLM-Ascend 文档自己写的。记忆型演化的成本由前缀布局决定,不由记忆大小决定。<strong>三段里只有第一段可以直接照搬 CUDA 侧的工程经验。</strong></p></div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>差异在<b>切换成本与前缀布局这两项在 CUDA 侧不显眼、在昇腾侧显著</b>。<span class="chip c-inf">推断</span> <strong>这让 D42 的结论更尖锐。</strong> DeepSeek-V4.1-Flash 的 890 字节/token 全局 KV 是架构属性,vLLM-Ascend 逐字复述了这一数字;但 910B 档硬件上的服务路径不是原生那条——原生混合 MXFP8/MXFP4 权重路径只列在 Ascend 950 Products 下,A2/A3 上验证的配置是 <strong>W8A8</strong>(ModelSlim INT8),需要两台 Atlas 800 A3 或四台 A2 共置部署,PD 分离在 A2/A3 支持矩阵里标 ❌。量化指南的通则是:在 950 以外的昇腾代次上,FP8 块缩放「在加载时被解析成模型 dtype 并由 BF16 matmul 服务……按大约两倍权重显存来规划」。<strong>所以廉价 KV 的长上下文底座,正是记忆型自进化在昇腾上最需要、而目前恰恰还没兑现的那一块</strong>(详见 <a href="dispatch-42-deepseek-v41-flash.html">D42 精读版</a>)。</p>
+
+<h2 id="s11"><span class="hnum">11</span>总表:叙事 vs 证据</h2>
+
+<div class="tbl">
+<table>
+<caption>各节双栏对照汇总</caption>
+<thead><tr><th>维度</th><th>叙事怎么说</th><th>证据是什么</th><th>证据强度</th></tr></thead>
+<tbody>
+<tr><td>领域边界</td><td>已成形,读一份综述即可</td><td>五份综述互不兼容;微软需要边界裁定程序</td><td>综述互相印证</td></tr>
+<tr><td>什么算自我改进</td><td>上下文里多记几条就算学到了</td><td>只有持久写回 θ 或 Σ 才算;X_t 任务边界处重置</td><td>两组人独立给出同一判据</td></tr>
+<tr><td>三支关系</td><td>并行推进,互为补充</td><td>串行接力,76 / 110 / 25;每支修前一支的失效</td><td>条目数 + 时间线可点数</td></tr>
+<tr><td>内生自我纠错</td><td>模型能反思并改正自己</td><td>净负:95.5 → 89.0;对→错 8.8% &gt; 错→对 7.0%</td><td>多篇一致 + TACL 综述</td></tr>
+<tr><td>零数据自博弈</td><td>摆脱人类数据上限</td><td>锐化,消耗生成-验证差距;数据闸门比奖励设计更决定成败</td><td>理论 + 一项受控研究</td></tr>
+<tr><td>记忆系统</td><td>记得越多越好,关键是检索</td><td>核心是遗忘;上下文坍缩是命名了的失效模式</td><td>方法自报 + 失进化证据</td></tr>
+<tr><td>自适应课程</td><td>模仿人类教学,循序渐进</td><td>梯度信号保全:维持 effective prompt ratio 50–80%</td><td>RLVE 消融,含预言机对照</td></tr>
+<tr><td>质量控制</td><td>评估把关,循环单调改进</td><td>打分者在被打分者下游;30–42% 假阳性、10–33% 有害</td><td>一手论文自报 + 独立复现</td></tr>
+<tr><td>头条增益</td><td>N 小时从 X 提到 Y</td><td>等预算下 72.3 对 67.4;真划分后 68.3 对 67.7 在误差内</td><td>两项独立等预算研究</td></tr>
+<tr><td>产业形态</td><td>不动权重是暂时的保守</td><td>三条机械理由:前缀缓存、git 可回滚、35× 样本效率</td><td>厂商文档 + GEPA 实测</td></tr>
+<tr><td>硬件无关性</td><td>软件层的事,换后端即可</td><td>推理时免费;训练时付 HCCL + capture_model 税;记忆看前缀布局</td><td>vLLM-Ascend 文档自述</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="s12"><span class="hnum">12</span>未能核实的</h2>
+
+<ul>
+  <li><strong>知乎原文不可达。</strong> 读者提供的参考文章(《自进化(Self-evolving/RSI),一篇就够了》)被本环境的代理拦截,本篇按其主题独立展开,<strong>未能逐点对照</strong>。</li>
+  <li><strong>arXiv 与 Hugging Face 不可达</strong>,论文正文均经搜索综合与 GitHub 镜像交叉核对;标注 <span class="chip c-vr">自报</span> 处<strong>未经独立复现</strong>。</li>
+  <li><strong>图 4、图 5、图 7、图 8、图 10 的来源仓库无 LICENSE 文件</strong>,此处为署名引用;图 1 为 Apache-2.0,图 2、图 3、图 6、图 9、图 11 为 MIT。</li>
+  <li><strong>五份综述的论文数口径不同</strong>(厦大 211、微软约 300、Agentic RL 综述 &gt; 500),<strong>不可相互相减</strong>;三支的 76 / 110 / 25 是本站按仓库条目程序化点数,<span class="chip c-inf">推断</span>,与综述正文的统计口径未必一致。</li>
+  <li><strong>本篇几乎所有增益数字都是方法作者自报</strong>,且第 08 节已说明该领域普遍缺少等预算与密封评测;引用时请连同设置一起引用。</li>
+  <li><strong>微软那份综述为 PDF</strong>,本站经搜索综合读取,<strong>未逐页核对</strong>。</li>
+  <li><strong>昇腾侧的切换税未见实测数字</strong>:HCCL 重建与 ACL graph 重捕获的开销是从 vLLM-Ascend 文档的行为描述<span class="chip c-inf">推断</span>的,本站尚无实测。</li>
+</ul>
+
+<h2 id="s13"><span class="hnum">13</span>判断与下一步</h2>
+
+<div class="note">
+  <span class="ntitle">可搬走的三条判断</span>
+  <p><strong>一、θ 与 Σ 的分界是这个方向唯一可直接用于工程决策的一刀。</strong> 它与「要不要动权重、要不要占加速卡、产物能不能 git-revert」三个实际问题同构。用它做第一刀,五份综述的分类差异就不再重要;不用它,读到的是五张互不兼容的地图。本站 D41 的 <code>H=(p, G, K, M)</code> 与这里的 <code>Σ=(p, m, T, g)</code> 是同一对象,harness 与 scaffold 是同一批文献的两个名字。</p>
+  <p><strong>二、这个方向的结论强度与评测严格度成反比。</strong> 凡是做了等预算对照或密封集的研究,结论都趋于「在误差内」;凡是没做的,增益都很大。三项做了的研究(Rethinking Harness Evolution、HARNESSEVO、SEAGym 多视图)结论一致:<strong>72.3 对 67.4、0.657 对 0.642、68.3 对 67.7</strong>。这不否定自进化,但它意味着<strong>当前的正确投入方式是先建评测,再建循环</strong>——本站 910B 脚手架把 <code>source.logSha256</code> 与密封证据设为硬性要求,是同一判断的落地。</p>
+  <p><strong>三、对国产栈,自进化的近期收益全部在推理侧。</strong> 三段里第一段(推理时演化)在昇腾上已经免费且完全支持,第二段(在线训练演化)要付切换税但有异步逃生口,第三段(记忆型演化)的成本由前缀布局而非记忆大小决定。<span class="chip c-inf">推断</span> 现实的优先级是:先把 APC 命中率与稳定前缀布局做对,再谈权重侧的自进化——这与产业「写文本不写权重」的选择是同一个结论从硬件一侧看过去的样子。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>1. 等预算对照是否会成为标配。</strong> 第 08 节的三项研究是这个方向第一次有了像样的方法学;它们是否被后续工作采纳,决定这个领域的数字还值不值得读。<br>
+  <strong>2. 密封评测的普及。</strong> RSI-Exam 与 HarnessDev 的「可见集涨、隐藏集不涨」是迄今最有杀伤力的结果,需要更多独立复现。<br>
+  <strong>3. θ 与 Σ 的联合更新。</strong> <a href="dispatch-41-prime-agent.html">D41</a> 已记录 Continual Harness 谱系用 online DAgger + 过程奖励模型做过 θ+H 联合训练;这条线一旦在编码 / agent 任务上跑通,第 09 节「产业只写文本」的格局才会变。<br>
+  <strong>4. 数据闸门 vs 奖励设计。</strong>「严格闸门在所有奖励下都够、没有闸门时没有奖励够」这个受控结论若被复现,会改写整个零数据自博弈的工程重点。<br>
+  <strong>5. 昇腾侧的三件事</strong>:HCCL 重建 / ACL 重捕获的实测开销、异步路径在自博弈循环上的端到端收益、以及 A2/A3 上能否拿到接近原生的低 KV 长上下文底座。<br>
+  <strong>6. effective prompt ratio 进训练看板。</strong> 它是可在线测量的标量,比 reward 曲线更早报出梯度消失;本站 910B 脚手架尚未纳入,是一个可立即补上的低成本改动。</p>
+</div>
+
+</main>
+
+<footer>
+  <p><strong>来源与声明</strong>:本页与 <a href="../docs/blog/dispatch-43-self-evolving-agents.md">Dispatch 43 原文</a>同源,为逐节拆解重写,不新增原文之外的事实与数字。主要综述:Gao 等 <a href="https://arxiv.org/abs/2507.21046">arXiv 2507.21046</a>(TMLR 2026-01)、Fang 等 <a href="https://arxiv.org/abs/2508.07407">arXiv 2508.07407</a>、Xiang 等 <a href="https://doi.org/10.36227/techrxiv.177203250.05832634">TechRxiv DOI 10.36227/techrxiv.177203250.05832634</a>、Ren 等 <a href="https://arxiv.org/abs/2607.13104">arXiv 2607.13104</a>、微软研究院 Agentic Evolution(2026-07)。图片来源仓库:<a href="https://github.com/CharlesQ9/Self-Evolving-Agents">CharlesQ9/Self-Evolving-Agents</a>(Apache-2.0)、<a href="https://github.com/selfimproving-agent/awesome-Self-Improving-Agents">selfimproving-agent/awesome-Self-Improving-Agents</a>(MIT)、<a href="https://github.com/EvoAgentX/Awesome-Self-Evolving-Agents">EvoAgentX/Awesome-Self-Evolving-Agents</a>(MIT)、<a href="https://github.com/XMUDeepLIT/Awesome-Self-Evolving-Agents">XMUDeepLIT/Awesome-Self-Evolving-Agents</a>(无 LICENSE,署名引用)。关键单篇:Huang 等 <a href="https://arxiv.org/abs/2310.01798">arXiv 2310.01798</a>(ICLR 2024)、Kamoi 等 <a href="https://aclanthology.org/2024.tacl-1.78/">TACL 2024</a>、<a href="https://github.com/Chengsong-Huang/R-Zero">R-Zero</a>、<a href="https://github.com/LeapLabTHU/Absolute-Zero-Reasoner">Absolute Zero</a>、<a href="https://github.com/spiral-rl/spiral">SPIRAL</a>、SPICE、RLVE、DreamGym、GEPA、SEAGym、RSI-Exam、HarnessDev。站内关联:<a href="dispatch-37-rsi-continual-learning.html">D37</a>(RSI 与持续学习)、<a href="dispatch-38-distillation-vs-rl.html">D38</a>(蒸馏 vs RL)、<a href="dispatch-41-prime-agent.html">D41</a>(Prime Agent 的 Continual Harness)、<a href="dispatch-42-deepseek-v41-flash.html">D42</a>(DeepSeek V4.1-Flash 的 KV 与昇腾路径)、<a href="dispatch-29-deepseek-harness.html">D29</a>(DeepSeek Harness)。知乎参考原文、arXiv 与 Hugging Face 在本环境的网络代理下不可达,论文文本均经搜索综合与 GitHub 镜像交叉核对;标注 <span class="chip c-vr">自报</span> 处为方法作者口径,<span class="chip c-inf">推断</span> 处为本看板分析。<strong>所有性能数字均为方法作者自报口径</strong>,除非另行标注。</p>
+</footer>
+
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>

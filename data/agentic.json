@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-08",
+  "updated": "2026-09-17",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -35,6 +35,48 @@
     }
   ],
   "items": [
+    {
+      "title": "自进化综述全景:五份互不兼容的综述,与 Schmidhuber 组的 A=(θ, Σ) 形式化",
+      "org": "Gao 等 TMLR / Fang 等 / 厦大 / Ren 等 / 微软研究院",
+      "year": "2026",
+      "category": "survey",
+      "track": "academic",
+      "innovation": "自进化在 2026 年同时出现五份综述,而它们对同一批工作的组织互不兼容:Gao 等按 What/When/How/Where 四问,Fang 等按四组件控制回路加三定律 Endure>Excel>Evolve,厦大按相对环境的位置分模型侧/环境侧/共进化,Ren 等(Schmidhuber 组)按更新目标分 θ 与 Σ 两支,微软按 Substrate×Pathway×Pressure 且唯一把'选择压来自谁'设为一等轴。最精确的是 Ren 等:A_t=(θ_t, Σ_t),Σ:=(p 提示词, m 记忆, T 工具, g 控制逻辑);并把短暂执行状态 X_t(KV cache、工作上下文)与内在配置分开——上下文内适应移动的是 X_t,只有持久写回 θ 或 Σ 才算自我改进。",
+      "summary": "分歧是实质性的而非措辞:记忆在五份综述里分别落在 Context 子类、单智能体优化支柱、环境侧两处、脚手架分量 m、独立基质 M;'共进化'一词被争夺——厦大以多智能体策略共进化开篇,微软明确裁定智能体之间的相互适应不算共进化,因为它不要求人类参与(H≠0)。微软是唯一给出边界裁定程序的(Π/A、Π/M、A/M、H 四类歧义各有判定规则),该程序存在本身即分歧实质性的证据。厦大三支的条目数(本站按仓库条目程序化点数):模型侧 76、环境侧 110、共进化 25,共进化几乎全为 2025 年之后的工作;时间线可钉死——模型侧的根在 2022 年 3 月(Self-Consistency 与 STaR 同月),环境侧在 2021-2023 年(WebGPT、ReAct、MemGPT、MemoryBank)。论文数口径互不兼容:厦大 211、微软约 300、Agentic RL 综述超过 500,不可相互相减。",
+      "analysis": "Innovation:θ 与 Σ 的分界是这个方向唯一可直接用于工程决策的一刀——动 θ 是在固定决策过程上做标准策略优化,动 Σ 是在重塑决策过程本身,因此在标准 RL 里没有对应物。谱系:Ren 等的 Σ=(p,m,T,g) 与 D41 记录的 Prime Agent Continual Harness H=(p,G,K,M) 是同一对象被两拨人独立形式化;Ren 等自己注意到术语正在合流——社区说 harness,他们说 scaffold,即本站 D29/D41/D42 追踪的 harness 文献与'脚手架改进'分支是同一批工作的两个名字。微软的 S^(t+1)=Φ(S^(t), E^(t)+H^(t)) 独立给出同一条边界('下标 t 标记更新事件,不是墙钟时间')。判断:三支不是并行推进而是串行接力,每支的兴起都由前一支被作者自己承认的失效模式驱动;共进化体量只有环境侧的四分之一,尚未沉淀。对 RL-on-NPU 意义:θ/Σ 二分与'要不要动权重、要不要占加速卡、产物能不能 git-revert'三个工程决策同构,应作为选型第一刀;按此刀分,自进化在昇腾上的近期收益全部落在推理侧。缺口:知乎参考原文与 arXiv 在本环境不可达,论文正文经搜索综合与 GitHub 镜像交叉核对;微软那份为 PDF,未逐页核对;三支条目数为本站点数,与综述正文统计口径未必一致。",
+      "url": "https://github.com/selfimproving-agent/awesome-Self-Improving-Agents",
+      "tags": [
+        "self-evolving-agents",
+        "survey",
+        "scaffold",
+        "continual-harness",
+        "taxonomy",
+        "memory",
+        "RL-on-NPU"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "harness 演化的等预算与密封评测:72.3 对 67.4,朴素并行采样赢",
+      "org": "Rethinking Harness Evolution / HARNESSEVO / SEAGym / RSI-Exam / HarnessDev",
+      "year": "2026",
+      "category": "benchmark",
+      "track": "academic",
+      "innovation": "把自进化的头条增益放进两项此前几乎无人做的对照:一是等 rollout 预算——同样的预算给任务本身的推理时搜索而不是给 harness 搜索;二是密封集——把演化产出的产物在全新容器里对从未用于选择的隐藏集重放一次。SEAGym 的形式化把被测对象说清楚:一次 agent 快照是 A_t=(M, H_t),M 为冻结的基座模型,H_t 为可变 harness 状态;M 冻结时任何分数变化都不是模型能力,而是由 LLM 执行的 harness 工程。",
+      "summary": "等预算(89 个 Terminal-Bench 2.1 任务,每题 5 次 rollout):朴素并行采样 pass@1 72.3 对 harness 演化 67.4;有测试可用时 86.0 对 75.8;划出真正的 45/10/34 训练-验证-测试划分后,演化后 harness 68.3 对初始 harness 67.7,在误差内。HARNESSEVO 在 ALFWorld 上得 0.657 对 0.642,无显著增益,并把原因命名为'预算分割陷阱'。密封评测:RSI-Exam 一次 10.5 小时运行中可见集均值 0.10 涨到 0.63,隐藏集只从 0.13 动到 0.26;HarnessDev 在 630 个未见 SWE-Pro 任务上,反馈方向与留出方向在 64 次版本切换中只有 34 次一致(53.1%,相当于抛硬币),可见增益 13.9/13.4/8.8 分对应的留出增益只有 1.43/3.17/2.70,9 个被声明的最终版本里只有 2 个真是留出最优。SEAGym 的多视图:TF-GRPO 与 AHE 在验证集上涨幅完全相同(均 +17.1 分),留出同分布 AHE 保住 +9.1 而 TF-GRPO 只剩 +3.6,OOD 上 AHE +6.3 而 TF-GRPO 倒退 2.5。",
+      "analysis": "Innovation:机制解释朴素而有力——两种做法买的都是对同一批任务的相关尝试,但 best-of-N 当场兑现收益,演化必须把收益压缩成可迁移产物、并在推理时再付一次。判断:这个方向的结论强度与评测严格度成反比——凡做了等预算或密封集的研究结论都趋于'在误差内',凡没做的增益都很大。演化一侧的合理辩护是摊销:演化后的 harness 是可复用的固定成本,因此诚实的比较需要一个生命周期分母(多少未来任务才能摊平),且 rollout 对齐不等于 token、美元或延迟对齐。与站内的接口:D30 已记录 agent 评测的噪声底(单次 pass@1 波动 2.2-6.0 个百分点,检出 2% 效应约需 9 次运行),自进化循环反复用同一开发集测试候选,构成不受控的自适应多重检验;贪心接受规则下 30-42% 的提交是假阳性、10-33% 有害,而在根本没有真实改进可得时每次运行仍会提交 13-21 个虚假变更。对 RL-on-NPU 意义:当前正确的投入顺序是先建评测再建循环——密封集与可复现证据链的成本远低于一轮无效的自进化训练;本站 910B 脚手架把 source.logSha256 与证据文件入库设为硬性要求,是同一判断的落地。缺口:三项研究均为 2026 年新作,尚无第三方独立复现;等预算口径本身(rollout 对齐)仍有争议。",
+      "url": "docs/blog/dispatch-43-self-evolving-agents.md",
+      "tags": [
+        "self-evolving-agents",
+        "agent-harness",
+        "evaluation",
+        "held-out",
+        "equal-budget",
+        "agent-eval",
+        "RL-on-NPU"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "Prime Agent:RLM 与 Continual Harness——harness 把 Opus 5 的 ARC-AGI-3 从 30.2 抬到 95.24",
       "org": "Prime Intellect",
