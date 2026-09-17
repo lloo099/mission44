@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dispatch 43 · 自进化全景：五份综述的分歧、θ 与 Σ 的分界，以及三支路线各自的失效模式 · NPU Frontier Dispatch</title>
-  <meta name="description" content="综述篇（五份综述 + 九路机制级并行调研 + 仓库条目程序化点数）：自进化在2026年成了显学，但这个方向现在有五份互不兼容的综述，连“共进化”这个词都被争夺：厦大把“多智能体互相适应”列为共进化之首，微软研究院明确排除它。最精确的形式化来自 Schmidhuber 组：一个 agent 是 A_t = (θ_t, Σ_t)，其中 Σ := (p, m, T, g) 是提示词、记忆、工具、控制逻辑；动 θ 是标准 RL，动 Σ 是在改 MDP 本身，在标准 RL 里没有对应物——这个 Σ 与本站 D41 记录的 Prime Agent H=(p,G,K," />
+  <meta name="description" content="综述篇（五份综述 + 九路机制级并行调研 + 仓库条目程序化点数）：自进化在2026年成了显学，但这个方向现在有五份互不兼容的综述，连“共进化”这个词都被争夺：厦大把“多智能体互相适应”列为共进化之首，微软研究院明确排除它。最精确的形式化来自 Schmidhuber 组：一个 agent 是 A_t = (θ_t, Σ_t)，其中 Σ := (p, m, T, g) 是提示词、记忆、工具、控制逻辑；动 θ 是标准 RL，动 Σ 是在改 MDP 本身，在标准 RL 里没有对应物——这个 Σ 与本站 D41 记录的 Prime Agent harness H" />
   <link rel="canonical" href="https://lloo099.github.io/mission44/p/dispatch-43-self-evolving-agents.html" />
   <meta property="og:type" content="article" />
   <meta property="og:title" content="Dispatch 43 · 自进化全景：五份综述的分歧、θ 与 Σ 的分界，以及三支路线各自的失效模式" />
-  <meta property="og:description" content="综述篇（五份综述 + 九路机制级并行调研 + 仓库条目程序化点数）：自进化在2026年成了显学，但这个方向现在有五份互不兼容的综述，连“共进化”这个词都被争夺：厦大把“多智能体互相适应”列为共进化之首，微软研究院明确排除它。最精确的形式化来自 Schmidhuber 组：一个 agent 是 A_t = (θ_t, Σ_t)，其中 Σ := (p, m, T, g) 是提示词、记忆、工具、控制逻辑；动 θ 是标准 RL，动 Σ 是在改 MDP 本身，在标准 RL 里没有对应物——这个 Σ 与本站 D41 记录的 Prime Agent H=(p,G,K," />
+  <meta property="og:description" content="综述篇（五份综述 + 九路机制级并行调研 + 仓库条目程序化点数）：自进化在2026年成了显学，但这个方向现在有五份互不兼容的综述，连“共进化”这个词都被争夺：厦大把“多智能体互相适应”列为共进化之首，微软研究院明确排除它。最精确的形式化来自 Schmidhuber 组：一个 agent 是 A_t = (θ_t, Σ_t)，其中 Σ := (p, m, T, g) 是提示词、记忆、工具、控制逻辑；动 θ 是标准 RL，动 Σ 是在改 MDP 本身，在标准 RL 里没有对应物——这个 Σ 与本站 D41 记录的 Prime Agent harness H" />
   <meta property="og:url" content="https://lloo099.github.io/mission44/p/dispatch-43-self-evolving-agents.html" />
   <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-43-self-evolving-agents.png" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -20,7 +20,7 @@
 <body>
   <h1>Dispatch 43 · 自进化全景：五份综述的分歧、θ 与 Σ 的分界，以及三支路线各自的失效模式</h1>
   <p><em>2026-09-17 · NPU Frontier Dispatch · self-evolving-agents / self-improvement / continual-harness / agentic-RL / memory / co-evolution / evaluation / RL-on-NPU</em></p>
-  <p>综述篇（五份综述 + 九路机制级并行调研 + 仓库条目程序化点数）：自进化在2026年成了显学，但这个方向现在有五份互不兼容的综述，连“共进化”这个词都被争夺：厦大把“多智能体互相适应”列为共进化之首，微软研究院明确排除它。最精确的形式化来自 Schmidhuber 组：一个 agent 是 A_t = (θ_t, Σ_t)，其中 Σ := (p, m, T, g) 是提示词、记忆、工具、控制逻辑；动 θ 是标准 RL，动 Σ 是在改 MDP 本身，在标准 RL 里没有对应物——这个 Σ 与本站 D41 记录的 Prime Agent H=(p,G,K,</p>
+  <p>综述篇（五份综述 + 九路机制级并行调研 + 仓库条目程序化点数）：自进化在2026年成了显学，但这个方向现在有五份互不兼容的综述，连“共进化”这个词都被争夺：厦大把“多智能体互相适应”列为共进化之首，微软研究院明确排除它。最精确的形式化来自 Schmidhuber 组：一个 agent 是 A_t = (θ_t, Σ_t)，其中 Σ := (p, m, T, g) 是提示词、记忆、工具、控制逻辑；动 θ 是标准 RL，动 Σ 是在改 MDP 本身，在标准 RL 里没有对应物——这个 Σ 与本站 D41 记录的 Prime Agent harness H</p>
   <p><a href="https://lloo099.github.io/mission44/#blog/dispatch-43-self-evolving-agents">→ 阅读全文(RL-on-NPU Research Dashboard)</a></p>
 </body>
 </html>
