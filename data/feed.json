@@ -1,20 +1,19 @@
 {
   "updated": "2026-09-16T11:41:45Z",
-  "checked": "2026-09-16T11:41:45Z",
-  "stale": false,
+  "checked": "2026-09-17T11:46:07Z",
+  "stale": true,
   "source": "curated (data/feed_pinned.json) + arXiv API",
   "count": 42,
   "pinned": 25,
   "live": 17,
-  "buckets_ok": [
+  "buckets_ok": [],
+  "buckets_failed": [
     "rl-llm",
     "reasoning-rl",
     "agentic-rl",
     "ascend-npu",
-    "fp8-lowprec"
-  ],
-  "buckets_failed": [
     "sparse-attention",
+    "fp8-lowprec",
     "efficient-llm"
   ],
   "items": [
