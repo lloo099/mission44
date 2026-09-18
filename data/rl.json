@@ -1,6 +1,25 @@
 {
-  "updated": "2026-09-17",
+  "updated": "2026-09-18",
   "items": [
+    {
+      "title": "运行时 θ 闭环的产业现状:Cursor Composer 是唯一样本,BroRL 是反自进化对照",
+      "org": "Cursor / xAI / AWS / Google DeepMind / NVIDIA",
+      "year": "2026",
+      "category": "trend",
+      "innovation": "逐家核对后,'在生产中按运行时信号持续更新权重'的已出货系统只有两个:Cursor Composer——厂商自报'每次你接受、拒绝 Composer 的编辑或追加后续,你都在产生训练信号,可能在五小时内更新模型权重',数据'完全或接近完全 on-policy',为编码 agent 市场唯一;xAI 开源的 For You feed(x-algorithm)——用户行为 → 标签 → 重训 → 上线,逐次更新无人审,生产参数 cron 同步进公开仓库,但属经典推荐系统而非 agent。最接近的第三例是 Google AlphaProof(Nature 2025-11)的测试时 RL:对最难的题在推理时生成数百万道变体并继续训练,权重在部署中真的动,把关者只有 Lean 形式验证器——但它从未成为产品。AWS agentcore-rl-toolkit 把'生产 agent → RL 训练 → 回部署'做成积木(装饰器把 @app.entrypoint 换成 @app.rollout_entrypoint、推理网关捕获精确 token ID 防再分词漂移、训后部署回同一 ACR 栈),但奖励函数、启动训练、重新部署三步全是人,README 零增益数字。",
+      "summary": "为什么例外是 Cursor:代码编辑的接受/拒绝是天然高频、低噪、无需读文本的标量信号,正好是'慢环'(标量奖励 RL)也能吃饱的场景;推论是下一个运行时 θ 环会出现在同样信号稠密的场景(推荐、排序、补全),而不是通用 agent。NVIDIA 的 ProRL/BroRL 提供反自进化对照:ProRL 在固定的 13.6 万题可验证数据集上长时程 RL(GRPO+DAPO+参考策略定期硬重置,约 1.6 万 H100 卡时)于约 3K 步饱和;BroRL(arXiv 2510.01180)把每题采样从 N=16 提到 N=512,同一批数据复活饱和模型(数学均分 61.69 → 62.85,而继续 ProRL 是 62.08 → 62.02 倒退)——饱和是 rollout 宽度的伪影而非数据耗尽,固定课程加算力也能继续涨,在宣布'必须演化环境'之前应先跑这个便宜得多的对照组。配套负面证据:Meta Llama 3 论文自认'405B 在自己生成的数据上训练没有帮助(甚至退化)',解法是引入执行反馈做真值;NVIDIA 自家的 Data Flywheel Blueprint(生产日志 → LoRA 微调 → LLM 裁判评估,自报单场景成本降 98.6%)上线约 10 个月后于 2026-04 退役,'不建议新的生产使用'。",
+      "analysis": "判断:运行时 θ 闭环的稀缺不是技术不可行,是三个经济与治理约束的合力——前缀缓存经济学(D43 第 9 节)、无法 git-revert 的产物、以及本卡列出的信号形态问题;Cursor 恰好三条都豁免(自有模型自有服务、编辑信号稠密、错误成本被用户逐次审阅吸收)。对 RL-on-NPU 意义:AWS rl-toolkit 的三件工程细节在昇腾栈上同样成立(再分词漂移问题与 CUDA 侧同构),是承接'生产 agent 回训环'的现成清单;BroRL 的结论对训练预算分配有直接含义——在固定可验证数据集上加宽采样(提高单卡利用率)与演化环境(增加工程复杂度)之间,前者应作为默认基线先做。缺口:Cursor 的循环无第三方验证(同一操作序列不同时间的行为漂移即可独立观测,尚无人做);BroRL 只测了 N=16 与 N=512 两点,缩放形状未刻画。",
+      "url": "docs/blog/dispatch-44-industry-self-evolution.md",
+      "tags": [
+        "online-RL",
+        "production",
+        "self-evolving-agents",
+        "BroRL",
+        "rollout-scaling",
+        "RL-on-NPU"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "零数据自博弈一族:四档奖励接地,与打标机制同课程目标的耦合",
       "org": "AZR / R-Zero / SPIRAL / SPICE / Self-Challenging 等",

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-17",
+  "updated": "2026-09-18",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -35,6 +35,26 @@
     }
   ],
   "items": [
+    {
+      "title": "产业自进化建档:θ 环离线人审,运行时闭环仅两例,Σ 写回默认开启",
+      "org": "Google / OpenAI / Anthropic / Microsoft / Meta / Sakana / 中国厂 / Agent 产品公司",
+      "year": "2026",
+      "category": "survey",
+      "track": "industry",
+      "innovation": "对九组公司与机构逐家建档,每家只问三个可判定的问题:更新写到哪里(θ 权重还是 Σ 脚手架)、谁按下接受键、上线了还是只发了论文。结论三段式:θ 环普遍存在且真实但全部离线、厂内把关(Constitutional AI 自 2022 年即'自我批评进权重'的生产训练法;AlphaProof 在部署中做测试时 RL,由 Lean 验证器把关;Kimi K2 的自评 rubric 裁判用 RLVR rollout 持续再接地;MAI-Thinking-1 的'爬山机'是制度化而非自主循环);运行时 θ 闭环有且仅有两个已出货例外——Cursor Composer(自报约五小时一次按生产遥测更新权重)与 xAI 开源的 For You feed(推荐系统);Σ 侧全自动写回已大规模默认开启(ChatGPT 双层记忆 800M 周活面、Gemini/Copilot/Claude Code 均默认开)。",
+      "summary": "把关设计构成一个谱,谱上的位置就是产品定位。从松到紧:Windsurf 自动写无门 → ChatGPT/Gemini/Copilot 事后可撤加引用校验(GitHub Copilot Memory 的事实带代码引用、每次使用前对当前分支重验、28 天未用过期)→ Cursor 1.2/Devin 自动提议人批准(Cursor 的审批门是 GA 时'为保住信任'后加的,beta 期没有)→ Anthropic Dreams/Foundry Agent Optimizer 自动合成、不可变输入、人审采纳(但 Dreams 的 SDK 里有文档未提的就地覆写模式,无审阅门)→ AlphaEvolve/Copilot Tuning 人写评估器、人部署。三个反复出现的工程件:可回滚版本链(git tag / memver_ / VersionedPrompt)、引用与再校验、'记忆当数据不当指令'(Codex 读路径提示词明令仅在用户要求时更新记忆、不得直接编辑记忆文件)。最硬的生产数字:AlphaEvolve 的 Borg 启发式全舰队部署持续回收 0.7% 全球算力、Gemini 训练核提速 23%(总训练时间 −1%),但评估器全部人写,发布物自认'只含超过 SOTA 的实例'的选择偏置,自指环'反馈以月计'。",
+      "analysis": "Innovation:失效治理的位置在九组卷宗里高度收敛——MAI 用'时间旅行'仓库对付模型 grep .git 历史找金标 commit,字节训练专门的抗刷裁判(Seed-Thinking-Verifier),Sakana 在 AI CUDA Engineer 被抓到利用自家评估 harness 漏洞作弊后加固验证器,全部在评估器一侧,没有一家试图'教育'agent——这与 D43 第 7 节'打分者位于被打分者下游'的学术结论构成产业互证。判断:研究与产品的断裂是另一条主线,MSR 的 Agentic Evolution 综述警告自主演化只在确定性验证器边界内可靠、约 90% 的领域工作无人类选择压、对齐漂移无机制可检测,却在 65 页里零次提及自家默认开启的 Copilot 记忆;反差最尖锐的是 xAI——同一家公司,推荐系统无人审逐次更新权重,编码 agent 的记忆却实验性默认关闭:把关强度跟着错误成本走,不跟着技术能力走。对 RL-on-NPU 意义:中国 θ 侧的自进化框架(阿里 AgentEvolver、腾讯 Youtu-Agent 的 RL 模块、蚂蚁 AWorld 训练配方)全部站在 verl 系基础设施上,是 D33 的直接下游;AWS agentcore-rl-toolkit 的装饰器换入口、网关捕获 token ID 防再分词漂移、同栈重部署三件细节,是'生产 agent → NPU 训练 → 回部署'闭环的现成清单。缺口:Cursor'五小时更新权重'完全依赖厂商博客自报,无第三方验证;多数厂商站点在本环境不可达,措辞经搜索摘要与 GitHub 镜像;记忆基准数字互不可复现(LoCoMo 无标准打分器)。",
+      "url": "docs/blog/dispatch-44-industry-self-evolution.md",
+      "tags": [
+        "self-evolving-agents",
+        "industry",
+        "memory",
+        "gating",
+        "agent-harness",
+        "RL-on-NPU"
+      ],
+      "confidence": "self-reported"
+    },
     {
       "title": "自进化综述全景:五份互不兼容的综述,与 Schmidhuber 组的 A=(θ, Σ) 形式化",
       "org": "Gao 等 TMLR / Fang 等 / 厦大 / Ren 等 / 微软研究院",

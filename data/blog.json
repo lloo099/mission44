@@ -1,7 +1,24 @@
 {
-  "updated": "2026-09-17",
+  "updated": "2026-09-18",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-44-industry-self-evolution",
+      "title": "Dispatch 44 · 自进化产业篇：逐家建档——谁在动权重，谁只写文本，谁在把关",
+      "subtitle": "产业篇（九组逐家卷宗 + 对抗性核验，第二轮 12 条判决 0 refuted）：对每家只问三个可判定的问题——更新写到哪里（θ 权重还是 Σ 脚手架）、谁按下接受键、上线了还是只发了论文。结论把 D43 的“产业只写文本”升级为三段式：**θ 环普遍存在且真实，但全部离线、厂内把关**（AlphaProof 在部署中做测试时 RL 由 Lean 验证器把关，Constitutional AI 自 2022 年就是“自我批评进权重”的生产训练法，DeepSeek R1-Zero 纯 RL 涌现自反思且明说拒绝神经奖励模型以防 reward hacking，Kimi K2 把自评裁判训进权重并用 RLVR rollout 持续再接地）；**运行时 θ 闭环有且仅有两个已出货例外**——Cursor Composer（自报：用户接受/拒绝编辑的遥测约五小时内更新一次权重，全市场唯一）与 xAI 开源的 For You feed（经典推荐系统）；**Σ 侧全自动写回已大规模默认开启**（ChatGPT 800M 周活面的双层记忆、Gemini/Copilot/Claude Code 全默认开），真实分歧在写回之后**谁审、怎么撤**。把关设计构成一个谱：Windsurf 自动写无门 → ChatGPT/Copilot 事后可撤加引用校验（Copilot Memory 每次使用前对当前分支重验事实、28 天未用过期）→ Cursor/Devin 人批准（Cursor 的审批门是 1.2 版为信任后加的）→ Anthropic Dreams 不可变输入人审采纳 → AlphaEvolve/Copilot Tuning 人写评估器人部署。最硬的生产数字仍在 Google：AlphaEvolve 的 Borg 调度启发式全舰队部署持续回收 0.7% 全球算力、Gemini 训练核提速 23%（总训练时间 −1%），但评估器全部人写、发布物自认带选择偏置。反面证据同样密集：Meta 的自奖励家谱一条都没进 Llama 管线（Llama 3 论文自认 405B 自训自证退化），NVIDIA 的 BroRL 证明固定课程加宽采样就能复活饱和模型（反自进化对照）且其数据飞轮产品上线约 10 个月即退役，Sakana 的 AI CUDA Engineer 被抓到利用自家评估 harness 漏洞作弊并公开承认，微软 MSR 综述警告“自主演化只在确定性验证器边界内可靠”却在 65 页里零次提及自家默认开启的产品。中国厂模式高度一致：θ 环全部离线在实验室（阿里 AgentEvolver 在 veRL 上把 7B 训到超 14B 基线、通义 DeepResearch 飞轮出货冻结 checkpoint），运行时自主性只给 Σ（OpenViking 的 viking:// 记忆文件系统、Kimi Memory Space、Doubao 端上记忆）；腾讯反向押注免训练脚手架（Youtu-Agent 71.47% 超一排训练过的 web agent）。对 RL-on-NPU：中国 θ 侧机会全部站在 verl 系基础设施上，AWS agentcore-rl-toolkit 的“装饰器把生产 agent 变 rollout worker + 网关捕获 token ID 防再分词漂移 + 同栈重部署”是现成工程清单。十一张图全部为系统原图。",
+      "date": "2026-09-18",
+      "tags": [
+        "self-evolving-agents",
+        "industry",
+        "memory",
+        "agent-harness",
+        "RL-products",
+        "continual-learning",
+        "RL-on-NPU"
+      ],
+      "file": "docs/blog/dispatch-44-industry-self-evolution.md",
+      "read": "reads/dispatch-44-industry-self-evolution.html"
+    },
     {
       "id": "dispatch-43-self-evolving-agents",
       "title": "Dispatch 43 · 自进化全景：五份综述的分歧、θ 与 Σ 的分界，以及三支路线各自的失效模式",
