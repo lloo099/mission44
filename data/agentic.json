@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-28",
+  "updated": "2026-10-05",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -1355,6 +1355,166 @@
       "confidence": "confirmed"
     },
     {
+      "title": "NeutronGym: Physics-Graded Neutron Instrument Design for LLM Agents",
+      "org": "Lijie Ding +1",
+      "year": "2026-10",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Designing a scientific instrument tests whether language-model agents can do physics rather than recall it, provided the grading cannot be argued with. We introduce NeutronGym, to our knowledge the first executable environment for neutron instrument design: agents build instrumen…",
+      "url": "http://arxiv.org/abs/2610.03631v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "VenusRL: A Fully Disaggregated Agentic RL System with Priority Scheduling and Scalable Interaction",
+      "org": "Mingjun Zhang +17",
+      "year": "2026-10",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Agentic Reinforcement Learning (RL) trains LLM agents through multi-turn interactions with external tool environments. Its multi-turn nature exposes two system-level bottlenecks unaddressed by existing agentic RL frameworks. First, end-to-end training throughput is constrained by…",
+      "url": "http://arxiv.org/abs/2610.03286v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Planning to Learn",
+      "org": "Ian Osband",
+      "year": "2026-10",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Policy-gradient methods are central to modern reinforcement learning, including LLM post-training. When they struggle, the usual suspects are exploration, credit assignment and action-sampling noise. Classification has none of them. A classifier is a policy whose expected reward,…",
+      "url": "http://arxiv.org/abs/2610.03667v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "FSPO: Policy-Consistent Risk and Pareto-Feasible Control for Budgeted LLM RL Post-Training",
+      "org": "Miaobo Hu +6",
+      "year": "2026-10",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Adaptive LLM reinforcement-learning post-training changes multiple training actuators online, including rollout temperature, group size, clipping, KL regularization, verifier allocation, and update budget. Three coupled issues remain unresolved. A future-risk model trained from b…",
+      "url": "http://arxiv.org/abs/2610.02828v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Rethinking Probability-Based Reinforcement Learning From Posterior Concentration",
+      "org": "Shiu-Hong Kao +5",
+      "year": "2026-10",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Verifier-free reinforcement learning with probability-based rewards offers a promising way to train LLMs on general reasoning tasks where external verifiers are unavailable. Yet the reliability of these rewards, especially in long-horizon reasoning, remains underexplored. This wo…",
+      "url": "http://arxiv.org/abs/2610.01458v2",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "My FAULT: Self-Diagnosis as Credit Assignment in Self-Evolving Agentic Reinforcement Learning",
+      "org": "Yihua Zhu +12",
+      "year": "2026-10",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Agentic reinforcement learning (RL) has emerged as a powerful approach for training large language model agents on multi-step tasks, yet reliance on terminal outcome rewards creates two credit-assignment problems, particularly in long-horizon tasks. First, same-outcome rollout gr…",
+      "url": "http://arxiv.org/abs/2610.01161v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "SHARPO: Segment-Level Credit Assignment for Agentic Reinforcement Learning",
+      "org": "Xinchen Du +6",
+      "year": "2026-09",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Agentic reinforcement learning (RL) trains a large language model (LLM) to act over long, multi-step interactions. However, a single localized error can cause task failure, while trajectory-level rewards provide limited guidance for assigning credit to individual decisions. To ad…",
+      "url": "http://arxiv.org/abs/2610.00838v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Semifactual Credit-Augmented Policy Optimization",
+      "org": "Junshu Pan +7",
+      "year": "2026-09",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Reinforcement learning with verifiable rewards (RLVR) has improved the reasoning capabilities of large language models (LLMs), yet their predictions remain sensitive to task-irrelevant prompt features. We investigate this sensitivity through semifactual prompt interventions that …",
+      "url": "http://arxiv.org/abs/2609.40360v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "PhantomEnvironments: Training LLM Agents in Fictional Worlds",
+      "org": "Anmol Kabra +7",
+      "year": "2026-09",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Training LLM agents with reinforcement learning (RL) is bottlenecked by environments, which must provide verifiable rewards, support long-horizon interaction, and scale cheaply. Existing approaches rely on costly human-curated data or on LLM-generated environments that risk hallu…",
+      "url": "http://arxiv.org/abs/2609.40221v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Unlocking the Critic: Reward-Free Policy Optimization for LLM Post-Training",
+      "org": "Hongyang Li +5",
+      "year": "2026-09",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Recent approaches to reinforcement learning (RL) post-training for large language models increasingly remove the critic to reduce training instability and memory overhead. Even where a critic is trained, it is discarded once training ends, although it has learned to predict outco…",
+      "url": "http://arxiv.org/abs/2609.37119v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
       "title": "Fisher-R1: Training LLM Agents for Reliable Hypothesis Testing",
       "org": "Jiacheng Miao +3",
       "year": "2026-08",
@@ -1382,166 +1542,6 @@
         "academic",
         "agentic-rl",
         "agentic-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "A MARL Centered Reference Architecture for Large Language Model Augmentation in Smart Manufacturing",
-      "org": "Fouad Bahrpeyma +1",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Modern manufacturing imposes six coupled demands on adaptive control: local decisions with global consequences, partial observability, nonstationarity, reflex speed response with long horizon effects, delayed and diffuse outcomes, and dynamics that resist explicit modeling. Coope…",
-      "url": "http://arxiv.org/abs/2608.07148v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "EnvACE: Internalizing Environment Dynamics via World Rehearsal for Agentic Reinforcement Learning",
-      "org": "Zishan Xu +11",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Training large language model agents for long-horizon tool use typically relies on interactions with real or synthesized executable environments, whose construction and verification are costly, or on external simulators that are difficult to ground. We introduce EnvACE, an agenti…",
-      "url": "http://arxiv.org/abs/2608.06197v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "TurnSight: Turn-Level Hindsight Self-Distillation for Tool-Integrated Reasoning",
-      "org": "Changle Qu +6",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Tool-Integrated Reasoning (TIR) enables LLMs to solve complex tasks through iterative tool interactions. However, existing reinforcement learning methods often rely on trajectory-level supervision, limiting fine-grained credit assignment in long-horizon TIR scenarios. On-policy s…",
-      "url": "http://arxiv.org/abs/2608.04007v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "Hybrid LLM-Augmented Reinforcement Learning Agents for Complex Sequential Decision Tasks",
-      "org": "Christophe D. Hounwanou +2",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Large Language Models (LLMs) have recently shown strong capabilities in reasoning, planning, and tool-use, enabling new forms of autonomous agents. However, LLM-based agents struggle with long-horizon sequential decision tasks that require precise action optimization and environm…",
-      "url": "http://arxiv.org/abs/2608.03502v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "TimeRLM: Recursive Language Models Enable Precise Anomaly Localization in Long-Context Time-Series",
-      "org": "Nicolas Zumarraga +11",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Precise anomaly localization over long-context time series is a crucial task in monitoring applications across clinical care, industrial operations, financial services, and logistics, where brief evidence may hide inside long spans of high-frequency data. Time-Series Language Mod…",
-      "url": "http://arxiv.org/abs/2608.03391v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "Verifiable Memory: Learning Unified Memory Management with Local and Global Verifiers for Large Language Model Agents",
-      "org": "Xiaolong Sun +3",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Large language model (LLM) agents must retain reusable information, control a bounded active context, and recover earlier evidence during long-horizon interaction. Existing methods commonly optimize long-term memory (LTM) and short-term memory (STM) separately, while unified poli…",
-      "url": "http://arxiv.org/abs/2608.03137v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "Rollplex: Cross-Phase GPU Spatial Sharing for Vision Language Model Post-Training",
-      "org": "Hanfeng Lu +10",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Vision-language models (VLMs) enable embodied agents to reason and act from visual observations and language instructions. Reinforcement learning (RL) post-training enhances these capabilities using task feedback, but current on-policy RL runtimes execute rollout, reference scori…",
-      "url": "http://arxiv.org/abs/2608.14498v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "A Graph-Based Reinforcement Learning Framework for Structured Drift Diagnosis and Recovery in Autonomous LLM Agents",
-      "org": "Ismail El Hamraoui +3",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Autonomous LLM agents are increasingly deployed in complex real-world workflows, yet they remain vulnerable to runtime behavioral drift, a silent deviation from the original task that can lead to irreversible side effects on external systems. Existing approaches address drift at …",
-      "url": "http://arxiv.org/abs/2608.14109v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "LoongReflect: Boosting Long-Horizon Reflection in Search Agents via Global Perspective Distillation",
-      "org": "Zhixin Zhang +7",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Large language model agents increasingly rely on long-horizon reasoning to solve complex tasks involving planning, tool use, and memory. A critical capability in such settings is reflection: assessing trajectory progress, identifying missing evidence and unreliable intermediate s…",
-      "url": "http://arxiv.org/abs/2608.11967v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "Dual-Loop Self-Evolution via Verifiable Emotion Feedback for Multi-Turn Empathetic Dialogue",
-      "org": "Yi Wei +7",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Large language models have demonstrated conversational capabilities, yet empathetic competence remains challenging. Empathetic support is inherently multi-turn and path-dependent: users disclose concerns gradually, emotions evolve over time, and early responses shape trust and re…",
-      "url": "http://arxiv.org/abs/2608.10626v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
       ],
       "confidence": "confirmed",
       "auto": true
