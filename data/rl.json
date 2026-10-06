@@ -2,6 +2,45 @@
   "updated": "2026-10-06",
   "items": [
     {
+      "title": "训推失配修正跨框架落地:verl 合入 Score Centering,与 slime、SkyRL 的 support replay 形成同一答案",
+      "org": "verl / THUDM slime / NovaSky-AI SkyRL",
+      "year": "2026-10",
+      "category": "algorithm",
+      "innovation": "2026-10-01 verl 合入 `[rollout, vllm, algo, fsdp, trainer, doc] feat: score centering for bypass-mode REINFORCE`(#8010,实现 RFC #8009),**成为继 slime(09-23)之后第二个实现 Score Centering 的框架**,其合入说明里直接把 slime 的两个 PR 列为先例。开关 `algorithm.rollout_correction.score_centering`,提供三个预设:`bypass_pg_sc`(REINFORCE + SC)、`bypass_pg_token_tis_sc`(threshold=2.0,叠 token-TIS)、`bypass_pg_token_icepop_sc`(threshold=5.0 / 下界 0.5,叠 token-IcePop)。官方文档对机制的表述是:它'**精确地**移除训推失配引入的策略梯度漂移项 `E_q[R]·E_q[∇log p]`,且不引入额外超参',on-policy 下是 no-op,并通过对已加权的分数做中心化与 token 级 TIS/IcePop 复合。",
+      "summary": "落地约束很硬(全部出自官方文档):要求 `bypass_mode=true` 且 `loss_type=\"reinforce\"`;`rollout_is` 必须为 None 或 `token`(传 `sequence` 直接报错);`rollout_is_batch_normalize` 必须为 False;需要 `calculate_log_probs=true` 与 `topk_log_probs=128`(文档注明 k=128 对齐论文、k=32 亦可);**仅 vLLM rollout、仅 FSDP actor、仅 v1 trainer、仅单轮 agent loop**;与融合算子及蒸馏互斥;温度 >0、top_p=1.0、top_k=-1。只对 sampler 的 top-k 头部对数概率求值,'尾部按 trainer 的尾部重标到 sampler 的尾质量'。同期 SkyRL 发布 skyrl-v0.4.0(10-01)并引入 **skycap**——一套 agent rollout 的捕获/重放层,按编号栈陆续合入(上下文图、文本模式捕获服务、轨迹单次落盘、token 进 token 出捕获、'SDK 重试返回原调用的回复而非二次采样'、CapturePool 客户端),并把 R3 也接到 skycap 上。",
+      "analysis": "判断:本站上一轮把 Score Centering、slime 的 top-p replay、SkyRL 的 sample support replay 归纳为\"同一洞察的三次独立实现\";verl 的合入把它推进到下一阶段——**这不再是单个框架的实验特性,而是训推失配修正的事实标准正在形成**。更值得注意的是落地约束本身:仅 vLLM rollout、仅 FSDP、仅单轮,说明**精确实现它需要推理引擎配合**(返回 top-k 对数概率),这正是本站此前标出的 vllm-ascend 移植待办。对 RL-on-NPU 意义:verl 是昇腾上的主入口(见昇腾页同期卡片),SC 进了 verl 意味着昇腾侧只要补齐 rollout 端的 top-k logprob 导出,就能直接吃到这条对**量化 rollout 下的 drift** 最对症的修正——而量化 rollout 恰是昇腾的常态(W8A8/W4A8)。skycap 则把\"rollout 必须导出什么\"又推进一步:从 logprob、routed experts、sampling support,扩到**整条轨迹的可重放捕获**。",
+      "url": "https://github.com/volcengine/verl/pull/8010",
+      "tags": [
+        "score-centering",
+        "verl",
+        "slime",
+        "SkyRL",
+        "train-infer-mismatch",
+        "rollout-contract",
+        "RL-on-NPU"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "slime 的两件基础设施:首个在树内的昇腾 NPU accelerator 类,与 straw 文件系统队列式持久 rollout",
+      "org": "THUDM slime(straw 作者 zhuzilin)",
+      "year": "2026-09",
+      "category": "framework",
+      "innovation": "① **昇腾 accelerator 类**(#2424,2026-09-28):新增 `slime/utils/accelerator/npu.py`,`NPUAccelerator(TorchAccelerator)`,device_type=`npu`、通信后端 `hccl`、可见设备变量 `ASCEND_RT_VISIBLE_DEVICES`;`weight_update_backend()` 把默认的 `nccl` 改写为 **`cpu:gloo,npu:hccl`**(权重同步走 CPU 侧 gloo 加设备侧 HCCL);`distributed_device_id()` 返回 None,注释说明 'HCCL 经 torch.npu.set_device/LOCAL_RANK 选本地设备';流捕获进行中时 `empty_cache()` 为 no-op。能力门是显式的:`supports()` 对 `cuda_int4_extension`、`nvml_affinity`、`sglang_fp8_utils`、`triton_kernels` 一律返回 False。**重要限定**:slime 对昇腾的支持本身比这早约三个月(此前以 `docker/npu_patch/` 的树外补丁形式存在),本次新增的是把它收进 accelerator 注册表的**类**,属形态升级而非从无到有。② **straw**(#2410,2026-09-28):支持分布式全异步 rollout,引入文件系统队列与打包张量存储,把提示任务、部分 rollout、完成样本与训练批次都持久化,生成与训练进程跨机并行读写,'Ray 只负责控制消息与引用'。",
+      "summary": "straw 是一次大改动(80 文件、+9147/−1214),新增 `queue_data_source.py`(+997)、`fully_async_distributed.py`(+578)、`queue_codec.py`(+465)、`batch_builder.py`(+514)、`rollout_transport.py`(+381)与近 1,900 行测试;`slime/ray/rollout.py` 净减 292 行。窗口内有五个后续 PR(checkpoint 回滚与带索引的 rollout 归档、移除过时队列限制、`--flush-cache-interval` 流水线 RL、以及'参考 logprob 避免 top-p 重放'的修复)。唯一受支持的共享文件系统目标是 JuiceFS,需各机挂在同一绝对路径。",
+      "analysis": "判断:这两件事指向同一个方向——**全异步 RL 的瓶颈正从算法转向存储与传输**。straw 把 rollout 的中间态从进程内内存搬到可持久化的文件系统队列,意味着 rollout 进程崩溃不再丢整批、生成与训练可以彻底解耦到不同机器甚至不同集群;这与本站记录的 verl separate_async checkpoint-engine 是同一需求的两种解法。对 RL-on-NPU 意义:slime 是 GLM 背后的框架,它把昇腾提升为注册表内的一等 accelerator,加上 `cpu:gloo,npu:hccl` 的权重同步后端写法,给出了**其它框架接昇腾时可直接照抄的模板**;而能力门里显式关掉 triton_kernels 与 sglang_fp8_utils,也诚实标出了昇腾当前拿不到的那部分加速。注意 straw 只支持 JuiceFS 这一条共享文件系统路径,在国产集群上是否可用需另行验证。",
+      "url": "https://github.com/THUDM/slime/pull/2424",
+      "tags": [
+        "slime",
+        "Ascend-NPU",
+        "accelerator-registry",
+        "straw",
+        "fully-async-RL",
+        "RL-on-NPU"
+      ],
+      "confidence": "confirmed"
+    },
+    {
       "title": "MiMo-V2.6 的 RL 报告:$2.6M 单次 RL、2.5 万条轨迹每批、冻结路由器、GRS/GAR 分组评分,并开源约 7k 环境",
       "org": "小米 LLM-Core(MiMo)",
       "year": "2026-09",

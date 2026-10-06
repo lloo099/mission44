@@ -569,7 +569,7 @@
         "label": "Output price",
         "unit": "$",
         "lowerBetter": true,
-        "note": "$/1M output tokens — lower is better. M3 promo pricing; sparse coverage. Seed is closed-API pricing. DeepSeek-V4.1-Flash 为 2026-09 非高峰输出价,高峰翻倍;缓存命中输入价 0.003。 【09-22 更新】**闭源前沿厂商首次把一档模型压到本榜最底部**:GPT-6 Luna 的 $0.50/M 输出已低于 DeepSeek-V4.1-Flash 的非高峰 $0.60。同日 GPT-6 Sol $10(GPT-5.6 Sol 的一半)、Claude Opus 5.5 $20(Opus 5 的 $25 降 20%)。开源侧小米 MiMo-V2.6 Flash $0.28 / Pro $0.87。对自建推理服务(含昇腾)的盈亏门槛,这一轮降价是直接挤压。",
+        "note": "$/1M output tokens — lower is better. M3 promo pricing; sparse coverage. Seed is closed-API pricing. DeepSeek-V4.1-Flash 为 2026-09 非高峰输出价,高峰翻倍;缓存命中输入价 0.003。 【09-22 更新】**闭源前沿厂商首次把一档模型压到本榜最底部**:GPT-6 Luna 的 $0.50/M 输出已低于 DeepSeek-V4.1-Flash 的非高峰 $0.60。同日 GPT-6 Sol $10(GPT-5.6 Sol 的一半)、Claude Opus 5.5 $20(Opus 5 的 $25 降 20%)。开源侧小米 MiMo-V2.6 Flash $0.28 / Pro $0.87。对自建推理服务(含昇腾)的盈亏门槛,这一轮降价是直接挤压。 【09-28/09-29 更新】Claude Sonnet 5.5 与 GPT-6.1 Sol 落在**完全相同的 $2/$10**,中档位成为前沿战场。但本榜只记输出价会错过这一轮真实的成本变化:**厂商现在拨的杠杆是缓存经济学**——GPT-6.1 Sol 的缓存输入降到 $0.10/M(未缓存输入价的 5%,较 GPT-6 Sol 腰斩),Anthropic 侧缓存读占基础输入价的比例为 Sonnet 5.5 10%、Opus 5.5 5%、Fable 5.1 2.5%——**缓存重的 agentic 负载会把 Sonnet 的价格优势吃掉大半**。",
         "items": [
           {
             "model": "DeepSeek-V4.1-Flash (off-peak)",
@@ -635,6 +635,16 @@
             "model": "Claude Opus 5.5",
             "score": 20.0,
             "open": false
+          },
+          {
+            "model": "Claude Sonnet 5.5",
+            "score": 10.0,
+            "open": false
+          },
+          {
+            "model": "GPT-6.1 Sol",
+            "score": 10.0,
+            "open": false
           }
         ]
       },
@@ -656,7 +666,7 @@
         "id": "tb4",
         "label": "Terminal-Bench 4.0",
         "unit": "%",
-        "note": "2026 年秋取代 SWE-bench 成为两家旗舰共同头条的终端 agent 基准。**注意 harness**:GPT-6 Astra 的成绩在 OpenAI 与模型同期发布的 Codex harness 下测得,Claude 系在 Claude Code 下测得,差距的一部分属于脚手架而非模型(AA 就编码 agent 指数明确声明过这一点)。两家均未公布 SWE-bench Verified。 【09-22 更新】Anthropic 自测 Opus 5.5 为 66.4%(xhigh,SE ±2.6);**注意同表对照的 Opus 5 为 52.3% 但取 max 档,两者设置不同**。第三方 Artificial Analysis 以自家 harness 独立测得 Opus 5.5 **59.6%**,与 GPT-6 Astra(xhigh)持平——厂商口径与 AA 口径相差约 7 个百分点,是本榜 harness 敏感性的又一例,两套数字不可混在同一序列里读。",
+        "note": "2026 年秋取代 SWE-bench 成为两家旗舰共同头条的终端 agent 基准。**注意 harness**:GPT-6 Astra 的成绩在 OpenAI 与模型同期发布的 Codex harness 下测得,Claude 系在 Claude Code 下测得,差距的一部分属于脚手架而非模型(AA 就编码 agent 指数明确声明过这一点)。两家均未公布 SWE-bench Verified。 【09-22 更新】Anthropic 自测 Opus 5.5 为 66.4%(xhigh,SE ±2.6);**注意同表对照的 Opus 5 为 52.3% 但取 max 档,两者设置不同**。第三方 Artificial Analysis 以自家 harness 独立测得 Opus 5.5 **59.6%**,与 GPT-6 Astra(xhigh)持平——厂商口径与 AA 口径相差约 7 个百分点,是本榜 harness 敏感性的又一例,两套数字不可混在同一序列里读。 【09-28 补充 + 口径警告】Sonnet 5.5 的 70.6% 为厂商自测,按本榜既有惯例收录,但本站核验发现**该数字无法在 Anthropic 官方文档页上找到**——直读模型页与 what's-new 页全文,两页均无任何基准表,它只见于聚合站转述,连\"这是 Anthropic 公布的\"这一归属都未能证实,引用时须比其它厂商自报数字更保守。另有第三方 Vals AI 在 Mini-SWE-agent harness 下的快照(2026-10-01:Opus 5.5 65.15、Sonnet 5.5 64.14、GPT-6 Astra 59.60),但同一来源 09-27 的另一份快照给出不同且重排的三元组(61.62 / 57.07 / 53.03,Sonnet 5.5 四天内 +11.11 分),两份快照都未读到方法学,故本站**不入榜**,仅在此记录以提示该榜单跨来源不可比。",
         "items": [
           {
             "model": "GPT-6 Astra",
@@ -691,6 +701,11 @@
           {
             "model": "Claude Opus 5.5 (Anthropic 自测, xhigh)",
             "score": 66.4,
+            "open": false
+          },
+          {
+            "model": "Claude Sonnet 5.5(Anthropic 自测)",
+            "score": 70.6,
             "open": false
           }
         ]

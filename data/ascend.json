@@ -2,13 +2,51 @@
   "updated": "2026-10-06",
   "items": [
     {
+      "title": "华为开源 openPangu-2.0 的预训练/SFT/后训练 RL 代码,其中 openPangu-2.0-RL 是基于 verl 生态的昇腾原生 RL 框架",
+      "org": "华为 / Ascend Tribe(openPangu)",
+      "year": "2026-09",
+      "category": "rl-on-ascend",
+      "innovation": "2026-09-28,华为在 gitcode.com/ascend-tribe 开源 openPangu-2.0 的预训练代码、SFT 代码与**后训练 RL 代码**,完成自 2026-06-30 启动、07-31 放出 Pro 权重与技术报告的分阶段开源。两个产物:① **openPangu-2.0-Training**:厂商描述为'面向大规模基础模型训练的统一训练框架,提供从大规模预训练、监督微调到模型持续优化的一体化训练能力,支持多维分布式并行、高效数据流水线、混合精度训练、自定义算子优化以及高可用训练';② **openPangu-2.0-RL**:厂商描述为'**面向华为昇腾的强化学习加速框架,基于 VERL 生态构建昇腾原生 RL 训练与部署能力,支持高精度、高效的 Agentic RL 后训练**'。",
+      "summary": "模型背景(本站已有卡片):openPangu-2.0-Pro 为昇腾 NPU 上训练的 MoE,约 505B 总参 / 约 18B 激活,权重与技术报告已于 07-31 开源。",
+      "analysis": "判断:这条对本站主线的意义大于它的曝光度——**华为自己把昇腾 RL 的训练编排核心公开押在了 verl 生态上**。与本站已记录的两件事连起来读,路线图就完整了:MindSpeed-RL 自 2026-04 冻结新功能并把用户导向 verl 的昇腾实践(D32/D33);verl v0.9.1 移除 mindspeedllm 后端、改走 Megatron + MindSpeed-Bridge,并首次提供 A2/A3/A5 官方镜像;现在 openPangu 的官方 RL 框架也声明'基于 VERL 生态'。**昇腾 RL 的主线换道至此由三方独立证据闭合**。这同时回答了本站长期的一个空白:华为自家的旗舰模型在昇腾上究竟怎么做 RL 后训练——答案是用 verl 加昇腾亲和优化,而非自研编排器。缺口:gitcode.com 与华为各站点在本环境均不可达,**本条全部为厂商自述经搜索摘要读取**,框架的实际成熟度、与上游 verl 的版本跟随方式、以及 Actor/Rollout/Reward 协同训练的具体实现均未核实;待可读时应优先核对其 README 与 REQUIRED_VERL 式的版本锚定方式。",
+      "url": "https://gitcode.com/ascend-tribe",
+      "tags": [
+        "openPangu",
+        "verl",
+        "Ascend-native-RL",
+        "agentic-RL",
+        "open-source",
+        "RL-on-NPU"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "vLLM-Ascend v0.27.1rc1:直接跳到上游 v0.27.1,MiniMax-M3 与 DeepSeek-V4-Flash 上昇腾 950DT,但声明范围异常地窄",
+      "org": "vLLM Ascend 社区",
+      "year": "2026-09",
+      "category": "inference",
+      "innovation": "2026-09-24 打出 v0.27.1rc1(**越过 v0.26.0 正式版**直接对齐上游 vLLM v0.27.1),是本窗口内唯一的 vllm-ascend 新 tag。它是一个以模型为中心的 RC,而且自我设限的措辞异常明确——发布说明逐字写道:'**其它模型与硬件组合(例如 Atlas 800 A2)未在本次发布中充分验证;声明范围之外的组合不属于 v0.27.1rc1 的发布声明**。'声明支持表只有两行:**MiniMax-M3** 在 Atlas 800 A3 与 950DT 上(A3 为 W8A8、950DT 为 W8A8C8;双机 1P1D 服务与 KV Cache Pool);**DeepSeek-V4-Flash 仅在 950DT 上**(W4A8C8;双机 1P1D DSpark 服务与 KV Cache Pool)。",
+      "summary": "新特性:面向 MiniMax-M3 的 ModelOpt 兼容 MXFP8 路径——`--kv-cache-dtype fp8` 下 MSA 与索引缓存用原生 FP8 E4M3,而稠密 GQA 层除非显式配置否则保持 BF16;DeepSeek-V4-Flash 的 DSpark 集成 DSA-CP 与基于 SparseFlashMla 的 BF16 KV 稀疏注意力;另有 vLLM StartPlan 集成以复用 KV cache 测量、MoE 路径的 GMM-SiTU 算子、以及非 2 的幂次 MLA 头数免 padding 支持。",
+      "analysis": "判断:这个版本把**昇腾 950DT 第一次放到了发布声明的正面**——DeepSeek-V4-Flash 只在 950DT 上被声明支持,A3 连候选都不是,这与本站追踪的'950DT 有货但不公开上云'形成呼应:**软件栈已按 950DT 为目标在走,硬件的公开可得性仍落后**。另一面要如实记:发布范围窄到把 Atlas 800 A2 明确排除在声明之外,意味着占存量最大的 A2 用户在这条 RC 上拿不到任何保证——这是昇腾推理栈碎片化的一个硬指标。版本线也要更正本站此前的记法:0.24/0.25 线从未出正式版,而 0.26 线也被 0.27.1rc1 越过,**唯一的稳定线仍是 0.23.0(+post1)**。",
+      "url": "https://github.com/vllm-project/vllm-ascend/releases",
+      "tags": [
+        "vLLM-Ascend",
+        "Ascend-950DT",
+        "MiniMax-M3",
+        "DeepSeek-V4-Flash",
+        "MXFP8",
+        "release-scope"
+      ],
+      "confidence": "confirmed"
+    },
+    {
       "title": "华为云灵衢昇腾 950 智算集群云服务定档 09-30 国内 / 11-30 全球(950DT 上云追踪:改期,未兑现)",
       "org": "华为云",
       "year": "2026-09",
       "category": "hardware",
       "innovation": "2026-09-18 华为全联接大会 2026 上,华为公司董事、华为云 CEO 周跃峰宣布:灵衢昇腾 950 智算集群云服务计划**2026-09-30 面向国内商用、2026-11-30 面向全球商用**。配套规格(厂商口径):昇腾 950 超节点基于自研灵衢互联协议构成 1024 卡集群,1 EFLOPS FP8 / 2 EFLOPS FP4,配 256TB 全局统一内存编址,称可支撑万亿参数级模型全流程训练而无需对集群架构额外拆分适配。",
       "summary": "本站对照:1024 卡 / 1 EFLOPS FP8 / 256TB 三项与 2026-07-17 WAIC 上的 Atlas 950 超节点口径相同,**不是新规格**。本站此前自 6 月起追踪的悬案是'950DT 8 月上华为云',该承诺至今未兑现;本次是**把承诺改期并升格为集群级云服务**,且 09-30 与 11-30 都仍是计划日期。",
-      "analysis": "判断:这是该悬案第一次有可核验的时间锚点,但必须按'改期'而非'兑现'记录,原因有三:① 可读文本未说明该集群用的是 950PR 还是 950DT,把它当作'950DT 上云'兑现属推断;② 商用日期是承诺,截至本次更新(2026-10-06)本站尚未获得开服证据;③ 媒体转述的华为云副总裁陈林口径('950DT 8 月已上云、Q4 全面商用')为未核实片段,不予采信。对 RL-on-NPU 意义:若 09-30 真开服,rollout(解码重)与训练(HBM 带宽重)首次可能在同一朵云上按需取得 1024 卡量级的统一内存域,而无需自建超节点——这是本站判断'国产栈能否闭合 RL 回路'的关键基础设施条件。**下一步**:回看华为云控制台/价格页是否真有 950 实例可下单。缺口:huawei.com 与国内门户在本环境均被代理拦截,全部经搜索标题与摘要。",
+      "analysis": "判断:这是该悬案第一次有可核验的时间锚点,但必须按'改期'而非'兑现'记录,原因有三:① 可读文本未说明该集群用的是 950PR 还是 950DT,把它当作'950DT 上云'兑现属推断;② 商用日期是承诺,截至本次更新(2026-10-06)本站尚未获得开服证据;③ 媒体转述的华为云副总裁陈林口径('950DT 8 月已上云、Q4 全面商用')为未核实片段,不予采信。对 RL-on-NPU 意义:若 09-30 真开服,rollout(解码重)与训练(HBM 带宽重)首次可能在同一朵云上按需取得 1024 卡量级的统一内存域,而无需自建超节点——这是本站判断'国产栈能否闭合 RL 回路'的关键基础设施条件。**【2026-10-06 复核:仍未兑现,也未见延期说明】**专门检索了 09-30 之后的开服证据,结果为零:没有华为云的开服公告、没有控制台/实例/价格页、没有 10 月的报道、没有首批客户,同时也**没有任何延期说明**;所有可检索到的结果仍停在 09-18 至 09-20 的发布会报道,且一律是将来时。按本站纪律,这条继续挂在'已承诺未兑现',并把 11-30 的全球商用作为下一个检查点。**下一步**:回看华为云控制台/价格页是否真有 950 实例可下单。缺口:huawei.com 与国内门户在本环境均被代理拦截,全部经搜索标题与摘要。",
       "url": "https://www.huawei.com/cn/news/2026/9/hc-ascend960-supernode",
       "tags": [
         "Ascend-950",
@@ -46,7 +84,7 @@
       "category": "rl-on-ascend",
       "innovation": "两条一手证据(直读仓库文档)。① **v0.23.0.post1(2026-09-21)**:v0.23.0 的首个 post 版本,其中与 RL 直接相关的一条是——'在 ACL Graph 模式下,使 W8A8 MXFP8 的变换后缓冲区在 **RL 权重重载**之间保持稳定'(#13905);另修 DP 对齐 dummy run 期间的陈旧 KV 写入(#15362)。② **v0.26.0rc1 测试结论报告**自列的已知问题中,`#15648`:DeepSeek-V4 开启 `sleep_mode_extra_cleanup` 后,sleep→wakeup 服务起不来,报告明写 '**sleep mode 主要面向训练场景**',修复排期 v0.27。",
       "summary": "同一报告的另两条:`#15268` 昇腾 950 上 GLM-5.1-W4A4C8 双机同卡部署**性能回退 40%**(基线 133.85,实测 84.91/77.16/76.75,单位未给;三次分别约降 37%/42%/43%),原因写为 vLLM v0.24.0 之后昇腾 950 的卡间负载不均(部分卡 hostbound),短期靠 msboost 绕过(未经独立验证);`#15237` Kimi K3 在约 20k–40k 长输入下 DSpark 草稿接受率极低,投机解码无有效收益,同样排期 v0.27。版本线更正:vLLM-Ascend **没有 v0.24.x / v0.25.x 正式版**,这两条线只有 rc;唯一稳定线仍是 0.23.0(+post1),实际 tag 序列为 v0.24.0rc1(08-04)→ v0.23.0(08-16)→ v0.25.1rc1(08-19)→ v0.26.0rc1(09-03)→ v0.26.0rc2(09-16)→ v0.23.0.post1(09-21)。当前昇腾推理栈事实基线:CANN 9.1.0 + torch/torch_npu 2.10.0 / 2.10.0.post4 + Triton Ascend 3.2.2 + Mooncake 0.3.11.post1。",
-      "analysis": "判断:**sleep/wake 是 RL 里 rollout 引擎向 trainer 让出显存的标准手段**,官方报告自己承认这条路径在 DeepSeek-V4 上到 9 月仍不可用、修复排到 v0.27——这对想在昇腾上跑大模型同卡 on-policy RL 的人是硬阻塞,且与本站 D43 第 10 节记录的'昇腾上每次 rollout↔train 切换要付 HCCL 重建 + ACL graph 重捕获的税'是同一问题的下游表现。另一侧则是好消息:权重回灌下量化缓冲区失稳这类**最难查的静默掉精度**已在稳定分支修复——trainer 每步回灌权重、推理侧图已捕获,若量化 scale 与变换后布局不失效重建就会静默掉点。昇腾 950 的 40% 负载不均回归被定位为 v0.24.0 之后引入,说明 950 的调度/绑核路径尚未稳定,直接吃掉 rollout 吞吐。注:#15268 所涉 GLM-5.1-W4A4C8 并非该版本的受支持导出模型,引用时需标注。",
+      "analysis": "判断:**sleep/wake 是 RL 里 rollout 引擎向 trainer 让出显存的标准手段**,官方报告自己承认这条路径在 DeepSeek-V4 上到 9 月仍不可用、修复排到 v0.27——这对想在昇腾上跑大模型同卡 on-policy RL 的人是硬阻塞,且与本站 D43 第 10 节记录的'昇腾上每次 rollout↔train 切换要付 HCCL 重建 + ACL graph 重捕获的税'是同一问题的下游表现。另一侧则是好消息:权重回灌下量化缓冲区失稳这类**最难查的静默掉精度**已在稳定分支修复——trainer 每步回灌权重、推理侧图已捕获,若量化 scale 与变换后布局不失效重建就会静默掉点。昇腾 950 的 40% 负载不均回归被定位为 v0.24.0 之后引入,说明 950 的调度/绑核路径尚未稳定,直接吃掉 rollout 吞吐。注:#15268 所涉 GLM-5.1-W4A4C8 并非该版本的受支持导出模型,引用时需标注。**【2026-10-06 更新:sleep/wake 的真实修复时间比'排期 v0.27'要早】**追查到根因 issue #17760(`[Bug]: Sleep-mode kv_cache pool tags persistent runner metadata and breaks wake-up`,2026-09-29 关闭),其正文指出:`NPUWorker.initialize_from_config()` 把整个 `initialize_kv_cache()` 调用都放进了可丢弃的 kv_cache 内存池,而那些**必须跨 sleep/wake 常驻**的张量(注意力元数据构造器、block table、connector 状态、图安全常量、DSA Hadamard 缓冲)在该作用域内创建,于是继承了 kv_cache 标签——一级 sleep 丢掉它们的存储却保留同一虚拟地址,导致唤醒后捕获的 ACL 图引用已释放内存;影响 MRV1/MRV2/310P/Xlite 上的 `--enable-sleep-mode`。修复 PR #16096 实际已于 **2026-09-16 合入**(早于本窗口,也早于 v0.26.0rc2),但 **v0.27.1rc1 的发布说明并未声明修好了这一条**,端到端 CI 用例亦仍未合并。所以当前状态应记为:根因已定位并收窄作用域、修复已入主干,但**官方未做可用性声明、无端到端验证**——想在昇腾上做同卡 on-policy RL 的人仍应自行验证,不能据'已修复'排期。",
       "url": "https://github.com/vllm-project/vllm-ascend/releases",
       "tags": [
         "vLLM-Ascend",

@@ -2,6 +2,63 @@
   "updated": "2026-10-06",
   "items": [
     {
+      "title": "Claude Sonnet 5.5:中档位成为前沿战场,以及推理轨迹被设计成不可移植",
+      "org": "Anthropic",
+      "year": "2026-09",
+      "category": "model-report",
+      "innovation": "2026-09-28 发布(`claude-sonnet-5-5`),1M 上下文、同步 128K 最大输出(批处理 beta 下 300K),$2/$10 每百万 token,缓存读 $0.20/M。本站关注的不是价格,而是**五处破坏性变更把 agent harness 与 RL rollout 收集器变成不可移植的**(以下全部直读 platform.claude.com 官方文档):① `thinking:{\"type\":\"disabled\"}` 返回 400,必须改用 `between_tools`,且该模式只在 low/medium/high 档受理、xhigh/max 下 400;手动 budget_tokens 一律 400。② **强制工具调用被取消**——`tool_choice` 的 `any` 与 `tool` 均返回 400(token 计数端点同样校验),只剩 `auto`/`none`。③ **thinking block 被三重绑定**:绑模型(Sonnet 5.5 能读 Sonnet 5 / Opus 4.8 / Haiku 4.5 及更早的块,但读不了 Opus 5、Opus 5.5 与任何 Fable/Mythos)、绑会话前缀(API 会检查 system 提示、tools 与此前每条消息是否变过;**对 2026-08-31 00:00 UTC 之后创建的账号默认强制**,改过历史再重放直接 400)、绑账号(块只在产出它的账号或关联账号内有效)。④ 旧的 `computer_20251124` 工具在 Claude API 与 Google Cloud 上被拒(Bedrock 仍收)。⑤ advisor 工具拒绝 Opus 4.8/4.7 与 Sonnet 5 作为顾问,且**所有被接受的顾问返回的建议都是加密的 `advisor_redacted_result` 块,客户端读不到**。",
+      "summary": "另有一处不报错但会坑人的变化:工具调用之间**较长**的说明文字(一两句以上)改以 progress-update 的 thinking 块返回,而默认 `display:\"omitted\"` 下其文本为空——流式 UI 会在工具调用之间静默,且无报错。新增 beta:`compact-2026-09-04`(按需压缩,返回一个签名的 compaction 块顶替被摘要的消息)与 `inline-tools-2026-09-15`(会话中段 system 消息内携带完整工具定义,改 schema 不再踢掉前缀缓存)。安全拒答细分为 cyber / bio / frontier_llm / reasoning_extraction / general_harms 五类,服务端回退只对 cyber 与 frontier_llm 重试到 Sonnet 5。Anthropic 同时提醒 effort 档位相对 Sonnet 5 重新标定过,要求重跑 effort 扫描而非沿用旧设置。**基准数字本站不收**:核验直读了官方模型页与 what's-new 页全文,**两页均无任何基准表**;流传的 Terminal-Bench 4.0 70.6%、SWE-bench Pro 81.3% 等只见于聚合站转述,连\"这是 Anthropic 自己公布的\"这一归属都无法证实。",
+      "analysis": "Innovation:中档位成了前沿的主战场——Sonnet 5.5 与次日的 GPT-6.1 Sol 落在**完全相同的 $2/$10**,两家都宣称接近旗舰质量。判断:但对本站 RL 与 agentic 主线更要紧的是第二件事——**这是第一个把推理轨迹刻意做成不可移植的前沿模型**。thinking block 同时绑模型、绑会话前缀、绑账号,直接后果是:跨模型的 rollout 收集器无法重放轨迹、轨迹库无法跨账号共享、而**任何会改写历史的 harness(正是提示词变异式 RL 回路的常规做法)在新账号上拿到的是 400 而非静默丢弃**。把它与强制工具调用返回错误、顾问建议加密三件事放在一起,趋势很清楚:**厂商正在关掉的,恰好是 RL 与蒸馏管线赖以存在的那几个接口**——这与 D38/D39/D44 记录的反蒸馏线索同源,但这次动的是 API 语义而不只是权重。另一处值得记的定价机制:Sonnet 5.5 的缓存读是基础输入价的 10%,而 Opus 5.5 是 5%、Fable 5.1 是 2.5%——**缓存重的负载会把 Sonnet 的价格优势吃掉大半**,只看输入输出价的对比会得出错误结论。",
+      "url": "https://platform.claude.com/docs/en/models/sonnet-5-5/whats-new-sonnet-5-5",
+      "tags": [
+        "Claude",
+        "Sonnet-5.5",
+        "thinking-binding",
+        "rollout-portability",
+        "anti-distillation",
+        "cache-economics"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "OpenAI DevDay 2026:GPT-6.1 Sol 价格不变但缓存输入腰斩,dots 常驻 agent,Ultrafast 是 6 倍价的速度档",
+      "org": "OpenAI",
+      "year": "2026-09",
+      "category": "model-report",
+      "innovation": "2026-09-29 DevDay,20 余项发布,三项与本站相关。**GPT-6.1 Sol**:输入输出价与 GPT-6 Sol 持平($2/$10),真正变的是缓存——**缓存输入 $0.10/M,较 GPT-6 Sol 的 $0.20 腰斩,为未缓存输入价的 5%**;上下文 1.05M、单次最多 128K 输出;已在 ChatGPT Work、Codex 与 API 上线。厂商自报基准(@OpenAIDevs 原文):'在 DeepSWE v1.1 上,GPT-6.1 Sol 在 **high** 推理档取得 75.2%,超过 GPT-6 Sol 在**最高档**的最好成绩 68.8%,每任务成本约低 76%'——即 +6.4 个百分点且用的是更低的推理档。",
+      "summary": "**dots**:常驻 agent,每个跑在 GPT-6 Astra 上、各自配一台云电脑与浏览器,7×24 朝用户目标推进;09-29 向符合条件市场的 Pro 与 Business Premium 用户开放,首个免费、可加购;覆盖 ChatGPT、Slack 与 Teams,经插件接 4,000+ 应用。**Ultrafast**:高价速度档,官方原话'在 Codex 中最高 8 倍、API 中最高 6 倍的 token 生成速度(300 tokens/秒)';发布时仅 GPT-6 Astra 版本上线(Pro 500 与企业版),**而且是六倍标准价**——速度不是白给的。",
+      "analysis": "判断:真正的新闻不是标价而是**缓存读降到未缓存输入的 5%**——这与 Anthropic 在 Opus 5.5(5%)与 Fable/Mythos 5.1(2.5%)上的动作同向。**厂商现在拨的杠杆是缓存经济学而不是 token 价格**,而长稳定前缀的 agentic 负载正是这根杠杆瞄准的对象;只跟踪输入/输出价的对比板会完全错过这一轮真实成本变化(本站价格榜因此需要并记缓存档)。本站核验修正三处:① 官方对 DeepSWE 的说法是'每任务成本约低 76%',而'约为五分之一成本'是另一句关于**标价**的话,两者不可混用;② 流传的'350 tokens/秒'不成立,有依据的是 **300 tok/s** 且属已出货的 Astra Ultrafast;③ 有单一二手口径称 GPT-6.1 Sol 的 DeepSWE 分数**随 effort 非单调**(high 75.2% 而 max 71.9%),若属实则任何'max 档'的行都是陷阱——本站按未核实记录。缺口:openai.com 等全部不可达,本条全部为搜索摘要级证据,最强的两项是对 OpenAI 自家 X 帖的逐字摘引。",
+      "url": "https://openai.com/devday",
+      "tags": [
+        "GPT-6.1-Sol",
+        "DevDay",
+        "cache-pricing",
+        "dots",
+        "Ultrafast",
+        "agent-products"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "开源权重承诺与实际发布的裂口:一个窗口内三家中国实验室\"宣布开源、先发 API\"",
+      "org": "阿里 Qwen / 阶跃星辰 StepFun / 蚂蚁 inclusionAI",
+      "year": "2026-10",
+      "category": "trend",
+      "innovation": "两个调研窗口内出现同一模式三次:**宣布开放权重,实际先上 API,权重延后且无期**。① **Qwen 4 27B**:09-22 云栖大会点名四档(Max/Plus/Flash/27B),27B 为开放权重档——截至 09-29,四款在 HuggingFace、ModelScope 与 Qwen Cloud API 上均无踪影,无日期、无价格、无上下文长度、无基准,27B 档的许可亦未公布。② **StepFun Step 5**:09-20 付费 API 上线,官网挂 2026-10-15 开放权重倒计时——HuggingFace 仓库据报仍只有一个 `.gitattributes`,无权重、无许可、无模型卡。③ **Ling-3.1-flash**(蚂蚁 inclusionAI,10-01):约 560B 总参 / 25B 激活(激活率约 4.5%)的稀疏 MoE,设计目标 1M 上下文但两周免费试用期只开到 256K,官方称'试用结束后再开放更大窗口并开源';当前无权重、无许可。",
+      "summary": "本站据此主张在开源板上把**\"已宣布\"与\"权重真的可下载\"分成两列**。注意 Qwen3.8 一代在不同档位上用过三种不同许可,因此'开放权重'对 Qwen 4 27B 并不等于 Apache 2.0。另:25B 激活于 560B 这个比例,延续了本站已记录的极稀疏趋势(Qwen3.8-Max 约 4%、DeepSeek V4-Pro 约 3.1%、MiMo-V2.6 Pro 约 4%),而 25B 激活恰好落在**单台昇腾 950 节点有望承载**的区间——这正是权重缺位才是整件事重点的原因。",
+      "analysis": "判断:本站此前在开源板上把\"宣布\"当作\"发布\"处理,这个习惯需要改。一个窗口内三家连续采用同一节奏,说明这**不是某一家的延期而是系统性做法**:先用 API 占住发布时点与榜单位置,再把权重推到不确定的未来。对本站的直接影响有二:一是**昇腾适配评估不能从发布公告起算**——没有权重就没有量化、没有算子适配、没有 vLLM-Ascend 支持;二是所有\"开源旗舰追平闭源\"的论证都必须先核对权重是否真的可下;StepFun 的 10-15 与 Haiku 5.5 的'数周内'都落在下一个窗口,届时可一并验证。缺口:HuggingFace 与各厂商站点在本环境不可达,三条均为搜索摘要级的**缺席证据**(well-supported absence),即\"查不到\"而非\"已证实不存在\"。",
+      "url": "https://huggingface.co/stepfun-ai",
+      "tags": [
+        "open-weights",
+        "announcement-vs-release",
+        "Qwen4",
+        "Step-5",
+        "Ling-3.1",
+        "sparsity"
+      ],
+      "confidence": "secondary"
+    },
+    {
       "title": "Claude Opus 5.5:5.5 代首发,Fable 5.1 档位降价 20%,AA v4.3 单独登顶 58",
       "org": "Anthropic",
       "year": "2026-09",
