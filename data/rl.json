@@ -1,6 +1,102 @@
 {
-  "updated": "2026-09-18",
+  "updated": "2026-10-06",
   "items": [
+    {
+      "title": "MiMo-V2.6 的 RL 报告:$2.6M 单次 RL、2.5 万条轨迹每批、冻结路由器、GRS/GAR 分组评分,并开源约 7k 环境",
+      "org": "小米 LLM-Core(MiMo)",
+      "year": "2026-09",
+      "category": "model",
+      "innovation": "随 MiMo-V2.6(2026-09-22)发布的 44 页报告,是目前**最详细的万亿规模混合任务 agentic RL 公开配方**。规模(§4.1):'数千张 GPU 单次运行',RL 成本 Pro **$2.6M**、Flash $0.9M(媒体转述 Pro 用时不到 6 天);每批 1,568 个提示 × G=16,约 2.5 万条序列,即每步 2.7B–3.7B 训练 token(每序列约 11 万–15 万);Pro 成本切分:rollout 43.8% / 训练 43.5% / **评分 12.7%**。DeepSWE v1.1 avg@3 经 RL 由 58.4 升到 72.6(Pro)、48.7 升到 65.7(Flash)。",
+      "summary": "算法(§5.1):GRPO,提示级均值聚合,token 级重要性比配四个解耦裁剪边界(初值 [0.2, 5.0],按熵调);异步部分 rollout,陈旧度 4;全对或全错的组被动态采样器丢弃;Muown 优化器,LR 3e-6、无权重衰减与 warmup、梯度裁剪 1.0;RL 从 SFT 承接的 FP32 主权重与 Muown 行状态起步,**MoE 路由器在 RL 期全程冻结**。冻结消融(§5.4,Pro 第 9 层前 20 步):可训练路由器下专家负载 CV 0.78→2.0、峰值负载 6×→16×、冷专家 0.5%→22%;冻结后 CV 约 0.7、峰值约 5.5×、冷专家约 1%。奖励:GRS 离线评分 R = R_test × S_sol × S_beh;GAR 在线评分器对通过的补丁按五维排序并在通过者之间重分配正优势(总正优势守恒,缩放因子设上限后再零均值化,确认的 hack 归零)。训推一致(§6.4):SGLang rollout + Megatron 训练,每次更新后对专家权重做 MXFP4 的 QDQ,**Rollout Routing Replay(R3)** 加 top-k/top-p 候选集重放;DFlash 用早期 RL rollout 日志微调后接受长度 +31.3%、FP8 草稿在长上下文负载上单节点吞吐约 +10.3%。开源:MiMo-V2.6-Distill-Qwen-9B(Qwen3.5-9B 上 77.4B token SFT,27.2B 计入损失)、约 7k RL 任务(约 3k code / 1k cyber / 1k general / 2k visual)与约 1k 音乐任务、验证器、mimoagent/uni-agent/verl 分支与 Live RL 看板。",
+      "analysis": "Innovation:报告把三件本站长期追踪的 RL 工程难题第一次放在同一份万亿规模实证里——**MoE 路由漂移与坍缩**(冻结路由器的量化代价)、**rollout 与训练的数值错配**(MXFP4 QDQ + R3 + 候选集重放)、以及**评分占成本 12.7%** 这一常被忽略的开销项。判断:冻结路由器是用可塑性换稳定性,其消融(冷专家 0.5%→22%)是本站见过的最直接的 MoE RL 失稳证据;R3 与候选集重放则与同期 slime/SkyRL 的 support replay、Score Centering 指向同一问题(见本页相邻卡片)。对 RL-on-NPU 意义:这三件事正是昇腾 RL 栈(verl on NPU / MindSpeed)必须自行解决的,而开源的 9B + 7k 环境 + verl 分支构成一套**可在 NPU 上复现的 agentic RL 基线**,是本站脚手架线索的现成对照组。更正两处:报告标题是《MiMo-V2.6: A Technical Report》,'Scaling RL towards self-improvement' 是摘要措辞;GAR **并不**限制轮数/长度,报告只在纯代码 Flash 消融里观察到轮数大致稳定、长度缓增。表 6 的 9B 分数(SWE-bench Verified 61.1→66.2、Terminal Bench 2.1 37.1→52.8 等)来自各域独立 GRPO 运行,**非已发布的 checkpoint**(后者仅 SFT)。全部数字为厂商自报,未经独立复现。",
+      "url": "https://mimo.xiaomi.com/mimo-v2-6",
+      "tags": [
+        "MiMo-V2.6",
+        "GRPO",
+        "MoE-router",
+        "R3",
+        "MXFP4",
+        "train-infer-consistency",
+        "open-environments"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "Score Centering:用加性分数校正替代/叠加重要性采样治训推失配,slime 五天内合入",
+      "org": "Martin Marek, Max Ryabinin(论文);THUDM slime(集成)",
+      "year": "2026-09",
+      "category": "algorithm",
+      "innovation": "论文《Score Centering Stabilizes Off-policy Reinforcement Learning》(arXiv 2609.20807,作者仓库首提交 2026-09-18)。论点:训推失配(TIM)造成的不稳定主要来自 **drift**——trainer 与 sampler 之间逐步累积的持续偏置;做法是从每个 token 的梯度里减去 sampler 期望的策略分数,恢复 on-policy 梯度本应具备的零均值性质。实现:存 sampler 的 top-k logprobs(k=128),尾部用 trainer 分布按 sampler 尾质量重标;README 自述 'k=128 与 k=32 在我们的实验中均与完整 score centering 持平'。它可与 TIS/MIS 叠加使用。",
+      "summary": "框架落地(primary,git):slime #2405 'Support score centering' 与 #2406 'Support score centering with top_p replay' 均于 2026-09-23 合入,作者 Zilin Zhu。新开关 `--use-score-centering`(切到 REINFORCE 目标,**不可与 PPO/GSPO/CISPO 并用**)与 `--score-centering-top-k`(默认 128,仅在 `--rollout-top-p 1` 时生效);仅支持 Megatron 后端 + 非流式 SGLang,且需要 `docker/patch/latest/sglang-top_p.patch` 以返回二值 top-k 或完整 top-p support 的 logprob。当 top_p<1 时精确地在记录的重放 support 上求和、不做尾部近似,文档同时警告该载荷'在 top-p 接近 1 时会远超固定 top-k 头部'。另:KLPO 把 Score Centering 列为其第 8 步。",
+      "analysis": "判断:TIM 是 NPU 上做 RL 最棘手的一类问题——vllm-ascend 的算子与 Megatron/MindSpeed 训练算子不同源,再叠加量化 rollout(昇腾上的 W8A8/W4A8),失配幅度比 CUDA 侧更大;而 SC 恰好针对量化 rollout 下的 drift,且论文自称**失配越严重、相对 IS 的优势越大**。代价只是每 token 多传约 128 个 logprob,是昇腾量化 rollout RL 的低成本候选。对 RL-on-NPU 意义:精确 top-p 变体要求推理引擎返回截断后的完整 support 概率,**vllm-ascend 目前没有这个接口**——这是一个明确的移植待办,且与同期 SkyRL 的 sample support replay、slime 的 top-p replay 属同一需求(rollout 侧必须导出的东西,正在从 logprob 扩到 routed experts 再扩到 sampling support)。缺口:arXiv 摘要的规模声明(0.6B–30B)只经搜索摘要读到,arXiv 发布日期未核实;slime 侧亦注明'无 Ascend sampler 可做精确 top-p SC'。",
+      "url": "https://github.com/martin-marek/score-centering",
+      "tags": [
+        "train-infer-mismatch",
+        "score-centering",
+        "slime",
+        "quantized-rollout",
+        "RL-on-NPU"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "单 rollout、免 critic 的异步 RL 成簇出现:FlashREINFORCE(NVIDIA)+ KLPO + BPO,OpenRLHF v0.11.2 以纯配置落地",
+      "org": "NVIDIA(FlashREINFORCE);Yifan Zhang 等(KLPO);Song 等(BPO);OpenRLHF",
+      "year": "2026-09",
+      "category": "algorithm",
+      "innovation": "FlashREINFORCE(NVIDIA,仓库首提交 2026-09-14):**每个提示只采一条 rollout**,因此 B 条轨迹覆盖 B 个提示。三件套——① One-Batch REINFORCE:优势 = R_i 减去跨独立提示的批均值,无分组、无 critic;② Sequence Trust Region:整条轨迹的逐 token 伯努利 KL(行为概率 p 对学习者 q)均值不超过 δ 才准入;③ Sample-Mean Optimization:先轨迹内平均再跨轨迹平均,使长失败轨迹不获得长度乘数。对**存下来的** sampler 概率做 token 级 IS,无比值裁剪、无参考前向,每批只更新一次即丢弃。",
+      "summary": "自报结果(README):R1-Distill-Qwen-1.5B 在策略滞后约 4 下稳定训练 6,000 次更新,AIME24/25 均值 21.7→33.7;Qwen2.5-Math-1.5B 五基准均值 38.0 对 GRPO 36.3,且 rollout 用量 256k 对 512k;Qwen2.5-7B-Instruct 带 Python 工具在第 600 步得 37.0、每轨迹 3.25 次工具调用,而 GRPO 为 30.3 且'停止调用工具';Qwen3-30B-A3B MoE 带工具在滞后约 8 下稳定,较等预算 GRPO +6.8 分;ALFWorld Qwen2.5-7B 达 98.3% seen / 96.5% unseen。设计注记:'重要性采样需要 support……激进的 top-k/top-p 截断会破坏该条件'。OpenRLHF v0.11.2(tag 2026-09-14)**不新增损失函数**即支持它:把 IS 校正重构成三个正交旋钮——`is_correction_level {off,token,seq}` × `mode {mask,clip}` × `gating {ratio,binary_kl,tv}`,于是 TIS = token+clip、IcePop = token+mask、seq-mask-tis = seq+mask;另加 `--algo.advantage.estimator flash_reinforce`。KLPO(技术报告 2026-09-18、09-20 修订)同为免 critic 单 rollout,把 trainer 对 sampler 的对数比做回归(局部策略镜像下降条件)、不用乘性 IS 权重,并以蒙特卡洛 KL(每前缀 M 次**辅助 token 采样**,非额外响应)估计分数校正。",
+      "analysis": "Innovation:分组式 GRPO 需要同胞 rollout 并引入同步栅栏,对长尾 agentic rollout 代价尤其高;单 rollout 方法同时去掉这两样,契合完全异步、训练与 rollout 池分离的部署形态——**正是昇腾集群的形状**(训练与推理超节点分离、经 HCCL/Mooncake 同步权重)。判断:三种方法都要求逐 token 存下**真实的 sampler 概率**,这实际上固定了 rollout 引擎(vllm-ascend)必须满足的数据契约;OpenRLHF 把 IS 拆成 level/mode/gating 三旋钮,给了本站一套可复用的分类法。更正:只有 FlashREINFORCE 是 NVIDIA 论文;KLPO 无 NVIDIA 署名、自述 'GPU 训练与论文规模的基准复现尚未验证',且其发布配方实际要求同步采集;**BPO 不应标为单 rollout**——按 KLPO 论文 §3.11,BPO 最终实现会线性化系数、估计分组优势并施加平滑/掩码/裁剪。",
+      "url": "https://github.com/yifanzhang-pro/FlashREINFORCE",
+      "tags": [
+        "single-rollout",
+        "critic-free",
+        "async-RL",
+        "OpenRLHF",
+        "importance-sampling",
+        "RL-on-NPU"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "量化 rollout 的权重回灌契约收敛:trainer 送 BF16、rollout 侧加载时量化(NeMo-RL NVFP4 / prime-rl / verl 昇腾 W4A8)",
+      "org": "NVIDIA NeMo-RL;Prime Intellect;verl / 华为昇腾",
+      "year": "2026-09",
+      "category": "framework",
+      "innovation": "2026-09-17 至 09-19 三家 RL 框架合入同一形态的改动:**训练侧保持 checkpoint 格式(BF16)并对 rollout 的数值表示无感知,量化发生在 rollout 引擎的加载时刻**。NeMo-RL #3566(09-19 合入 main)把 TE NVFP4 的逐 token 激活缩放只用于路由专家的 MLP 线性层,训练与 vLLM rollout 两侧同时启用;注意力、路由器、共享专家与首 2 层 / 末 4 层保持 BF16;主权重 BF16 + FP32 优化器;回灌经 CUDA IPC 送 BF16 进 vLLM 原生 reload_weights,由其在加载时量化专家——'训练侧对 rollout 的表示保持无感知'。两侧均开 router replay,因为'保持训练与 rollout 的路由一致能让 NVFP4 训练稳定更久'。",
+      "summary": "实测设置:Qwen3-30B-A3B-Base,DAPOMath17K 上 GRPO,8 节点 × 4 GB200,2,048 提示 + 最长 20,480 响应,GBS 32×16=512,训练 TP2/EP8,同卡 vLLM TP1,取 900 个共同步的中位数。BF16 对 NVFP4 W4A4:rollout 吞吐 472.9→661.4 tok/s/GPU(**1.40×**);生成耗时 220.5→154.6 s;单步耗时 276.4→237.2 s(−14.2%);**端到端吞吐 367.1→421.1 tok/s/GPU,只有 1.15×**;策略训练吞吐 3,196→2,681(0.84×);**权重传输与更新 1.8→19.2 s**;rollout 权重 56.88→18.07 GiB(−68.2%),KV 容量 331,744→870,560 token(2.62×)。回灌的 19 s 里约 75% 卡在 vLLM 的 Python 加载路径(每次回灌 64,512 个逐专家权重名);一个融合专家加载器原型把均值 18.42 s 降到 6.31 s(2.92×),已上游追踪为 vLLM #53687。奖励、响应长度与验证准确率跟得上 BF16,训练-rollout logprob 误差保持在 1.0 附近,但'W4A4 下生成 KL 误差更高'。prime-rl #3581(09-17)删掉 trainer 侧 FP8 转换路径,NCCL 更新一律送 HF 格式 BF16、由 vLLM 分层 reload 时按 `fp8_per_block` 量化;verl #7868(09-18)在**昇腾 950** 上加 W4A8 MXFP(FP4 E2M1 权重 + FP8 激活)rollout 回灌,开关 `actor_rollout_ref.rollout.quantization=\"ascend\"`,配套 vllm-ascend#16568,仅注明'Qwen3-30B 端到端测过',无吞吐与精度数字。",
+      "analysis": "Innovation:这是对 NPU 最关键的一条低精度 RL 结论——既然契约是**训练侧 BF16、rollout 侧加载时量化**,那么昇腾侧只需要 vllm-ascend 具备加载时量化能力(verl 的 950 W4A8 MXFP 即首例),**不需要在训练侧补 FP4/FP8 算子**。NeMo 的数字给出了天花板与代价。判断:rollout 侧收益是真的(1.4×、KV 容量 2.6×),但端到端只有 1.15×,因为回灌慢了约 10 倍(Python 加载瓶颈)、反量化反向又拖慢训练——**在昇腾上回灌还要跨 HCCL,逐专家回灌的开销只会更突出**,这正是 verl NPU 侧checkpoint-engine(HCCL 广播 / Mooncake p2p)需要解决的问题。另注意:router replay 是稳定性的前提,与 R3 线索互证。更正:BF16 传输 + rollout 侧量化并非 9 月才出现(NeMo 文档自述它'沿用 fp8/mxfp8 实量化 rollout 路径'),9 月新增的是 NeMo 的 NVFP4 W4A4 逐 token、prime-rl 删除 trainer 侧 FP8、以及 verl 的昇腾 W4A8;'收敛'是本站的归纳。NeMo 侧限制:仅 Blackwell(GB200 验证)、仅同卡部署、vLLM EP=PP=1、仅 GRPO 验证过。",
+      "url": "https://github.com/NVIDIA-NeMo/RL/blob/main/docs/design-docs/te-nvfp4-per-token-rollout.md",
+      "tags": [
+        "quantized-rollout",
+        "NVFP4",
+        "W4A8",
+        "weight-refit",
+        "verl",
+        "Ascend-950",
+        "RL-on-NPU"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "SkyRL 的 sample support replay:记录 vLLM 截断后的采样 support,并在同一 support 上给 trainer logprob 归一",
+      "org": "NovaSky-AI SkyRL",
+      "year": "2026-09",
+      "category": "framework",
+      "innovation": "2026-09-22 合入 main 的 5 个核心 PR(#2237/#2238/#2239/#2240/#2241),位于一条 11 个 PR 的栈(#2231–#2241)顶部,下半部分是 routed-expert replay(R3)与传输重构。问题陈述(#2237 原文):'使用 top-k、top-p 或 min-p 采样时,vLLM 从一个被过滤的词表子集中采样并在该子集上归一化概率;而 trainer 通常在完整词表上重算对数概率。即便权重与算子完全一致,这两个值代表的也是不同的分布,从而使重要性比与 KL 项有偏。'",
+      "summary": "机制:向 vLLM 索要 `flat_logprobs`(logprobs=top_k),每行是 [采样 token, top_k 候选],被 top-p/min-p 滤掉的以末尾 -1 标记;若 vLLM 的近似 pivot 漏掉了采样 ID,端点会补回并告警;仅在 temperature>0、top_k>1、repetition_penalty==1.0 且无额外 sampler kwargs 时才允许捕获。传输为 `rollout_sample_support`(int32 PackedTensor,[sum(response_lengths), top_k] 加 cu_seqlens,零拷贝)。打分:`log p(采样|support) = 采样分数 − logsumexp(有效 support 分数)`,覆盖 Megatron 的策略/重算/参考三次前向(#2239),随后补 FSDP + Ulysses 序列并行(#2240);张量并行下只需一次 MAX 与一次合并 SUM 归约,并有只投影选中候选的融合 LM 头路径;策略熵亦在该 support 上计算(#2241)。开关 `trainer.algorithm.enable_sample_support_replay` 配 `generator.inference_engine.enable_return_sample_support_set`;示例(#2262,09-23)在单机 8 卡上用 Qwen3.5-35B-A3B 跑 GSM8K GRPO,默认 top-k=20、top-p=0.95,作者自报'即便 top_k=20 也与 Megatron 后端完全一致'(仅以图展示)。",
+      "analysis": "判断:这与 slime 的 top-p replay、Score Centering 的精确 support 求和是**同一洞察的三次独立实现**——截断采样本身就是一类独立于算子数值的训推失配源,而单靠 IS 修不了,因为 support 条件被破坏。对 RL-on-NPU 意义:rollout 引擎必须逐 token 导出的东西已经扩成三样——**logprob、routed experts、sampling support**,这是 vllm-ascend 需要对齐的接口清单,也是本站评估'昇腾能否跑高保真 on-policy RL'的具体判据。附近合入还有 R3 + LoRA(#2269)、面向 GLM-5.3 训练的 vllm 0.30 与 Megatron-Bridge 共享专家 TP 补丁(#2271)、以及面向 Kimi K2.6 的 INT4 QAT + LoRA 系列。",
+      "url": "https://github.com/NovaSky-AI/SkyRL/pull/2237",
+      "tags": [
+        "SkyRL",
+        "sample-support-replay",
+        "train-infer-mismatch",
+        "R3",
+        "rollout-contract",
+        "RL-on-NPU"
+      ],
+      "confidence": "confirmed"
+    },
     {
       "title": "运行时 θ 闭环的产业现状:Cursor Composer 是唯一样本,BroRL 是反自进化对照",
       "org": "Cursor / xAI / AWS / Google DeepMind / NVIDIA",

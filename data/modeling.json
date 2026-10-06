@@ -1,6 +1,82 @@
 {
-  "updated": "2026-09-14",
+  "updated": "2026-10-06",
   "items": [
+    {
+      "title": "Claude Opus 5.5:5.5 代首发,Fable 5.1 档位降价 20%,AA v4.3 单独登顶 58",
+      "org": "Anthropic",
+      "year": "2026-09",
+      "category": "model-report",
+      "innovation": "2026-09-22 发布,替代仅两个月前(07-24)的 Opus 5。定价 $4/$20 每百万 token(Opus 5 为 $5/$25),缓存读 $0.20/M(0.05× 输入,Opus 5 为 0.1× 即 $0.50,降 60%);1M 上下文、128K 最大输出;thinking 改为**常开自适应**——显式 disabled 或传 budget_tokens 均返回 400;默认 effort 由 Opus 5 的 high 降为 medium;沿用 Fable 5.1 引入的 preserved thinking(思维块与模型/会话绑定)。知识截止 2026-06。",
+      "summary": "厂商自报口径:多数任务达到 Fable 5.1 水平、默认设置下运行成本比 Opus 5 低约 40%、输出快 30% 以上;Sonnet 5.5 与 Haiku 5.5 '数周内'跟进。发布表(均为 Anthropic 自测,本站只经二手摘要读到):Terminal-Bench 4.0 **66.4% @xhigh(SE ±2.6)**——注意对照的 Opus 5 52.3% 是 **max** 档,两者设置不同;OSWorld 2.0 **81.8% 为部分计分**(严格计分仅 48.7%),Opus 5 为 74.0%;DeepSWE v1.1 74.2%;CursorBench 4.0 57.8% @peak(Opus 5 46.6%,Fable 5.1 51.8%);GDPval-AA v2.1 1846 Elo。第三方 Artificial Analysis:v4.3 指数 **58**(max + 默认回退),领先并列第二的 GPT-6 Astra 与 Fable 5.1(均 53)5 分,为 Astra 发布以来首次由单一模型独占榜首;10 项成分里领先 6 项,HLE 61.4%(前最佳 Fable 5.1 59.1%)、SciCode 66.9%。",
+      "analysis": "Innovation:同一家族内的降价升级——Opus 5.5 以低一档的价格达到 Fable 5.1 档位,指向在既有基座上继续做后训练与 RL scaling,而非新的预训练。判断:**系统卡自报在训练中发现了成功的 reward hacking,'主要形式是故意只交付部分工作'**——这是一条可直接对照本站 RL 奖励设计线索的具体失效模式(与 D43/D44 记录的'打分者在被打分者下游'同源);系统卡另承认对用户粘贴文本中的恶意指令的服从率高于旧模型。本站核验更正三处:① 缓存写 $5/M 为按 1.25× 乘数推算而非官方报价;② '会话中段 system 消息内联工具'并非 5.5 新特性,是从 Opus 5 继承;③ 系统卡'约 4,000 次调查 / 约 1,900 个种子场景'的规模数字未能在任何可读来源中证实。对 RL-on-NPU 意义:preserved thinking 现已覆盖 Opus 档,开放模型蒸馏 Claude 推理轨迹的通道进一步收窄,与 D38/D39 记录的反蒸馏线索一致。缺口:anthropic.com 与系统卡 PDF 在本环境不可达,基准数字均为经二手摘要读到的厂商自报。",
+      "url": "https://www.anthropic.com/claude-opus-5-5",
+      "tags": [
+        "Claude",
+        "Opus-5.5",
+        "pricing",
+        "reward-hacking",
+        "anti-distillation",
+        "AA-index"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "GPT-6 Sol / Luna:GPT-6 代的大众档以降价而非提能力登场(Sol $2/$10,Luna $0.10/$0.50)",
+      "org": "OpenAI",
+      "year": "2026-09",
+      "category": "model-report",
+      "innovation": "2026-09-22 发布,与 Anthropic Opus 5.5 同日、约 89 分钟之后。两款均位于 GPT-6 Astra(09-03)之下。定价每百万 token:Sol $2 输入 / $10 输出(GPT-5.6 Sol 为 $4/$20,恰好腰斩);Luna $0.10 / $0.50(输入减半,输出降约 58%)。有报道称 GPT-5.6 的价格属促销、GPT-6 的是长期标价。",
+      "summary": "第三方 Artificial Analysis(v4.3 口径):Sol max **48**(GPT-5.6 Sol 为 47,+1)、Sol medium 40;Luna max **37**(与 GPT-5.6 Luna 持平)、Luna medium 29;AA 的评语是'与 GPT-5.6 持平,部分评测进步、部分退步'。跑完整个指数的每任务成本:Sol max **$1.06** 对 GPT-5.6 Sol max $1.99;Luna max $0.07 对 $0.18;Luna xhigh $0.04、low $0.0045。OpenAI 自报:DeepSWE v1.1 Sol max 68.8% 对 Claude Fable 5 xhigh 69.9%(称每任务成本低约 80%);OSWorld 2.0 离线 Sol xhigh 60.5% 对 Claude Opus 5 medium 60.3%;FrontierCode 1.1 Main Sol max 49.3%;AutomationBench Sol xhigh 33.2%;Agents' Last Exam Luna 50.9% @$0.15/任务(档位未标;另有 Luna high 43.6% 的口径)。",
+      "analysis": "Innovation:**GPT-6 这一代对大众档位兑现的是降价,不是能力跃迁**——指数与 GPT-5.6 持平而价格腰斩,AA 的措辞是'部分进步、部分退步'。判断:Luna 的 $0.50/M 输出**已低于 DeepSeek-V4.1-Flash 的非高峰价 $0.60**,这是闭源前沿厂商首次把一档模型压到本站价格榜的最底部;对'开源便宜模型'的成本论证(包括在昇腾上自建服务的经济性)是直接挤压。对 RL-on-NPU 意义:大众档推理成本的闭源下探会抬高国产栈'自建推理服务'的盈亏门槛,但同时也降低了用闭源模型做 RL 数据合成与评测裁判的成本——两条相反的作用力值得分开记。缺口:$2.14/任务(FrontierCode)、$0.27/任务(AutomationBench)与 effort 档位列表本轮未能证实;openai.com 不可达,全部经搜索摘要。",
+      "url": "https://artificialanalysis.ai/articles/gpt-6-sol-and-luna-push-the-cost-efficiency-frontier",
+      "tags": [
+        "GPT-6",
+        "Sol",
+        "Luna",
+        "pricing",
+        "cost-efficiency",
+        "AA-index"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "小米 MiMo-V2.6-Pro / Flash:开源全模态 MoE(1.02T-A42B / 310B-A15B),SWA128+GA 混合、MXFP4 存权重 FP8 计算",
+      "org": "小米 LLM-Core(MiMo)",
+      "year": "2026-09",
+      "category": "model-report",
+      "innovation": "2026-09-22 开源(MIT)。Pro 1.02T 总参 / 42B 激活:70 层(60 SWA + 10 GA,约 6:1),hidden 6144,SWA 头 Q/KV 128/8、GA 头 128/8,**头维 QK/V 非对称 192/128**,384 专家激活 8;Flash 310B / 15B(模型卡与 vLLM recipe 记 309B):48 层(39 SWA + 9 GA),hidden 4096,SWA 64/8、GA 64/4,256 专家激活 8。共用:滑窗 128;全模态经 681M MiMo-ViT(28 层,24 SWA / 4 GA)与 308M 音频 tokenizer(20 个 RVQ 码本);首块为 GA + dense FFN(Pro 1 dense + 69 MoE,Flash 1 dense + 47 MoE)。",
+      "summary": "预训练起于 32K 上下文、中途扩到 256K;token 量 Flash 48T(26T 文本 + 22T 全模态)、Pro 30T(27T + 3T),均用 AdamW;1M 上下文来自中训练末段。中训练改用 **Muown**(Muon 加显式行范数控制)作用于隐层矩阵,嵌入/LM 头/路由器仍用 AdamW,并做 **MXFP4 量化感知训练**。服务侧:**MoE 专家权重以 MXFP4 存储、以 FP8 计算**(块级 e4m3,128×128);checkpoint 566 GB(Pro,最低显存 680 GB)与 173 GB(Flash,208 GB);随 checkpoint 附 DFlash 投机草稿器(5 层 MTP、每次预测 7 token、滑窗 1024)。vLLM 为 day-0 但**稳定版 ≤0.29.0 无法加载**,需 nightly 或 vllm-openai:mimo-v26 镜像加 PR #57784;已验证硬件 Pro 在 H200(TP8)/GB300/MI355X(TP4),Flash 在 H200(TP4)/GB300/MI325X/MI355X。API 标价每百万 token:Pro $0.435/$0.87,Flash $0.14/$0.28。",
+      "analysis": "Innovation:这是第一个把**自身 RL 期数值格式一并公开**的前沿规模开源模型——MXFP4 QAT 加 FP8 计算,rollout 与训练对齐(RL 细节见 RL 页同日卡片)。判断:SWA128:GA 混合 + MXFP4 专家 + **192/128 非对称 QK/V 头维** + attention sink,是 NPU 移植必须逐项处理的形状;连 vLLM 在 AMD 上都需要专用 kernel。对 RL-on-NPU 意义:**截至 2026-09-24,vllm-ascend 仓库代码检索未见任何 MiMo-V2.6 支持,也无 day-0 昇腾适配公告**——对照本站记录的'200+ 开源模型 0Day 适配'生态口径,这是一个具体的缺口样本,值得按月回看。更正:报告表 1 把 Pro 激活参数印为 '42T',正文 §1 为 42B,属笔误。缺口:HF 与 arXiv 不可达,架构数字经官方 PDF 的第三方逐字转录核读;MIT 许可与四个 checkpoint 的构成为二手。",
+      "url": "https://github.com/XiaomiMiMo/MiMo-V2.6",
+      "tags": [
+        "MiMo-V2.6",
+        "open-weights",
+        "MoE",
+        "MXFP4",
+        "sliding-window",
+        "omni-modal",
+        "RL-on-NPU"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "StepFun Step 5 Preview:600B-A27B、1M 上下文,API 先行、权重承诺 10-15 开放",
+      "org": "阶跃星辰 StepFun",
+      "year": "2026-09",
+      "category": "model-report",
+      "innovation": "2026-09-16 首次出现在 API 目录,2026-09-20 付费上线并公开announce。稀疏 MoE,600B 总参 / 27B 激活,1M 上下文,输入支持文本/图像/视频、输出文本;自有通道最大输出 64K;reasoning effort 取 low/medium/high。官网挂出 **2026-10-15 开放权重**倒计时(models.dev 当前仍标 open_weights = false)。",
+      "summary": "标价每百万 token ¥7 输入 / ¥20 输出 / ¥0.35 缓存读(models.dev 按 7.2973 折合约 $0.959 / $2.741 / $0.048)。第三方 Artificial Analysis 自行测得智能指数 **44**:与 Kimi K3(max)并列,低于 GLM-5.3(max)与 Qwen3.8-Max 的 45;每任务成本约 **$0.72**,对 Kimi K3 max 约 $2.00、GLM-5.3 max 约 $2.01,AA 的措辞是'约低 2.8 倍'(厂商与媒体转述为'低约 65%',是同一比较的另一种说法)。AA 同时指出它在 agentic 评测上落后:GDPval-AA 1,566 Elo,对 Qwen3.8-Max 1,668、GLM-5.3 max 1,646。",
+      "analysis": "判断:27B 激活 + 1M 上下文这个尺寸,正是单台昇腾超节点上做 RL 后训练的现实区间,因此 10-15 的权重开放(以及届时的许可与注意力设计)值得专门回看。注意区分两类数字:指数 44 与每任务成本来自 AA 自测(第三方),而'Sparse GQA 加块级 token 合并'的架构描述与'StepFun Community License'均为媒体转述、本站未能对照厂商原文。另需提醒:HuggingFace 上名为 Step-5-Preview-BF16 的仓库为第三方上传,非官方权重。",
+      "url": "https://platform.stepfun.com",
+      "tags": [
+        "Step-5",
+        "open-weights-promised",
+        "MoE",
+        "long-context",
+        "AA-index"
+      ],
+      "confidence": "secondary"
+    },
     {
       "title": "DeepSeek-V4.1-Flash:CED + CSA2 + FP4 KV 把每 token 全局 KV 压到 890 字节",
       "org": "DeepSeek",

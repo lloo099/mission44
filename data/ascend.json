@@ -1,6 +1,102 @@
 {
-  "updated": "2026-09-22",
+  "updated": "2026-10-06",
   "items": [
+    {
+      "title": "华为云灵衢昇腾 950 智算集群云服务定档 09-30 国内 / 11-30 全球(950DT 上云追踪:改期,未兑现)",
+      "org": "华为云",
+      "year": "2026-09",
+      "category": "hardware",
+      "innovation": "2026-09-18 华为全联接大会 2026 上,华为公司董事、华为云 CEO 周跃峰宣布:灵衢昇腾 950 智算集群云服务计划**2026-09-30 面向国内商用、2026-11-30 面向全球商用**。配套规格(厂商口径):昇腾 950 超节点基于自研灵衢互联协议构成 1024 卡集群,1 EFLOPS FP8 / 2 EFLOPS FP4,配 256TB 全局统一内存编址,称可支撑万亿参数级模型全流程训练而无需对集群架构额外拆分适配。",
+      "summary": "本站对照:1024 卡 / 1 EFLOPS FP8 / 256TB 三项与 2026-07-17 WAIC 上的 Atlas 950 超节点口径相同,**不是新规格**。本站此前自 6 月起追踪的悬案是'950DT 8 月上华为云',该承诺至今未兑现;本次是**把承诺改期并升格为集群级云服务**,且 09-30 与 11-30 都仍是计划日期。",
+      "analysis": "判断:这是该悬案第一次有可核验的时间锚点,但必须按'改期'而非'兑现'记录,原因有三:① 可读文本未说明该集群用的是 950PR 还是 950DT,把它当作'950DT 上云'兑现属推断;② 商用日期是承诺,截至本次更新(2026-10-06)本站尚未获得开服证据;③ 媒体转述的华为云副总裁陈林口径('950DT 8 月已上云、Q4 全面商用')为未核实片段,不予采信。对 RL-on-NPU 意义:若 09-30 真开服,rollout(解码重)与训练(HBM 带宽重)首次可能在同一朵云上按需取得 1024 卡量级的统一内存域,而无需自建超节点——这是本站判断'国产栈能否闭合 RL 回路'的关键基础设施条件。**下一步**:回看华为云控制台/价格页是否真有 950 实例可下单。缺口:huawei.com 与国内门户在本环境均被代理拦截,全部经搜索标题与摘要。",
+      "url": "https://www.huawei.com/cn/news/2026/9/hc-ascend960-supernode",
+      "tags": [
+        "Ascend-950",
+        "Huawei-Cloud",
+        "UnifiedBus",
+        "supernode",
+        "watchlist",
+        "RL-on-NPU"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "灵衢(UnifiedBus)计算架构:协议归一的总线级互联,十万卡以上集群与 UBG radix 1024",
+      "org": "华为",
+      "year": "2026-09",
+      "category": "hardware",
+      "innovation": "2026-09-17 华为全联接大会 2026 上,常务董事杨超斌发布面向超节点与集群的灵衢(UnifiedBus)计算架构:以单一逻辑计算机的方式重构 AI 计算,把 CPU/NPU/内存/存储做总线级互联与池化,七层协议栈同时支持 load/store 同步语义与 URMA 异步访问,UB 域内交换 + UBoE 集群扩展。",
+      "summary": "可核验的公开数据(均为华为自述):传统架构下十万卡集群的真实 MFU 仅约 **20%**;UB 在机柜内、跨机柜、集群三级推出互联设备,协议归一把互联带宽由数百 GB/s 提到 TB/s、RTT 由 7 μs 降到 2 μs;机柜内免线缆,单个 4096 卡超节点省 196 km 铜缆;跨机柜设备 176 端口 × 1.6T、单机 280T 全光互联;UBG 交换芯片 radix 1024;Agentic 超节点集群两级 CLOS 四平面可达 51.2 万卡、多轨拓扑可达 100 万卡;**已部署超过 1,000 套昇腾 910C 超节点**,昇腾 950 超节点'已规模商用';基于 UB 的 OceanStor M900(L3.5 PB 级 KV cache 集群)自称 SSD 寿命 16 倍。",
+      "analysis": "判断:本站此前的昇腾卡片多在记录芯片峰值算力(EFLOPS/HBM),而 RL 训练的真实瓶颈是**集群有效利用率与同步等待**——'十万卡集群真实 MFU 约 20%'这个基线口径,比任何峰值数字都更贴近 RL 里 rollout/训练交替、权重同步与长尾 straggler 的痛点。**本站核验剔除四个流传数字**:'MFU 由 20% 提到 35%'、'单跳转发 200 ns'、'通信等待缩减超 50%'、'平均无故障时间提升 10 倍'——这四项在本站能读到的来源中均无出处,不予收录;可引用的只有 20% 这一基线与上列互联参数。另注:架构描述本身(load/store + URMA、UBoE 百万卡扩展、协议归一、四类资源池化)是 HC 2025 灵衢发布与 2025 年超节点参考架构白皮书的重述,**非新内容**。",
+      "url": "https://www.huawei.com/cn/news/2026/9/hc-wang-keynote",
+      "tags": [
+        "UnifiedBus",
+        "灵衢",
+        "interconnect",
+        "MFU",
+        "supernode",
+        "RL-on-NPU"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "vLLM-Ascend 的 RL 路径现状:v0.23.0.post1 修掉权重回灌下的量化缓冲区失稳,但 DeepSeek-V4 的 sleep/wake 仍是坏的",
+      "org": "vLLM Ascend 社区",
+      "year": "2026-09",
+      "category": "rl-on-ascend",
+      "innovation": "两条一手证据(直读仓库文档)。① **v0.23.0.post1(2026-09-21)**:v0.23.0 的首个 post 版本,其中与 RL 直接相关的一条是——'在 ACL Graph 模式下,使 W8A8 MXFP8 的变换后缓冲区在 **RL 权重重载**之间保持稳定'(#13905);另修 DP 对齐 dummy run 期间的陈旧 KV 写入(#15362)。② **v0.26.0rc1 测试结论报告**自列的已知问题中,`#15648`:DeepSeek-V4 开启 `sleep_mode_extra_cleanup` 后,sleep→wakeup 服务起不来,报告明写 '**sleep mode 主要面向训练场景**',修复排期 v0.27。",
+      "summary": "同一报告的另两条:`#15268` 昇腾 950 上 GLM-5.1-W4A4C8 双机同卡部署**性能回退 40%**(基线 133.85,实测 84.91/77.16/76.75,单位未给;三次分别约降 37%/42%/43%),原因写为 vLLM v0.24.0 之后昇腾 950 的卡间负载不均(部分卡 hostbound),短期靠 msboost 绕过(未经独立验证);`#15237` Kimi K3 在约 20k–40k 长输入下 DSpark 草稿接受率极低,投机解码无有效收益,同样排期 v0.27。版本线更正:vLLM-Ascend **没有 v0.24.x / v0.25.x 正式版**,这两条线只有 rc;唯一稳定线仍是 0.23.0(+post1),实际 tag 序列为 v0.24.0rc1(08-04)→ v0.23.0(08-16)→ v0.25.1rc1(08-19)→ v0.26.0rc1(09-03)→ v0.26.0rc2(09-16)→ v0.23.0.post1(09-21)。当前昇腾推理栈事实基线:CANN 9.1.0 + torch/torch_npu 2.10.0 / 2.10.0.post4 + Triton Ascend 3.2.2 + Mooncake 0.3.11.post1。",
+      "analysis": "判断:**sleep/wake 是 RL 里 rollout 引擎向 trainer 让出显存的标准手段**,官方报告自己承认这条路径在 DeepSeek-V4 上到 9 月仍不可用、修复排到 v0.27——这对想在昇腾上跑大模型同卡 on-policy RL 的人是硬阻塞,且与本站 D43 第 10 节记录的'昇腾上每次 rollout↔train 切换要付 HCCL 重建 + ACL graph 重捕获的税'是同一问题的下游表现。另一侧则是好消息:权重回灌下量化缓冲区失稳这类**最难查的静默掉精度**已在稳定分支修复——trainer 每步回灌权重、推理侧图已捕获,若量化 scale 与变换后布局不失效重建就会静默掉点。昇腾 950 的 40% 负载不均回归被定位为 v0.24.0 之后引入,说明 950 的调度/绑核路径尚未稳定,直接吃掉 rollout 吞吐。注:#15268 所涉 GLM-5.1-W4A4C8 并非该版本的受支持导出模型,引用时需标注。",
+      "url": "https://github.com/vllm-project/vllm-ascend/releases",
+      "tags": [
+        "vLLM-Ascend",
+        "sleep-mode",
+        "weight-refit",
+        "quantization",
+        "Ascend-950",
+        "RL-on-NPU"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "verl v0.9.1(09-20)与窗口内昇腾工作:950 上 W4A8 MXFP 回灌、分离式异步的 HCCL/Mooncake checkpoint-engine",
+      "org": "verl 社区 / 华为昇腾贡献者",
+      "year": "2026-09",
+      "category": "rl-on-ascend",
+      "innovation": "verl v0.9.1 于 2026-09-20 打 tag(距 v0.9.0 有 146 个提交)。窗口内(09-14→09-24)合入的昇腾相关改动:**#7868(09-18)在昇腾 950 上支持 W4A8 MXFP rollout 回灌**,开关 `actor_rollout_ref.rollout.quantization=\"ascend\"`,配套 vllm-ascend#16568,注明 Qwen3-30B 端到端测过;**#7872(09-15)** 新增 NPU 上 separate_async 的 checkpoint-engine 指南(仅中文):后端可选 `nccl`(自动映射为 HCCL,广播、双缓冲,故 NPU 内存为 bucket 的 2 倍,默认 bucket 2048 MB)与 `mooncake`(经 ascend_direct 的 p2p,但 Mooncake 无昇腾预编译包,需从源码构建);#7836(09-14)GLM-5.2 的 NPU GRPO recipe(因导出权重省略 MTP 层而需 strict=False);#7897(09-17)Atlas 950 的 Dockerfile。",
+      "summary": "同期合入 main 但**不在 v0.9.1 内**的:#7959(09-21)用 FULL_DECODE_ONLY 规避 Qwen3.5-35B 上的 ACL graph 资源耗尽;#7973(09-21)rollout 栈升到 vllm 0.29.0 / sglang 0.5.20;#7980(09-23)Qwen3.5-122B-A10B 的 NPU 脚本(diff 把 rollout 由 GEN_TP=16 改为 TP2×DP16×EP32、max_model_len 8192→5120,并加融合 RMSNorm/SwiGLU 与 FULL_DECODE_ONLY;PR 自称'当前序列长度下 Qwen3.5 122B 性能可翻倍',**但未给任何基线数字、测试段为空**);#7981/#8006(09-24)。该版本另有一项破坏性变更与昇腾相关:**移除 mindspeedllm 后端引擎**(#7374)。",
+      "analysis": "判断:verl 是昇腾上做 LLM RL 的主入口,这个版本显示昇腾路径正在换形——独立的 MindSpeed-LLM 引擎被移除,改走 Megatron + MindSpeed-Bridge;这与华为自家 MindSpeed-RL 自 2026-04 起冻结新功能、README 导流 verl 昇腾实践(本站 D32/D33 已记录)是同一件事的两端。950(A5)这一代首次获得一等公民级的 Docker 与量化回灌支持,**分离式异步 RL 在 NPU 上也终于有了书面的权重同步后端选择**。注意把 '122B 翻倍' 记为**自报且无基线**:其 diff 本质是把 rollout 并行方式整体换掉再加图模式,不是单点优化。对 RL-on-NPU 意义:W4A8 MXFP 回灌正是本站 RL 页'量化 rollout 回灌契约'卡片所述形态在昇腾上的首个实例——训练侧保持 BF16、量化在 rollout 侧加载时发生,意味着昇腾**不需要补训练侧 FP4 算子**。",
+      "url": "https://github.com/volcengine/verl/releases/tag/v0.9.1",
+      "tags": [
+        "verl",
+        "Ascend-950",
+        "W4A8",
+        "checkpoint-engine",
+        "HCCL",
+        "Mooncake",
+        "RL-on-NPU"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "外媒报道:DeepSeek 拟在乌兰察布部署 16 万颗昇腾 950DT,且仅用于推理",
+      "org": "DeepSeek / 华为(彭博社报道)",
+      "year": "2026-09",
+      "category": "hardware",
+      "innovation": "彭博社 2026-09-04 独家报道(本站仅能读到二手转述与搜索摘要):DeepSeek 计划在内蒙古乌兰察布约 1GW 级数据中心部署至少 **16 万颗昇腾 950DT**,用途明确为**推理(serving)**,训练仍主要依赖英伟达。按约 1.6 万美元/颗的市面价推算硬件约 25.6 亿美元。受产能与先进内存等元器件制约,950DT 2026 年产量预计仅约 20–30 万颗,订单交付需一年以上,DeepSeek 希望至少部分产能在 2027 年底至 2028 年初投运。截至报道后一周,DeepSeek 与华为均未公开确认。",
+      "summary": "本站把它与同页的'950DT 上云未兑现'并读:16 万颗的单笔订单对 2026 年 20–30 万颗的总产能估计,正好解释了为什么 950DT 迟迟没有公开的云上实例——货优先给了大客户。",
+      "analysis": "判断:这是评估'950DT 到底有没有真货、产能多大'最有信息量的外部信号,但也是对本站核心论点的一条**负面证据**——**'只用于推理、训练仍用英伟达'意味着国产栈至今仍未在最大客户处闭合 RL 回路**(RL 需要训练与 rollout 同域,纯推理部署不构成闭环)。这与本站 D44 的产业结论一致:θ 环的门槛不在算力本身,而在训练侧软硬件栈的成熟度。全部数字均为记者转述的未确认信息,双方均未确认,**不可作为产能或订单的事实引用**;本站按 secondary / 未确认收录,后续以华为或 DeepSeek 的公开确认、或乌兰察布机房的实际投运报道为准。",
+      "url": "https://technode.com/2026/09/07/deepseek-huawei-ascend-950dt-chips-inner-mongolia/",
+      "tags": [
+        "Ascend-950DT",
+        "DeepSeek",
+        "capacity",
+        "inference-only",
+        "unconfirmed",
+        "RL-on-NPU"
+      ],
+      "confidence": "secondary"
+    },
     {
       "title": "华为全联接 2026:昇腾 960 超节点发布(业界首个 NPO 互联),960 芯片提前三个季度",
       "org": "华为",
