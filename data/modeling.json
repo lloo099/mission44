@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-06",
+  "updated": "2026-10-07",
   "items": [
     {
       "title": "Claude Sonnet 5.5:中档位成为前沿战场,以及推理轨迹被设计成不可移植",
@@ -1141,6 +1141,79 @@
         "model-report",
         "open-science",
         "stability"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "车端自回归解码的带宽下界:约束的是每帧吐词数,不是参数量",
+      "org": "本站分析 · D45",
+      "year": 2026,
+      "category": "inference",
+      "innovation": "把「车上能不能跑大模型」从参数量问题重述为 token 预算问题,并给出一组可复算的车规带宽算术",
+      "summary": "batch=1 自回归解码每出一个 token 要把全部权重从 DRAM 读一遍,因此 t = 参数量 × 每参数字节数 / 实际达到的带宽。车规 SoC 受功耗、散热与 ASIL 约束围绕 LPDDR5/5X 设计,带宽卡在 200–280 GB/s:Orin-X 204.8 GB/s(256-bit × 6400 MT/s)、DRIVE AGX Thor 273 GB/s(256-bit × 8533 MT/s,开发者套件口径——NVIDIA 不公布车规量产 SKU 带宽,「Thor-X」是中文市场简称)、地平线 J6P 205 GB/s。取 70% 利用率,在 273 GB/s 上 7B INT8 每次全权重读取 36.6 ms,100 ms 控制周期内只够约 2.7 次。对照:发表过最好的驾驶 VLA 加速结果跑在 1792 GB/s / 600 W 的工作站卡上。",
+      "analysis": "本站在 D45 核验中推翻了自己的一个论证,这张卡记录改法。**原先的写法**是把 40 ms 解码窗口除以「每帧 10 个 token」得到约 0.76B @INT8 的参数上限,再声称出货模型「吻合到 2 倍以内」。三处站不住:① 举例对象错了——理想的 2.2B 是上一代「端到端+VLM」里的 VLM 慢系统,跑在第二颗 Orin-X 上提建议、**不出动作**,实际出货的 MindVLA 车端模型是 3.2B;FIVE-VLA(641M)**根本没上车**,A100 上约 30 fps、T4 上约 4 fps。② 真实出货高出上限约 4 倍而非 2 倍(3.2B 是 4.19 倍,小鹏车端约 3B 是 3.92 倍;DeepRoute 自报车端 40B)。③「每帧 10 token」是不可观测的自由旋钮——同一算术跨度 100 倍(1 tok → 7.64B,100 tok → 0.076B),反解各家出货规模所需预算是 1.79 / 2.55 / 2.61,**旋钮不可观测则该写法不可证伪**。**单位也必须读准:2.7 是全权重读取次数,不是 token 数**——投机解码(非自回归扩散草稿器)、多 token 预测与 MoE 都能让一次读取产出多个 token,MoE 更让带宽代价随**激活**参数增长;FlashDrive 的加速正来自 8-token 块扩散投机草稿,约 10 个被接受的 token 只花约 1–2 次读取。70% 也是假设:可查端点从 llama.cpp 在 Jetson AGX Orin 上约 1/3 roofline 到 W4A16 Marlin 路径约 90%,按 33–90% 算是 28–78 ms。**留下的、更强的结论**:车规 DRAM 预算上每帧生成冗长自然语言负担不起,而厂商的解法一致地不是压小模型,而是用小词表、投机推理、token 并行解码与 MoE 把「每帧吐词」从回路里工程掉(小鹏拆语言转译层,FIVE-VLA 绕开文本生成,理想明写「保证模型规模增长的同时不降低端侧推理效率」)。**参数上限没有生效,token 预算生效了。** 对本站主线:这是 D27 低比特那条线在车端的落点,也说明 TOPS 对此几乎不相关——盈亏平衡算术强度 3663 ops/byte 对 GEMV 的 2,解码只用掉标称算力的 0.055%。",
+      "url": "https://github.com/NVlabs/alpamayo-recipes",
+      "tags": [
+        "autonomous-driving",
+        "on-device-inference",
+        "memory-bandwidth",
+        "quantization",
+        "speculative-decoding",
+        "correction"
+      ],
+      "confidence": "provisional"
+    },
+    {
+      "title": "驾驶闭环榜的归因陷阱:同架构换专家数据 +9.47 DS,是语言/非语言差距的两倍",
+      "org": "autonomousvision / Thinklab-SJTU · D45",
+      "year": 2026,
+      "category": "trend",
+      "innovation": "用榜单自身的一组同架构对照,证明「非语言策略领先 VLA」这个排序无法归因到架构",
+      "summary": "本站直读 autonomousvision/Bench2Drive-Leaderboard(自述更新于 2026-09-24,108 条非特权 + 3 条特权):榜首 BridgeDrive(LEAD)96.34 DS、TFv6 95.28 / 86.81,都不是语言模型;名称可辨识为 VLA 的最高条目 LinkVLA 91.01 / 74.55、FIVE-VLA 90.95 / 77.27、BLUE 90.58 / 76.18,差距 4.3–5.4 分。但榜页自己写明「本榜比较的是**整个方法**的最终表现,**包括数据获取方式**,而不只是架构」;而 BridgeDrive 在同一页上出现两次——**同一篇论文、同一个架构,86.87 与 96.34,差别只在专家与数据集**。",
+      "analysis": "这是 D30/D43 那套等预算纪律在自动驾驶领域的完整重演,而且证据比多数 LLM 榜更干净:**单靠数据获取方式就带来 +9.47 DS 的摆动,接近语言/非语言那个 4.3–5.4 分差距的两倍**,而榜首两条都依赖 LEAD 数据、最好的 VLA 条目都不依赖。所以那个差距至少同样可以由「谁用了最新的特权专家」解释,不能当作语言的架构性代价。另外三条引用纪律:① 这个榜**不独立于它的头部参赛者**——维护方 autonomousvision / 图宾根组同时是 TFv6、LEAD、TF++ 与 SimLingo 的作者方,且**每一行都是论文作者自报**(维护者自己写明「结果为自报,从各自论文抄录」);② 榜内有自相矛盾处——同仓库 main.tex 把 BridgeDrive(LEAD)的 SR 记作 86.81(与 TFv6 相同,像复制错误),与 README 的 89.25 不一致,另有 MemoryDrivoR 37.4 对 34.7、UniDriveVLA 78.73 对 78.37;③ 语言/非语言这个切分是**读者的编辑标注,榜上没有这一列**(只分特权与非特权),按名称标注会漏掉 VLADriver-RAG 89.12、AlignDrive 89.07、GraphPilot 88.89 等语言条件化候选——**但它们也都没突破约 91,所以天花板的结论仍然成立**。本站的收窄结论:至今没有任何闭环榜首是语言模型、最好的语言条目也没突破约 91,但这个差距的归因被数据获取方式严重混淆,**因此只能说语言在驾驶闭环上尚未被证明能买到驾驶能力,不能说它有害**。",
+      "url": "https://github.com/autonomousvision/Bench2Drive-Leaderboard",
+      "tags": [
+        "autonomous-driving",
+        "benchmark-methodology",
+        "equal-budget",
+        "self-reported",
+        "VLA"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "SimLingo 不是受控消融:唯一同权重的语言开关方向为正但不显著",
+      "org": "Wayve / 图宾根大学 · D45",
+      "year": 2026,
+      "category": "trend",
+      "innovation": "把被广泛引用为「语言无用」的那组数字还原成作者自己的定性——持平,而非增益或损失",
+      "summary": "常被引作证据的一对数字经核验全部对上(论文表 2,专家列 PDM-Lite):SimLingo-Base / CarLLaVA(纯视觉,较小)85.94 DS / 66.82 SR(**单次运行,无误差棒**),完整 SimLingo 85.07 ± 0.95 / 67.27 ± 2.11,差 −0.87 DS。但论文附录 B.3 列出基线与完整版之间**至少四处同时改动**:epoch 30 对 14;编码器 CLIP-ViT 对 InternViT-300M-448px;**语言解码器是 50M 从零训练的 LLaMA 架构 transformer,对 InternVL2-1B 的预训练 Qwen2-0.5B-Instruct 加 LoRA**(约 20 倍容量差 + 有无语言预训练);损失 L2 改 SmoothL1(原因是加入 Action Dreaming 数据后训练不稳,故「同一数据」也不成立)。作者并明说没在新设置下重跑基线。",
+      "analysis": "本站在 D45 中据此更正了自己的定性(原稿小节标题是「接近零」)。关键在于**论文里唯一真正受控的那个语言开关方向与通行叙述相反**:表 10(附录 C.3,同一组权重、只切换推理模式、3 个种子)——开思维链 85.07 ± 0.95 / 67.27 ± 2.11,关掉 84.41 ± 1.76 / 64.84 ± 2.42,即**开思维链 +0.66 DS、+2.43 SR**;论文原文是「我们看到把解说任务当作思维链时有小幅提升,因此将其设为默认模式;不过没有它性能也不会退化太多」——**只引后半句就会把方向引反**,而局限性一节的措辞最准:思维链「尚未显示出统计显著的驾驶性能提升」。基线那一行既然没有方差估计,−0.87 甚至不能称为「落在噪声内」,它是**无法被度量**。诚实的定性是作者自己写在表 2 图注里的那一个:「SimLingo 能够在纳入若干语言相关能力的同时,**保持与纯驾驶模型 SimLingo-BASE 相同的驾驶性能**」——持平。两处标签更正:「纯视觉」指只用相机感知、**两版都是**;基线是「无语言能力」不是「无语言模型」(它有 50M 的 LLaMA 架构解码器)。一处资历归属:CARLA Leaderboard 2.0 挑战赛成绩属于**无语言那条臂**(表 1 脚注:从 CarLLaVA 更名为 SimLingo-BASE),完整版从未在官方榜上评测过,而基线在官方榜上的 DS 是 6.25 / 6.87,与 Bench2Drive 的 85.94 差两个数量级,论文明确警告不可比。**这张卡的方法学价值:领域里最常被当作「受控消融」的那一组对照,其实同时动了六七个变量。**",
+      "url": "https://github.com/RenzKa/simlingo",
+      "tags": [
+        "autonomous-driving",
+        "VLA",
+        "ablation-discipline",
+        "benchmark-methodology",
+        "correction"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "开环指标可以空手刷:AD-MLP 不接任何传感器拿 nuScenes SOTA、闭环成功率 0.00%",
+      "org": "百度 / NVIDIA / autonomousvision · D45",
+      "year": 2026,
+      "category": "trend",
+      "innovation": "把「盲基线」从批评升级为基准设计的制度化检查项(NAVSIM 把它写进 devkit 并自定性为上界)",
+      "summary": "AD-MLP 只喂自车状态(历史轨迹、速度、加速度、高层指令),**不接摄像头、不接激光雷达、没有任何感知**,在 nuScenes 开环规划上是 SOTA:平均 L2 误差 0.29 m,对 VAD-Base 0.37、UniAD 1.03(2s/3s 分项 0.26/0.41 为全表最优);放进闭环则 Driving Score 18.05、**Success Rate 0.00%**,除交通标志 4.35 外每项多能力子分都是 0.00。机制由 BEV-Planner(CVPR'24)给出:**nuScenes 里 73.9% 是直线行驶**。NAVSIM 的 docs/agents.md 原文把 EgoStatusMLPAgent 定性为「**盲基线**,忽略所有感知环境的传感器……**充当一个性能上界,即仅靠外推自车的运动学状态所能达到的水平**」,它在 navtest 上得 65.6 PDMS,人类回放 94.8、匀速 21.6。",
+      "analysis": "三件事值得记住。① **开环 L2 与闭环能力在这一对上是反相关的**,不只是弱相关;两家基准维护者现已白纸黑字:Bench2Drive 的 README 写「作者应当停止报告 nuScenes 开环规划结果,审稿人不应当索要」,carla_garage 写「如果你在 2025 年评审一篇仅凭 nuScenes 规划结果立论的论文,我们请你拒稿」。② **人类成绩的约 70% 是闭着眼睛能拿到的**(65.6 / 94.8),感知与推理一共只在 65.6 → 约 90 这一段里;而当前 navtest SOTA 不分架构都挤在 88–91(ResAD 用 ResNet-34、完全不带语言,88.8,换 V2-99 到 90.6;DAP 用 120M 参数的离散 token 规划器,90.0)——**基准已饱和,且不区分语言与非语言**。③ 驾驶 VQA 那侧塌得更彻底:DriveBench(ICCV'25)里 GPT-4o 的 perception 35.37(给图)对 36.48(**不给图**)、behavior 45.40 对 50.03(**不给图反而更高**)、planning 75.75 对 73.21;作者结论是模型在「依据通用知识或文本线索生成看似合理的回答,而非真正的视觉接地」;人类评分者在干净图的感知任务上只拿 47.67,**这套基准自己的天花板都没标定好**。AD-MLP 的作者把这件事说得比任何批评都狠——README 原文承认「**它只是一个无法在真实世界中工作的、不切实际的玩具**」。**它从来不是一个在吹的工作,它是一份诊断报告,而领域花了两年才开始照着它改评测。** 这是 D30 评测方法学最干净的一个跨领域例证。",
+      "url": "https://github.com/E2E-AD/AD-MLP",
+      "tags": [
+        "autonomous-driving",
+        "benchmark-methodology",
+        "blind-baseline",
+        "evaluation",
+        "contamination"
       ],
       "confidence": "confirmed"
     }

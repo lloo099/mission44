@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-06",
+  "updated": "2026-10-07",
   "items": [
     {
       "title": "训推失配修正跨框架落地:verl 合入 Score Centering,与 slime、SkyRL 的 support replay 形成同一答案",
@@ -1725,6 +1725,63 @@
         "RLHF"
       ],
       "confidence": "confirmed"
+    },
+    {
+      "title": "驾驶 RL 的奖励接地:可验证的那个奖励是「到人类日志轨迹的距离」,而 RL 不训练出控制量的那个头",
+      "org": "NVIDIA(NVlabs/alpamayo-recipes)· D45",
+      "year": 2026,
+      "category": "algorithm",
+      "innovation": "一手配方显示驾驶 RL 已完全复用 LLM 的 RL 基础设施,但奖励退化为模仿、且绕过了流匹配动作专家头",
+      "summary": "本站直读 NVlabs/alpamayo-recipes:算法是 GRPO(直接引用 DeepSeekMath, arXiv:2402.03300),Cosmos-RL 把训练的策略副本(FSDP)与生成的 rollout 副本(vLLM 引擎)分开、由控制器派发 rollout 与同步权重。训练 Alpamayo 1.5 实际用的集群:**64 策略副本 × 每副本 8 卡 = 512 张策略卡,外加 128 张 rollout 卡,合计 640 卡 / 80 节点**,全局批 64 × 40 = 2560,n_generation=12,lr 2e-6,每 5 步同步权重。奖励两项:**ADE(预测与真值 XY 轨迹的平均位移误差)+ 舒适度**(加速度/加加速度/横摆率落在舒适界内的时间步占比),ADE 超阈值(3.0 m)则奖励落到 −1。本地演示:奖励 −0.28 → −0.21,轨迹 L2 1.66 → 1.34。",
+      "analysis": "**这张表与本站 D33 讲 verl 的调度图是同一个形状——驾驶的 RL 基础设施已经完全是 LLM 的 RL 基础设施。**但奖励侧落在 D43 第 4 节那张「奖励接地四档表」的**最弱一档**:所谓验证器就是人类司机被记录下来的那个未来,它只在 SFT 模型已能产出的样本里重排序,**无法发现任何没有人类开过的机动,也没有任何反事实伤害的概念**。核验补了三处精确化:① 本站原先说「推理奖励并未释出」是**错的**——NVIDIA 在当前 main 上确实发布了 rewards/aggregated_reward_with_reasoning.py(第二道闸门 reasoning_threshold = −0.4)、配套 TOML(reasoning_weight = 0.3、reasoning_grader_type = \"lingo_judge\")、独立入口脚本与可继承的 BaseReasoningGrader,以及已释出的推理标签;那句「只给轨迹部分打分」**只针对默认演示奖励**。**但这条更正反而确证了要点:实际发布的推理评分器就是 Lingo-Judge——一个微调过的序列分类器,即连「推理对不对」也是一个学出来的模型说的,不是可执行的检查器。** ② 3.0 m 闸门是**硬编码字面量,不是可配置项**(只有权重来自 TOML);而「钳到 −1」不准——按发布权重(traj_l2_weight 0.4、comfort_weight 0.1,舒适度分在 [−1, 0])闸门内区间约 [−0.5, 0],**所以 −1 是落在整个闸门内区间之下的不连续悬崖,不是连续函数的下界**。③ **最该被记住的一条在 FAQ 里**:被 RL 后训练的是 **VLM 骨干**(ReasoningVLA 的离散动作 token 变体),而「**动作专家头(基于流匹配的连续动作)不由这条 RL 管线训练**」,针对它的 RL「将在未来版本中提供」;更硬的物证是**导出的 checkpoint「只包含 VLM 骨干权重」**,拿它走动作专家路径则「动作专家权重将是随机初始化的」。**即:RL 优化的是那个说话的部分,真正输出连续控制量的那个头被绕过去了。** 配方里也没有任何驾驶能力证据。",
+      "url": "https://github.com/NVlabs/alpamayo-recipes",
+      "tags": [
+        "RL",
+        "GRPO",
+        "autonomous-driving",
+        "reward-design",
+        "verifiable-reward",
+        "correction"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "驾驶在线 RL 的现状:只在仿真里、是批式而非流式,且超过最优轮数后闭环分下降",
+      "org": "小米汽车 / 华中科技大学(MindDrive)· D45",
+      "year": 2026,
+      "category": "paper",
+      "innovation": "把 RL 的探索空间限制在有限离散的语言化 meta-action 上,使驾驶策略的在线探索变得可行",
+      "summary": "MindDrive(ECCV 2026)是目前最好的驾驶在线 RL 存在性证明:一个 Qwen 骨干(0.5B / 2.5–3B)配两组 LoRA——决策专家出离散的语言化 meta-action,动作专家把它映射成 VAE+GRU 航点——用 PPO 在真实 CARLA rollout 的稀疏成败回报上优化。**诀窍是让 RL 在有限离散的语言动作集上探索,而不是连续轨迹**,这才让探索可行。成绩 DS 78.04(0.5B)/ 80.59(3B)。核验确认环境是 CARLA 0.9.15、评测是 Bench2Drive 闭环、**仓库里没有任何东西碰到车**。",
+      "analysis": "两处必须收窄。① **「在线」是算子驱动的批式 on-policy PPO,不是持续学习的车**:释出的脚本是两次手动调用——先把 rollout 收集到磁盘并解耦成 dataset_index.pkl,再喂给 PPO 训练;奖励确实来自当前策略在仿真器里的实时 rollout,消融轴也是「rollout 轮数」(默认 2),所以叫在线 RL 站得住,**但它不是流式的**。② 那条广被引用的「性能随 RL 轮数非单调」**不在官方 README 里**,只见于第三方论文笔记(其文本经机器比对与论文原文吻合):rollout 轮数超过 2 时 **DS 从 78.04 掉到 73.69**,作者归因于灾难性遗忘。**所以准确的说法是「超过调好的那个最优点之后更多 RL 会变差」,不是「RL 净有害」。** 放到第三方闭环榜上看,所有 RL-on-VLA 条目都远低于从特权规则专家蒸馏来的朴素模仿方法——IRL-VLA-RL 55.36、DriveDPO 62.02、Raw2Drive 71.36、MindDrive 78.04、AutoVLA 78.84,对 TFv6 95.28 与 BridgeDrive 96.34。更刺的一条:**Orion-Lite 在推理时把 LLM 和文本提示删掉**、只把教师的规划 token 表示蒸馏进一个轻量 transformer,得 80.57,**高于 ORION-7B 的 77.74**。对本站主线:MindDrive 的离散动作集设计是**可迁移的**——它说明让 RL 在一个小而离散的语义动作空间上探索,比直接在连续控制量上做 RL 更现实,这与 D43 里「把搜索压到可验证的那一层」是同一个思路。",
+      "url": "https://github.com/xiaomi-mlab/MindDrive",
+      "tags": [
+        "RL",
+        "PPO",
+        "autonomous-driving",
+        "VLA",
+        "closed-loop",
+        "catastrophic-forgetting"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "世界模型当评测器缺的那个数:仿真与真实的排序相关性在驾驶领域无处可查",
+      "org": "本站分析 · D45",
+      "year": 2026,
+      "category": "trend",
+      "innovation": "指出使「在世界模型里做闭环 RL」可定价的唯一关键量,以及它在相邻领域的实测跨度",
+      "summary": "世界模型的三种用法(闭环仿真、在线 RL 环境、数据合成)被普遍混为一谈。规格最完整的是小鹏 X-World(WAN 2.2 5B DiT、3D 因果 VAE、七相机动作条件生成、adaLN-Zero 注入速度/曲率/俯仰、两阶段蒸馏到 4 步去噪配流式 KV cache),小鹏称其已进入闭环仿真、在线 RL 与数据合成的生产流程,但论文给的是**定性演示**——24 秒多相机 rollout 不崩——**没有公开基准表、没有可复现协议、没有代码、没有权重、没有数据**。本站能读到的第三方说明对 Wayve GAIA 线的评价是:其闭环策略改进「**在演讲里被宣称,没有在公开论文里被测量**」。**而让学习出来的仿真器可用作评测器的那个量——仿真与真实的排序相关性——在驾驶领域无处可查。**",
+      "analysis": "在机器人领域这个量被发表过,结果是**从 ρ=0.40(SIMPLER 评 2026 年的 VLA)、ρ=0.61(GigaWorld)到 r=0.94–0.99(WorldEval、RoboWorld)**——同一类技术,在不同实现上既可能几乎无预测力,也可能近乎完美。**所以这个方法不自带可靠性保证**,而在驾驶上该数一次都没被公布过,于是「在世界模型里做闭环 RL」的所有增益**目前都无法被定价**。这个缺口有一个直接的失效后果,hustvl/RAD 的三阶段框架图把它画了出来:第三阶段的闭环是 State → AD Policy → Action → Pose → **3DGS** → Reward,**奖励来自一个三维高斯泼溅重建出来的环境,而这个环上没有任何一处连回真实世界做校准**。把它与华为那 6 亿公里自家云端仿真并读,问题就很具体:**难例由自家世界引擎扩散模型生成(号称密度为真实世界的 1000 倍)、再对着自家仿真器报告改进,正是本站 D43 反复点名的训练集污染失效模式。** 本站因此把「谁先在驾驶上发表一个可复现的 sim-vs-real rank correlation」列为该方向最值得盯的一个指标——它实际上定义了「世界模型可否用作评测器」的标准,也决定了驾驶 RL 的所有仿真增益能不能被采信。",
+      "url": "https://github.com/hustvl/RAD",
+      "tags": [
+        "world-model",
+        "autonomous-driving",
+        "RL",
+        "evaluation",
+        "sim-to-real",
+        "contamination"
+      ],
+      "confidence": "provisional"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-06",
+  "updated": "2026-10-07",
   "items": [
     {
       "title": "华为开源 openPangu-2.0 的预训练/SFT/后训练 RL 代码,其中 openPangu-2.0-RL 是基于 verl 生态的昇腾原生 RL 框架",
@@ -988,6 +988,44 @@
         "ecosystem",
         "tooling",
         "maturity"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "车端 NPU 与数据中心 NPU 是两个世界:地平线 AOT 定形状栈连非 4D 输入都不支持",
+      "org": "地平线 / D-Robotics · D45",
+      "year": 2026,
+      "category": "software-stack",
+      "innovation": "给出车端部署工具链与 LLM 推理栈在表达力层面的具体不兼容清单",
+      "summary": "本站直读 D-Robotics 工具链文档:流程是 ONNX 进 → hb_mapper / horizon_nn / HMCT → hbdk-cc → 一个**闭源**的 .bin/.hbm,内含「针对特定 BPU 架构的二进制指令与权重数据」,用 --march bayes-e / nash-e 指定。horizon_plugin_pytorch 提供 qint8/qint16 的 PyTorch QAT,但 **int16 仅 BAYES/BAYES_E 及之后支持,且不支持权重的 int16 量化**;ONNX **导出**明确「不支持 onnx run」(仅供可视化);**不支持非 4D 的模型输入**;任何 C×H×W > 8192 的算子回落 CPU;Softmax 经常落在 CPU 上。",
+      "analysis": "**这是一个 AOT、定形状、没有 kernel 语言的世界,与 CANN/AscendC(2025-08-05 开源,给你 kernel 语言、动态形状、KV cache 与集合通信)正好相反。** 单是「不支持非 4D 输入」这一条,就对 LLM 的 [batch, seq] 张量充满敌意——**它不是性能问题,是表达力问题**:一个无法表达序列维度的编译器栈,不可能承接自回归解码,更不可能承接 KV cache 的动态增长。把这条与 D45 第 2 节的带宽算术合起来看,结论是车端与云端的差距有两层:带宽那层是量的(约 1/7 到 1/12),工具链那层是质的。对读者判断「国产栈能不能承接车上的大模型」,这张卡是最直接的负面证据:**车端 NPU 不会自动继承数据中心 NPU 的生态**,即使同为国产、即使同一家客户。需要同时记住的是,这并不是地平线做错了什么——AOT、定形状、闭源二进制恰恰是 ASIL-D 认证友好的设计选择(可静态分析、可界定最坏执行时间),与 D45 第 8 节那堵认证墙是同一套约束的两面。**真正的张力在于:让模型可认证的那些设计,和让模型能自回归生成的那些设计,是互相排斥的。**",
+      "url": "https://developer.d-robotics.cc/",
+      "tags": [
+        "automotive-npu",
+        "toolchain",
+        "quantization",
+        "AOT",
+        "autonomous-driving",
+        "cann"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "昇腾是唯一的真收敛:610 与 910 共享达芬奇核与 CUBE,云侧训练路径就是 CANN + torch_npu",
+      "org": "华为 · D45",
+      "year": 2026,
+      "category": "rl-on-ascend",
+      "innovation": "国产栈在自动驾驶方向上唯一一条「训练与部署同族」的路径",
+      "summary": "昇腾 610(车载,7nm,>50 亿晶体管,10 个达芬奇核、每核 4096 MAC、3D CUBE,200 TOPS INT8 / 100 TFLOPS FP16,位于 MDC 之下)**与数据中心的昇腾 910 线共享达芬奇核与 CUBE 原语**;而昇腾云侧的自动驾驶训练路径**本身就是这套 LLM 栈**——DrivingSDK / mx_driving 构建在 CANN + torch_npu 之上,对 PyTorch 2.1.0 / 2.6.0 / 2.7.1 / 2.8.0,编译 DeformableConv2d、MultiScaleDeformableAttn 这类自动驾驶专用算子。",
+      "analysis": "把这张卡与上一张(地平线 AOT 栈)并读,华为的位置就清楚了:**在所有车端 NPU 里,只有昇腾与它自己的数据中心训练栈同源**,因此只有它有可能把 D33(verl)、D27(低比特)那条主线上的工具直接搬到车端方向。这是本站此后应当盯住的那条线——具体观察点是 **DrivingSDK / mx_driving 与主线 CANN 的版本跟随**,以及昇腾 610 后继与 MDC 的 CANN 版本对齐:若车端与云端的 CANN / 算子栈真正统一,国产栈就拥有自动驾驶方向上唯一一条训练—部署同族的路径。**但规模与安全宣称全部是自报,而且方法上站不住。** 华为的安全头条——「严重碰撞平均安全里程为人类的 3.58 倍或约 4.9 倍」、「避免 447.9 万次碰撞」、累计 100 亿公里(2026-04-19)升至 128 亿——全部厂商自定义。「避免的碰撞」是一个**无法证伪的反事实计数**,无第三方审计;而「重大事故间隔里程」的对比,是拿一支高价、以高速路为主、车龄新、车主富裕的车队去比全中国驾驶员均值——**这是选择偏差,不是等暴露对比**。验证证据则是 **6 亿公里的自家云端仿真**,难例由自家世界引擎扩散模型生成、密度号称真实世界的 1000 倍,**在自己生成的难例上训练、再对着自己的仿真器报告改进**。另需记住评测侧的 harness 敏感性:P3 中国 2026-05 把华为 ADS 4.1 排第一(4.46)、小鹏 VLA 2.0 第二(4.33)、理想 AD Max 第三(4.06),懂车帝的测试却把特斯拉 Model 3/X 排一二、华为系列在其下——**同样的车,不同的 harness,排序反转**;中国至今**没有任何密封的、第三方执行的、留出的驾驶基准**,因此本站不列任何中国厂商间的能力排名。",
+      "url": "https://gitee.com/ascend/DrivingSDK",
+      "tags": [
+        "ascend",
+        "automotive-npu",
+        "cann",
+        "torch-npu",
+        "autonomous-driving",
+        "self-reported"
       ],
       "confidence": "secondary"
     }
