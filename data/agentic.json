@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-06",
+  "updated": "2026-10-12",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -1546,77 +1546,13 @@
       "auto": true
     },
     {
-      "title": "SHARPO: Segment-Level Credit Assignment for Agentic Reinforcement Learning",
-      "org": "Xinchen Du +6",
-      "year": "2026-09",
+      "title": "Rollout-Time Intervention: Unlocking Agentic Reinforcement Learning Beyond Policy Limits",
+      "org": "Chen Xi +11",
+      "year": "2026-10",
       "category": "algorithm",
       "track": "academic",
-      "summary": "Agentic reinforcement learning (RL) trains a large language model (LLM) to act over long, multi-step interactions. However, a single localized error can cause task failure, while trajectory-level rewards provide limited guidance for assigning credit to individual decisions. To ad…",
-      "url": "http://arxiv.org/abs/2610.00838v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "Semifactual Credit-Augmented Policy Optimization",
-      "org": "Junshu Pan +7",
-      "year": "2026-09",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) has improved the reasoning capabilities of large language models (LLMs), yet their predictions remain sensitive to task-irrelevant prompt features. We investigate this sensitivity through semifactual prompt interventions that …",
-      "url": "http://arxiv.org/abs/2609.40360v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "PhantomEnvironments: Training LLM Agents in Fictional Worlds",
-      "org": "Anmol Kabra +7",
-      "year": "2026-09",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Training LLM agents with reinforcement learning (RL) is bottlenecked by environments, which must provide verifiable rewards, support long-horizon interaction, and scale cheaply. Existing approaches rely on costly human-curated data or on LLM-generated environments that risk hallu…",
-      "url": "http://arxiv.org/abs/2609.40221v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "Unlocking the Critic: Reward-Free Policy Optimization for LLM Post-Training",
-      "org": "Hongyang Li +5",
-      "year": "2026-09",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Recent approaches to reinforcement learning (RL) post-training for large language models increasingly remove the critic to reduce training instability and memory overhead. Even where a critic is trained, it is discarded once training ends, although it has learned to predict outco…",
-      "url": "http://arxiv.org/abs/2609.37119v1",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "confirmed",
-      "auto": true
-    },
-    {
-      "title": "Fisher-R1: Training LLM Agents for Reliable Hypothesis Testing",
-      "org": "Jiacheng Miao +3",
-      "year": "2026-08",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Reliable hypothesis testing is the foundation of many empirical scientific claims. Large language model (LLM) agents are increasingly used to automate this process, as they can inspect datasets, generate code, and produce analyses end-to-end. However, we show that they frequently…",
-      "url": "http://arxiv.org/abs/2608.07437v1",
+      "summary": "Reinforcement learning (RL) has emerged as a key paradigm for improving large language model (LLM) agents, enabling stronger reasoning, planning, and tool-use in interactive environments. However, existing agent RL methods remain fundamentally constrained by an on-policy reasonin…",
+      "url": "http://arxiv.org/abs/2610.13438v1",
       "tags": [
         "academic",
         "agentic-rl",
@@ -1626,17 +1562,81 @@
       "auto": true
     },
     {
-      "title": "Trajectory-Relative Hindsight Distillation for Agentic Reinforcement Learning",
-      "org": "Haoyu Zheng +3",
-      "year": "2026-08",
+      "title": "AgentTune: A Unified Training Lifecycle for Tool-Using LLM Agents",
+      "org": "R E Zera Marveen Lyngkhoi +5",
+      "year": "2026-10",
       "category": "algorithm",
       "track": "academic",
-      "summary": "Recent agentic reinforcement learning methods use hindsight to complement sparse outcome rewards. However, a completed rollout can yield many such signals, leaving their appropriate allocation across turns unclear. We introduce TRIAL, a trajectory-relative hindsight distillation …",
-      "url": "http://arxiv.org/abs/2608.07371v1",
+      "summary": "Tool-using agents increasingly require a common substrate for building, training, evaluating, distilling, and maintaining agentic systems, yet existing tooling typically addresses these stages in isolation. We present AgentTune, a source-available Python library that provides a u…",
+      "url": "http://arxiv.org/abs/2610.13335v1",
       "tags": [
         "academic",
         "agentic-rl",
         "agentic-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "AdaC-GRPO: Towards Mastering Long-Horizon Visual Sudoku Puzzles via Adaptive Curriculum Learning",
+      "org": "Sida Li +6",
+      "year": "2026-10",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "While reinforcement learning with verifiable reward (RLVR) enhances reasoning in large language models, its efficacy in long-horizon multimodal tasks remains underexplored. Visual Sudoku puzzles pose a representative challenge, requiring multi-step deductive reasoning over both l…",
+      "url": "http://arxiv.org/abs/2610.13184v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Trajectory-Aware Policy Optimization: Closing the State Distribution Gap in Long-Horizon LLM RL",
+      "org": "Zhicheng Cai +5",
+      "year": "2026-10",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Reinforcement learning (RL) has become a dominant paradigm for enhancing LLMs' reasoning capabilities. Yet long-horizon autoregressive rollouts introduce a fundamental limitation: local policy mismatch can compound into severe state distribution shift over trajectories. Existing …",
+      "url": "http://arxiv.org/abs/2610.13020v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "StoreBench: A Live-Commerce Environment for Evaluating and Training Autonomous Operator Agents",
+      "org": "Daksh Raghuvanshi +2",
+      "year": "2026-10",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Reinforcement learning environments are now a primary lever for improving large language model (LLM) capabilities in post-training, yet most agentic benchmarks remain static: the world moves only when the agent acts, the reward is a terminal verdict, and the pass bar is set arbit…",
+      "url": "http://arxiv.org/abs/2610.10942v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "confirmed",
+      "auto": true
+    },
+    {
+      "title": "Beyond Outcome Rewards: Constructing and Assigning Retrieval Credit for Search Agents",
+      "org": "Wenyu Huang +4",
+      "year": "2026-10",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Search agents enable Large Language Models (LLMs) to iteratively retrieve and use information for complex multi-hop questions. Reinforcement Learning with Verifiable Rewards (RLVR) offers a promising approach for post-training such agents, but its reliance on sparse, outcome-base…",
+      "url": "http://arxiv.org/abs/2610.10179v1",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
       ],
       "confidence": "confirmed",
       "auto": true
