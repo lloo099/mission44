@@ -18,15 +18,15 @@
 
 **③ 真正出控制量的策略。** 在每一个已出货的产品里,这都是**非语言的轨迹头**。特斯拉是"photons in → actions out",网络里没有语言模型;小鹏 VLA 2.0 是视觉→隐式 token→动作;理想把 32B 的 VL 基座蒸馏到 3.2B 的车端模型;华为叫"世界行动模型"而非语言模型;Momenta R6 是一段式端到端加 RL,没有语言阶段。**这一格里没有任何一个条目是在逐帧生成文本。**
 
-![端到端自动驾驶综述的全景分类图:第一行对比经典级联与端到端范式,其下依次为方法分类、评测分类、九大挑战与未来趋势](reads/img/dispatch-45-ad-vla-l4/orig-e2e-taxonomy.jpg)
+![端到端自动驾驶综述的全景分类图:第一行对比经典级联与端到端范式,其下依次为方法分类、评测分类、九大挑战与未来趋势](reads/img/dispatch-45-ad-vla-l4/orig-e2e-taxonomy.webp)
 
 *图 1 · 先把地图摊开。原图出自 [OpenDriveLab/End-to-end-Autonomous-Driving](https://github.com/OpenDriveLab/End-to-end-Autonomous-Driving) 综述仓库,**MIT**。第 1 行是本篇的起点:(a) 经典级联 感知→预测→规划 与 (b) 端到端(梯度可贯通全链路)。注意第 4 行列的九大挑战里,**因果混淆、安全保证、可解释性**三项正是后面第 5、9 节的主题——这份 2023 年的综述已经把今天的卡点点名了,只是当时还没有人用 LLM 去撞它们。*
 
-![LLM 用于自动驾驶的研究分类树:按规划、感知、问答、生成等任务分支,再按模型类型与输入模态细分](reads/img/dispatch-45-ad-vla-l4/orig-llm4ad-taxonomy.png)
+![LLM 用于自动驾驶的研究分类树:按规划、感知、问答、生成等任务分支,再按模型类型与输入模态细分](reads/img/dispatch-45-ad-vla-l4/orig-llm4ad-taxonomy.webp)
 
 *图 2 · 语言被宣称能做的全部事情。原图出自 [Thinklab-SJTU/Awesome-LLM4AD](https://github.com/Thinklab-SJTU/Awesome-LLM4AD),**Apache-2.0**。这张树把整条路线的主张面摊开了,而本篇的读法是**在这张树上划线**:落在"问答、解释、场景生成、数据标注"那些枝上的,基本都成立并且在产业里真实挣钱(第 1 节的 ① 与 ③);落在"规划/控制"那一枝上的,是第 3、4 节要逐条检验、并且目前证据为负的部分。**分类树的广度常被读成能力的广度,这是本领域最常见的一处误读。***
 
-![UniAD 的全栈 transformer 流水线:多相机 BEV 特征依次经 TrackFormer、MapFormer、MotionFormer、OccFormer,最后由 Planner 输出轨迹](reads/img/dispatch-45-ad-vla-l4/orig-uniad-pipeline.png)
+![UniAD 的全栈 transformer 流水线:多相机 BEV 特征依次经 TrackFormer、MapFormer、MotionFormer、OccFormer,最后由 Planner 输出轨迹](reads/img/dispatch-45-ad-vla-l4/orig-uniad-pipeline.webp)
 
 *图 3 · 控制位上坐着的那个东西长什么样。原图出自 [OpenDriveLab/UniAD](https://github.com/OpenDriveLab/UniAD)(CVPR'23 最佳论文),**Apache-2.0**。要看的是**它里面没有语言模型**:多相机 → BEV → 跟踪 / 建图 / 运动预测 / 占据 → Planner,全部是 query 化的 transformer 模块,中间传递的是嵌入与结构化物体,不是词。这张图是第 1 节第 ③ 类的典型形态,也是第 5 节里 Waymo 所说"嵌入 + 结构化物体/路网的混合表示,而非纯端到端,以保持系统可验证"的学术对应物。*
 
@@ -106,11 +106,11 @@ t_token = 参数量 × 每参数字节数 / 实际达到的带宽
 
 更锋利的是 BLUE(EMNLP'26)给出的机制:语言只在一小部分路线上起作用,而在那些路线上它"可能大幅改善,也可能大幅恶化";BLUE 的贡献是一个 **0.11M 参数的门控**,负责在大多数帧**把语言关掉**,换来 2.54 倍提速。另一侧,"Less Language, More Latents"用**不到 5% 的语言标注**拿到 87.98 DS / 70.46% SR;CausalDriveBench 评了 10 个驾驶 VLA 与 3 个通用 VLM,发现**因果问答准确率与轨迹准确率在模型间统计无关**。
 
-![Senna 的 VLM 加端到端双模型总览:左上 VLM 读图与文本输出结构化驾驶语义,交给端到端模型产出规划轨迹](reads/img/dispatch-45-ad-vla-l4/orig-senna-vlm-e2e.png)
+![Senna 的 VLM 加端到端双模型总览:左上 VLM 读图与文本输出结构化驾驶语义,交给端到端模型产出规划轨迹](reads/img/dispatch-45-ad-vla-l4/orig-senna-vlm-e2e.webp)
 
 *图 5 · 语言被安置在哪里。原图出自 [hustvl/Senna](https://github.com/hustvl/Senna),**Apache-2.0**。要看的是**分工线**:Senna-VLM 产出的是结构化驾驶语义(路况、信号灯、弱势道路使用者、运动预测、meta-action 与规划解释),而轨迹由 Senna-E2E 出。这正是第 1 节说的第 ② 类位置——语言当监督接口与可解释性接口,不当控制器。整个领域在收敛到这张图的形状。*
 
-![OpenEMMA 的流水线:多视角图像与历史自车状态送入预训练 VLM,以文本形式输出思维链与未来路径点,再解析成轨迹](reads/img/dispatch-45-ad-vla-l4/orig-openemma-pipeline.png)
+![OpenEMMA 的流水线:多视角图像与历史自车状态送入预训练 VLM,以文本形式输出思维链与未来路径点,再解析成轨迹](reads/img/dispatch-45-ad-vla-l4/orig-openemma-pipeline.webp)
 
 *图 6 · 把语言放到控制位上的那个版本,以及它为什么贵。原图出自 [taco-group/OpenEMMA](https://github.com/taco-group/OpenEMMA),**Apache-2.0**——Waymo EMMA 的开源复现。这是本篇唯一一张"语言真的在出轨迹"的图:坐标以**文本 token** 编码,路径点由 VLM 自回归生成,再解析回数值。它把第 2 节的算术变得具体——**每一个航点都要花掉若干个 token 的解码时间**,而第 8 节要的是这个 token 数有上界。对照第 5 节:Waymo 自己那篇 EMMA 论文是离线评测、无闭环、不接激光雷达与毫米波,推理延迟从未被刻画。*
 
@@ -138,7 +138,7 @@ NAVSIM 作为诚实的开环替代品,把盲基线检查制度化了:其 devkit 
 
 作者的结论是模型在"依据通用知识或文本线索生成看似合理的回答,而非真正的视觉接地"。DriveLM 自家微调的专才在去掉图片后也只从 68.71 掉到 65.24。指标本身还火上浇油:ROUGE-L 常年在 0.2 附近,而 DriveLM 在 ROUGE-L 上赢其它 VLM、在 GPT-score 上输——**微调的增益很大程度是答案模板匹配**。人类评分者在干净图的感知任务上只拿 47.67,说明这套基准自己的天花板都没标定好。
 
-![DriveLM 的 Graph VQA 三联图:左为感知→预测→规划→行为→运动的有向图任务定义,中为问答链样例,右为评测指标](reads/img/dispatch-45-ad-vla-l4/orig-drivelm-graphvqa.jpg)
+![DriveLM 的 Graph VQA 三联图:左为感知→预测→规划→行为→运动的有向图任务定义,中为问答链样例,右为评测指标](reads/img/dispatch-45-ad-vla-l4/orig-drivelm-graphvqa.webp)
 
 *图 7 · 驾驶 VQA 想做的事。原图出自 [OpenDriveLab/DriveLM](https://github.com/OpenDriveLab/DriveLM),**Apache-2.0**。左侧那张有向图(P1 感知 → P2 预测 → P3 规划 → B 行为 → M 运动)是这条路线的核心主张:把驾驶决策拆成可问可答的因果链。本站的保留意见全在右侧——评测用的是 GPT Score 与位移误差,而上面那张表显示**这类问题相当大一部分不看图也能答对**,于是因果链的"因果"二字缺少独立检验。*
 
@@ -191,13 +191,13 @@ Waymo 刻意保留"嵌入 + 结构化物体/路网"的混合表示"而非纯端�
 
 **决定性的负面数据在第三方闭环榜上**:所有 RL-on-VLA 条目都远低于从特权规则专家蒸馏来的朴素模仿方法——IRL-VLA-RL 55.36、DriveDPO 62.02、Raw2Drive 71.36、MindDrive 78.04、AutoVLA 78.84,对 TFv6 95.28 与 BridgeDrive 96.34。更刺的一条:**Orion-Lite 在推理时把 LLM 和文本提示删掉**、只把教师的规划 token 表示蒸馏进一个轻量 transformer,得 80.57,**高于 ORION-7B 的 77.74**。
 
-![RAD 的三阶段训练框架:感知预训练、规划预训练,以及在 3DGS 重建环境里做强化后训练的闭环](reads/img/dispatch-45-ad-vla-l4/orig-rad-rl-framework.png)
+![RAD 的三阶段训练框架:感知预训练、规划预训练,以及在 3DGS 重建环境里做强化后训练的闭环](reads/img/dispatch-45-ad-vla-l4/orig-rad-rl-framework.webp)
 
 *图 9 · 驾驶 RL 后训练长什么样。原图出自 [hustvl/RAD](https://github.com/hustvl/RAD),**MIT**。要看的是第三阶段那个闭环:State → AD Policy → Action → Pose → **3DGS** → Reward。奖励来自一个三维高斯泼溅重建出来的环境——这把本节的核心问题画了出来:**RL 的奖励有多可信,完全取决于那个重建环境有多可信**,而这正是下一段说的、至今无人公布的那个量。*
 
-![DiffusionDrive 的截断扩散策略示意:从锚定的多模态高斯先验出发,仅两步去噪即得到多条候选轨迹并打分](reads/img/dispatch-45-ad-vla-l4/orig-diffusiondrive-trunc.png)
+![DiffusionDrive 的截断扩散策略示意:从锚定的多模态高斯先验出发,仅两步去噪即得到多条候选轨迹并打分](reads/img/dispatch-45-ad-vla-l4/orig-diffusiondrive-trunc.webp)
 
-![DiffusionDrive 的整体流水线:传感器特征经编码后作为条件,截断扩散解码器并行产出多模态轨迹,再由打分头选出最终输出](reads/img/dispatch-45-ad-vla-l4/orig-diffusiondrive-pipeline.png)
+![DiffusionDrive 的整体流水线:传感器特征经编码后作为条件,截断扩散解码器并行产出多模态轨迹,再由打分头选出最终输出](reads/img/dispatch-45-ad-vla-l4/orig-diffusiondrive-pipeline.webp)
 
 *图 10 · 不用语言也能有"多种可能"和"打分"。两图均出自 [hustvl/DiffusionDrive](https://github.com/hustvl/DiffusionDrive)(CVPR'25),**MIT**。常见的一种为语言辩护的说法是:只有语言模型才能表达"有几种选择、各自的理由是什么"。DiffusionDrive 给的反例很干净——**锚定的多模态高斯先验 + 只做两步的截断扩散**,一次前向并行产出多条候选轨迹再打分,**步数固定、与数据无关、可并行**。把它和第 8 节放在一起看最要紧:它在**表达了多模态与择优**的同时,**保住了最坏执行时间有界**这个认证前提;而自回归生成要同样的表达力就得交出这个前提。*
 
@@ -205,7 +205,7 @@ Waymo 刻意保留"嵌入 + 结构化物体/路网"的混合表示"而非纯端�
 
 **而让学习出来的仿真器可用作评测器的那个量——仿真与真实的排序相关性——在驾驶领域无处可查。** 在机器人领域它被发表过,结果是:从 ρ=0.40(SIMPLER 评 2026 年的 VLA)、ρ=0.61(GigaWorld)到 r=0.94–0.99(WorldEval、RoboWorld)——**这个方法不自带可靠性保证**。
 
-![OpenDV 数据集的样例网格:来自全球多个国家、多种天气与光照条件的第一视角行车视频截图阵列](reads/img/dispatch-45-ad-vla-l4/orig-opendv-examples.png)
+![OpenDV 数据集的样例网格:来自全球多个国家、多种天气与光照条件的第一视角行车视频截图阵列](reads/img/dispatch-45-ad-vla-l4/orig-opendv-examples.webp)
 
 *图 11 · 语言与生成式模型今天真正挣到钱的地方。原图出自 [OpenDriveLab/DriveAGI](https://github.com/OpenDriveLab/DriveAGI),**Apache-2.0**——OpenDV 数据集的样例。这是第 1 节第 ① 类的物证:**规模与多样性来自互联网视频,而把这些原始视频变成可训练监督的,恰恰是 VLM**(字幕、场景属性、难例标注)。本站对语言路线的判断因此是分裂的而非否定的——**在这张图所在的离线环节,语言是当前最有效的工具;在控制环节,证据为负**。把这两件事合起来说成"大模型要上车开车",是本篇想拆掉的那个混淆。*
 

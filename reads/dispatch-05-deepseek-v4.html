@@ -110,7 +110,7 @@
 <p>V4 不再用单一注意力，而是<strong>逐层交替</strong>两种压缩注意力，各管一段职责。<strong>① CSA — Compressed Sparse Attention（压缩稀疏）</strong>：沿序列维把 KV 压缩 4×，用 softmax-gated pooling（带可学习位置偏置）把相邻 KV 聚合成块；然后做稀疏选择——query 只看选中的压缩块；角色是在"还算精细"的粒度上保留检索 / 局部细节。<strong>② HCA — Heavily Compressed Attention（重压缩）</strong>：把 KV 压缩 128×，极度浓缩成很少的块；完全放弃稀疏选择，每个 query 稠密地看所有压缩块；角色是用极低成本提供"全局视野"——块数已少至可全部读取。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-05-deepseek-v4/fig-1.svg" alt="流程图：输入隐藏状态进入逐层交替堆叠——第 1 层 CSA 压 4 倍加选块管细节，第 2 层 HCA 压 128 倍加全看管全局，第 3 层 CSA，第 4 层 HCA，继续交替——到输出表示；注释：一层精选 CSA 提供细节与选择性，一层通览 HCA 提供低成本全局上下文，兼顾成本与长程信息">
+  <img class="diagram" src="img/dispatch-05-deepseek-v4/fig-1.svg" alt="流程图：输入隐藏状态进入逐层交替堆叠——第 1 层 CSA 压 4 倍加选块管细节，第 2 层 HCA 压 128 倍加全看管全局，第 3 层 CSA，第 4 层 HCA，继续交替——到输出表示；注释：一层精选 CSA 提供细节与选择性，一层通览 HCA 提供低成本全局上下文，兼顾成本与长程信息" loading="lazy" decoding="async" width="490" height="960">
   <figcaption><span class="fnum">图 1</span>V4 的逐层交替堆叠：CSA（压 4× + 选块，管细节）与 HCA（压 128× + 全看，管全局）在层维度上交替出现；虚线注释概括整体效果——一层精选、一层通览。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -148,7 +148,7 @@
 <p><strong>CSA = 精选层</strong>——压 4× 块表示仍相对精细，token 级局部结构和可检索信息基本得以保留，能承担"近处细节"和"精确检索"这类对精度敏感的任务；但 4× 压缩后块数依然庞大（1M token 压 4× 仍有约 25 万块量级），query 无法全量读取，所以 CSA <strong>必须</strong>配 top-k 稀疏选择，角色是"看清近处 + 选中的关键远处块"。压缩用 softmax-gated pooling 并带可学习位置偏置，聚合并非简单平均、保留一定块内结构。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-05-deepseek-v4/fig-2.svg" alt="流程图：完整 KV 序列经 softmax-gated pooling（带可学习位置偏置，聚合相邻 KV 成块）得压缩块（压 4 倍，较精细粒度保留检索与局部细节），再稀疏选择 top-k 压缩块，query 只看选中的块；虚线指向未选中块被跳过、省算力">
+  <img class="diagram" src="img/dispatch-05-deepseek-v4/fig-2.svg" alt="流程图：完整 KV 序列经 softmax-gated pooling（带可学习位置偏置，聚合相邻 KV 成块）得压缩块（压 4 倍，较精细粒度保留检索与局部细节），再稀疏选择 top-k 压缩块，query 只看选中的块；虚线指向未选中块被跳过、省算力" loading="lazy" decoding="async" width="1385" height="174">
   <figcaption><span class="fnum">图 2</span>CSA 数据流：完整 KV → softmax-gated pooling（带可学习位置偏置）→ 压 4× 的压缩块 → top-k 稀疏选择 → query 只看选中块；虚线分支表示未选中块被跳过。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -171,7 +171,7 @@
 <p><strong>HCA = 通览层</strong>——压 128× 后块数极少（1M token 只剩几千块量级），少到 query 可以<strong>稠密全量读取</strong>而无需再选，代价是单块浓缩了上百个 token、token 级细节几乎全部丢失，块表示只剩"该段大致内容"的粗粒度语义。但这恰是全局视野所需：无需从 90 万 token 之外精确取回某个变量名（该任务由 CSA 承担），只需知道远处存在一大块相关上下文，HCA 用极低成本为每个 query 提供覆盖全序列的概览。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-05-deepseek-v4/fig-3.svg" alt="流程图：完整 KV 序列经重压缩 128 倍浓缩成极少的块，得到很少的压缩块，放弃稀疏选择、query 稠密看所有压缩块，得到极低成本全局视野、块数已少至可全部读取">
+  <img class="diagram" src="img/dispatch-05-deepseek-v4/fig-3.svg" alt="流程图：完整 KV 序列经重压缩 128 倍浓缩成极少的块，得到很少的压缩块，放弃稀疏选择、query 稠密看所有压缩块，得到极低成本全局视野、块数已少至可全部读取" loading="lazy" decoding="async" width="1159" height="94">
   <figcaption><span class="fnum">图 3</span>HCA 数据流：完整 KV → 重压缩 128× → 很少的压缩块 → 放弃选择、稠密全看 → 极低成本全局视野。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -220,7 +220,7 @@
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-05-deepseek-v4/fig-4.svg" alt="树状图：长上下文注意力两条路线——DeepSeek-V4 压缩派：压缩 KV 4 倍与 128 倍，CSA 选块加 HCA 全看，双机制交替高压缩比，内存最省，重写算子移植成本高；MiniMax MSA 真实 KV 选块派：不压保留真实 KV，Index 分支选 top-k 块，单机制复用标准 kernel，务实易加速，易移植">
+  <img class="diagram" src="img/dispatch-05-deepseek-v4/fig-4.svg" alt="树状图：长上下文注意力两条路线——DeepSeek-V4 压缩派：压缩 KV 4 倍与 128 倍，CSA 选块加 HCA 全看，双机制交替高压缩比，内存最省，重写算子移植成本高；MiniMax MSA 真实 KV 选块派：不压保留真实 KV，Index 分支选 top-k 块，单机制复用标准 kernel，务实易加速，易移植" loading="lazy" decoding="async" width="2690" height="244">
   <figcaption><span class="fnum">图 4</span>两条路线各自的五步链：V4 压缩派（压缩 → 选块 + 全看 → 双机制交替 → 内存最省 → 重写算子）与 MSA 选块派（不压 → Index 选块 → 单机制 → 易加速 → 易移植）。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -256,7 +256,7 @@
 <p>V4 的后训练是<strong>两阶段</strong>：① <strong>独立培养领域专家</strong>——对不同领域分别做 SFT + RL（GRPO），分别强化各自领域能力；② <strong>统一合并</strong>——用 on-policy 蒸馏把这些各有所长的专家整合进一个模型，跨领域能力收敛到单体。配合 32T+ token、多教师蒸馏的数据管线。这套"分别训练—合并"思路，本身就是一个值得在昇腾上复现的 RL + 蒸馏流程。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-05-deepseek-v4/fig-5.svg" alt="流程图：预训练基座模型分别进入领域 A、B、C 的 SFT 加 RL GRPO，得到专家 A、B、C 各自强化专长；三个专家汇入阶段二统一合并（on-policy 蒸馏整合进一个模型），得到单体模型跨领域能力收敛；32T+ token 多教师蒸馏数据管线以虚线支撑合并">
+  <img class="diagram" src="img/dispatch-05-deepseek-v4/fig-5.svg" alt="流程图：预训练基座模型分别进入领域 A、B、C 的 SFT 加 RL GRPO，得到专家 A、B、C 各自强化专长；三个专家汇入阶段二统一合并（on-policy 蒸馏整合进一个模型），得到单体模型跨领域能力收敛；32T+ token 多教师蒸馏数据管线以虚线支撑合并" loading="lazy" decoding="async" width="1200" height="632">
   <figcaption><span class="fnum">图 5</span>两阶段后训练：基座 → 三条并行的领域通道（各自 SFT + RL GRPO）→ 三个领域专家 → on-policy 蒸馏合并 → 单体模型；虚线为 32T+ token 多教师蒸馏数据管线的支撑。<span class="chip c-inf">推断</span> 本站图，由原文第 5 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

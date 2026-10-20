@@ -82,7 +82,7 @@
 <p><span class="chip c-vr">自报</span>【已按报道证实】V4-Pro 为 1.6T MoE / 约 49B active，V4-Flash 为 284B / 约 13B active，两者均 1M 上下文、MIT 开放权重，约于 2026-04-24 发布。Stage 1 / Stage 2 的存在与结构已按报道证实；原文对"为什么"的机理解释属常识性原理 + 报道动机，具体内部权衡为 provisional。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-16-deepseek-v4-agent/fig-1.svg" alt="两阶段后训练总览：领域数据经 Stage1 独立培养 10+ 领域专家（数学、竞赛编程、agent 工具使用、指令遵循及其余专家），再经 Stage2 on-policy 蒸馏 OPD 统一合并为出货模型 V4-Pro / V4-Flash">
+  <img class="diagram" src="img/dispatch-16-deepseek-v4-agent/fig-1.svg" alt="两阶段后训练总览：领域数据经 Stage1 独立培养 10+ 领域专家（数学、竞赛编程、agent 工具使用、指令遵循及其余专家），再经 Stage2 on-policy 蒸馏 OPD 统一合并为出货模型 V4-Pro / V4-Flash" loading="lazy" decoding="async" width="1121" height="582">
   <figcaption><span class="fnum">图 1</span>两阶段后训练总览——先独立培养十余领域专家，再 on-policy 蒸馏合并成出货模型（原文图 A）。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -118,7 +118,7 @@
 <p>Stage 1 的解法是<strong>将每个领域独立训练</strong>：每个专家独享全部容量用于自身领域，不与其他领域竞争参数。<span class="chip c-vr">自报</span>【已按报道证实】agent / 工具专家在<strong>真实工具环境</strong>里隔离 RL（no cross-domain capacity competition）——这对 agent 尤其关键，工具调用必须在真实环境里试错，才能学到何时调用、如何解读结果、失败后如何重试。可验证任务用 <strong>verifiable rewards / 领域奖励模型</strong> + GRPO，信号干净；难验证任务【provisional 二手】据报道引入 <strong>Generative Reward Model（GRM）</strong>，让 actor 对自身输出评分，缓解缺乏现成验证器的问题。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-16-deepseek-v4-agent/fig-2.svg" alt="Stage1 单专家训练：领域数据经 SFT 领域监督微调、GRPO 强化学习（与领域奖励模型 / 可验证奖励循环）得到领域专家；agent / 工具专家对真实工具环境做 RL、隔离训练无跨域容量竞争">
+  <img class="diagram" src="img/dispatch-16-deepseek-v4-agent/fig-2.svg" alt="Stage1 单专家训练：领域数据经 SFT 领域监督微调、GRPO 强化学习（与领域奖励模型 / 可验证奖励循环）得到领域专家；agent / 工具专家对真实工具环境做 RL、隔离训练无跨域容量竞争" loading="lazy" decoding="async" width="527" height="382">
   <figcaption><span class="fnum">图 2</span>Stage 1 单专家训练——领域数据 → SFT → GRPO RL → 专家；agent 专家对真实工具环境做 RL（原文图 B）。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -143,7 +143,7 @@
 <p><span class="chip c-vr">自报</span>【已按报道证实（机制）】OPD 让<strong>学生生成自己的 on-policy rollout</strong>，再从<strong>教师（专家）对这些学生自己输出的反馈</strong>中学习——相当于"RL 的 on-policy 探索"+"蒸馏的密集 token 级监督"的结合体：学生像 RL 一样自行探索轨迹，但每步获得的不是稀疏奖励，而是教师给出的<strong>密集分布级</strong>纠正，稳定且信息量大，特别适合长程 agent 轨迹。【provisional 二手】据报道 OPD 用<strong>全词表上的 reverse-KL</strong> 稳定合并：reverse-KL 是 mode-seeking（寻众数）的，促使学生在每种情境下<strong>锁定一个专家的正确做法</strong>而非把多专家平均成模糊混合，直接缓解风格混杂的问题；全词表对齐（而非只在采样到的 token）给出更密集、低方差的梯度。【已按报道证实】它取代的是 V3.2 的<strong>混合 RL 合并（mixed-RL consolidation）</strong>。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-16-deepseek-v4-agent/fig-3.svg" alt="On-policy 蒸馏 OPD 循环：学生模型生成 on-policy rollout，教师即领域专家评估反馈，reverse-KL 全词表对齐（provisional）更新学生模型；V3.2 混合 RL 合并被 OPD 替代；GRM 自评用于难验证任务（provisional）">
+  <img class="diagram" src="img/dispatch-16-deepseek-v4-agent/fig-3.svg" alt="On-policy 蒸馏 OPD 循环：学生模型生成 on-policy rollout，教师即领域专家评估反馈，reverse-KL 全词表对齐（provisional）更新学生模型；V3.2 混合 RL 合并被 OPD 替代；GRM 自评用于难验证任务（provisional）" loading="lazy" decoding="async" width="728" height="558">
   <figcaption><span class="fnum">图 3</span>On-policy 蒸馏 OPD——学生自产 rollout，教师专家给反馈更新学生，替代 V3.2 混合 RL（原文图 C）。图中 reverse-KL 全词表对齐与 GRM 自评两节点均标注 provisional。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -166,7 +166,7 @@
 <p>以下工具机制均为<span class="chip c-vr">自报</span>【已按报道证实】（来自模型卡 / 报道所述）。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-16-deepseek-v4-agent/fig-4.svg" alt="工具调用一轮的时序图：user 发送消息，V4 模型在 thinking 模式推理并生成 DSML XML tool-call（含 strict schema），向工具环境发起调用（string 与 JSON 参数分离），工具返回 observation，V4 跨轮保留 reasoning 后继续回复或进入下一轮">
+  <img class="diagram" src="img/dispatch-16-deepseek-v4-agent/fig-4.svg" alt="工具调用一轮的时序图：user 发送消息，V4 模型在 thinking 模式推理并生成 DSML XML tool-call（含 strict schema），向工具环境发起调用（string 与 JSON 参数分离），工具返回 observation，V4 跨轮保留 reasoning 后继续回复或进入下一轮" loading="lazy" decoding="async" width="802" height="539">
   <figcaption><span class="fnum">图 4</span>工具调用一轮——user → V4 思考与 XML 工具调用 → 工具执行 → observation → 跨轮保留 reasoning（原文图 D）。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -234,7 +234,7 @@
 <p><span class="chip c-vr">自报</span>【已按报道证实】DeepSeek 目前没有第一方的 agent harness 产品。它把 agent 拆成 <strong>Model + Harness = Agent</strong>，并正在招聘一个 "Harness team"。即 V4 当前的定位是"作为模型 drop-in 进第三方 harness"，而非自带 agent 应用。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-16-deepseek-v4-agent/fig-5.svg" alt="现状：Model（V4-Pro 主 / V4-Flash 子代理）与第三方 Harness（Claude Code / OpenCode）经 Anthropic 兼容 API 组成 Agent；自家 Harness 团队招聘中、尚无一方产品，以虚线标注规划中">
+  <img class="diagram" src="img/dispatch-16-deepseek-v4-agent/fig-5.svg" alt="现状：Model（V4-Pro 主 / V4-Flash 子代理）与第三方 Harness（Claude Code / OpenCode）经 Anthropic 兼容 API 组成 Agent；自家 Harness 团队招聘中、尚无一方产品，以虚线标注规划中" loading="lazy" decoding="async" width="991" height="259">
   <figcaption><span class="fnum">图 5</span>现状——V4 模型 + 第三方 Harness 经 Anthropic 兼容 API 组成 Agent；自家 harness 在招聘中（原文图 E）。<span class="chip c-inf">推断</span> 本站图，由原文第 5 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

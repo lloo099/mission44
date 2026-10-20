@@ -22,9 +22,12 @@ const metaDesc = document.querySelector('meta[name="description"]');
 const DEFAULT_DESC = metaDesc ? metaDesc.content : "";
 
 /* ---------- data loading ---------- */
+/* files the bots rewrite on a schedule are always revalidated; the hand-curated ones use the
+   normal HTTP cache (GitHub Pages: max-age=600), which saves a round trip per file per visit */
+const ALWAYS_FRESH = new Set([DATA_SOURCES.live, DATA_SOURCES.agentic]);
 async function loadJSON(url) {
   try {
-    const res = await fetch(url, { cache: "no-cache" });
+    const res = await fetch(url, ALWAYS_FRESH.has(url) ? { cache: "no-cache" } : {});
     if (!res.ok) throw new Error(res.status);
     return await res.json();
   } catch (e) {
@@ -102,7 +105,7 @@ function wireTheme() {
   });
 }
 
-/* render any .mermaid diagrams inside a scope once mermaid.js is ready (it loads async).
+/* render any .mermaid diagrams inside a scope once mermaid.js is ready (loaded on first use).
    The vendor bundle is ~3.5MB: on slow networks it can take well over 5s, so we wait
    patiently (with a visible "loading" placeholder), fall back only on real script failure
    or a long timeout, and recover automatically via the 'mermaid-ready' event. */
@@ -121,6 +124,7 @@ function renderMermaidIn(scope, tries) {
   nodes.forEach((n) => { if (!n.dataset.src) n.dataset.src = n.textContent; }); // keep the diagram source for re-render / fallback
   if (!window.mermaid) {
     const t = tries || 0;
+    if (window.__loadMermaid) window.__loadMermaid();                  // fetch the bundle on first use
     if (window.__mermaidFailed) { mermaidFallback(nodes); return; }   // script 404/failed — no point waiting
     if (t === 3) nodes.forEach((n) => {                                // after ~1s, swap raw source for a friendly placeholder
       n.classList.add("mermaid-waiting");
@@ -220,7 +224,7 @@ async function wireBlog() {
     if (!mapEl.open || mapLoaded) return;
     mapLoaded = true;
     try {
-      const res = await fetch("data/blog-map.mmd", { cache: "no-cache" });
+      const res = await fetch("data/blog-map.mmd");
       if (!res.ok) throw new Error(res.status);
       mapEl.querySelector(".mermaid").textContent = await res.text();
       renderMermaidIn(mapEl);

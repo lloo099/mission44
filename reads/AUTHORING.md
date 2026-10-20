@@ -10,6 +10,7 @@
   - `fig-<n>.svg`:由 `scripts/render-mermaid-svgs.mjs` 从原文第 n 个 mermaid 图预渲染而来(已生成,直接引用),称为**本站图**
   - `orig-<n>.png|jpg`:从原始来源抓取的**原图**(论文/仓库/官方博客配图)。网络代理只放行 `raw.githubusercontent.com`,因此原图只能来自原文引用的 GitHub 仓库 README(`curl -sS -o reads/img/<id>/orig-1.png https://raw.githubusercontent.com/<owner>/<repo>/main/<path>`);arXiv/HF/厂商站点均不可达。抓不到原图时用本站图,不要留空
 - 引用路径均相对页面:`img/<post-id>/fig-1.svg`
+- 图片放好、页面写完后跑一次 `python3 scripts/optimize_images.py`:大于 150 KB 的原图会生成同名 `.webp`(原文件保留),页面和 `docs/blog/*.md` 里的引用自动改指 `.webp`,每个 `<img>` 自动补 `loading="lazy" decoding="async"` 和宽高。手写 `<img>` 时不必自己加这些属性
 
 ## 页面骨架(严格遵守)
 

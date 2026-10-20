@@ -16,8 +16,6 @@
   <script>
     try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}
     // Local mermaid (UMD sets window.mermaid). Re-callable so app.js can re-init on theme toggle.
-    // Defined here — BEFORE any external stylesheet — so a slow/blocked fonts CDN can never
-    // stall the parser on this script (classic inline scripts must wait for pending CSS).
     window.__initMermaid = function () {
       if (!window.mermaid) return false;
       var dark = document.documentElement.getAttribute("data-theme") === "dark";
@@ -25,19 +23,20 @@
         theme: dark ? "dark" : "neutral", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" });
       return true;
     };
-    window.addEventListener("DOMContentLoaded", function () { window.__initMermaid(); });
+    // The vendor bundle is ~3.5MB and only the Blog tab draws diagrams, so it is fetched on
+    // first use (renderMermaidIn calls this) instead of on every page load.
+    window.__loadMermaid = function () {
+      if (window.mermaid || window.__mermaidLoading) return;
+      window.__mermaidLoading = true;
+      var s = document.createElement("script");
+      s.src = "js/vendor/mermaid.min.js?v=20261020a";
+      s.onload = function () { window.__initMermaid(); document.dispatchEvent(new CustomEvent("mermaid-ready")); };
+      s.onerror = function () { window.__mermaidFailed = true; document.dispatchEvent(new CustomEvent("mermaid-failed")); };
+      document.head.appendChild(s);
+    };
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <!-- fonts load async (media swap trick): if the CDN is slow/blocked (e.g. mainland China),
-       the page renders immediately with system fonts instead of stalling -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap"
-    media="print" onload="this.media='all'" />
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap" /></noscript>
-  <link rel="stylesheet" href="css/styles.css?v=20260907e" />
-  <script defer src="js/vendor/mermaid.min.js?v=20260907e"
-    onload="window.__initMermaid && window.__initMermaid(); document.dispatchEvent(new CustomEvent('mermaid-ready'));"
-    onerror="window.__mermaidFailed = true; document.dispatchEvent(new CustomEvent('mermaid-failed'));"></script>
+  <link rel="preload" href="assets/fonts/inter-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="css/styles.css?v=20261020a" />
 </head>
 <body>
   <canvas id="bg-canvas" aria-hidden="true"></canvas>
@@ -234,9 +233,9 @@
     <span class="dim">Built as a research aid · data is hand-curated + script-refreshable · verify primary sources before citing.</span>
   </footer>
 
-  <script src="js/bg.js?v=20260907e"></script>
-  <script src="js/app.js?v=20260907e"></script>
-  <script src="js/analyst.js?v=20260907e"></script>
-  <script src="js/arch-demo.js?v=20260907e"></script>
+  <script src="js/bg.js?v=20261020a"></script>
+  <script src="js/app.js?v=20261020a"></script>
+  <script src="js/analyst.js?v=20261020a"></script>
+  <script src="js/arch-demo.js?v=20261020a"></script>
 </body>
 </html>

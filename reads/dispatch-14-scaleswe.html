@@ -97,7 +97,7 @@
 <p><strong>把昂贵的"可执行化"推迟到只剩约 1M 候选时才做。</strong>成本最高的环境构建只在候选池上跑，由三智能体流水线承担。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-14-scaleswe/fig-1.svg" alt="数据漏斗流程图：23000+ 仓库 / 6M+ PR → LLM-as-judge 预过滤（仅看 PR 元数据）→ 约 1M 候选 PR → 三智能体沙箱流水线 → 100k 验证实例（最终 5200 repo）">
+  <img class="diagram" src="img/dispatch-14-scaleswe/fig-1.svg" alt="数据漏斗流程图：23000+ 仓库 / 6M+ PR → LLM-as-judge 预过滤（仅看 PR 元数据）→ 约 1M 候选 PR → 三智能体沙箱流水线 → 100k 验证实例（最终 5200 repo）" loading="lazy" decoding="async" width="276" height="534">
   <figcaption><span class="fnum">图 1</span>数据漏斗——从 23k 仓库逐级过滤到 10 万验证实例：6M+ PR 经只看元数据的 LLM-as-judge 预过滤收敛到约 1M 候选，再经三智能体沙箱流水线得到 100k 验证实例（5,200 repo）。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -122,7 +122,7 @@
 <p>整条流水线由 <strong>MEGAFLOW</strong>（分布式长程 agentic 作业系统）编排：每个构建派发到独立的 Aliyun ECS 实例，在沙箱 VM 里跑完整 build，产出验证过的 Docker 镜像后推到 Aliyun ACR，借 Docker 层缓存共享基础层来压缩存储。没有这套分布式编排，"百万次真实环境构建"在工程上不可行。</p>
 
 <figure>
-  <img src="img/dispatch-14-scaleswe/orig-1.png" alt="ScaleSWE 流水线总览：左侧 23k 仓库经 GitHub API 到 6M PR，经 stars、downloads、LLM as Judge 到 1M 高质量 PR；中间三个 agent——环境构建 agent（自动探索仓库、agent 式安装包、跑单测、失败则补装包修版本、重复修与检、全过后提取轨迹、构建 Docker 镜像）、单测创建 agent（读 PR 元信息、自动探索仓库、写单测、跑单测、失败则修）、问题陈述 agent（读 PR 元信息与 F2P、自动探索仓库、写问题陈述）；右侧 Immersion in the GitHub Universe">
+  <img src="img/dispatch-14-scaleswe/orig-1.webp" alt="ScaleSWE 流水线总览：左侧 23k 仓库经 GitHub API 到 6M PR，经 stars、downloads、LLM as Judge 到 1M 高质量 PR；中间三个 agent——环境构建 agent（自动探索仓库、agent 式安装包、跑单测、失败则补装包修版本、重复修与检、全过后提取轨迹、构建 Docker 镜像）、单测创建 agent（读 PR 元信息、自动探索仓库、写单测、跑单测、失败则修）、问题陈述 agent（读 PR 元信息与 F2P、自动探索仓库、写问题陈述）；右侧 Immersion in the GitHub Universe" loading="lazy" decoding="async" width="1800" height="691">
   <figcaption><span class="fnum">图 2</span>ScaleSWE 流水线总览：左栏为漏斗（23k 仓库 → GitHub API → 6M PR → stars / downloads / LLM as Judge → 1M 高质量 PR）；中栏为三个 agent——环境构建 agent 的"安装 → 跑单测 → 失败 → 补装包与修版本 → 重复修与检 → 全过 → 提取轨迹 → Docker 镜像"闭环，单测创建 agent 的"读元信息 → 探索仓库 → 写单测 → 跑单测 → 失败则修"闭环，问题陈述 agent 的"读元信息与 F2P → 探索仓库 → 写问题陈述"。<span class="chip c-vr">自报</span> 取自 AweAI-Team/ScaleSWE 仓库 README（figures/scale_swe.drawio.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -132,7 +132,7 @@
 </figure>
 
 <figure>
-  <img class="diagram" src="img/dispatch-14-scaleswe/fig-2.svg" alt="三智能体沙箱流水线图：输入 PR → Agent1 构建环境 → Agent2 造测试 → Agent3 写问题陈述 → 验证生成 Docker 镜像 → 推送 Aliyun ACR 共享基础层缓存；MEGAFLOW 分布式长程作业系统以虚线派发每个 build 到独立 Aliyun ECS 实例">
+  <img class="diagram" src="img/dispatch-14-scaleswe/fig-2.svg" alt="三智能体沙箱流水线图：输入 PR → Agent1 构建环境 → Agent2 造测试 → Agent3 写问题陈述 → 验证生成 Docker 镜像 → 推送 Aliyun ACR 共享基础层缓存；MEGAFLOW 分布式长程作业系统以虚线派发每个 build 到独立 Aliyun ECS 实例" loading="lazy" decoding="async" width="479" height="732">
   <figcaption><span class="fnum">图 3</span>三智能体沙箱流水线的编排视角：三个 agent 串行，产出经验证的 Docker 镜像并推送 Aliyun ACR（共享基础层缓存）；MEGAFLOW 把每个 build 派发到独立 Aliyun ECS 实例。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -162,7 +162,7 @@
 </ul>
 
 <figure>
-  <img class="diagram" src="img/dispatch-14-scaleswe/fig-3.svg" alt="合成 F2P 决策图：真实 PR → 是否含作者测试 → 有则直接使用作者测试；无则 unit-test-creator 合成 F2P → 固定执行顺序防 test pollution → F2P 与 P2P 验证（SWE-bench 语义）→ 仅恢复可执行性，不伪造任务">
+  <img class="diagram" src="img/dispatch-14-scaleswe/fig-3.svg" alt="合成 F2P 决策图：真实 PR → 是否含作者测试 → 有则直接使用作者测试；无则 unit-test-creator 合成 F2P → 固定执行顺序防 test pollution → F2P 与 P2P 验证（SWE-bench 语义）→ 仅恢复可执行性，不伪造任务" loading="lazy" decoding="async" width="514" height="798">
   <figcaption><span class="fnum">图 4</span>合成 F2P——仅在作者测试缺失时恢复可执行性：有作者测试则直接使用，无则由 unit-test-creator 合成并固定执行顺序，两条路径汇合到同一 F2P / P2P 验证。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -187,7 +187,7 @@
 <p>机制上，教师 <strong>DeepSeek-V3.2</strong> 在 25k 实例上每题采样 5 次（temperature 0.95，每条轨迹 ≤100 轮），再做<strong>结果级拒绝采样</strong>——只保留最终提交通过全部测试的轨迹。这是一个零额外标注成本的质量门控：只有真正解出题的轨迹才进训练集，无需过程标注。可执行环境在此既是数据生产的过滤器，又是质量判定标准。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-14-scaleswe/fig-4.svg" alt="蒸馏到 SFT 流程图：25k 实例 → DeepSeek-V3.2 教师采样 5× temp 0.95 不超过 100 轮 → 结果级拒绝采样只留通过全测 → 71498 条轨迹约 3.5B token → SFT 学生 Qwen3-30B-A3B → SWE-bench Verified 64.0%（基线 22.0%）">
+  <img class="diagram" src="img/dispatch-14-scaleswe/fig-4.svg" alt="蒸馏到 SFT 流程图：25k 实例 → DeepSeek-V3.2 教师采样 5× temp 0.95 不超过 100 轮 → 结果级拒绝采样只留通过全测 → 71498 条轨迹约 3.5B token → SFT 学生 Qwen3-30B-A3B → SWE-bench Verified 64.0%（基线 22.0%）" loading="lazy" decoding="async" width="276" height="734">
   <figcaption><span class="fnum">图 5</span>蒸馏到 SFT：DeepSeek-V3.2 教师在 25k 实例上采样，经结果级拒绝采样得到 71,498 条轨迹（约 3.5B token），SFT 学生 Qwen3-30B-A3B 达 Verified 64.0%（基线 22.0%）。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -234,7 +234,7 @@
 <p>64.0% 这个头条数需要放在三条参照线上读：教师（DeepSeek-V3.2）、同期开源方法（KAT-Dev-32B 62.4%）、同规模基座的不同版本（Qwen3-30B-A3B 的 Instruct 版约 22.0%）。原文核对了其中三个数字——基座 22.0%、KAT-Dev-32B 62.4%、蒸馏后 64.0%——其余对照行来自论文结果表，本站未逐一核对。</p>
 
 <figure>
-  <img src="img/dispatch-14-scaleswe/orig-2.png" alt="ScaleSWE 论文结果表：SWE-bench Verified 分数，分四组——闭源模型（GPT-5.2 Thinking 80.0 至 Kimi K2 Thinking 71.3）、开源方法（SWE-Gym-32B 20.6 至 KAT-Dev-32B 62.4）、同规模模型（Qwen3-30B-A3B-Instruct 22.0、Qwen3-Coder-30B-A3B-Instruct 51.6、GLM-4.7-Flash-30A3B 59.2）、本文模型 Scale-SWE-Agent 64.0（基座 Qwen3-30B-A3B-Instruct）">
+  <img src="img/dispatch-14-scaleswe/orig-2.webp" alt="ScaleSWE 论文结果表：SWE-bench Verified 分数，分四组——闭源模型（GPT-5.2 Thinking 80.0 至 Kimi K2 Thinking 71.3）、开源方法（SWE-Gym-32B 20.6 至 KAT-Dev-32B 62.4）、同规模模型（Qwen3-30B-A3B-Instruct 22.0、Qwen3-Coder-30B-A3B-Instruct 51.6、GLM-4.7-Flash-30A3B 59.2）、本文模型 Scale-SWE-Agent 64.0（基座 Qwen3-30B-A3B-Instruct）" loading="lazy" decoding="async" width="1800" height="1479">
   <figcaption><span class="fnum">图 6</span>ScaleSWE 结果表（SWE-bench Verified）：四组对照——Proprietary Models（GPT-5.2 Thinking 80.0、Claude Sonnet 4.5 77.2、Gemini 3 Pro 76.2、MiniMax-M2.1 74.0、GLM-4.7 73.8、DeepSeek-V3.2 73.1、Kimi K2 Thinking 71.3）、Open Source Methods（SWE-Gym-32B 20.6 … SWE-smith-32B 40.2、SWE-RL 41.0、Skywork-SWE-32B 47.9、SWE-Mirror-LM-32B 52.2、SWE-Lego-32B 52.6、KAT-Dev-32B 62.4）、Models of the same size（Qwen3-30B-A3B-Instruct 22.0、Qwen3-Coder-30B-A3B-Instruct 51.6、GLM-4.7-Flash-30A3B 59.2）、Our Model（Scale-SWE-Agent 64.0）。<span class="chip c-vr">自报</span> 取自 AweAI-Team/ScaleSWE 仓库 README（figures/performance.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -312,7 +312,7 @@
 <p><strong>DeNovoSWE</strong>（2026-06，<a href="https://github.com/AweAI-Team/DeNovoSWE">github.com/AweAI-Team/DeNovoSWE</a>，arXiv 2606.10728）：doc2repo——从自然语言规格生成整个仓库；长程（500 turns）、4,818 实例，教师 DeepSeek-v4-Pro-High、基座 Qwen3.5-35B-A3B，在 BeyondSWE-Doc2Repo 上约 50%。</p>
 
 <figure>
-  <img src="img/dispatch-14-scaleswe/orig-3.png" alt="AweAgent 架构图：Task Layer（Search Tasks BrowseComp；Code Tasks SWE Bench Pro、NL2Repo、ScaleSWE、BeyondSWE、DeNovoSWE；Terminal Tasks Terminal-Bench 2.0）经 Task Protocol 归一化进入 Execution Core Engine（TaskRunner → AgentContext ↔ AgentLoop / AgentScaffold），经 actions / observations 到 Interaction Layer（LLM Client、Tools、ToolCallFormat、RuntimeSession Docker sandbox），再到 Evaluation & Data Layer（Patch tests、LLM-as-Judge、Terminal Reward、RL Rollout Data）；右侧 Config / Registry">
+  <img src="img/dispatch-14-scaleswe/orig-3.webp" alt="AweAgent 架构图：Task Layer（Search Tasks BrowseComp；Code Tasks SWE Bench Pro、NL2Repo、ScaleSWE、BeyondSWE、DeNovoSWE；Terminal Tasks Terminal-Bench 2.0）经 Task Protocol 归一化进入 Execution Core Engine（TaskRunner → AgentContext ↔ AgentLoop / AgentScaffold），经 actions / observations 到 Interaction Layer（LLM Client、Tools、ToolCallFormat、RuntimeSession Docker sandbox），再到 Evaluation & Data Layer（Patch tests、LLM-as-Judge、Terminal Reward、RL Rollout Data）；右侧 Config / Registry" loading="lazy" decoding="async" width="1536" height="1800">
   <figcaption><span class="fnum">图 7</span>AweAgent 分层架构：Task Layer（Search / Code / Terminal 任务，Code Tasks 列出 SWE Bench Pro、NL2Repo、ScaleSWE、BeyondSWE、DeNovoSWE）→ Task Protocol 归一化 → Execution Core Engine（TaskRunner 负责 batch scheduling / runtime setup / eval routing；AgentContext 作为共享依赖与 rollout 状态总线；AgentLoop 内部 rollout 引擎与 AgentScaffold 的 step(ctx) → action，scaffold 示例含 DeepSearch、Terminus2、SearchSWE）→ Interaction Layer（LLM Client、Tools、ToolCallFormat、RuntimeSession）→ Evaluation &amp; Data Layer（Patch tests、LLM-as-Judge、Terminal Reward、RL Rollout Data）；右侧 Config / Registry 贯穿各层。<span class="chip c-vr">自报</span> 取自 AweAI-Team/AweAgent 仓库 README（assets/architecture.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -322,7 +322,7 @@
 </figure>
 
 <figure>
-  <img class="diagram" src="img/dispatch-14-scaleswe/fig-5.svg" alt="生态链路图：ScaleSWE 数据 → AweAgent（search_swe scaffold、ACI 工具、反泄漏 blocklist）→ Scale-SWE-Agent（200 轮 / 256k 上下文）-- 通向 RL 的桥 --> DeNovoSWE（doc2repo，for SFT 与 RL）">
+  <img class="diagram" src="img/dispatch-14-scaleswe/fig-5.svg" alt="生态链路图：ScaleSWE 数据 → AweAgent（search_swe scaffold、ACI 工具、反泄漏 blocklist）→ Scale-SWE-Agent（200 轮 / 256k 上下文）-- 通向 RL 的桥 -- loading="lazy" decoding="async" width="1216" height="118"> DeNovoSWE（doc2repo，for SFT 与 RL）">
   <figcaption><span class="fnum">图 8</span>生态——ScaleSWE 数据经 AweAgent 训出 Scale-SWE-Agent，DeNovoSWE 作为通向 RL 的桥。<span class="chip c-inf">推断</span> 本站图，由原文第 5 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

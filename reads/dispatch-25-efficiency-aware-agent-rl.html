@@ -82,7 +82,7 @@
 <p><strong>主张一采纳，不修正。</strong>"SFT 冷启动 + 在线 RL（可验证奖励）"这条主线，从 <a href="https://arxiv.org/abs/2203.02155">InstructGPT</a> 到 <a href="https://arxiv.org/abs/2501.12948">DeepSeek-R1</a>、<a href="https://arxiv.org/abs/2505.09388">Qwen3</a>、<a href="https://arxiv.org/abs/2501.12599">Kimi k1.5</a>，已经是写进技术报告的行业标配；框架侧同样成熟——verl 有带脚本和 wandb 日志的<a href="https://verl.readthedocs.io/en/latest/algo/baseline.html">官方基线表</a>，AReaL 已经<a href="https://github.com/areal-project/AReaL">微服务化到 2.0</a>。把这条主线原样跑一遍，是训练，不是研究——审稿人会直接标"复现工作"。但"主干成熟"不等于"无事可做"：五个缝隙全部真实存在，只是收敛度差异极大，且其中最关键的一条（效率感知 RL）在单轮数学推理场景已不是缝隙，是本领域最拥挤的赛道之一；真正还开着的，是它的 agent 版本。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-25-efficiency-aware-agent-rl/fig-1.svg" alt="成熟主干与五缝隙收敛度地图：左侧主干时间线 InstructGPT 2022 到 DeepSeekMath 2024 到 R1、k1.5、Qwen3 2025 到框架成熟 2025–2026；右侧六个缝隙节点，缝隙 1a 灰色已关闭，缝隙 1b 绿色开放，缝隙 2–5 黄色收敛中，虚线标注主干到缝隙的衍生关系">
+  <img class="diagram" src="img/dispatch-25-efficiency-aware-agent-rl/fig-1.svg" alt="成熟主干与五缝隙收敛度地图：左侧主干时间线 InstructGPT 2022 到 DeepSeekMath 2024 到 R1、k1.5、Qwen3 2025 到框架成熟 2025–2026；右侧六个缝隙节点，缝隙 1a 灰色已关闭，缝隙 1b 绿色开放，缝隙 2–5 黄色收敛中，虚线标注主干到缝隙的衍生关系" loading="lazy" decoding="async" width="2262" height="748">
   <figcaption><span class="fnum">图 1</span>成熟主干与五缝隙收敛度地图（原文图 A）：左列主干时间线——InstructGPT 2022（SFT 冷启动 + RLHF 范式确立）→ DeepSeekMath 2024（GRPO 组内相对优势成标准答案）→ DeepSeek-R1、Kimi k1.5、Qwen3 2025（可验证奖励在线 RL 进旗舰管线）→ 框架成熟 2025–2026（verl、OpenRLHF、TRL、AReaL 2.0）；右列缝隙 1a 单轮 CoT 效率 RL（灰，已关闭）、1b agent 场景效率 RL（绿，开放）、2 异步 staleness、3 弱可验证奖励、4 小模型探索、5 SFT 与 RL 回炉蒸馏节奏（黄，收敛中）。虚线标注"单轮效率热潮外溢""研究重心转移""系统层衍生问题"等衍生关系。<span class="chip c-inf">本站图</span> 由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -155,7 +155,7 @@
 <p><strong>Hack 模式分类学</strong>，按模型所利用的漏洞类型分四类：<strong>冗余填充凑长</strong>——难题上用 n-gram 重复骗取 cosine 长度奖励（<a href="https://arxiv.org/abs/2502.03373">Demystifying Long CoT</a>，需重复惩罚补丁）；<strong>结构逃逸</strong>——think 标签留空、把推理写到标签外面绕过长度约束（<a href="https://arxiv.org/abs/2601.04805">Thinking-Based Non-Thinking</a>），更一般的 <a href="https://arxiv.org/abs/2604.15149">verifier gaming 实证</a>；<strong>underthinking 滑移</strong>——惩罚把优化从"删冗余"滑向"压掉难题必要推理"，更强的长度奖励给出更差的精度-长度帕累托前沿（<a href="https://arxiv.org/abs/2606.22716">Adaptive Correct-Only Rewards</a>）——最隐蔽的一类，因为曲线表面上在"变高效"；<strong>训练早期精度崩塌</strong>——长度惩罚下精度突然崩塌（DLER 与 <a href="https://arxiv.org/abs/2606.22716">2606.22716</a> 均有记录），根源被 DLER 定位到优化动力学而非奖励本身。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-25-efficiency-aware-agent-rl/fig-2.svg" alt="长度奖励设计空间与 hack 模式对照：左列五族奖励，中列七种失效与 hack 模式，右列四种防御与监控，实线为族到缺陷的对应，虚线为 cosine 变体诱发填充与过强长度压力诱发 underthinking">
+  <img class="diagram" src="img/dispatch-25-efficiency-aware-agent-rl/fig-2.svg" alt="长度奖励设计空间与 hack 模式对照：左列五族奖励，中列七种失效与 hack 模式，右列四种防御与监控，实线为族到缺陷的对应，虚线为 cosine 变体诱发填充与过强长度压力诱发 underthinking" loading="lazy" decoding="async" width="5148" height="241">
   <figcaption><span class="fnum">图 2</span>长度奖励设计空间与 hack 模式对照（原文图 B）：左列五族（绝对惩罚与 cosine 整形、截断式、组内相对、预算条件化、难度自适应），中列七种失效（压错题长度与训练崩溃、硬截断误伤、错误响应稀释基线、预算外生与互斥、难度估计昂贵、重复填充与结构逃逸、underthinking 滑移与早期崩塌），右列防御（n-gram 重复惩罚补丁、compact filtering——D22、监控信号——D08 与稀疏二元奖励——D23、DLER 修优化器）。<span class="chip c-inf">本站图</span> 由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -221,7 +221,7 @@
 <p><strong>环境：GSM8K 采纳；tau-bench 修正。</strong>扫描发现三个问题：tau2-bench telecom 域已被前沿模型打到 97–99% <a href="https://openai.com/index/introducing-gpt-5-for-developers/">接近失效</a>；任务与判分随版本持续修订（见<a href="https://github.com/sierra-research/tau2-bench/releases">官方 releases</a>），新旧版本分数不可直接比较；最关键的是<strong>它对 1.5B–7B 小模型近乎归零</strong>——前沿模型在 airline 域才 <a href="https://hal.cs.princeton.edu/taubench_airline">约 56%</a>，小模型基本为 0，一个全零分环境给不出任何 RL 梯度（D23 的"全零组"失稳模式会直接使训练失效）。修正建议：agent 环境选代码沙箱或搜索工具 QA 起步，正式阶段用 R2E-Gym / SWE 路线（D12 已有配方），tau-bench 只做前沿模型的对照评测，不做小模型的训练环境。</p>
 
 <figure>
-  <img src="img/dispatch-25-efficiency-aware-agent-rl/orig-1.png" alt="tau2-bench telecom 域示例轨迹：左侧用户报告移动数据不可用，agent 引导用户调用 user_tools.get_status_bar 与 toggle_data；右侧用户仍报故障，agent 调用 agent_tools.get_details_by_id 发现 roaming_enabled 为 false，确认后调用 enable_roaming，用户经工具调用验证数据恢复">
+  <img src="img/dispatch-25-efficiency-aware-agent-rl/orig-1.webp" alt="tau2-bench telecom 域示例轨迹：左侧用户报告移动数据不可用，agent 引导用户调用 user_tools.get_status_bar 与 toggle_data；右侧用户仍报故障，agent 调用 agent_tools.get_details_by_id 发现 roaming_enabled 为 false，确认后调用 enable_roaming，用户经工具调用验证数据恢复" loading="lazy" decoding="async" width="1800" height="768">
   <figcaption><span class="fnum">图 3</span>tau2-bench telecom 域的一条示例轨迹：左半段用户报告"移动数据不可用"，agent 引导用户侧调用读工具 user_tools.get_status_bar()（返回状态栏：5G、Data Disabled、电量 80%）与写工具 user_tools.toggle_data()；右半段用户仍报故障，agent 侧调用 agent_tools.get_details_by_id("L1002") 读到 roaming_enabled: false，确认用户在境外后调用 agent_tools.enable_roaming("C1001", "L1002")，最终用户经工具调用验证数据恢复。<span class="chip c-vr">自报</span> 取自 sierra-research/tau2-bench 官方仓库 README（figs/traj.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -235,7 +235,7 @@
 <p><strong>硬件：采纳，但把上下文长度列为第一预算变量。</strong>1.5B 短上下文 GRPO 单卡 80G 即有富余（verl 官方示例 0.5B 只需 <a href="https://verl.readthedocs.io/en/latest/start/quickstart.html">≥24GB</a>；LoRA 路线 Unsloth 压到 <a href="https://unsloth.ai/blog/grpo">5–7GB</a>），GSM8K 规模数小时到一天量级（社区数据：3B GRPO-LoRA 4×A100 <a href="https://huggingface.co/blog/Weyaxi/engineering-handbook-grpo-lora-with-verl">约 9.5h</a>）。但一旦转 8K+ 长 CoT，就是 <a href="https://huggingface.co/agentica-org/DeepScaleR-1.5B-Preview">DeepScaleR</a> 那种 3,800 A100 小时的量级——差两个数量级。2–4 卡的预算规划必须按上下文长度分档。<strong>看板视角的补充监控项</strong>（用户配置里没写，必须加）：reward 与长度双曲线 + 正确子集长度分解（D08 hacking 信号）；组内全零比例（D23 全零组失稳模式）；截断轨迹占比（D23 截断污染）；熵曲线（DLER 点名的熵坍缩）。四条曲线在第一步基线阶段就接好，第二步注入效率项后即构成失效模式探测网。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-25-efficiency-aware-agent-rl/fig-3.svg" alt="最小可行系统架构：阶段一 SFT 冷启动（强模型 API 生成轨迹、rejection sampling 留正确且最短、SFT checkpoint 兼作 KL 锚），阶段二 GRPO 在线循环（vLLM rollout 组采样、奖励 = 正确性 + 效率项注入点、组内相对优势归一化、策略更新 KL 锚定），阶段三评测（成功率-长度帕累托曲线、同协议起点终点分、在线监控），硬件量级旁注">
+  <img class="diagram" src="img/dispatch-25-efficiency-aware-agent-rl/fig-3.svg" alt="最小可行系统架构：阶段一 SFT 冷启动（强模型 API 生成轨迹、rejection sampling 留正确且最短、SFT checkpoint 兼作 KL 锚），阶段二 GRPO 在线循环（vLLM rollout 组采样、奖励 = 正确性 + 效率项注入点、组内相对优势归一化、策略更新 KL 锚定），阶段三评测（成功率-长度帕累托曲线、同协议起点终点分、在线监控），硬件量级旁注" loading="lazy" decoding="async" width="932" height="1700">
   <figcaption><span class="fnum">图 4</span>最小可行系统架构与效率奖励注入点（原文图 C）：阶段一 SFT 冷启动（强模型 API 生成几千条轨迹 → rejection sampling 留正确且最短，标注"非自创配方，须引用 STaR、RFT 与 k1.5" → SFT checkpoint 兼作 KL 锚）；阶段二 GRPO 在线循环（vLLM rollout 组采样，占单步 70%+ wall-clock → 奖励 = 正确性 + 效率项，★ 注入点，建议正确子集内相对或截断式 → 组内相对优势归一化 → 策略更新 KL 锚定 → 下一轮）；阶段三评测（成功率-长度帕累托曲线为主产出物；同协议起点终点分对齐 verl 表 1.5B 77.9、3B 86.1；在线监控 reward 升 + 长度骤降）；旁注硬件量级与上下文长度警告。<span class="chip c-inf">本站图</span> 由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -264,7 +264,7 @@
 <p><strong>④ 迁移 agent 环境：采纳，且这才是论文所在。</strong>"简洁性被放大"是三重放大的叠加：<strong>轨迹长</strong>——多轮交互上下文逐轮累积，decode 成本随轮数超线性增长，同样的冗余在 agent 里贵一个量级（D02：rollout 占单步 70%+ wall-clock，decode-bound）；<strong>奖励稀疏</strong>——单轮场景每条轨迹都有终点奖励，agent 场景只有 episode 末端一个二元信号，中间几十步工具调用没有任何逐步反馈，长度信号与结果信号的 credit assignment 纠缠加剧（D08 三难题之首）；<strong>步数即真实成本</strong>——每次工具调用有真金白银的延迟 / 美元成本，效率不再是审美而是 SLO。三重放大正好对应第 02 节列的开缝：异质成本进奖励、步级 credit assignment（D08 的"turn 级信用分配是性价比最优点"是现成的切入姿势）、不掐断有效长轨迹（D22 compact filtering 的 agent 版推广）。产出物目标：<strong>一个小模型可跑的 agent 环境上，成功率-成本帕累托前沿的系统刻画 + 一种不掐断有效轨迹的效率信号</strong>——评测可对着 <a href="https://arxiv.org/abs/2511.02734">CostBench</a> 的成本最优规划设定。看板参照：D12 SWE-RL 配方、D13 四坑、D22。常见失败模式：环境选了小模型全零分的基准；以及窗口期误判——第④步不能等 ①②③ 全部做完美再启动，建议 ②③ 期间就并行搭 agent 环境。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-25-efficiency-aware-agent-rl/fig-4.svg" alt="四步路线图：第一步复现基线 1–2 周产出对齐 verl 官方数字，第二步注入变量 2–4 周产出帕累托对比并标注该设计已被占为练手，第三步带困惑精读与前两步并行，第四步迁移 agent 环境 4–8 周产出可发表候选，旁注 agent 放大机理">
+  <img class="diagram" src="img/dispatch-25-efficiency-aware-agent-rl/fig-4.svg" alt="四步路线图：第一步复现基线 1–2 周产出对齐 verl 官方数字，第二步注入变量 2–4 周产出帕累托对比并标注该设计已被占为练手，第三步带困惑精读与前两步并行，第四步迁移 agent 环境 4–8 周产出可发表候选，旁注 agent 放大机理" loading="lazy" decoding="async" width="2136" height="510">
   <figcaption><span class="fnum">图 5</span>四步路线图与 agent 放大机理（原文图 D）：S1 复现基线（1–2 周，verl + GSM8K + Qwen2.5-1.5B）→ O1 对齐 verl 官方数字（1.5B 77.9、3B 86.1，同协议起点终点分）→ S2 注入变量（2–4 周，绝对项换组内相对）→ O2 帕累托对比（标注"该设计已被占，此步是练手不是论文"）→ S4 迁移 agent 环境（4–8 周，tau-bench 对 1.5B–7B 近乎归零，改用代码沙箱或工具 QA）→ O4 可发表候选（异质真实成本、长程步级效率 credit assignment、token + 工具联合预算，窗口按月收窄）；S3 带困惑精读以虚线并行于 S2 与 S4（必补 DLER 与 GR3）；旁注 AMP 说明 agent 环境为何放大简洁性问题。<span class="chip c-inf">本站图</span> 由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -289,7 +289,7 @@
 <p><strong>效率感知在 NPU 语境下有双重价值。</strong>D02 确立的事实是 rollout 占 RL 单步 70%+ wall-clock 且 decode-bound；效率感知奖励压短轨迹，直接压缩的就是这 70% 里的 decode 时间——<strong>训练目标与系统成本同向</strong>。这在算力富裕的 GPU 集群上是锦上添花，在昇腾单节点的算力受限语境下是实质性的补充：同样的卡时，效率感知训练跑出的 step 数更多，等于变相扩了算力预算。这个"目标-成本同向"性质是五个缝隙里独一份的。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-25-efficiency-aware-agent-rl/fig-5.svg" alt="研究目标与系统成本同向循环：效率感知奖励 → 策略生成更短轨迹 → rollout 墙钟下降 → 同算力跑更多样本 → 训练迭代与扫参更快 → 卖点，虚线反哺奖励设计；底线约束节点与未占原创位节点">
+  <img class="diagram" src="img/dispatch-25-efficiency-aware-agent-rl/fig-5.svg" alt="研究目标与系统成本同向循环：效率感知奖励 → 策略生成更短轨迹 → rollout 墙钟下降 → 同算力跑更多样本 → 训练迭代与扫参更快 → 卖点，虚线反哺奖励设计；底线约束节点与未占原创位节点" loading="lazy" decoding="async" width="1828" height="525">
   <figcaption><span class="fnum">图 6</span>研究目标与系统成本同向循环（原文图 E）：E1 效率感知奖励（正确性 + 简洁项，KL 守成功率底线）→ E2 策略学会生成更短轨迹 → E3 rollout 墙钟时间下降（D02：70%+ wall-clock、decode-bound，长度即成本）→ E4 同算力跑更多样本或同样本省 GPU 时 → E5 训练迭代与扫参更快 → E6 研究目标与系统成本罕见同向；E5 以虚线反哺 E1。两个旁注：R1 底线约束（压长度不得掉成功率，盯 D08 信号防 underthinking 滑移）；R2 未占的原创位（短轨迹改变 rollout 时长分布 → staleness 分布漂移，与 Staleness-LR 标度律的交互零文献命中）。<span class="chip c-inf">本站图</span> 由原文第 5 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

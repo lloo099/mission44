@@ -119,7 +119,7 @@
 <p>关键原则：<strong>推理（rollout）与训练分到不同 NPU 子集</strong>，沙箱容器跑在<strong>节点的 CPU</strong> 上（测试执行不需要 NPU）。trainer 周期性把新权重 sync 回推理 server；解耦异步下，trainer 拉<strong>已完成</strong>的轨迹，staleness 有界。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-1.svg" alt="总体架构图：数据任务池、节点 CPU 上的 Docker 沙箱环境、NPU 推理池、NPU 训练池，以及它们之间的动作、奖励、轨迹与权重回流">
+  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-1.svg" alt="总体架构图：数据任务池、节点 CPU 上的 Docker 沙箱环境、NPU 推理池、NPU 训练池，以及它们之间的动作、奖励、轨迹与权重回流" loading="lazy" decoding="async" width="2992" height="367">
   <figcaption><span class="fnum">图 1</span>总体架构五部件：数据-任务池（R2E-Gym-Subset / SWE-Gym-Lite → 预过滤后的合法实例）、环境（节点 CPU 上的 Docker 沙箱 → F2P/P2P 测试 → 二元奖励）、推理池（mini-swe-agent + vLLM-Ascend，NPU 子集）、训练池（MindSpeed-RL + GRPO++，另一 NPU 子集），以及 per-trajectory 轨迹流与 weight sync 回流。<span class="chip c-inf">推断</span> 本站图，据原文第 2 节 mermaid 图绘制。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -129,7 +129,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-13-swe-rl-on-ascend/orig-1.png" alt="verl 架构图：上方为单控制器 RL Trainer 的四种模式，下方为 Model Engine、AgentLoop、LLM Server、TransferQueue 与 CheckpointEngine，并以红框标出用户责任与 ML Infra 责任的边界">
+  <img src="img/dispatch-13-swe-rl-on-ascend/orig-1.png" alt="verl 架构图：上方为单控制器 RL Trainer 的四种模式，下方为 Model Engine、AgentLoop、LLM Server、TransferQueue 与 CheckpointEngine，并以红框标出用户责任与 ML Infra 责任的边界" loading="lazy" decoding="async" width="1072" height="830">
   <figcaption><span class="fnum">图 2</span>verl 的架构分层：顶部 Single Controller RL Trainer 提供 On policy / Full async / One-step-off-policy / VLA 四种模式；底部 Model Engine（FSDP、Megatron-Core、VeOmni）与 Rollout Engine（AgentLoop 的 SingleTurn / ToolAgent / SWEAgent + LLM Server 的 vLLM / SGLang / TensorRT-LLM）经 TransferQueue 交换数据，CheckpointEngine 以 broadcast/p2p 做权重同步；红色标签划出 "User responsibility" 与 "ML Infra responsibility" 的边界。<span class="chip c-vr">自报</span> 取自 verl 官方仓库 README（volcengine/verl，verl-project/verl-data 内 images/verl-arch.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -152,7 +152,7 @@
 <p><strong>任务源</strong>：首选 <strong>R2E-Gym-Subset</strong>（程序化生成、无需人写 issue/test、镜像规整），或 <strong>SWE-Gym-Lite</strong>（真实但小）。规模化阶段再上 <strong>SWE-smith</strong>（一 repo 一执行环境，适合批量）。<strong>沙箱</strong>：每个任务一个预构建 Docker 镜像，跑在节点 CPU 上；<strong>禁网、固定 seed、超时</strong>；维持 <strong>warm pool</strong> + 复用容器降 cold-start。</p>
 
 <figure>
-  <img src="img/dispatch-13-swe-rl-on-ascend/orig-2.png" alt="R2E-Gym 数据集统计表与仓库分布环形图：左表比较各数据集是否有 repo、是否可执行及实例数，右图为 R2E-Gym Subset 4578 个实例在各仓库上的占比">
+  <img src="img/dispatch-13-swe-rl-on-ascend/orig-2.webp" alt="R2E-Gym 数据集统计表与仓库分布环形图：左表比较各数据集是否有 repo、是否可执行及实例数，右图为 R2E-Gym Subset 4578 个实例在各仓库上的占比" loading="lazy" decoding="async" width="1588" height="628">
   <figcaption><span class="fnum">图 3</span>R2E-Gym 的数据集统计（左，Table 1）与 R2E-Gym-Subset 的仓库分布（右，Table 2）：左表按"是否有 repo / 是否可执行 / 实例数"对比 APPS（10,000）、R2E（246）、SWE-Bench train（19,008，不可执行）、SWE-Gym Raw（66,894，不可执行）、SWE-Bench test（2,294）、SWE-Gym（2,438）与 R2E-Gym-Subset（4,578）、R2E-Gym（8,135）；右图为该 4,578 个实例在 pandas 31.5%、numpy 17.1%、pillow 13.5%、orange3 10.5%、aiohttp 6.5%、tornado 5.7%、scrapy 4.7%、pyramid 4.1%、datalad 3.9%、coveragepy 2.4% 上的分布，且与 SWE-Bench 无仓库重叠。<span class="chip c-vr">自报</span> 取自 R2E-Gym 官方仓库 README（R2E-Gym/R2E-Gym，assets/docs-env-stats-v1.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -164,7 +164,7 @@
 <p><strong>奖励是二元的</strong>——F2P（fail-to-pass）与 P2P（pass-to-pass）同时满足给 <strong>1.0</strong>，否则给 <strong>0.0</strong>；format/parse 惩罚；超时 = 0。不采用更"丰富"的奖励（部分测试通过比例、编辑距离、LLM 打分），原因有二：其一，<strong>稠密奖励在 SWE 上几乎都是可被 hack 的代理指标</strong>——"通过测试数占比"会奖励那些注释掉断言、改测试而非改实现的轨迹；LLM-judge 引入第二个待对齐的分布，且在昇腾上需额外维护一个推理服务。二元 F2P/P2P 是<strong>任务定义本身</strong>，不是代理，hack 它即等价于真正修复 bug。其二，<strong>代价是奖励极度稀疏</strong>，所以必须靠<strong>组采样（8–16）+ GRPO 的组内相对优势</strong>来制造梯度信号：一组里哪怕只有 1–2 条过了，组内归一化也能把"相对更好"的方向抽出来。这也是选 GRPO 而非 PPO 的配套理由——稀疏二元奖励下，组内 baseline 比学一个 value head 更稳。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-2.svg" alt="预过滤与奖励判定流程图：候选实例分别跑 golden patch 与 empty patch，两个判定汇合成是否干净 FAIL→PASS，留下的任务进入池并在 rollout 后按 F2P/P2P 判 1.0 或 0.0">
+  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-2.svg" alt="预过滤与奖励判定流程图：候选实例分别跑 golden patch 与 empty patch，两个判定汇合成是否干净 FAIL→PASS，留下的任务进入池并在 rollout 后按 F2P/P2P 判 1.0 或 0.0" loading="lazy" decoding="async" width="662" height="1352">
   <figcaption><span class="fnum">图 4</span>预过滤与奖励判定：候选实例先用 golden patch 跑一遍（应当全 PASS）、再用 empty patch 跑一遍（应当 FAIL），两个判定都通过且干净呈现 FAIL→PASS 的任务才进入任务池；池内任务 rollout 产出 patch 后，按"F2P 全过且 P2P 不退化"判 reward 1.0 或 0.0。<span class="chip c-inf">推断</span> 本站图，据原文第 3 节 mermaid 图绘制。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -234,7 +234,7 @@
 <p><strong>解耦异步</strong>：推理服务与 trainer 解耦，<strong>per-trajectory 拉取已完成轨迹</strong>（先完成者先入队），trainer 持续消费、持续更新。NPU 不再等尾部，吞吐显著改善。代价是采样轨迹来自<strong>稍旧的策略</strong>（off-policy），引入两个必须管的东西：<strong>staleness 有界</strong>——必须限制"用来更新的轨迹最多落后当前权重几个版本 / 几个 step"，无界 staleness 会让训练用上几代以前的策略数据，优势估计与当前策略脱节，训练发散，有界即以少量 off-policy 偏差换取大量吞吐的调节手段；<strong>TIS/MIS</strong>——轨迹既然 off-policy，就要用重要性采样校正，而 IS 比值方差大、长尾，直接使用会导致梯度爆炸，所以做 <strong>truncated / masked IS</strong>，对比值截断、对异常 token 屏蔽，抑制方差。它与坑 2 的 align-probe 属同一体系：align-probe 告诉你 train/infer 差多大，TIS/MIS 是据此做的实际防护。<strong>信用分配</strong>：默认"结果奖励 + 长度归一化广播 + GRPO 组采样"；太稀疏时采用 <strong>turn-level / GiGPO</strong>（把每轮当 MDP step）。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-3.svg" alt="解耦异步与 align-probe 旁路流程图：推理 server 持续产轨迹入完成队列，trainer 按 staleness 有界拉取做 GRPO++ 更新，旁路 align-probe 测 MAE 并按阈值分流">
+  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-3.svg" alt="解耦异步与 align-probe 旁路流程图：推理 server 持续产轨迹入完成队列，trainer 按 staleness 有界拉取做 GRPO++ 更新，旁路 align-probe 测 MAE 并按阈值分流" loading="lazy" decoding="async" width="1940" height="478">
   <figcaption><span class="fnum">图 5</span>解耦异步 + align-probe 旁路：推理 server 持续产 per-trajectory 轨迹进入完成队列，trainer 以 staleness 有界的方式拉取并做 GRPO++ 更新，权重回流至推理 server；旁路的 align-probe 从完成队列采样，测 train 与 infer 的 logprob MAE，超阈值则 trainer 重算或走 TIS/MIS 修正，未超阈值则直接使用 infer logprob。<span class="chip c-inf">推断</span> 本站图，据原文第 6 节 mermaid 图绘制。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -257,7 +257,7 @@
 <h2 id="s8"><span class="hnum">08</span>昇腾特有的四个坑与缓解（本原型的核心产出）</h2>
 
 <figure>
-  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-4.svg" alt="四个坑与对应缓解的对照图：无 sleep-mode 显存争用、train/infer logprob 不一致、长 rollout 上下文爆炸、沙箱成本主导，各自连向一条缓解措施">
+  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-4.svg" alt="四个坑与对应缓解的对照图：无 sleep-mode 显存争用、train/infer logprob 不一致、长 rollout 上下文爆炸、沙箱成本主导，各自连向一条缓解措施" loading="lazy" decoding="async" width="686" height="596">
   <figcaption><span class="fnum">图 6</span>四个坑与对应缓解：坑 1 无 sleep-mode 显存争用 → 解耦 + host offload + 限轮 + FP8 量化 rollout；坑 2 train 与 infer logprob 不一致 → align-probe 测 MAE，超阈值则 trainer 重算或 TIS/MIS；坑 3 长 rollout 上下文爆炸 → 限 turns 与 tokens + observation masking + compaction + 截断给 0 不丢弃；坑 4 沙箱成本（CPU / 内存 / 编排主导）→ 预构建镜像 + warm pool + 复用 + 解耦扩缩。<span class="chip c-inf">推断</span> 本站图，据原文第 7 节 mermaid 图绘制。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -318,7 +318,7 @@
 <h2 id="s10"><span class="hnum">10</span>里程碑路径 M0–M3</h2>
 
 <figure>
-  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-5.svg" alt="里程碑路径图：M0 环境验证到 M1 SFT 冷启动、M2 GRPO 单节点、M3 量化昇腾杠杆，每个里程碑挂一条验收标准">
+  <img class="diagram" src="img/dispatch-13-swe-rl-on-ascend/fig-5.svg" alt="里程碑路径图：M0 环境验证到 M1 SFT 冷启动、M2 GRPO 单节点、M3 量化昇腾杠杆，每个里程碑挂一条验收标准" loading="lazy" decoding="async" width="1870" height="296">
   <figcaption><span class="fnum">图 7</span>里程碑路径：M0 环境验证（单任务双跑过滤 + 托管模型跑一条 trajectory，reward 正确，不训练）→ M1 SFT 冷启动（SWE-smith 几千条，7B loss 正常、产合法 patch）→ M2 GRPO 单节点（先同步再解耦异步，reward 升、长度稳、logprob MAE 达标）→ M3 量化昇腾杠杆（FP8 与解耦异步收益，对照 GPU 节点，产吞吐 / MFU / HBM / 一致性对照表）。<span class="chip c-inf">推断</span> 本站图，据原文第 9 节 mermaid 图绘制。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

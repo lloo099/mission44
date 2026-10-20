@@ -84,7 +84,7 @@ RSI 四回路   A 权重 · B 代码 · C 上下文 · D 科研     <span class=
   <li><h4>正则化与真正在线更新<span class="stage">证据最弱 · 叙事最强</span></h4><p>EWC 类在 LLM 上普遍失效；"经验时代"路线唯一生产 A/B 在推荐系统（<a href="https://arxiv.org/html/2605.18899v1">2605.18899</a>）；Ineffable 11 亿美元种子轮，无系统披露。</p></li>
 </ol>
 <figure>
-  <img class="diagram" src="img/dispatch-37-rsi-continual-learning/fig-1.svg" alt="持续学习方法谱系与证据强度：权重级六级与权重外部署路径，共同指向遗忘是被测量的事实">
+  <img class="diagram" src="img/dispatch-37-rsi-continual-learning/fig-1.svg" alt="持续学习方法谱系与证据强度：权重级六级与权重外部署路径，共同指向遗忘是被测量的事实" loading="lazy" decoding="async" width="2337" height="436">
   <figcaption><span class="fnum">图 1</span>持续学习方法谱系与证据强度：左侧权重级六级按 7B 以上证据排序，右侧为权重之外的实际部署路径；两者汇于"遗忘是被测量的事实"。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>左列从上到下是证据强度递减，不是方法先进程度递减——排第一的继续预训练配方是最"朴素"的方法，却是唯一在 Llama 级 100B token 上独立复现的。右列是前沿模型实际走的路，但 CL-Bench 25.4% 的数字说明它也没有解决问题，只是把稳定性-可塑性矛盾转移到了检索层。</p>
@@ -115,7 +115,7 @@ RSI 四回路   A 权重 · B 代码 · C 上下文 · D 科研     <span class=
 <h2 id="s5"><span class="hnum">05</span>RSI 的四条回路</h2>
 <p>按改的对象分：<strong>A 权重回路</strong>（K3 MOPD 九专家合一、DeepSeek-V4 十余教师全词表 KL、GLM-5 跨阶段蒸馏、V4 的 actor 即生成式奖励模型、Absolute Zero / R-Zero 零数据自博弈）；<strong>B 代码回路</strong>（AlphaEvolve、autoresearch、AIDE²、Sol→Luna、AARs、DGM）；<strong>C 上下文回路</strong>（Agent Skills 28 万+ 技能、auto-dream、Letta sleep-time、SkillClaw）；<strong>D 科研回路</strong>（Co-Scientist Nature 2026-05 肝纤维化 3 选 2 有效、Robin/Kosmos、AI Scientist v2）。</p>
 <figure>
-  <img class="diagram" src="img/dispatch-37-rsi-continual-learning/fig-2.svg" alt="四条自改进回路与共同失效根源：评估器与被评估者同源，导向 Hacker-Opus 等安全表现">
+  <img class="diagram" src="img/dispatch-37-rsi-continual-learning/fig-2.svg" alt="四条自改进回路与共同失效根源：评估器与被评估者同源，导向 Hacker-Opus 等安全表现" loading="lazy" decoding="async" width="1140" height="692">
   <figcaption><span class="fnum">图 2</span>四条自改进回路（权重、代码、上下文、科研）各自的失效路径汇于同一根源——评估器与被评估者同源，并在安全层表现为 Hacker-Opus 与 HF 事件。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>四个回路节点的第三行是各自的复利状态：只有 B 写着"唯一持续复利证据"。四条虚线上的标签是各回路的具体失效形式——KL agreement trap、验证集过拟合与 98% 同技术、无留出迁移评测、自评审橡皮图章——它们在机制上都是同一件事：<strong>判分的一方与被判分的一方共享分布</strong>。</p>
@@ -131,7 +131,7 @@ RSI 四回路   A 权重 · B 代码 · C 上下文 · D 科研     <span class=
 <h2 id="s6"><span class="hnum">06</span>代码回路：唯一的复利证据</h2>
 <p>AlphaEvolve 一年影响报告（<a href="https://deepmind.google/blog/alphaevolve-impact/">2026-05</a>）：回收 Google 全球 0.7% 算力（约 5 亿美元/年）、Gemini 训练 matmul kernel +23% 使训练时间 -1%（改进训练自己的模型）、Willow 量子电路误差 -10×。Karpathy autoresearch（2026-03）：单 GPU、5 分钟/实验、约 700 次实验/2 天，d12 上约 20 项有效改动迁移到 d24 后 GPT-2 时间 2.02h→1.80h（-11%）。Weco AIDE²："改进改进者"的第二级 ignition 未达标，作者自述"我们并不接近智能爆炸"。OpenAI Sol 以一条欠规范提示自主完成 Luna 后训练，省 2 研究员 × 2 周。</p>
 <figure>
-  <img src="img/dispatch-37-rsi-continual-learning/orig-1.png" alt="autoresearch 进度图：83 次实验，15 项保留改进，验证 BPB 从 0.998 降至 0.977 的阶梯曲线">
+  <img src="img/dispatch-37-rsi-continual-learning/orig-1.webp" alt="autoresearch 进度图：83 次实验，15 项保留改进，验证 BPB 从 0.998 降至 0.977 的阶梯曲线" loading="lazy" decoding="async" width="1800" height="892">
   <figcaption><span class="fnum">图 3</span>autoresearch 单次运行进度：横轴实验序号（83 次），纵轴验证 BPB（越低越好），绿点为被保留的 15 项改进，灰点为被丢弃的实验，绿线为运行中最优。<span class="chip c-vr">自报</span> 取自 karpathy/autoresearch 仓库（progress.png）。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>先看被保留改进的<strong>内容</strong>而非数量：批大小减半、warmdown 0.5→0.7、加 5% warmup、深度 9 与宽高比 57、unembedding 与 embedding 学习率、滑窗模式与短窗口比例、RoPE 基频三连跳、最后是随机种子 42→137。这些全是<strong>超参搜索与配方叠加</strong>，没有一项是新的方法——与 speedrun 实验的结论一致：agent 擅长搜索、扫参与叠加，"难以自主提出新想法"。</p>
@@ -139,7 +139,7 @@ RSI 四回路   A 权重 · B 代码 · C 上下文 · D 科研     <span class=
   </div>
 </figure>
 <figure>
-  <img src="img/dispatch-37-rsi-continual-learning/orig-2.png" alt="ShinkaEvolve 概念图：任务评估器、LLM 子代生成器、新颖性过滤、评估与反馈归档的进化回路，以及圆填充任务上样本效率对比">
+  <img src="img/dispatch-37-rsi-continual-learning/orig-2.webp" alt="ShinkaEvolve 概念图：任务评估器、LLM 子代生成器、新颖性过滤、评估与反馈归档的进化回路，以及圆填充任务上样本效率对比" loading="lazy" decoding="async" width="1800" height="615">
   <figcaption><span class="fnum">图 4</span>ShinkaEvolve：左为进化式程序搜索回路（任务评估器→LLM 子代生成→新颖性过滤→评估→反馈归档→采样父代与上下文），右为圆填充任务上"评估的程序提案数"对"最优解"的对比。<span class="chip c-vr">自报</span> 取自 SakanaAI/ShinkaEvolve 仓库（docs/media/conceptual.png）。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>左图是 AlphaEvolve 类代码回路的通用骨架，关键在两个被虚线框出的环节：<strong>新颖性过滤</strong>（避免评估重复提案）与<strong>反馈归档</strong>（把评估结果回灌为下一轮采样父代的依据）——回路的"学习"发生在归档与采样策略里，LLM 本身权重冻结。这正是本报告"在冻结权重外做优化"的直观图示。</p>
@@ -162,7 +162,7 @@ RSI 四回路   A 权重 · B 代码 · C 上下文 · D 科研     <span class=
 
 <h2 id="s8"><span class="hnum">08</span>五项判据的证据状态</h2>
 <figure>
-  <img class="diagram" src="img/dispatch-37-rsi-continual-learning/fig-3.svg" alt="RSI 五判据：能力时限、研发提速、想法产生、评估器博弈、治理阈值及其 2026 证据状态">
+  <img class="diagram" src="img/dispatch-37-rsi-continual-learning/fig-3.svg" alt="RSI 五判据：能力时限、研发提速、想法产生、评估器博弈、治理阈值及其 2026 证据状态" loading="lazy" decoding="async" width="896" height="790">
   <figcaption><span class="fnum">图 5</span>RSI 五项判据的 2026 证据状态：能力时限与研发提速有充足证据（分歧在口径），想法产生与评估器博弈无正面证据，治理阈值均未触发。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>实线与虚线是这张图的语义：实线连接的是"证据充足"的判据链（能力时限→研发提速→治理阈值），虚线连接的是"无正面证据"的两项（想法产生、评估器博弈）。五项判据的最终汇点写着 2026 年的判断——分歧从"会不会"转为"回路哪一环仍需人"。</p>

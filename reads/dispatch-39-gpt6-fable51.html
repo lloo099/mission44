@@ -92,7 +92,7 @@ Fable    ARC-AGI-3   未完成            <span class="cmt">// 反蒸馏防护�
 
 <h2 id="s3"><span class="hnum">03</span>ARC-AGI-3 的 37 分：机制</h2>
 <figure>
-  <img class="diagram" src="img/dispatch-39-gpt6-fable51/fig-1.svg" alt="同一模型经标准 harness 与 provider adapter 两条路径得到 62.7% 与 99.9% 两个分数">
+  <img class="diagram" src="img/dispatch-39-gpt6-fable51/fig-1.svg" alt="同一模型经标准 harness 与 provider adapter 两条路径得到 62.7% 与 99.9% 两个分数" loading="lazy" decoding="async" width="1290" height="722">
   <figcaption><span class="fnum">图 1</span>一个模型，两条路径：标准 harness 每动作一次全新请求、丢弃上轮推理 token、硬截断历史；provider adapter 经 Responses API 保留不透明推理状态并做压缩式历史管理。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>两条路径的分叉点在图的最上方——<strong>模型权重是同一份</strong>。左路每一步都从零重建工作记忆，模型只能靠自己主动写下的笔记传递信息；右路把上一轮的隐藏推理状态直接带到下一轮，历史用压缩而非截断处理。仓库里的配置名就叫 <code>continuous_conversation</code>，代码开源于 arcprize/arc-agi-3-benchmarking。</p>
@@ -143,7 +143,7 @@ Fable    ARC-AGI-3   未完成            <span class="cmt">// 反蒸馏防护�
 
 <h2 id="s7"><span class="hnum">07</span>测量危机的四个来源</h2>
 <figure>
-  <img class="diagram" src="img/dispatch-39-gpt6-fable51/fig-2.svg" alt="四个障碍汇向同一后果：前沿能力难以被独立测量，并指向一个可做的实验">
+  <img class="diagram" src="img/dispatch-39-gpt6-fable51/fig-2.svg" alt="四个障碍汇向同一后果：前沿能力难以被独立测量，并指向一个可做的实验" loading="lazy" decoding="async" width="1143" height="422">
   <figcaption><span class="fnum">图 2</span>四个结构性障碍（harness 未控制、厂商自选头条、指数换版、防御阻断评测）汇向同一后果，并指向一个可分解的实验。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>四个方框不是并列的抱怨，而是四种不同的失效方式：前两个是<strong>比较口径</strong>问题（同一分数在不同脚手架下不可比；不同厂商选不同基准），第三个是<strong>纵向</strong>问题（指数换版使历史分数失效），第四个是<strong>准入</strong>问题（评测方根本进不去）。四者叠加的后果写在中间。</p>
@@ -167,7 +167,7 @@ Fable    ARC-AGI-3   未完成            <span class="cmt">// 反蒸馏防护�
 
 <h2 id="s9"><span class="hnum">09</span>成本与 token 效率：真实的竞争轴</h2>
 <figure>
-  <img class="diagram" src="img/dispatch-39-gpt6-fable51/fig-3.svg" alt="能力分工与成本结构：Fable 5.1 与 Astra 各自领先的项目，以及相反的成本结构">
+  <img class="diagram" src="img/dispatch-39-gpt6-fable51/fig-3.svg" alt="能力分工与成本结构：Fable 5.1 与 Astra 各自领先的项目，以及相反的成本结构" loading="lazy" decoding="async" width="736" height="922">
   <figcaption><span class="fnum">图 3</span>能力分工（左 Fable 5.1、右 Astra）与相反的成本结构，共同指向竞争轴的迁移。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>上方两组不是简单的胜负表：Fable 5.1 领先的是<strong>综合指数与知识密集型</strong>项目（AA 指数、HLE 带工具、GDPval-AA、编码 agent 指数），Astra 领先的是<strong>终端与形式化</strong>项目（Terminal-Bench 4.0 与 Science、FrontierMath、OSWorld、网络安全）。选型结论因此是负载形状决定的，不是排名决定的。</p>

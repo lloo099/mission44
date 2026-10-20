@@ -46,6 +46,8 @@ for (const f of files) {
     if (!src.startsWith(`img/${id}/`)) err(`image outside img/${id}/: ${src}`);
     else if (!fs.existsSync(path.join(ROOT, "reads", src))) err(`missing image file ${src}`);
   }
+  const unlazy = [...html.matchAll(/<img\b[^>]*>/g)].filter((m) => !/loading="lazy"/.test(m[0]) || !/width="\d+"/.test(m[0])).length;
+  if (unlazy) warn(`${unlazy} <img> without loading="lazy"/width/height — run python3 scripts/optimize_images.py`);
   const figs = (html.match(/<figure>/g) || []).length;
   const readouts = (html.match(/class="readout"/g) || []).length;
   if (figs && readouts < figs) warn(`${figs} figures but ${readouts} readouts`);

@@ -78,7 +78,7 @@
 <p><strong>Seed 2.1 Pro（抢先版）· 6 月 19 日</strong>：ByteDance Seed 团队把 Seed-2.1-Pro-Preview 放上 LMArena 的 Code Arena 试用。前端编码子榜 <strong>1539 Elo，全球第 8</strong>，与 Anthropic 旗舰 Claude Opus 4.6 同档；React、品牌营销、数据分析工具等 7 个子类里有 5 个进全球前十。完整基准（AIME / SWE-bench / GPQA 等）官方表示"未来几周"随正式版放出。<strong>开源权重浪潮继续</strong>：6 月里 GLM-5.2（MIT）、MiniMax-M3 + MSA 相继开放权重，都主打 1M 上下文；叠加 4 月的 DeepSeek-V4，开源前沿在 80% 的 SWE-bench Verified 一带已经逼近上一档闭源模型。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-01-seed-2-1/fig-1.svg" alt="流程图：4 月 DeepSeek-V4（CSA 加 HCA）到 6 月 GLM-5.2（MIT，DSA 加 IndexShare）到 6 月 MiniMax-M3（MSA），三者都主打 1M 上下文，开源前沿在 80% SWE-bench Verified 一带逼近上一档闭源">
+  <img class="diagram" src="img/dispatch-01-seed-2-1/fig-1.svg" alt="流程图：4 月 DeepSeek-V4（CSA 加 HCA）到 6 月 GLM-5.2（MIT，DSA 加 IndexShare）到 6 月 MiniMax-M3（MSA），三者都主打 1M 上下文，开源前沿在 80% SWE-bench Verified 一带逼近上一档闭源" loading="lazy" decoding="async" width="1585" height="164">
   <figcaption><span class="fnum">图 1</span>2026 上半年开源 1M 上下文模型的时间线：4 月 DeepSeek-V4（CSA + HCA）→ 6 月 GLM-5.2（MIT，DSA + IndexShare）→ 6 月 MiniMax-M3（MSA），汇聚到"三者都主打 1M 上下文"与"80% SWE-bench Verified 一带"两个结论节点。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -154,7 +154,7 @@
 <p>一句话：<strong>Seed 2.1 是标杆，不是载荷。</strong>本看板对每个进入视野的模型只问一个问题：它对"在昇腾上做 RL"是<strong>标杆（benchmark）</strong>还是<strong>载荷（payload）</strong>？<strong>标杆</strong>是一个目标分数——用于定义"做到多好算追上前沿"，但无法对其进行任何操作：Seed 2.1 Pro 抢先版是闭源 API、没有公开权重、没有 vLLM-Ascend 适配路径，不能把它加载到 910B 上、不能改它的 attention、不能在它上面跑 rollout、更不能对它做后训练；它在 RL pipeline 里既不能当 actor（生成轨迹）也不能当被训练的 policy，也无法作为本地部署的 reward model / judge，全部价值就是那个数字（告诉你天花板在哪）。<strong>载荷</strong>则是可实际部署到 NPU 上开展工作的对象：有开放权重、能被推理框架加载、attention / KV-cache 实现可读可改、可作 rollout 引擎也可作被更新的 policy——DeepSeek-V4、MiniMax-M3、GLM-5.2 才是这一类。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-01-seed-2-1/fig-2.svg" alt="两个子图：左为标杆（闭源不可移植）——Seed 2.1 Pro 抢先版分出闭源 API 无权重无 vLLM-Ascend 适配、1539 Elo 前端第 8 约等于 Opus 4.6、价值等于目标分数标杆三个节点；右为载荷（开源权重可上 NPU）——DeepSeek-V4-Pro 已 vLLM-Ascend 支持、MiniMax-M3 纯 GQA 加 MSA 解码侧最好移植、GLM-5.2 MIT 适合 RL 基座；虚线箭头标注标杆定义差距、载荷才能实际运行在 NPU 上">
+  <img class="diagram" src="img/dispatch-01-seed-2-1/fig-2.svg" alt="两个子图：左为标杆（闭源不可移植）——Seed 2.1 Pro 抢先版分出闭源 API 无权重无 vLLM-Ascend 适配、1539 Elo 前端第 8 约等于 Opus 4.6、价值等于目标分数标杆三个节点；右为载荷（开源权重可上 NPU）——DeepSeek-V4-Pro 已 vLLM-Ascend 支持、MiniMax-M3 纯 GQA 加 MSA 解码侧最好移植、GLM-5.2 MIT 适合 RL 基座；虚线箭头标注标杆定义差距、载荷才能实际运行在 NPU 上" loading="lazy" decoding="async" width="2106" height="298">
   <figcaption><span class="fnum">图 2</span>标杆与载荷的两个集合：左框为闭源不可移植的 Seed 2.1 Pro 抢先版及其三个属性（无权重无适配、1539 Elo 第 8、价值 = 目标分数）；右框为三个开源载荷及各自的 NPU 角色；虚线箭头是两者之间唯一的关系——标杆定义差距，载荷才能实际运行在 NPU 上。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -177,7 +177,7 @@
 <p>Seed 2.1 抢先版的强项不是单轮问答，而是<strong>多轮长链路的前端 / Agent 编码</strong>（Code-Arena 前端榜 1539、7 个子类 5 个进前十），这恰恰是 <strong>agentic RL</strong> 的训练对象：模型在一个长 episode 里反复"读代码 → 改 → 跑 → 看反馈 → 再改"，一条轨迹动辄几十轮、上下文持续累积。这类任务的形态对应昇腾做 RL 的两个最突出的系统瓶颈。<strong>痛点一：长 rollout 的显存争用</strong>——agentic 轨迹每多一轮 KV cache 就单调膨胀，长链路下占用大量 HBM；更不利的是 vLLM-Ascend 目前缺 sleep-mode 这类"训练阶段把推理引擎权重/缓存让出显存"的机制，导致同卡上 rollout（推理）+ 训练（更新）争用同一块 HBM，episode 越长争用越严重、batch 被迫缩小、吞吐大幅下降。前端 / Agent 编码这种"长轮数 + 大上下文"任务正好把它放大到极限（见 NPU 架构页的"RL 显存争用"视图）。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-01-seed-2-1/fig-3.svg" alt="流程图：Seed 2.1 强项等于多轮长链路前端 Agent 编码，到即 agentic RL 训练对象，到闭源侧抬高天花板，到开源加昇腾想接近，分出难点一长 rollout 显存争用与难点二异步或解耦 RL">
+  <img class="diagram" src="img/dispatch-01-seed-2-1/fig-3.svg" alt="流程图：Seed 2.1 强项等于多轮长链路前端 Agent 编码，到即 agentic RL 训练对象，到闭源侧抬高天花板，到开源加昇腾想接近，分出难点一长 rollout 显存争用与难点二异步或解耦 RL" loading="lazy" decoding="async" width="540" height="510">
   <figcaption><span class="fnum">图 3</span>从 Seed 2.1 的强项到昇腾 RL 两个难点的因果链：多轮长链路前端 Agent 编码 → agentic RL 训练对象 → 闭源侧抬高天花板 → 开源 + 昇腾想接近 → 分出难点一（长 rollout 显存争用）与难点二（异步或解耦 RL）。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

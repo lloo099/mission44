@@ -92,7 +92,7 @@ NPU         10 万–50 万 token KV cache × 910B 64GB × 无 sleep-mode → �
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-1.svg" alt="上：单轮 RLVR 一步 MDP（prompt → 一次生成 → 回答 → 一个可验证奖励）；下：Agentic RL 多回合 POMDP（观察 → 决策 → 动作 → 环境执行 → 返回新观察，整条轨迹 10 万–50 万 token → episode 级奖励 + 中间步）">
+  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-1.svg" alt="上：单轮 RLVR 一步 MDP（prompt → 一次生成 → 回答 → 一个可验证奖励）；下：Agentic RL 多回合 POMDP（观察 → 决策 → 动作 → 环境执行 → 返回新观察，整条轨迹 10 万–50 万 token → episode 级奖励 + 中间步）" loading="lazy" decoding="async" width="421" height="1476">
   <figcaption><span class="fnum">图 1</span>单轮 RLVR（一步 MDP，上）与 Agentic RL（多回合 POMDP，下）：上方是一条直线链，下方是一个观察—决策—动作—环境的闭环，环境执行同时向"整条轨迹 10 万–50 万 token"输出，最终得到 episode 级奖励 + 大量中间步；虚线标注"时间尺度从一步扩到上百回合"。<span class="chip c-inf">本站图</span> 由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -102,7 +102,7 @@ NPU         10 万–50 万 token KV cache × 910B 64GB × 无 sleep-mode → �
 </figure>
 
 <figure>
-  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-2.svg" alt="单回合内部：观察 → 决策 → 动作（调工具）→ 环境执行 → 返回新 observation；循环 10 至 100+ 回合后轨迹结束 → 最终 episode 级奖励 → 更新策略（结果驱动而非模仿示范）">
+  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-2.svg" alt="单回合内部：观察 → 决策 → 动作（调工具）→ 环境执行 → 返回新 observation；循环 10 至 100+ 回合后轨迹结束 → 最终 episode 级奖励 → 更新策略（结果驱动而非模仿示范）" loading="lazy" decoding="async" width="2213" height="187">
   <figcaption><span class="fnum">图 2</span>Agentic 单回合的内部结构：一次 LLM 调用（观察 → 决策 → 动作）加一次环境交互（环境执行 → 返回新 observation），循环 10 至 100+ 回合后轨迹结束，得到最终 episode 级奖励，再以"结果驱动而非模仿示范"的方式更新策略。<span class="chip c-inf">本站图</span> 由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -125,7 +125,7 @@ NPU         10 万–50 万 token KV cache × 910B 64GB × 无 sleep-mode → �
 <p>原文把难题归为三个。<strong>① 信用分配（Credit Assignment）——最困难的前沿</strong>：轨迹跨上百回合，只有最后一个 episode 级奖励，中间各步的贡献难以区分；2026 的一篇综述梳理了 <strong>47 种信用分配方法</strong>，按两维分类——粒度（token / segment / step / turn / multi-agent）× 方法（蒙特卡洛 / 时序差分 TD / 基于模型 / 博弈论 / 信息论）。<strong>② 工具集成推理（TIR）/ ARLT</strong>：从 ReAct 式"先想后做"的事后拼接，走向深度交织的多轮工具使用，RL 把范式从"模仿工具调用脚本"换成"按结果优化"。<strong>③ 长 rollout 的系统开销</strong>：一条 agentic 轨迹要跑几十次"生成 + 环境往返"，rollout 比单轮重得多、长尾更严重、显存占用急剧增长，所以 agentic RL 框架普遍选择<strong>异步 rollout</strong>。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-4.svg" alt="Agentic RL 三大核心难题：信用分配（episode 奖励几乎没信息 → 细粒度 advantage 分摊）、TIR/ARLT（从 ReAct 拼接到深度交织 → 按结果优化）、长 rollout 系统开销（长尾严重、显存剧增 → 异步解耦）；三者之间以虚线互相影响">
+  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-4.svg" alt="Agentic RL 三大核心难题：信用分配（episode 奖励几乎没信息 → 细粒度 advantage 分摊）、TIR/ARLT（从 ReAct 拼接到深度交织 → 按结果优化）、长 rollout 系统开销（长尾严重、显存剧增 → 异步解耦）；三者之间以虚线互相影响" loading="lazy" decoding="async" width="1115" height="736">
   <figcaption><span class="fnum">图 3</span>三大难题与各自的对症方向：信用分配 → 细粒度 advantage 分摊；TIR/ARLT → 按结果优化工具使用；长 rollout → 异步解耦。三个难题之间有三条虚线：中间步质量影响工具选择、更多工具回合放大系统开销、异步 rollout 改变 advantage 计算时序。<span class="chip c-inf">本站图</span> 由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -150,7 +150,7 @@ NPU         10 万–50 万 token KV cache × 910B 64GB × 无 sleep-mode → �
 <p><strong>信号被稀释。</strong>一个 episode 级奖励平摊到 100 个回合，每回合分到的平均信息量极低；真正决定成败的可能只是其中两三步关键决策（选错工具、漏了检索、在某分支走偏），其余 97 步要么无关、要么无实质贡献。但稀疏 outcome 奖励无法区分这些：它只知整条轨迹成功还是失败，不知贡献与失误各在哪一步。结果是大量正确中间步因最终失败被一起惩罚，大量平庸甚至有害步骤因最终成功被一起强化。回合越多，这种整体连带奖惩越严重，有效信噪比越低——这也是为什么综述要梳理多达 47 种方法：它本质是一个被反复研究但尚无通用解法的开放问题。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-3.svg" alt="核心难点（episode 奖励要分摊到上百回合）与两个分类维度：粒度维 token → segment → step → turn → multi-agent；方法维 蒙特卡洛 → 时序差分 TD → 基于模型 → 博弈论 → 信息论；两维相乘得到综述梳理的 47 种方法">
+  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-3.svg" alt="核心难点（episode 奖励要分摊到上百回合）与两个分类维度：粒度维 token → segment → step → turn → multi-agent；方法维 蒙特卡洛 → 时序差分 TD → 基于模型 → 博弈论 → 信息论；两维相乘得到综述梳理的 47 种方法" loading="lazy" decoding="async" width="875" height="839">
   <figcaption><span class="fnum">图 4</span>信用分配的两维分类：粒度维（token → segment → step → turn → multi-agent）与方法维（蒙特卡洛 → 时序差分 TD → 基于模型 → 博弈论 → 信息论）相乘，覆盖综述梳理的 47 种方法。<span class="chip c-inf">本站图</span> 由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -160,7 +160,7 @@ NPU         10 万–50 万 token KV cache × 910B 64GB × 无 sleep-mode → �
 </figure>
 
 <figure>
-  <img src="img/dispatch-08-agentic-rl/orig-1.png" alt="LLM 强化学习信用分配方法谱系网格：纵轴粒度 Token / Segment / Step-Turn / Multi-Agent，横轴方法 Monte Carlo / TD-Value / LLM-as-Critic / Game-theoretic / Info-theoretic；蓝色为推理 RL 方法，红色为 agentic RL 方法，紫红为多 agent；灰色虚线箭头标注从左上到右下的演化趋势">
+  <img src="img/dispatch-08-agentic-rl/orig-1.webp" alt="LLM 强化学习信用分配方法谱系网格：纵轴粒度 Token / Segment / Step-Turn / Multi-Agent，横轴方法 Monte Carlo / TD-Value / LLM-as-Critic / Game-theoretic / Info-theoretic；蓝色为推理 RL 方法，红色为 agentic RL 方法，紫红为多 agent；灰色虚线箭头标注从左上到右下的演化趋势" loading="lazy" decoding="async" width="1800" height="862">
   <figcaption><span class="fnum">图 5</span>信用分配方法谱系：纵轴粒度（Token / Segment / Step-Turn / Multi-Agent），横轴方法族（Monte Carlo / TD-Value / LLM-as-Critic / Game-theoretic / Info-theoretic）；蓝色为 Reasoning RL、红色为 Agentic RL、紫红为 Multi-Agent；灰色虚线箭头标注 Evolution trend。<span class="chip c-tp">第三方</span> 取自综述 <a href="https://arxiv.org/abs/2604.09459">arXiv 2604.09459</a> 的配套仓库（xxzcc/Awesome-Credit-Assignment-in-LLM-RL，assets/taxonomy.png）。注意该图的横轴第三列为 LLM-as-Critic，与原文所述"基于模型"表述不同，此处按图中标注读。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -188,7 +188,7 @@ NPU         10 万–50 万 token KV cache × 910B 64GB × 无 sleep-mode → �
 <p><strong>RL 按结果优化学到的是"有效使用工具"</strong>：outcome-driven 信号不在乎轨迹像不像示范，只在乎最终有没有把任务做成。正因为信号绑在结果上，模型能学出 SFT 学不到的几类能力——<strong>何时调</strong>（信息不足时主动触发）、<strong>调哪个</strong>（在多工具间按预期收益选择）、<strong>看结果怎么续</strong>（据返回决定采纳、换查询、还是换工具重试）。这些是"对工具调用后果建模"的能力，而后果信息只存在于 outcome 奖励里，示范的 token 分布里没有。</p>
 
 <figure>
-  <img src="img/dispatch-08-agentic-rl/orig-2.png" alt="VerlTool 架构：左侧 Verl Workflow（LLM Actor，轨迹 q, a0, s, o0, a1, s, o1；Multi-turn Rollouts 与 Actor Update 循环；RL Alg GRPO/PPO），中间 Tool Server（Bash Terminal、Python Interpreter、Web Browser、Image Processing），右侧 Tool Thread（Load History Env → Tool Execution → Save History Env），底部返回 Observation / trajectory done? / valid action?">
+  <img src="img/dispatch-08-agentic-rl/orig-2.webp" alt="VerlTool 架构：左侧 Verl Workflow（LLM Actor，轨迹 q, a0, s, o0, a1, s, o1；Multi-turn Rollouts 与 Actor Update 循环；RL Alg GRPO/PPO），中间 Tool Server（Bash Terminal、Python Interpreter、Web Browser、Image Processing），右侧 Tool Thread（Load History Env → Tool Execution → Save History Env），底部返回 Observation / trajectory done? / valid action?" loading="lazy" decoding="async" width="1800" height="551">
   <figcaption><span class="fnum">图 6</span>VerlTool 架构：左侧 Verl Workflow 中 LLM Actor 产出交织轨迹 q, a<sub>0</sub>, s, o<sub>0</sub>, a<sub>1</sub>, s, o<sub>1</sub>（a 为动作、s 为停止符、o 为观察），Multi-turn Rollouts 与 Actor Update 循环，RL 算法为 GRPO/PPO；动作 a<sub>1</sub> 经 Unified API Request &amp; Tool match 送入中间的 Tool Server（Bash Terminal、Python Interpreter、Web Browser、Image Processing 等），右侧 Tool Thread 负责 Load History Env → Tool Execution → Save History Env，底部返回 Observation / trajectory done? / valid action? 作为 o<sub>1</sub>。<span class="chip c-vr">自报</span> 取自 VerlTool 官方仓库 README（TIGER-AI-Lab/verl-tool，assets/imgs/verl_tool_architecture.png；论文 arXiv 2509.01055）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -213,7 +213,7 @@ NPU         10 万–50 万 token KV cache × 910B 64GB × 无 sleep-mode → �
 <p><strong>异步解耦通过分离生成和训练解决该问题</strong>：推理 server 持续产出轨迹，先完成先交付；trainer 从完成队列拉取已完成的轨迹组成 batch 即可更新，不等仍在运行的长轨迹。短轨迹完成后立刻被消费、推理实例立刻接新任务，长轨迹在后台继续运行而不阻塞其他部分，NPU 利用率显著回升。<strong>代价是 staleness 与 off-policy</strong>：一条轨迹开始生成时用 π<sub>old</sub>，等它（尤其长轨迹）跑完交给 trainer 时策略已更新过几次成 π<sub>new</sub>；轨迹越长、异步程度越高，staleness 越严重（长尾轨迹恰是最陈旧、又往往信息最丰富的困难样本）。所以异步并非没有代价，需配合重要性采样修正、限制最大 staleness、或对过旧轨迹降权。</p>
 
 <figure>
-  <img src="img/dispatch-08-agentic-rl/orig-3.png" alt="AgentRL 部署架构：左侧 Training Framework（Training 与 Rollout 两组实例，多个 Async agent loop：Start → History → Action → Observation 循环），中间 AgentRL Controller 转发 Start / Init Obs. / Action / Obs. & Reward，右侧 Env. deployment Framework（Hosts 上多个 Worker containers，每个含 Task 与 AgentRL Task Worker，管理 Ubuntu、MySQL 等 Task-Specific Environment）">
+  <img src="img/dispatch-08-agentic-rl/orig-3.webp" alt="AgentRL 部署架构：左侧 Training Framework（Training 与 Rollout 两组实例，多个 Async agent loop：Start → History → Action → Observation 循环），中间 AgentRL Controller 转发 Start / Init Obs. / Action / Obs. & Reward，右侧 Env. deployment Framework（Hosts 上多个 Worker containers，每个含 Task 与 AgentRL Task Worker，管理 Ubuntu、MySQL 等 Task-Specific Environment）" loading="lazy" decoding="async" width="1800" height="574">
   <figcaption><span class="fnum">图 7</span>AgentRL 的训练—环境分离架构：左侧 Training Framework 内 Training 与 Rollout 两组实例并存，多个 Async agent loop（Start → History → Action → Observation 循环）各自独立推进；中间 AgentRL Controller 在两侧之间转发 Start / Init Obs. / Action / Obs. &amp; Reward；右侧 Env. deployment Framework 在多台 Hosts 上以 Worker containers 运行 Task A / Task B 等任务，AgentRL Task Worker 管理 Ubuntu、MySQL 等 Task-Specific Environment。<span class="chip c-vr">自报</span> 取自 AgentRL 官方仓库 README（THUDM/AgentRL，docs/assets/deployment-framework.png；论文 arXiv 2510.04206）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -294,7 +294,7 @@ NPU         10 万–50 万 token KV cache × 910B 64GB × 无 sleep-mode → �
 <p>Agentic RL 几乎是为"放大昇腾痛点"量身定制的，但也因此<strong>最能体现前几期所述技术的价值</strong>。原文四点：<strong>超长 rollout = 显存痛点放大到极致</strong>——10 万–50 万 token 的多轮轨迹 KV cache 巨大，而昇腾 910B 单卡 64GB、无 vLLM sleep-mode，rollout 与 train 抢显存（见 NPU 架构页"RL 显存争用"视图），agentic 场景下这个矛盾最尖锐；<strong>前几期的技术在这里收益最大</strong>——异步/解耦 rollout（D02 的 VerlTool/AgentRL 同源思路）、量化 rollout（FP8/INT8，D02）、稀疏注意力 / KV 压缩（MSA/DSA/CSA-HCA/SWA，D04/D05/D07），每一项都直接降低 agentic rollout 的显存与时延；<strong>环境/奖励设计是 NPU 团队的低门槛切入点</strong>——可验证奖励 + 模拟环境算力轻、价值高，不必先解决大规模训练就能做出贡献；<strong>信用分配在 NPU 上还需额外防范一层</strong>——跨回合的 advantage 计算 + NPU 上重写的算子会叠加 train-inference 数值漂移，align-probe 在此同样适用。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-5.svg" alt="痛点放大链路：超长 agentic rollout（10 万至 50 万 token）→ KV cache 巨大 → 910B 仅 64GB HBM 且无 sleep-mode → rollout 与 train 抢显存；对症三项：异步或解耦 rollout、量化 rollout、稀疏注意力或 KV 压缩，共同指向缓解显存与长尾">
+  <img class="diagram" src="img/dispatch-08-agentic-rl/fig-5.svg" alt="痛点放大链路：超长 agentic rollout（10 万至 50 万 token）→ KV cache 巨大 → 910B 仅 64GB HBM 且无 sleep-mode → rollout 与 train 抢显存；对症三项：异步或解耦 rollout、量化 rollout、稀疏注意力或 KV 压缩，共同指向缓解显存与长尾" loading="lazy" decoding="async" width="922" height="910">
   <figcaption><span class="fnum">图 8</span>痛点放大链路与对症技术：超长 agentic rollout（10 万至 50 万 token）→ KV cache 巨大 → 910B 仅 64GB HBM 且无 sleep-mode → rollout 与 train 抢显存；由此引出异步/解耦 rollout、量化 rollout（FP8/INT8）、稀疏注意力/KV 压缩三项前几期技术，共同指向"缓解显存与长尾"。<span class="chip c-inf">本站图</span> 由原文第 5 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

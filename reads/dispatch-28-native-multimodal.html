@@ -79,7 +79,7 @@
 <p>上一代多模态模型的标准做法是<strong>嫁接</strong>：以预训练语言模型为基座，外接 CLIP / SigLIP 系视觉编码器，中间加对齐阶段（对比学习或 caption 预热），再做联合微调。该路线的代价在 2025–2026 年逐渐显现：对齐阶段引入独立的训练目标与数据管线，编码器与 backbone 预训练来源不同，留下持续的表示失配，长上下文与视频场景下该失配被进一步放大。"原生"（native）的主张是：<strong>视觉自预训练起始即与语言共享同一目标函数</strong>。对"相同"的实现方式，2026 年出现了两条不同路线。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-28-native-multimodal/fig-1.svg" alt="两条原生路线总对照：上一代嫁接式多模态分别沿去 CLIP 遗产一边走向 K3 连续特征原生（MoonViT-V2 从零训练、native resolution 打包、projector 投影为视觉 token），沿去连续特征一边走向 LongCat-Next 离散 token 原生（dNaViT SAE + 8 层 RVQ、全模态同源离散 token、单一自回归 NTP）；共同点为均移除对比学习遗产，分歧为视觉是输入适配器还是另一种词表">
+  <img class="diagram" src="img/dispatch-28-native-multimodal/fig-1.svg" alt="两条原生路线总对照：上一代嫁接式多模态分别沿去 CLIP 遗产一边走向 K3 连续特征原生（MoonViT-V2 从零训练、native resolution 打包、projector 投影为视觉 token），沿去连续特征一边走向 LongCat-Next 离散 token 原生（dNaViT SAE + 8 层 RVQ、全模态同源离散 token、单一自回归 NTP）；共同点为均移除对比学习遗产，分歧为视觉是输入适配器还是另一种词表" loading="lazy" decoding="async" width="1939" height="588">
   <figcaption><span class="fnum">图 1</span>两条原生路线总对照——上一代嫁接式多模态分别沿"去 CLIP 遗产"与"去连续特征"两条边走向 K3 与 LongCat-Next；共同点是均移除对比学习遗产，分歧是视觉是输入适配器还是另一种词表（原文图 A）。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -119,7 +119,7 @@
 <p><strong>LongCat-Next：dNaViT——去除连续特征表示。</strong>范式名 <strong>DiNA（Discrete Native Autoregression）</strong>：文本、图像、语音全部映射为同源离散 token，单一 AR 目标，"最小模态特化"。视觉侧自研 <strong>dNaViT</strong>（Discrete Native Any-Resolution ViT）：SAE（语义对齐编码器）+ <strong>8 层 RVQ</strong> 层级量化，像素域压缩至多 <strong>28×</strong> 仍保持语义与文字渲染保真度；解码用 DepthTransformer 多层 token 合并 + 解耦双轨生成式解码器。语音侧 LongCat-Audio-Codec（Whisper-large-v3 初始化 encoder，语义 / 声学双路，8 层 RVQ）。backbone 是 LongCat-Flash-Lite MoE（68.5B / 约 A3B，带 N-gram Embedding）。核心主张：<strong>同一自回归模型同时承担视觉理解与图像生成</strong>（以及语音理解 / 低延迟对话），官方主张首次让离散路线在理解 benchmark 上追平连续特征专用模型——理解任务的性能损失长期是离散路线的瓶颈。</p>
 
 <figure>
-  <img src="img/dispatch-28-native-multimodal/orig-1.jpg" alt="LongCat-Next 总览图：底部为多模态输入（文本问题、672×560 图像、文本 prompt、音频），经 Text / Vision / Audio Tokenizer 变为三色 token 序列送入 LongCat-Flash Modality-Agnostic MoE 解码器，输出 token 序列再经 Vision / Text / Audio De-Tokenizer 还原为文本答案、1372×720 生成图像与语音回复">
+  <img src="img/dispatch-28-native-multimodal/orig-1.webp" alt="LongCat-Next 总览图：底部为多模态输入（文本问题、672×560 图像、文本 prompt、音频），经 Text / Vision / Audio Tokenizer 变为三色 token 序列送入 LongCat-Flash Modality-Agnostic MoE 解码器，输出 token 序列再经 Vision / Text / Audio De-Tokenizer 还原为文本答案、1372×720 生成图像与语音回复" loading="lazy" decoding="async" width="1800" height="1010">
   <figcaption><span class="fnum">图 2</span>LongCat-Next 总览：自下而上为 Multimodality Input → Multimodality Tokenizer → Decoder-only Backbone（LongCat-Flash，Modality-Agnostic MoE）→ Multimodality De-Tokenizer → 输出。图例中橙色为 Vision Token、蓝色为 Text Token、绿色为 Audio Token；左侧示例是对 672×560 图像的 OCR 问答，右侧示例是按 prompt 生成 1372×720 图像与语音对话。<span class="chip c-vr">自报</span> 取自 <a href="https://huggingface.co/meituan-longcat/LongCat-Next">meituan-longcat/LongCat-Next</a> 仓库 README（assets/overview.jpg）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -129,7 +129,7 @@
 </figure>
 
 <figure>
-  <img class="diagram" src="img/dispatch-28-native-multimodal/fig-2.svg" alt="架构逐项对照：K3 MoonViT-V2 管线——原始分辨率图像或视频 patch 14 直接切块、NaViT 式变长打包、27 层 ViT 401M from scratch 纯 NTP、薄 projector 像素混洗 4 合 1 加两层 MLP、视觉 token 与文本交错进 2.8T backbone 底层；LongCat-Next dNaViT 管线——任意分辨率图像、SAE 语义对齐编码、8 层 RVQ 层级量化压缩至多 28×、同源离散 token 与文本音频一序列、68.5B 纯 NTP backbone 理解与生成同一模型；分歧本质为视觉是被适配的输入还是另一种词表">
+  <img class="diagram" src="img/dispatch-28-native-multimodal/fig-2.svg" alt="架构逐项对照：K3 MoonViT-V2 管线——原始分辨率图像或视频 patch 14 直接切块、NaViT 式变长打包、27 层 ViT 401M from scratch 纯 NTP、薄 projector 像素混洗 4 合 1 加两层 MLP、视觉 token 与文本交错进 2.8T backbone 底层；LongCat-Next dNaViT 管线——任意分辨率图像、SAE 语义对齐编码、8 层 RVQ 层级量化压缩至多 28×、同源离散 token 与文本音频一序列、68.5B 纯 NTP backbone 理解与生成同一模型；分歧本质为视觉是被适配的输入还是另一种词表" loading="lazy" decoding="async" width="661" height="1620">
   <figcaption><span class="fnum">图 3</span>架构逐项对照——K3 的 MoonViT-V2 管线（五步）与 LongCat-Next 的 dNaViT 管线（五步）并列，两条虚线汇于"分歧本质"：视觉 = 被适配的输入，还是视觉 = 另一种词表（原文图 B）。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -154,7 +154,7 @@
 <p><strong>LongCat-Next：分阶段的原生化课程。</strong>并非纯"从 step 0 交错"，而是：① tokenizer 独立预训练（dNaViT 与 Audio-Codec 各自重建训练，音频侧分三步）→ 冻结 tokenizer；② <strong>Pre-align</strong>：冻结语言模型，只训 codebook embedding 与解码头——使离散词表与语言模型的嵌入空间先行对齐；③ 解冻全部参数，以交错数据深度联合训练；④ mid-training 与 SFT（合成长 CoT、任意分辨率生成数据）。冻结 tokenizer 保证离散接口稳定，是该路线独有的稳定性保障。工程口径（自报，provisional）：相对连续方案<strong>解码提速约 10×、算力节省约 30%</strong>，支持 1M 上下文。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-28-native-multimodal/fig-3.svg" alt="训练课程对照：K3 单阶段联合——token 0 起视觉与文本交错单一 NTP 联合优化，稳定性保障为编码器 from scratch 消除 SigLIP 初始化的梯度 spike；LongCat-Next 先离散后联合——阶段一 tokenizer 独立预训练、阶段二 Pre-align 冻结 LM 只训 codebook 嵌入与解码头、阶段三全参交错联合训练、阶段四 mid-train 与 SFT，稳定性保障为冻结 tokenizer 离散接口不漂移；共同点为均以数据配比保持文本能力">
+  <img class="diagram" src="img/dispatch-28-native-multimodal/fig-3.svg" alt="训练课程对照：K3 单阶段联合——token 0 起视觉与文本交错单一 NTP 联合优化，稳定性保障为编码器 from scratch 消除 SigLIP 初始化的梯度 spike；LongCat-Next 先离散后联合——阶段一 tokenizer 独立预训练、阶段二 Pre-align 冻结 LM 只训 codebook 嵌入与解码头、阶段三全参交错联合训练、阶段四 mid-train 与 SFT，稳定性保障为冻结 tokenizer 离散接口不漂移；共同点为均以数据配比保持文本能力" loading="lazy" decoding="async" width="1337" height="694">
   <figcaption><span class="fnum">图 4</span>训练课程对照——K3 单阶段联合（token 0 起交错、稳定性来自编码器 from scratch）与 LongCat-Next 四阶段原生化课程（tokenizer 预训练 → Pre-align → 全参联合 → mid-train 与 SFT，稳定性来自冻结 tokenizer）；共同点是均以数据配比保持文本能力（原文图 C）。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -192,7 +192,7 @@
 </div>
 
 <figure>
-  <img src="img/dispatch-28-native-multimodal/orig-2.png" alt="LongCat-Next 评测柱状图，八个面板：MMMU-Pro、MathVision、OmniDocBench-EN（越低越好）、CharXivRQ、TIIF-LONG、LongText-EN、ReasoningQA、MMAU，每面板 LongCat-Next 与四个对照模型的分数">
+  <img src="img/dispatch-28-native-multimodal/orig-2.webp" alt="LongCat-Next 评测柱状图，八个面板：MMMU-Pro、MathVision、OmniDocBench-EN（越低越好）、CharXivRQ、TIIF-LONG、LongText-EN、ReasoningQA、MMAU，每面板 LongCat-Next 与四个对照模型的分数" loading="lazy" decoding="async" width="1800" height="1153">
   <figcaption><span class="fnum">图 5</span>LongCat-Next 官方评测总览，八个面板分三组：上排四项为视觉理解（MMMU-Pro 60.3、MathVision 64.7、OmniDocBench-EN 0.152 且箭头标注越低越好、CharXivRQ 60.1），对照为 Qwen3-Omni-A3B-Instruct、GPT5-minimal、Gemini2.5-Flash-Lite-preview、Qwen3-VL-A3B-Instruct；下排前两项为图像生成的文字渲染（TIIF-LONG 84.38、LongText-EN 93.15），对照为 BAGEL、Gemini2.5-Flash-Image、FLUX.1-dev、Qwen-Image-2507；下排后两项为语音（ReasoningQA 87.52、MMAU 76.4），对照为 Gemini2.5-Flash-Lite-preview、Qwen3-Omni-A3B-Instruct、Kimi-audio、Step-audio-2-mini。<span class="chip c-vr">自报</span> 取自 meituan-longcat/LongCat-Next 仓库 README（assets/evaluation.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

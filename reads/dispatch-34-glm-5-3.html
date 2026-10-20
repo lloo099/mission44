@@ -81,7 +81,7 @@
 这与 D25 的判断直接相关：SFT + 在线 RLVR 主干已成熟，增量在后训练配方与基建——GLM-5.3 是该判断的旗舰级实证。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-34-glm-5-3/fig-1.svg" alt="后训练 scaling 流程图：GLM-5 基座不变，经 5.2（AA 53）到只推后训练的三项变化，得到 5.3（AA 60，并列开源第一）；旁注自报跳变数字">
+  <img class="diagram" src="img/dispatch-34-glm-5-3/fig-1.svg" alt="后训练 scaling 流程图：GLM-5 基座不变，经 5.2（AA 53）到只推后训练的三项变化，得到 5.3（AA 60，并列开源第一）；旁注自报跳变数字" loading="lazy" decoding="async" width="1985" height="169">
   <figcaption><span class="fnum">图 1</span>图 A · 后训练 scaling：固定基座的受控提升。左为 GLM-5 基座（753B / 约 40B 激活、1M 上下文、架构不变），经 GLM-5.2（AA 53）进入"只推后训练"的三项变化（环境规模数十倍、环境类型扩展、时长增加），得到 GLM-5.3（AA 60）；虚线旁注为自报的 Terminal-Bench 3.0 与 DeepSWE 跳变。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -91,7 +91,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-34-glm-5-3/orig-3.png" alt="GLM-5.3 六项基准柱状图：Terminal Bench 3.0、DeepSWE、Agents' Last Exam、AutomationBench、HLE w/ Tools、GDPVal-AA v2，对比 GLM-5.2、Kimi K3、Fable 5、GPT-5.6 Sol">
+  <img src="img/dispatch-34-glm-5-3/orig-3.webp" alt="GLM-5.3 六项基准柱状图：Terminal Bench 3.0、DeepSWE、Agents' Last Exam、AutomationBench、HLE w/ Tools、GDPVal-AA v2，对比 GLM-5.2、Kimi K3、Fable 5、GPT-5.6 Sol" loading="lazy" decoding="async" width="1800" height="1063">
   <figcaption><span class="fnum">图 2</span>GLM-5.3 官方六项基准对比：每个面板五根柱，从左至右为 GLM-5.3（蓝）、GLM-5.2（绿）、Kimi K3、Claude Fable 5、GPT-5.6 Sol；六项为 Terminal Bench 3.0、DeepSWE、Agents' Last Exam (CLI)、AutomationBench、HLE w/ Tools、GDPVal-AA v2。<span class="chip c-vr">自报</span> 取自 zai-org/GLM-5 仓库 README（resources/bench_53_2.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -116,7 +116,7 @@
 slime 提供的灵活 rollout 接口（多轮交互循环、工具调用、环境反馈、verifier 引导分支）正是"数十倍长程环境"得以工程化的底座。</p>
 
 <figure>
-  <img src="img/dispatch-34-glm-5-3/orig-1.png" alt="slime 架构图：data buffer 与 custom rollout generation 双向交换 init prompt 与 custom data；data buffer 向 megatron 训练 GPU 发送训练数据；megatron 向 sglang server 更新权重；sglang router 分发到多个 sglang server">
+  <img src="img/dispatch-34-glm-5-3/orig-1.webp" alt="slime 架构图：data buffer 与 custom rollout generation 双向交换 init prompt 与 custom data；data buffer 向 megatron 训练 GPU 发送训练数据；megatron 向 sglang server 更新权重；sglang router 分发到多个 sglang server" loading="lazy" decoding="async" width="1800" height="998">
   <figcaption><span class="fnum">图 3</span>slime 架构总览：左上 data buffer 与右上 custom rollout generation 双向交换（send init prompt / recv custom data）；rollout 生成通过 sglang router 调用多个 sglang server（绿，各含多 GPU）做"any custom data generation"；data buffer 向下把训练数据送入 megatron（红，多 GPU）；megatron 向 sglang server 做 update weights（from distributed / tensor）。<span class="chip c-vr">自报</span> 取自 THUDM/slime 仓库 README（imgs/arch.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -141,7 +141,7 @@ slime 提供的灵活 rollout 接口（多轮交互循环、工具调用、环�
 <strong>IndexShare</strong>（D06 已详解）：每 4 层稀疏注意力共享 indexer，1M 下 per-token FLOPs 降 2.9×，5.3 延续。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-34-glm-5-3/fig-2.svg" alt="GLM 后训练三件套：slime、SAO with compaction、SFT 阶段 INT4 QAT；slime 通向数十倍长程环境；SAO 与 QAT 以虚线通向训推一致三层；环境通向 5.3 能力涌现">
+  <img class="diagram" src="img/dispatch-34-glm-5-3/fig-2.svg" alt="GLM 后训练三件套：slime、SAO with compaction、SFT 阶段 INT4 QAT；slime 通向数十倍长程环境；SAO 与 QAT 以虚线通向训推一致三层；环境通向 5.3 能力涌现" loading="lazy" decoding="async" width="889" height="496">
   <figcaption><span class="fnum">图 4</span>图 B · GLM 后训练三件套：slime 异步 RL 基建、SAO with compaction、SFT 阶段 INT4 QAT（4.5 到 5.3 共用）。slime 以实线通向"数十倍长程环境"（问题发现到验证交付全流程、真实集群与代码库），环境通向"5.3 能力涌现（含安全漏洞利用链推理）"；SAO 与 QAT 以虚线分别标注"上下文层训推一致"、"量化层训推一致"，汇入"训推一致三层：数值 R3 · 量化 QAT · 上下文 SAO"。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -213,7 +213,7 @@ GLM-5.3 权重已放出，vLLM-Ascend 尚无 5.3 专门条目；因基座与 5.2
 这是智谱-昇腾链路深度打通的公开实证——与 D21（LongCat 全国产训练）、D31（OLMo 的 open-instruct 昇腾移植空白）对照，GLM-5.3-Flash 是"国产芯片全流程训练 + MIT 开源"的又一样本。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-34-glm-5-3/fig-3.svg" alt="GLM 5 系发布节奏与昇腾链路：GLM-5 到 5.2（06）到 5.3（08-14，权重 08-29 上 HF），5.3-Flash（08-26，320B-A18B，MIT，全程国产芯片）小号先行；昇腾链路三项：vLLM-Ascend 教程、5.3 预期即插即用（推断）、Flash 全程国产芯片实证">
+  <img class="diagram" src="img/dispatch-34-glm-5-3/fig-3.svg" alt="GLM 5 系发布节奏与昇腾链路：GLM-5 到 5.2（06）到 5.3（08-14，权重 08-29 上 HF），5.3-Flash（08-26，320B-A18B，MIT，全程国产芯片）小号先行；昇腾链路三项：vLLM-Ascend 教程、5.3 预期即插即用（推断）、Flash 全程国产芯片实证" loading="lazy" decoding="async" width="1466" height="432">
   <figcaption><span class="fnum">图 5</span>图 C · GLM 5 系发布节奏与昇腾链路：上方为 GLM-5（技术报告 2602.15763）→ GLM-5.2（06，DSA + IndexShare，1M，MIT）→ GLM-5.3（08-14，权重 08-29 上 HF），GLM-5.3-Flash（08-26，320B-A18B，MIT，全程国产芯片训练）以"小号先行"虚线接出；下方昇腾链路三项分别对应 5.2 的 vLLM-Ascend 官方教程（含 W4A8）、5.3 基座同 5.2 预期近即插即用（推断）、Flash 全程国产芯片的链路实证。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -223,7 +223,7 @@ GLM-5.3 权重已放出，vLLM-Ascend 尚无 5.3 专门条目；因基座与 5.2
 </figure>
 
 <figure>
-  <img src="img/dispatch-34-glm-5-3/orig-2.png" alt="GLM-5.3-Flash 六项基准柱状图：Terminal Bench 2.1、DeepSWE v1.1、Agents' Last Exam、AutomationBench v1.0.6、HLE w/ Tools、GDPVal-AA v2，对比 GLM-5.2、DeepSeek-V4-Vision-Exp、Claude Opus 4.8、GPT-5.6 Terra、Gemini 3.7 Flash">
+  <img src="img/dispatch-34-glm-5-3/orig-2.webp" alt="GLM-5.3-Flash 六项基准柱状图：Terminal Bench 2.1、DeepSWE v1.1、Agents' Last Exam、AutomationBench v1.0.6、HLE w/ Tools、GDPVal-AA v2，对比 GLM-5.2、DeepSeek-V4-Vision-Exp、Claude Opus 4.8、GPT-5.6 Terra、Gemini 3.7 Flash" loading="lazy" decoding="async" width="1800" height="1122">
   <figcaption><span class="fnum">图 6</span>GLM-5.3-Flash 官方六项基准对比：每个面板最多六根柱，从左至右为 GLM-5.3-Flash（蓝）、GLM-5.2（绿）、DeepSeek-V4-Vision-Exp、Claude Opus 4.8、GPT-5.6 Terra、Gemini 3.7 Flash；六项为 Terminal Bench 2.1、DeepSWE v1.1、Agents' Last Exam、AutomationBench v1.0.6、HLE w/ Tools、GDPVal-AA v2。<span class="chip c-vr">自报</span> 取自 zai-org/GLM-5 仓库 README（resources/bench_53.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

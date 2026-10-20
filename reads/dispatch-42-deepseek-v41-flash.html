@@ -86,7 +86,7 @@
 <p>报告开篇:先前的稀疏注意力(V3.2 的 DSA、V4 的 CSA/HCA)"显著降低了长序列处理的计算成本,<strong>使持久存储与数据搬运成为日益突出的瓶颈</strong>"。V4 的 KV 分两类:<strong>全局 KV</strong>(main KV + indexer K)随序列增长、受 HBM 约束;<strong>持久 KV</strong>(为前缀复用而落盘)受 SSD 与主机内存约束;I/O 与互连带宽再限制缓存迁移。窗口固定的 SWA KV 不随长度增长,序列足够长时全局 KV 主导运行时开销。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-1.svg" alt="三个乘法维度:条目维度列出 GQA、MLA、V4 与 V4.1 的单 KV 头 MQA;序列维度列出 V4 CSA 每 4 个一条、HCA 每 128 个一条、V4.1 CSA2 编码器每 2 个一条解码器每 1 个一条;层维度列出 CLA、YOCO、IndexCache 与 YOIO、V4.1 CSA2 只 4 层写 KV;三者汇入 CSA2 三维联乘加 FP4 得 890 字节">
+  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-1.svg" alt="三个乘法维度:条目维度列出 GQA、MLA、V4 与 V4.1 的单 KV 头 MQA;序列维度列出 V4 CSA 每 4 个一条、HCA 每 128 个一条、V4.1 CSA2 编码器每 2 个一条解码器每 1 个一条;层维度列出 CLA、YOCO、IndexCache 与 YOIO、V4.1 CSA2 只 4 层写 KV;三者汇入 CSA2 三维联乘加 FP4 得 890 字节" loading="lazy" decoding="async" width="591" height="1372">
   <figcaption><span class="fnum">图 1</span>三个乘法维度。报告 §2.3 把成本拆成条目、序列、层三维,并指出既有工作各占一维;CSA2 是第一个同时覆盖三维的设计。<span class="chip c-inf">推断</span> 本站图,依原文图 A 由第 1 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -140,7 +140,7 @@
 <p>报告 §2.2 的动机:agent 工作流中频繁的工具调用产生大量 prefill,KV 未命中时开销严重;设计<strong>受 YOCO 启发</strong>。核心是一条公式:对解码器(l > 20),全局注意力的 KV 不由本层 H_l 推出,而是用逐层投影矩阵直接从第 20 层隐状态 H_{L/2} 投影——<code>C_l = H_{L/2} · W_l^KV</code>,<code>Z_l = H_{L/2} · W_l^Z</code>。结论直接:<strong>prefill 阶段只需计算前一半的层</strong>。但 <strong>SWA 保持逐层计算</strong>:局部 K/V 仍来自本层 H_l,"有效增加了局部 KV 生成的计算深度"——CED 只折叠全局分支,局部分支保留 40 层深度。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-2.svg" alt="CED 的两条 KV 通路:提示 token 进入因果编码器第 0 至 19 层,末层隐状态 H 二十投影出解码器第 20 层 Full 的全局 KV 供 20 层共读;每一层各有自己的 SWA-128 局部 KV;prefill 只跑编码器激活约 8B,decode 每个新 token 走全部 40 层激活约 16B">
+  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-2.svg" alt="CED 的两条 KV 通路:提示 token 进入因果编码器第 0 至 19 层,末层隐状态 H 二十投影出解码器第 20 层 Full 的全局 KV 供 20 层共读;每一层各有自己的 SWA-128 局部 KV;prefill 只跑编码器激活约 8B,decode 每个新 token 走全部 40 层激活约 16B" loading="lazy" decoding="async" width="816" height="950">
   <figcaption><span class="fnum">图 2</span>CED 的两条 KV 通路。全局分支折叠到第 20 层的一次投影;局部 SWA 分支逐层保留。<span class="chip c-inf">推断</span> 本站图,依原文图 B 由第 2 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -167,7 +167,7 @@
 <p>每个 CSA2 层被<strong>静态</strong>指派一种模式,三种模式下每层都算自己的 query 与 SWA KV,区别只在如何获得 main KV、indexer K 与 Top-K 索引。<strong>Full</strong>:自算 main KV,由它投影 indexer K,自己的 indexer Q 打分选新的 Top-512。<strong>Reindex</strong>:复用最近 Full 层的 main KV 与 indexer K,但用自己的 indexer Q <strong>重新打分</strong>、选新 Top-512——缓存共享不变、选择可逐层变化。<strong>Reuse</strong>:复用 main KV 与最近 Full 或 Reindex 层的 Top-K,不算 indexer Q、不评分。当 CSA2 与 CED 叠加,解码器中被指派 Full 的那一层用第 20 层隐状态算全局 KV。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-3.svg" alt="CSA2 三模式数据流:Full 模式自算 main KV 投影 indexer K 打分全部位置选 Top-512;Reindex 模式复用 main KV 与 indexer K 用本层 indexer Q 在候选池内重新打分得新 Top-512;Reuse 模式复用 main KV 与最近的 Top-512 直接做核心注意力">
+  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-3.svg" alt="CSA2 三模式数据流:Full 模式自算 main KV 投影 indexer K 打分全部位置选 Top-512;Reindex 模式复用 main KV 与 indexer K 用本层 indexer Q 在候选池内重新打分得新 Top-512;Reuse 模式复用 main KV 与最近的 Top-512 直接做核心注意力" loading="lazy" decoding="async" width="1925" height="685">
   <figcaption><span class="fnum">图 3</span>CSA2 三模式的数据流。绿色为本层计算、黄色为复用最近 Full 层的缓存、红色为复用最近索引层的 Top-K(对应报告图 4 的配色语义)。<span class="chip c-inf">推断</span> 本站图,依原文图 C 由第 3 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -183,7 +183,7 @@ index_source_layers  = [2, 8, 14, 20, 24, 28, 32, 36]    <span class="cmt">// 8 
 candidate_source = 20 · 2048 blocks × 8 = 16,384 候选 · index_topk = 512 · sliding_window = 128</div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-4.svg" alt="40 层的模式分配:编码器第 0 至 1 层纯 SWA,第 2、8、14 层 Full 各带 5 个 Reuse 层,压缩比 2;解码器第 20 层 Full 并构造候选池带 3 个 Reuse,第 24、28、32、36 层 Reindex 各带 3 个 Reuse,压缩比 1;合计 4 层写全局 KV、8 层跑索引器、27 层只取数">
+  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-4.svg" alt="40 层的模式分配:编码器第 0 至 1 层纯 SWA,第 2、8、14 层 Full 各带 5 个 Reuse 层,压缩比 2;解码器第 20 层 Full 并构造候选池带 3 个 Reuse,第 24、28、32、36 层 Reindex 各带 3 个 Reuse,压缩比 1;合计 4 层写全局 KV、8 层跑索引器、27 层只取数" loading="lazy" decoding="async" width="968" height="980">
   <figcaption><span class="fnum">图 4</span>40 层的模式分配。编码器 3 组 × 6(1 Full + 5 Reuse),解码器 5 组 × 4(Full + 3 Reuse,再 4 × Reindex + 3 Reuse)。<span class="chip c-vr">自报</span> 配置文件镜像;<span class="chip c-inf">推断</span> 本站图,依原文图 D 由第 4 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -228,7 +228,7 @@ V4-Flash ≈ 21 × (584 + 68) / 4 + 20 × 584 / 128 = 3,514.25 字节  <span cla
 DeepSeek-V1 = 2 × 95 层 × 8 KV 头 × 128 × 2 字节 = 389,120 字节     <span class="cmt">// 389,120 / 890 = 437.2,与图 1(b) 的 437 吻合</span></div>
 
 <figure>
-  <img src="img/dispatch-42-deepseek-v41-flash/fig-6.svg" alt="五代 DeepSeek 模型每 token KV 字节数的对数轴条形图:V1 389,120、V2/V3 约 70,000、V3.2 40,016、V4-Flash 3,514、V4.1-Flash 890">
+  <img src="img/dispatch-42-deepseek-v41-flash/fig-6.svg" alt="五代 DeepSeek 模型每 token KV 字节数的对数轴条形图:V1 389,120、V2/V3 约 70,000、V3.2 40,016、V4-Flash 3,514、V4.1-Flash 890" loading="lazy" decoding="async" width="960" height="404">
   <figcaption><span class="fnum">图 5</span>五代模型每 token 的 KV 字节数(对数轴)。V1 至 V3.2 为全层 KV(<span class="chip c-inf">推断</span> 本站按公开维度重建);V4-Flash 与 V4.1-Flash 为不随长度增长的全局 KV 口径(<span class="chip c-vr">自报</span> 技术报告与 SGLang 团队表),不含有界的 SWA KV。两种口径只可比量级。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -251,7 +251,7 @@ DeepSeek-V1 = 2 × 95 层 × 8 KV 头 × 128 × 2 字节 = 389,120 字节     <s
 <p>V4 的部署里 <strong>SWA KV 占持久 KV 容量近半</strong>,因为多轮会话与重生成需要在提示末尾与输出末尾恢复状态。但它的访问模式与长保留策略不匹配:全局 KV 有长尾复用,SWA KV 只在活跃会话内分钟级的窄窗口里被复用。V4 报告的 <strong>Zero SWA Caching</strong>(不存、缺了精确重算 L × n_win 个 token)"在生产部署中成本过高"。V4.1 的答案是<strong>只重放最近 128 个 token 并把 SWA 截断在重放段内</strong>,接受近似状态。两个应用面:<strong>Encoder</strong> 侧让前缀缓存只依赖全局 KV,SWA KV 可以不再持久化;<strong>Decoder</strong> 侧让 prefill 在编码器处结束。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-5.svg" alt="两种重放与持久缓存的分层:持久 KV 层存全局 KV 寿命至少 72 小时;分布式内存池存编码器 SWA KV 每机 10% DRAM 分钟级 TTL;前缀命中直接复用全局 KV,SWA 缺失则重放最近 128 个 token;编码器处理未缓存后缀后进入解码器有界重放再开始 decode">
+  <img class="diagram" src="img/dispatch-42-deepseek-v41-flash/fig-5.svg" alt="两种重放与持久缓存的分层:持久 KV 层存全局 KV 寿命至少 72 小时;分布式内存池存编码器 SWA KV 每机 10% DRAM 分钟级 TTL;前缀命中直接复用全局 KV,SWA 缺失则重放最近 128 个 token;编码器处理未缓存后缀后进入解码器有界重放再开始 decode" loading="lazy" decoding="async" width="670" height="872">
   <figcaption><span class="fnum">图 6</span>两种重放与持久缓存的分层。全局 KV 与 SWA KV 分属两个寿命完全不同的存储层。<span class="chip c-inf">推断</span> 本站图,依原文图 E 由第 5 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -289,7 +289,7 @@ DeepSeek-V1 = 2 × 95 层 × 8 KV 头 × 128 × 2 字节 = 389,120 字节     <s
 <p>技术报告表 3(模型卡"与前沿模型对比",全部 Max 档,<span class="chip c-vr">自报</span>)是一张 20 行 × 7 列的表。分域结论清晰:<strong>编码与 agent 执行类打平或小胜闭源前沿</strong>——Terminal Bench 2.1 90.6(Opus-5 89.1、Sol 88.8)、DeepSWE v1.1 74.2(74.0)、CyberGym 88.1、AutomationBench 54.8(50.3)、Agents' Last Exam 31.8(28.6)、HLE 带工具 63.9(63.6);<strong>难推理与专家知识类差距显著</strong>——TB 3.0 30.0 对 43.3、TB 4.0 31.2 对 51.8、ProgramBench 20.3 对 37.0、NL2Repo 64.0 对 75.3、HLE 36.8 对 56.3。报告自述:"科学导向、需要专家级领域知识的 agent 任务与巨型模型仍有差距"。设置:<code>reasoning_effort = 100</code>,代码 agent 基准在 <strong>DeepSeek Harness Minimal + 1M 上下文</strong>下测,DeepSWE 头条用 mini-SWE,视觉 agent 用 Claude Code + 512K。</p>
 
 <figure>
-  <img src="img/dispatch-42-deepseek-v41-flash/fig-7.svg" alt="V4.1-Flash 相对 Opus-5 在 15 项基准上的分差,分歧型条形图:领先项 AutomationBench +4.5 至 DeepSWE +0.2,落后项 GPQA −2.5 至 Terminal Bench 4.0 −20.6">
+  <img src="img/dispatch-42-deepseek-v41-flash/fig-7.svg" alt="V4.1-Flash 相对 Opus-5 在 15 项基准上的分差,分歧型条形图:领先项 AutomationBench +4.5 至 DeepSWE +0.2,落后项 GPQA −2.5 至 Terminal Bench 4.0 −20.6" loading="lazy" decoding="async" width="960" height="552">
   <figcaption><span class="fnum">图 7</span>与 Opus-5 逐项的分差。右侧蓝色为 V4.1 领先,左侧红色为落后。<span class="chip c-vr">自报</span> 厂商表 3,Max 档;<span class="chip c-inf">推断</span> 本站图。Opus-5 在 Codeforces、MathArena Apex、CyberGym、SEC-Bench Pro 无数据,未列。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -312,7 +312,7 @@ DeepSeek-V1 = 2 × 95 层 × 8 KV 头 × 128 × 2 字节 = 389,120 字节     <s
 </div>
 
 <figure>
-  <img src="img/dispatch-42-deepseek-v41-flash/fig-8.svg" alt="同一 V4.1-Flash 在八种 scaffold 下的 DeepSWE 与 Terminal-Bench 2.1 分数点图,mini-SWE 与 DSH Minimal 居首,Codex 与 OpenCode 居末">
+  <img src="img/dispatch-42-deepseek-v41-flash/fig-8.svg" alt="同一 V4.1-Flash 在八种 scaffold 下的 DeepSWE 与 Terminal-Bench 2.1 分数点图,mini-SWE 与 DSH Minimal 居首,Codex 与 OpenCode 居末" loading="lazy" decoding="async" width="960" height="446">
   <figcaption><span class="fnum">图 8</span>八种 scaffold 下的两项分数。蓝点 DeepSWE v1.1,橙点 TB 2.1,按 DeepSWE 降序。<span class="chip c-vr">自报</span> 技术报告表 4;<span class="chip c-inf">推断</span> 本站图。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

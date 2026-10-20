@@ -115,7 +115,7 @@
 <p>质检流程成型为三道门。<strong>可解性预筛</strong>：Endless Terminals（arXiv 2601.16443）四阶段管线的可解性过滤<strong>淘汰约 50% 候选</strong>；D3-Gym 仅约 11% 候选通过多模态评审；daVinci-Env 从 12.8K 仓库建 45,320 个 Docker 环境（环境构建 89.1 万美元 + 轨迹采样 57.6 万美元），难度过滤后留约 9K 高质量环境，SWE-bench Verified 呈<strong>对数线性无饱和</strong>增长。<strong>信息屏障验证器</strong>：CUA-Gym 让生成器写初始化与金补丁、判别器只凭任务文本写奖励函数，编排器迭代到 reward（金补丁）= 1 且 reward（初始）= 0——验证器与解答者的信息隔离是防止"自证"的结构性手段。<strong>可 hack 性审计</strong>：<a href="https://arxiv.org/abs/2606.16062">arXiv 2606.16062</a> 抽样 SWE-bench Verified 49 题中 <strong>28.5%</strong>、R2E-Gym 25% 的测试弱到可被验证错误的补丁通过；134 个提交的元分析显示同难度层内<strong>可 hack 任务上的 Pass@1 高 14.14 个百分点</strong>（123/134 模型为正）。Hack-Verifiable 环境把可检测的漏洞植入环境以确定性地测量 hacking 倾向。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-36-frontier-mechanisms/fig-1.svg" alt="环境轴生产管线：任务生成、可解性预筛、信息屏障验证器、可 hack 性审计、沙箱执行层、规模化，以及指向环境质量即安全问题的虚线">
+  <img class="diagram" src="img/dispatch-36-frontier-mechanisms/fig-1.svg" alt="环境轴生产管线：任务生成、可解性预筛、信息屏障验证器、可 hack 性审计、沙箱执行层、规模化，以及指向环境质量即安全问题的虚线" loading="lazy" decoding="async" width="1950" height="255">
   <figcaption><span class="fnum">图 1</span>环境轴的生产管线与关键数字（原文图 A）：任务生成 → 可解性预筛 → 信息屏障验证器 → 可 hack 性审计 → 沙箱执行层 → 规模化，虚线由可 hack 性审计指向"环境质量即安全问题"。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -164,7 +164,7 @@
 <p><a href="https://arxiv.org/abs/2608.27508">WM-R1</a> 的机制：Code2World-8B 世界模型接收"截图 + 动作"，输出 HTML，经 Playwright 渲染为下一帧 PNG——<strong>所有状态转移由世界模型提供，训练全程不接触真实 Android 环境</strong>；agent 还可在思考段内调用 <code>call_wm</code>（每步不超过 5 次）做"提议-模拟-选择"；奖励 DAST = α·成功 + β·长度（退火长度预算）；每节点 GPU0 跑世界模型服务、GPU1 跑 vLLM actor。结果（作者自报）：WM-R1-7B <strong>AndroidWorld 39.8</strong> 对 UI-R1-7B 30.8、UI-TARS-1.5-7B 34.2；相对仅推理期增强的 Code2World +8.9（3B）/ +11.1（7B）；替代的在线 RL 基线需真实模拟器约 36.5 GPU 小时。</p>
 
 <figure>
-  <img src="img/dispatch-36-frontier-mechanisms/orig-1.png" alt="WM-R1 与传统 RL 的对照：左侧轨迹在真实环境中步进，右侧每一步状态转移由世界模型生成">
+  <img src="img/dispatch-36-frontier-mechanisms/orig-1.webp" alt="WM-R1 与传统 RL 的对照：左侧轨迹在真实环境中步进，右侧每一步状态转移由世界模型生成" loading="lazy" decoding="async" width="1800" height="543">
   <figcaption><span class="fnum">图 2</span>真实环境 rollout（左）与世界模型 rollout（右）的对照：两侧均从初始状态 φ<sub>0</sub> 采样一组轨迹送入组内比较（Group Comp.），右侧每一次状态转移旁多出一个世界模型图标。<span class="chip c-vr">自报</span> 取自 WM-R1 官方仓库 README（genalyu/WM-R1，assets/comparison.png），与 D35 图 2 同源。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -174,7 +174,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-36-frontier-mechanisms/orig-2.png" alt="WM-R1 框架图：轨迹生成、轨迹采样、策略更新三阶段，世界模型出现两次">
+  <img src="img/dispatch-36-frontier-mechanisms/orig-2.webp" alt="WM-R1 框架图：轨迹生成、轨迹采样、策略更新三阶段，世界模型出现两次" loading="lazy" decoding="async" width="1800" height="872">
   <figcaption><span class="fnum">图 3</span>WM-R1 框架三阶段：① 轨迹生成——策略模型在思考段内调用世界模型做预见（Reasoning），动作块交由世界模型生成下一帧；② 轨迹采样——奖励规则 R 与组内比较得到优势 A<sub>i</sub>；③ 策略更新。<span class="chip c-vr">自报</span> 取自 WM-R1 官方仓库 README（assets/framework.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -197,7 +197,7 @@
 <p><a href="https://arxiv.org/abs/2606.24597">Qwen-AgentWorld</a>：35B-A3B 与 397B-A17B 两档<strong>语言世界模型</strong>，覆盖 MCP/搜索/终端/SWE/Android/Web/OS 七个域，以 1,000 万+ 真实轨迹做 CPT→SFT→RL；作为模拟器可生成数千个环境（含 4K 个 OOD 的 OpenClaw 环境），模拟 RL 增益 <strong>SWE +11.5（52.0→63.5）、搜索 +11.8、MCP +5.0/+12.3</strong>，作者声称"超过仅用真实环境训练"。同系 WebWorld（100 万+ 开放网页交互）使 Qwen3-14B 在合成轨迹上 WebArena +9.2。终端/代码侧的形态不同：Microsoft 的同名工作 ECHO（arXiv 2605.24517）在 GRPO 中对环境观测 token 加交叉熵，让 agent"免费"学到世界模型，更早到达 GRPO 峰值；DreamGym（ICLR 2026）以推理型经验模型在纯合成交互下匹配 GRPO/PPO。</p>
 
 <figure>
-  <img src="img/dispatch-36-frontier-mechanisms/orig-3.png" alt="Qwen-AgentWorld 总览：七域语言世界模型与 AgentWorldBench 柱状图，下方为解耦与统一两种用法的增益">
+  <img src="img/dispatch-36-frontier-mechanisms/orig-3.webp" alt="Qwen-AgentWorld 总览：七域语言世界模型与 AgentWorldBench 柱状图，下方为解耦与统一两种用法的增益" loading="lazy" decoding="async" width="1800" height="1054">
   <figcaption><span class="fnum">图 4</span>Qwen-AgentWorld 总览：(1) 以 1,000 万+ 环境轨迹经 CPT→SFT→RL 训练覆盖 SWE / Terminal / Search / MCP / Web / OS / Android 七域的语言世界模型，AgentWorldBench 58.8；(2) 两种用法——[i] 解耦为环境模拟器做模拟 RL，[ii] 统一进单一 agent。<span class="chip c-vr">自报</span> 取自 QwenLM/Qwen-AgentWorld 仓库 README（assets/teaser.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -221,7 +221,7 @@
 <p><strong>成本账</strong>：GUI-GENESIS（<a href="https://arxiv.org/abs/2602.14093">arXiv 2602.14093</a>）给出对照——1,000 个环境 × 每 epoch 12 次 rollout，真实应用 + VLM 评审<strong>每 epoch 多花约 2.8 万美元、墙钟时间 2 倍以上</strong>，本地合成环境延迟低 10×；合成环境训练的 agent 在留出真实任务上反超 3.27%。可执行断言（"代码原生奖励"）替代视觉评审是另一个成本杠杆。<strong>反面证据同样具体</strong>：ACL 2026 的 <a href="https://arxiv.org/abs/2601.03905">arXiv 2601.03905</a> 显示当前 agent <strong>主动调用模拟的比例不到 1%</strong>、误用 rollout 约 15%，强制使用模拟时性能反降至多 5%——瓶颈在"何时模拟"与"如何整合预见"，而非世界模型质量；移动端研究也表明想象轨迹不保持数据分布，迁移的是规划技能而非分布。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-36-frontier-mechanisms/fig-2.svg" alt="真实环境 rollout 与世界模型 rollout 两个子图，及指向分域结论的箭头">
+  <img class="diagram" src="img/dispatch-36-frontier-mechanisms/fig-2.svg" alt="真实环境 rollout 与世界模型 rollout 两个子图，及指向分域结论的箭头" loading="lazy" decoding="async" width="452" height="1290">
   <figcaption><span class="fnum">图 5</span>真实环境与世界模型 rollout 的成本与回路（原文图 B）：上方子图为真实环境 rollout（沙箱 microVM、每 epoch 多 2.8 万美元、奖励 hacking 需审计），下方为世界模型 rollout（Code2World 8B、AgentWorld 397B-A17B、纯推理负载），两者汇入分域结论。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -270,7 +270,7 @@
 <p>训练免费的 <a href="https://github.com/liushiliushi/JitRL">JitRL</a>（ICLR/ICML 2026）：非参数轨迹记忆检索相似状态、即时估计逐动作优势并加到冻结模型 logits，证明为 KL 约束策略优化的闭式解；WebArena 51.4% 对训练免费基线 ≤ 44%，计算不到 3%。回合内权重更新的 aTTT（快手）：以 token 级重加权抑制自训练重复漂移，ALFWorld +5.0、SWE-bench Lite +4.9，作者自述"主要保存既有能力而非学习新能力"。TTT-E2E 在 2M 长度匹配全注意力且快 35×，但属<strong>长上下文压缩而非跨会话知识积累</strong>。前沿实验室"2026 解决持续学习"的表态（Douglas、Amodei）目前没有对应的机制或评测披露。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-36-frontier-mechanisms/fig-3.svg" alt="持续学习证据阶梯：记忆整合、检索式适应、稀疏记忆层微调、回合内权重 TTT、架构级五层，及共同边界">
+  <img class="diagram" src="img/dispatch-36-frontier-mechanisms/fig-3.svg" alt="持续学习证据阶梯：记忆整合、检索式适应、稀疏记忆层微调、回合内权重 TTT、架构级五层，及共同边界" loading="lazy" decoding="async" width="411" height="1022">
   <figcaption><span class="fnum">图 6</span>持续学习的证据阶梯（原文图 C）：从产品层记忆整合、接近可用的检索式适应、小规模复现的稀疏记忆层微调、原型阶段的回合内权重 TTT 到架构级 Hope/CMS 五层，两端虚线汇入"共同边界"。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -358,7 +358,7 @@
 <p><strong>自改进 harness 的三个层级</strong>：SkillOpt（Microsoft）把技能文本视为可训练参数、held-out 验证门只接受严格改进（GPT-5.5 上 +19 至 +25 点）；MOSS 经外部编码 agent 修改 harness 源码（单轮 0.25→0.61，但仅 4 任务、代码未公开）；DGM 系把自改进过程本身设为可编辑。EvoTrace（arXiv 2605.20086）显示头条分数混合了新结构、重调参、重组与<strong>评估器过拟合</strong>；"Wipe Test"（删掉外部工件看剩多少）是对整个赛道的合理质询。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-36-frontier-mechanisms/fig-4.svg" alt="自动化研究成立条件：验证器丰富的闭环任务成立，评估器模糊或可博弈失败，两者汇入边界规则">
+  <img class="diagram" src="img/dispatch-36-frontier-mechanisms/fig-4.svg" alt="自动化研究成立条件：验证器丰富的闭环任务成立，评估器模糊或可博弈失败，两者汇入边界规则" loading="lazy" decoding="async" width="2067" height="249">
   <figcaption><span class="fnum">图 7</span>自动化研究的成立条件（原文图 D）：左子图为验证器丰富的闭环任务（speedrun、自动化对齐研究员、Sol 承担 Luna 后训练），右子图为评估器模糊或可博弈的任务（阴影评测、PostTrainBench、AI Scientist），两者汇入"评估器质量而非算力决定上限"的边界规则。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

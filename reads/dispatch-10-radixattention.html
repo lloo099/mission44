@@ -79,7 +79,7 @@ NPU      前缀复用（份数）× FP8（位宽）× 稀疏注意力（长度�
 <p>LLM 推理里，<strong>很多请求共享前缀</strong>：同一套 system prompt、同一段 few-shot、多轮对话的历史、RAG 里相同的文档、agent 群里相同的工具说明。朴素做法对每个新请求都从头计算一遍这些前缀的 KV——<strong>属于纯粹的重复开销</strong>。节省方式就是<strong>前缀缓存（prefix caching）</strong>：保留已计算的 KV，前缀相同就复用。难点在于<strong>如何高效地"发现 + 匹配 + 淘汰"任意的共享前缀</strong>。</p>
 
 <figure>
-  <img src="img/dispatch-10-radixattention/orig-2.jpg" alt="四类 KV 共享模式：(a) Few-shot learning 三条 prompt 共享 few-shot examples；(b) Self-consistency 一个 Question 派生 Answer 1/2/3 三次生成；(c) Multi-turn chat 每轮的 Chat History 逐轮加长；(d) Tree-of-thought 一个 Question 派生多层 Branch 与 Search History">
+  <img src="img/dispatch-10-radixattention/orig-2.webp" alt="四类 KV 共享模式：(a) Few-shot learning 三条 prompt 共享 few-shot examples；(b) Self-consistency 一个 Question 派生 Answer 1/2/3 三次生成；(c) Multi-turn chat 每轮的 Chat History 逐轮加长；(d) Tree-of-thought 一个 Question 派生多层 Branch 与 Search History" loading="lazy" decoding="async" width="1800" height="688">
   <figcaption><span class="fnum">图 1</span>四类典型的 KV 共享模式：(a) Few-shot learning——多条 prompt 共享同一段 few-shot examples；(b) Self-consistency——一个 Question 派生多次生成；(c) Multi-turn chat——每轮请求以逐轮加长的 Chat History 为前缀；(d) Tree-of-thought——一个 Question 派生多层 Branch，各层共享 Search History。蓝色为共享前缀、绿色为新增输入、黄色为生成输出。<span class="chip c-vr">自报</span> 取自 SGLang 团队博客（lm-sys/lm-sys.github.io，public/images/blog/sglang/sharing_wide.jpg）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -102,7 +102,7 @@ NPU      前缀复用（份数）× FP8（位宽）× 稀疏注意力（长度�
 <p>核心是一棵<strong>基数树（radix tree，压缩前缀字典树）</strong>。<strong>节点 = 一段 token 序列 → 它的 KV</strong>，从根到某节点的路径就是一个被缓存的前缀。<strong>新请求来 → 沿树做最长前缀匹配</strong>：匹配到的部分直接复用 KV，只对剩下的新 token 算注意力。<strong>自动 / 动态发现</strong>：不需要预先声明"哪些前缀会复用"，树会自然捕捉真实流量里实际存在的共享，零配置。<strong>LRU 淘汰</strong>：显存不够时，按最近最少使用从树上驱逐叶子。<strong>Cache-aware scheduling</strong>：调度器有意把"能命中缓存"的请求排在一起，把命中率最大化（这是与仅添加一层缓存的关键区别）。<strong>优雅处理 fork</strong>：对话/推理分叉时，多个分支共享公共前缀，各自只算分叉后的部分——非常适合 best-of-N、树搜索、agent 探索。概括而言：<strong>它把"前缀复用"从"精确字符串命中"升级为"一棵自组织的树 + 协同配合的调度器"</strong>。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-10-radixattention/fig-1.svg" alt="基数树示意：根节点（共享 system prompt 的 KV）→ 节点 A（问题甲）、节点 B（问题乙）→ 叶子 A1、A2、B1；新请求沿树最长前缀匹配，命中 root + A 路径复用 KV，只对全新尾部算注意力">
+  <img class="diagram" src="img/dispatch-10-radixattention/fig-1.svg" alt="基数树示意：根节点（共享 system prompt 的 KV）→ 节点 A（问题甲）、节点 B（问题乙）→ 叶子 A1、A2、B1；新请求沿树最长前缀匹配，命中 root + A 路径复用 KV，只对全新尾部算注意力" loading="lazy" decoding="async" width="896" height="598">
   <figcaption><span class="fnum">图 2</span>基数树的静态结构：根节点持有共享 system prompt 的 KV，子节点 A、B 分别对应用户问题甲、乙，叶子 A1、A2、B1 是各对话的后续追问或分叉；一个"system prompt + 问题甲 + 全新尾部"的新请求沿树匹配到 root + A 路径，复用其 KV，只对全新尾部算注意力。<span class="chip c-inf">本站图</span> 由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -112,7 +112,7 @@ NPU      前缀复用（份数）× FP8（位宽）× 稀疏注意力（长度�
 </figure>
 
 <figure>
-  <img src="img/dispatch-10-radixattention/orig-1.jpg" alt="RadixAttention 基数树九步演化：(1) 空树；(2) 首条对话作为单节点插入；(3) 第二轮延长；(4) 新会话在 system prompt 后分叉，共享节点变蓝；(5) 显存不足时 LRU 驱逐一个叶子（橙色虚线 X 标注 evicted）；(6) 插入 few-shot 多问答长前缀；(7) 该前缀下派生 What/When/How 三个分支；(8) 再次驱逐两个叶子；(9) 在分支下继续多路 fork 并驱逐">
+  <img src="img/dispatch-10-radixattention/orig-1.webp" alt="RadixAttention 基数树九步演化：(1) 空树；(2) 首条对话作为单节点插入；(3) 第二轮延长；(4) 新会话在 system prompt 后分叉，共享节点变蓝；(5) 显存不足时 LRU 驱逐一个叶子（橙色虚线 X 标注 evicted）；(6) 插入 few-shot 多问答长前缀；(7) 该前缀下派生 What/When/How 三个分支；(8) 再次驱逐两个叶子；(9) 在分支下继续多路 fork 并驱逐" loading="lazy" decoding="async" width="1800" height="1437">
   <figcaption><span class="fnum">图 3</span>基数树随请求流的九步演化：(1) 空树 →(2) 首条对话作为一个节点插入 →(3) 第二轮追问延长 →(4) 另一会话在"You are a helpful assistant."之后分叉，共享节点（蓝色）出现 →(5) 显存不足，LRU 驱逐一个叶子（橙色虚线 X，标注 evicted）→(6) 一条含 Question/Answer 1–3 的 few-shot 长前缀插入 →(7) 该前缀下的 Question 3 派生 What / When / How 三个分支 →(8) 再驱逐两个叶子 →(9) 在分支节点下再 fork 出四路续写并驱逐旧叶子。绿色为当前请求写入的节点，灰色为已缓存节点，蓝色为被多路径共享的分叉点。<span class="chip c-vr">自报</span> 取自 SGLang 团队博客（lm-sys/lm-sys.github.io，public/images/blog/sglang/radix_attn.jpg）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -136,7 +136,7 @@ NPU      前缀复用（份数）× FP8（位宽）× 稀疏注意力（长度�
 <p>每个新请求的处理流程是：匹配 → 复用 → 只算尾部 → 挂回树 → 必要时 LRU 淘汰。原文以一个带工具调用的 agent 多轮会话为例：system prompt 固定，每轮在已有上下文后追加用户输入、工具返回、模型回复。关键事实是——<strong>每一轮请求都把"之前全部对话"当作前缀重新发给引擎</strong>，这正是 prefill 开销最集中的环节。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-10-radixattention/fig-2.svg" alt="请求处理流程：新请求进入 → 沿基数树最长前缀匹配 → 是否命中：是则挂载已有 KV 跳过这段 prefill，否则从头 prefill → 只对新增尾部算注意力 → 逐 token 生成 → 新 KV 挂回树 → 显存是否充足：够用则完成，不够则 LRU 驱逐叶子后完成">
+  <img class="diagram" src="img/dispatch-10-radixattention/fig-2.svg" alt="请求处理流程：新请求进入 → 沿基数树最长前缀匹配 → 是否命中：是则挂载已有 KV 跳过这段 prefill，否则从头 prefill → 只对新增尾部算注意力 → 逐 token 生成 → 新 KV 挂回树 → 显存是否充足：够用则完成，不够则 LRU 驱逐叶子后完成" loading="lazy" decoding="async" width="570" height="1390">
   <figcaption><span class="fnum">图 4</span>单个请求的处理流程：进入 → 沿基数树最长前缀匹配 → 命中则挂载已有 KV、跳过这段 prefill（未命中则从头 prefill）→ 只对新增尾部 token 算注意力 → 逐 token 生成 → 把新算的 KV 作为新节点挂回树 → 检查显存，不够时 LRU 驱逐最近最少使用的叶子。<span class="chip c-inf">本站图</span> 由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -174,7 +174,7 @@ NPU      前缀复用（份数）× FP8（位宽）× 稀疏注意力（长度�
 <p><strong>LRU 从叶子驱逐的原因。</strong>树的结构本身编码了"共享度"：越靠近根的节点被越多请求路径经过（system prompt 在根附近，几乎每个请求都命中），越靠近叶子越是某条具体会话的私有尾部。从叶子驱逐 = 优先移除共享度最低、最不可能再被命中的 KV，把根附近的高价值共享前缀尽量保留；而且只有叶子能被安全删除——删中间节点会切断其子树的路径完整性。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-10-radixattention/fig-3.svg" alt="朴素调度（请求乱序：甲、乙、甲、乙 → 缓存频繁失效、命中率低）与 cache-aware 调度（按前缀编排：甲、甲、乙、乙 → 同前缀请求排一起、前缀只算一次、命中率高）的对照">
+  <img class="diagram" src="img/dispatch-10-radixattention/fig-3.svg" alt="朴素调度（请求乱序：甲、乙、甲、乙 → 缓存频繁失效、命中率低）与 cache-aware 调度（按前缀编排：甲、甲、乙、乙 → 同前缀请求排一起、前缀只算一次、命中率高）的对照" loading="lazy" decoding="async" width="926" height="685">
   <figcaption><span class="fnum">图 5</span>朴素调度与 cache-aware 调度的对照：左侧请求按到达顺序乱序执行（前缀甲、乙、甲、乙），缓存频繁失效、反复重算前缀；右侧调度器有意把能命中同一前缀的请求编排在一起（甲、甲、乙、乙），前缀只算一次、命中率高。<span class="chip c-inf">本站图</span> 由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -197,7 +197,7 @@ NPU      前缀复用（份数）× FP8（位宽）× 稀疏注意力（长度�
 <p>原文的对照表：RadixAttention（SGLang）解决的核心是<strong>前缀复用</strong>（KV 共享），结构是基数树 + cache-aware 调度，前缀缓存为自动/动态发现任意前缀，强项场景是多轮 / agent / RAG / 共享 prompt / fork；PagedAttention（vLLM）解决的核心是<strong>显存碎片</strong>（分页管理 KV），结构是固定大小 KV 分页（类虚拟内存），前缀缓存为 APC 精确前缀哈希命中，强项场景是通用、可预测、可配置负载。注意：<strong>两者不是非此即彼</strong>——SGLang 也做分页式显存管理，vLLM 也有自动前缀缓存（APC）。真正的差异在 radix tree 的结构 + cache-aware 调度，让它在"复杂、不可预测的前缀复用"上更强。所以基准上：唯一 prompt 批任务两者趋同；<strong>prefix-heavy RAG 上 SGLang 可快到 6×</strong>。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-10-radixattention/fig-4.svg" alt="RadixAttention（解决前缀复用 → 基数树 + cache-aware 调度 → 自动动态发现零配置）与 PagedAttention（解决显存碎片 → 固定大小分页 → APC 精确哈希）汇入"两者互补非互斥可叠加"，性能随场景变化：唯一 prompt 批任务趋同，prefix-heavy RAG 可快到 6 倍">
+  <img class="diagram" src="img/dispatch-10-radixattention/fig-4.svg" alt="RadixAttention（解决前缀复用 → 基数树 + cache-aware 调度 → 自动动态发现零配置）与 PagedAttention（解决显存碎片 → 固定大小分页 → APC 精确哈希）汇入"两者互补非互斥可叠加"，性能随场景变化：唯一 prompt 批任务趋同，prefix-heavy RAG 可快到 6 倍" loading="lazy" decoding="async" width="1959" height="548">
   <figcaption><span class="fnum">图 6</span>RadixAttention 与 PagedAttention 的对照与互补：左链解决前缀复用（基数树 + cache-aware 调度，自动动态发现、零配置），右链解决显存碎片（固定大小 KV 分页，APC 精确哈希命中）；两链汇入"互补非互斥、可叠加"，性能随场景变化——唯一 prompt 批任务两者趋同，prefix-heavy 的 RAG 上 SGLang 可快到 6 倍。<span class="chip c-inf">本站图</span> 由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -220,7 +220,7 @@ NPU      前缀复用（份数）× FP8（位宽）× 稀疏注意力（长度�
 <p>这是本看板最关心的角度。<strong>GRPO/RLVR 的 rollout 天生前缀重度</strong>：一个 prompt 要采 N 条样本（group），它们共享完全相同的 prompt 前缀，RadixAttention 把这段前缀只算一次、N 条复用，直接降低 rollout 的显存和时延。<strong>树搜索 / best-of-N / 多轮 agent</strong>：fork 共享前缀，探索不同分支不重算——正是 agentic RL（D08）长 rollout 的成本节省点。<strong>agent 群共享 system/工具说明</strong>：几十个 agent 同一套 system prompt → 零成本共享。这也是 <strong>SGLang 成为许多 RL 栈首选 rollout 引擎</strong>（AReaL、Miles 等）、以及 RadixArk 能同时做推理 + RL 两端（D09）的原因。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-10-radixattention/fig-5.svg" alt="一个 prompt（含 system + 工具说明，前缀 KV 只算一次）fork 出样本 1、2、3、…N，各只算自己的生成端 token；收益汇聚为"前缀只算一次 N 条复用，省 KV 省时延"，进而缓解昇腾 910B 单卡 64GB rollout 峰值显存">
+  <img class="diagram" src="img/dispatch-10-radixattention/fig-5.svg" alt="一个 prompt（含 system + 工具说明，前缀 KV 只算一次）fork 出样本 1、2、3、…N，各只算自己的生成端 token；收益汇聚为"前缀只算一次 N 条复用，省 KV 省时延"，进而缓解昇腾 910B 单卡 64GB rollout 峰值显存" loading="lazy" decoding="async" width="1206" height="574">
   <figcaption><span class="fnum">图 7</span>GRPO group rollout 的前缀共享：一个 prompt（含 system 与工具说明）的前缀 KV 只算一次，fork 出样本 1…N，每条只算自己的生成端 token；收益汇聚为"前缀只算一次、N 条复用，省 KV 省时延"，最终指向缓解昇腾 910B 单卡 64GB 的 rollout 峰值显存（无 sleep-mode 下尤其关键）。<span class="chip c-inf">本站图</span> 由原文第 5 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -257,7 +257,7 @@ NPU      前缀复用（份数）× FP8（位宽）× 稀疏注意力（长度�
 </div>
 
 <figure>
-  <img src="img/dispatch-10-radixattention/orig-3.jpg" alt="Llama-7B 归一化吞吐柱状图：九个负载（MMLU、HellaSwag、ReAct Agent、Tree-of-Thought、JSON Decode、Chat Short、Chat Long、DSPy RAG、LLaVA Bench），SGLang 归一为 1（黄色），vLLM（蓝色）与 Guidance（绿色）为相对值；后两项对照 HF TGI/Transformers（灰色）">
+  <img src="img/dispatch-10-radixattention/orig-3.webp" alt="Llama-7B 归一化吞吐柱状图：九个负载（MMLU、HellaSwag、ReAct Agent、Tree-of-Thought、JSON Decode、Chat Short、Chat Long、DSPy RAG、LLaVA Bench），SGLang 归一为 1（黄色），vLLM（蓝色）与 Guidance（绿色）为相对值；后两项对照 HF TGI/Transformers（灰色）" loading="lazy" decoding="async" width="1800" height="453">
   <figcaption><span class="fnum">图 8</span>Llama-7B 上的归一化吞吐（SGLang = 1，黄色）：前七个负载对照 vLLM（蓝色）与 Guidance（绿色）——MMLU、HellaSwag、ReAct Agent、Tree-of-Thought、JSON Decode、Chat (Short)、Chat (Long)；后两个负载 DSPy RAG、LLaVA Bench 对照 HF TGI/Transformers（灰色）。<span class="chip c-vr">自报</span> 取自 SGLang 团队博客（lm-sys/lm-sys.github.io，public/images/blog/sglang/llama_7b.jpg）。该图为 SGLang 团队早期（2024 年初）自测，非原文引用的媒体口径；引擎版本与当前不同，仅用于说明收益随负载变化的形态。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

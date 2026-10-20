@@ -72,7 +72,7 @@
 <p>一旦 agent 要多轮调工具、跑测试、读代码库，单条轨迹长度从几百 token 膨胀到几万 token，batch 内最长的一条决定整批何时结束，同步范式下这是结构性算力浪费。prime-rl 与 SkyRL-Agent 都指向这个瓶颈，但站位不同，不应在同一层面直接比较：prime-rl 解决"如何把异步 RL 扩到全球级算力"，SkyRL-Agent 解决"如何在已有的栈上，让多轮 agent 训得更快更省"。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-18-prime-rl-vs-skyrl/fig-1.svg" alt="开源异步 agentic RL 基础设施：prime-rl 与 SkyRL-Agent 的层次定位示意">
+  <img class="diagram" src="img/dispatch-18-prime-rl-vs-skyrl/fig-1.svg" alt="开源异步 agentic RL 基础设施：prime-rl 与 SkyRL-Agent 的层次定位示意" loading="lazy" decoding="async" width="986" height="880">
   <figcaption><span class="fnum">图 1</span>两个框架的层次定位：左侧 prime-rl 为重量级全栈异步 trainer、三组件全解耦、为 1000+ GPU 与 1T MoE 而生、去中心化血统、本身就是训练系统；右侧 SkyRL-Agent 为轻量后端无关的 agent 编排层、叠在已有 trainer 之上、聚焦多轮 agent 效率。两者之间的虚线标注"不同层、互补可组合、非直接竞争"。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -94,7 +94,7 @@
 <p>prime-rl 的口号是 <em>Async RL Training at Scale</em>，Apache-2.0，定位"易用、可 hack，同时能扩到 1000+ GPU、支持 1T+ MoE"。骨架是三个完全解耦、各自独立伸缩的组件：<strong>Trainer</strong>——基于 FSDP2 的分布式策略优化，叠加专家并行（EP，服务 MoE）与上下文并行（CP，服务长上下文与长 agent 轨迹），是真正消耗梯度、更新权重的部分；<strong>Inference server</strong>——用 vLLM 产出 rollout、跑 FP8 推理，消耗 rollout 算力，可独立横向扩展；<strong>Orchestrator</strong>——协调推理与训练之间的数据流，决定哪些 rollout 送入 trainer、何时同步权重、如何衔接两侧节奏。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-18-prime-rl-vs-skyrl/fig-2.svg" alt="prime-rl 全异步解耦核心：Trainer、Orchestrator、Inference server 三组件与 Environments Hub、off-policy 修正、多节点部署的关系">
+  <img class="diagram" src="img/dispatch-18-prime-rl-vs-skyrl/fig-2.svg" alt="prime-rl 全异步解耦核心：Trainer、Orchestrator、Inference server 三组件与 Environments Hub、off-policy 修正、多节点部署的关系" loading="lazy" decoding="async" width="1199" height="364">
   <figcaption><span class="fnum">图 2</span>prime-rl 全异步解耦核心：Trainer（FSDP2 加 EP 加 CP）与 Orchestrator 之间交换权重与梯度，Orchestrator 与 Inference server（vLLM，支持 FP8）之间交换 rollout 数据；Environments Hub（经 verifiers 库）向 Orchestrator 提供任务与奖励，AIPO loss 加 trajectory merging 以虚线接入 Trainer 做异步 off-policy 修正，Slurm 与 Kubernetes 承载整个核心。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染；组件与连线关系为仓库自报口径。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -131,7 +131,7 @@
 <p>SkyRL-Agent（<a href="https://arxiv.org/abs/2511.16108">arXiv 2511.16108</a>，2025-11-20，Apache-2.0）是 SkyRL 栈里的 <strong>agent 层</strong>，定位"高效的多轮 / 长程 agent 训练加评测"。SkyRL 栈分工清晰：<code>skyrl-train</code>（训练后端）、<code>skyrl-gym</code>（数学 / 编码 / 搜索 / SQL 等环境）、<code>skyrl-agent</code>（本文对象，agent 层）、<code>skyrl-tx</code>（把 Tinker API 接进来的适配层）。<strong>后端无关是关键设计</strong>：SkyRL-Agent 刻意不重造 trainer，而是与训练后端解耦，可互操作 SkyRL-train / VeRL / Tinker（Tinker 经 skyrl-tx 接入）。对工程团队的实际意义是：团队可能已在 VeRL 上有整套 pipeline，或只想用 Tinker 的托管 API 起步——SkyRL-Agent 允许保留既有训练栈，只把 agent 编排与 rollout 调度这一层替换，不必为验证高效 agent 训练而绑定某个重量级栈。这与 prime-rl 自成一栈的设计哲学完全相反，各有取舍。</p>
 
 <figure>
-  <img src="img/dispatch-18-prime-rl-vs-skyrl/orig-1.png" alt="SkyRL-Agent 架构图：Runtime Initialization、Agent Run、Reward Calculation 三阶段，record_transitions 装饰器与 post_process 把 agent 循环数据流转成训练数据流">
+  <img src="img/dispatch-18-prime-rl-vs-skyrl/orig-1.webp" alt="SkyRL-Agent 架构图：Runtime Initialization、Agent Run、Reward Calculation 三阶段，record_transitions 装饰器与 post_process 把 agent 循环数据流转成训练数据流" loading="lazy" decoding="async" width="1800" height="1064">
   <figcaption><span class="fnum">图 3</span>SkyRL-Agent 架构：虚线上方是可替换的后端（SkyRL-train、VeRL、Tinker 等，提供 <code>llm.generate()</code> 与 <code>adv_calc() / forward_backward() / optimizer_step()</code>），虚线下方是 agent 层的三个阶段——① Runtime Initialization 从 Task Datasets 初始化轨迹，② Agent Run 在 History Message 与 Tools 之间循环、经 Tool Execution Runtime（K8s / Ray / Remote Server）执行命令并回收 observation，③ Reward Calculation 计算奖励；<code>@record_transitions</code> 把 agent 循环数据流写入 Transition Buffer，<code>post_process()</code> 再转成 input_ids / response_ids / reward / mask 送回后端。<span class="chip c-vr">自报</span> 取自 NovaSky-AI/SkyRL 仓库 skyrl-agent README。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -153,7 +153,7 @@
 <p><strong>机制一：优化异步流水线 dispatcher，比朴素异步批处理 1.55× 加速。</strong>朴素异步批处理仍以"批"为单位调度——一批 rollout 里只要有一条长尾轨迹（多轮调工具、反复跑测试），整批就被它拖住、其余算力空转等它（正是 Dispatch 08 的长尾痛点）。SkyRL-Agent 的 dispatcher 做更细粒度的 <strong>per-trajectory 调度</strong>：先完成者先提交、空出的算力立刻接续下一条新轨迹，不等待最慢的轨迹，把"等待最慢"换成"先完成者先行"，在长程多轮场景下获得 1.55× 端到端加速。</p>
 
 <figure>
-  <img src="img/dispatch-18-prime-rl-vs-skyrl/orig-2.png" alt="三种异步调度方式的时间线对比：Async Batch、Async Batch (Bounded) 与 Async Pipeline">
+  <img src="img/dispatch-18-prime-rl-vs-skyrl/orig-2.webp" alt="三种异步调度方式的时间线对比：Async Batch、Async Batch (Bounded) 与 Async Pipeline" loading="lazy" decoding="async" width="1800" height="770">
   <figcaption><span class="fnum">图 4</span>三种异步调度的时间线：上行 Async Batch 四条轨迹各自串行 INIT → LLM → Env → … → Reward；中行 Async Batch (Bounded) 限制并发为两条，红框标注 "Low GPU utilization period"——Reward 0 完成后 INIT 2 的初始化占满了一条通道；下行 Async Pipeline 把 INIT 2–5 提前到上方与 LLM 调用重叠，两条通道上的 LLM 段连续填满。<span class="chip c-vr">自报</span> 取自 NovaSky-AI/SkyRL 仓库 skyrl-agent README。<span class="chip c-inf">推断</span> 图中 Async Pipeline 对应原文所述的 per-trajectory dispatcher。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -162,7 +162,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-18-prime-rl-vs-skyrl/orig-3.png" alt="GPU 利用率随时间曲线：Async Batch (Bounded) 与 Async Pipeline 对比，标注 1.55× speedup">
+  <img src="img/dispatch-18-prime-rl-vs-skyrl/orig-3.webp" alt="GPU 利用率随时间曲线：Async Batch (Bounded) 与 Async Pipeline 对比，标注 1.55× speedup" loading="lazy" decoding="async" width="1800" height="1289">
   <figcaption><span class="fnum">图 5</span>GPU 利用率对时间：蓝线 Async Batch (Bounded)，紫线 Async Pipeline；纵轴 GPU Utilization（%），横轴 Time（s），红色箭头标注 1.55× speedup。<span class="chip c-vr">自报</span> 取自 NovaSky-AI/SkyRL 仓库 skyrl-agent README。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -186,7 +186,7 @@
 <p>结果是 <strong>SA-SWE-32B</strong>：从 Qwen3-32B 基座（SWE-bench Verified <strong>24.4% Pass@1</strong>）经<strong>纯 RL</strong> 训到 <strong>39.4% Pass@1</strong>，且相比此前相似性能模型成本下降 <strong>&gt;2×</strong>。旁注：prime-rl 的 SWE 实践是训练 Qwen3-30B-A3B 解难 SWE 问题，并可复现 INTELLECT-3.1。<span class="chip c-vr">自报</span> 均 provisional。</p>
 
 <figure>
-  <img src="img/dispatch-18-prime-rl-vs-skyrl/orig-4.png" alt="SA-SWE-32B 训练曲线四面板：reward、none-resolved count（与 DeepSWE-stage1 对比）、平均搜索次数、平均轮数">
+  <img src="img/dispatch-18-prime-rl-vs-skyrl/orig-4.webp" alt="SA-SWE-32B 训练曲线四面板：reward、none-resolved count（与 DeepSWE-stage1 对比）、平均搜索次数、平均轮数" loading="lazy" decoding="async" width="1800" height="1279">
   <figcaption><span class="fnum">图 6</span>SA-SWE-32B 训练过程四面板，横轴均为 Training steps（0–160）：左上 Reward，右上 None-resolved count（紫 SA-SWE-32B 对橙 DeepSWE-stage1），左下 Avg. # search，右下 Avg. # turns；浅灰为原始值，深色为平滑曲线。<span class="chip c-vr">自报</span> 取自 NovaSky-AI/SkyRL 仓库 skyrl-agent README。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -208,7 +208,7 @@
 <p>两条提效路径指向同一瓶颈——rollout 占 70% 加长尾。<strong>两者可以组合，而非对立</strong>：SkyRL-Agent 的 agent 层理念（per-trajectory 细粒度调度加工具增强配方）与 prime-rl 的规模化异步 trainer 并不冲突——一个管"agent 怎么编排得高效"，一个管"训练怎么扩得够大"，理想形态是把前者的 agent 编排思路接到后者这类规模 trainer 上。<strong>选型取决于诉求</strong>：要规模、去中心化、1T MoE → 选 prime-rl；要轻量起步、不绑定后端、主攻多轮 agent 效率 → 选 SkyRL-Agent。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-18-prime-rl-vs-skyrl/fig-5.svg" alt="两条提效路径汇向共同目标：prime-rl 的全解耦异步、AIPO、FP8、PD 分离与 SkyRL-Agent 的 dispatcher、AST 工具">
+  <img class="diagram" src="img/dispatch-18-prime-rl-vs-skyrl/fig-5.svg" alt="两条提效路径汇向共同目标：prime-rl 的全解耦异步、AIPO、FP8、PD 分离与 SkyRL-Agent 的 dispatcher、AST 工具" loading="lazy" decoding="async" width="426" height="940">
   <figcaption><span class="fnum">图 7</span>两条提效路径：左侧 prime-rl 路径为全解耦异步、AIPO off-policy 修正、FP8 推理、PD 分离；右侧 SkyRL-Agent 路径为优化 async dispatcher（1.55×，治长尾空转）与 AST 搜索工具（提 rollout Pass@K）；六条边全部汇入"消除 rollout 占 70% wall-clock 与长尾"这一共同目标。<span class="chip c-inf">推断</span> 本站图，由原文第 5 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

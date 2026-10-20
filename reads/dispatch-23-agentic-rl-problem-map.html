@@ -86,7 +86,7 @@
 <p>一条长 rollout 轨迹同时触发三个问题域。<strong>效率</strong>：rollout 已占 RL 单步 70%+ wall-clock（D02），长尾轨迹使同步 batch 里最快的 rank 空等最慢的一条，GPU bubble 巨大。<strong>稳定性</strong>：为消除 bubble 引入异步 / partial rollout，立刻制造 off-policy staleness，重要性权重重尾，单条轨迹可以垄断一个 batch 的梯度。<strong>一致性</strong>：即便完全同步，训练引擎与推理引擎对同一权重算出的 logprob 也不相等（BF16 舍入 + 归约顺序），名义 on-policy 隐式 off-policy 化。agentic 场景把这一切放大：长尾从"序列长度"单一来源变成"长度 × 工具调用次数"双重来源（OSWorld 2.0 单任务已达 318 次工具调用）；工具挂起制造 head-of-line blocking；沙箱 / 环境成为主导成本而非 GPU（D12 / D13）。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-23-agentic-rl-problem-map/fig-1.svg" alt="总难题地图：中心为 agentic RL 系统，四周为 rollout 效率、训练稳定性、环境与奖励、训推一致四个问题域，各含难度来源与三个子问题，三条虚线边汇向训练稳定性">
+  <img class="diagram" src="img/dispatch-23-agentic-rl-problem-map/fig-1.svg" alt="总难题地图：中心为 agentic RL 系统，四周为 rollout 效率、训练稳定性、环境与奖励、训推一致四个问题域，各含难度来源与三个子问题，三条虚线边汇向训练稳定性" loading="lazy" decoding="async" width="1156" height="1509">
   <figcaption><span class="fnum">图 1</span>总难题地图（原文图 A）：中心节点"agentic RL 系统"向四个问题域发散，每个域首行为难度来源（同步 barrier 下整批等最慢轨迹；稀疏二元奖励 × 上百回合长轨迹；沙箱是主导成本而非 GPU；同一权重在两引擎算出不同 logprob），其下各列三个子问题。三条虚线边分别标注"异步解耦把 staleness 甩给训练侧""数值错配叠加为双重分布偏移""dense shaping 缓解稀疏却放大 hacking 面"。<span class="chip c-inf">本站图</span> 由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -115,7 +115,7 @@
 <p><strong>3）多版本流式异步。</strong>DORA（<a href="https://arxiv.org/abs/2604.26256">arXiv:2604.26256</a>）同时维持多个 policy 版本，长轨迹在其原始版本下继续生成——保住 intra-trajectory policy consistency + 有界 staleness + 同版本实例间 KV cache 复用免重 prefill，rollout 最高 8.2×、端到端 2.12×（provisional），收敛与同步相当。它把 D02 的"异步 staleness 算法修正问题"转化成了"版本管理系统问题"。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-23-agentic-rl-problem-map/fig-2.svg" alt="rollout 效率解法谱：左侧问题根源同步 barrier，中间六条解法线（保同步调度重排、partial rollout、异步解耦、细粒度 dispatcher、PD 分离与硬件分解、投机解码），右侧对应代表工作与实测数字，另有 FP8 量化 rollout 正交加速线">
+  <img class="diagram" src="img/dispatch-23-agentic-rl-problem-map/fig-2.svg" alt="rollout 效率解法谱：左侧问题根源同步 barrier，中间六条解法线（保同步调度重排、partial rollout、异步解耦、细粒度 dispatcher、PD 分离与硬件分解、投机解码），右侧对应代表工作与实测数字，另有 FP8 量化 rollout 正交加速线" loading="lazy" decoding="async" width="1396" height="1171">
   <figcaption><span class="fnum">图 2</span>rollout 效率解法谱（原文图 B）：左起问题根源（最长轨迹可超中位数 20 倍，provisional），中间六条解法线，右侧一一对应的代表工作与实测：RollPacker 2.03–2.56× / Seer +74–97%；CoPRIS 1.94×；prime-rl 三组件解耦 + AIPO、AReaL v2.0 四服务、DORA 最高 8.2×；SkyRL-Agent dispatcher 1.55×、slime Orchestrator、LongCat 请求级协程 4–5×；RollArt 硬件路由、PD 分离；DAS 时间减半、NeMo RL 1.8×、BubbleSpec。下方独立节点为 FP8 量化 rollout +20–80%（D02）。<span class="chip c-inf">本站图</span> 由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -140,7 +140,7 @@
 <p><strong>5）agentic 专属：调度对象从"序列"升级为"轨迹 + 环境"。</strong>请求级协程异步调度把轨迹作为独立长驻请求，工具挂起时立即调度其他就绪请求，消除 head-of-line blocking，配合 Agentic Partial Rollout 端到端 4–5×（ICLR 2026，<a href="https://arxiv.org/pdf/2512.20745">arXiv:2512.20745</a>；美团 LongCat-Flash-Thinking 同路线）。RollArt（<a href="https://arxiv.org/abs/2512.22560">arXiv:2512.22560</a>）做硬件分解式路由：prefill-heavy（长观测注入）路由到算力型 GPU，decode-heavy 到带宽型 GPU，环境到 CPU 集群。更进一步是 <strong>rollout-as-a-service</strong>：Polar（<a href="https://arxiv.org/html/2605.24220v1">arXiv:2605.24220</a>）等把 I/O 密集的 rollout 做成独立服务，分布式 worker pod 池把工具调用延迟从 175s 降至 1.2s（provisional）——与 D18 SkyRL-Agent dispatcher、D19 slime Orchestrator、AReaL v2.0 四服务微服务化是同一大方向。</p>
 
 <figure>
-  <img src="img/dispatch-23-agentic-rl-problem-map/orig-1.png" alt="slime 架构图：data buffer 与 custom rollout generation 交换 init prompt 与 custom data，rollout generation 经 sglang router 调度两个 sglang server，data buffer 向 megatron 训练侧发送训练数据，megatron 向 sglang server 更新权重">
+  <img src="img/dispatch-23-agentic-rl-problem-map/orig-1.webp" alt="slime 架构图：data buffer 与 custom rollout generation 交换 init prompt 与 custom data，rollout generation 经 sglang router 调度两个 sglang server，data buffer 向 megatron 训练侧发送训练数据，megatron 向 sglang server 更新权重" loading="lazy" decoding="async" width="1800" height="998">
   <figcaption><span class="fnum">图 3</span>slime 的三模块架构：左上 data buffer 向右上 custom rollout generation 发送初始 prompt、回收自定义数据；rollout generation 经 sglang router 分发到多个 sglang server（绿，各含 GPU）；data buffer 向左下 megatron 训练侧（红，4 GPU）发送训练数据；megatron 以"update weights from distributed/tensor"直接更新推理侧权重。<span class="chip c-vr">自报</span> 取自 THUDM/slime 官方仓库 README（imgs/arch.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -150,7 +150,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-23-agentic-rl-problem-map/orig-2.png" alt="verl 架构图：顶部 Single Controller RL Trainer（On policy、Full async、One-step-off-policy、VLA）与 SFT Trainer；中部 Model Engine（FSDP、Megatron-Core、VeOmni）、Rollout Engine 内的 AgentLoop（SingleTurn、ToolAgent、SWEAgent）与 LLM Server（vLLM、SGLang、TensorRT-LLM）；底部 TransferQueue 与两侧 CheckpointEngine 经 broadcast/p2p 连接；红色虚线框标注 User responsibility 与 ML Infra responsibility">
+  <img src="img/dispatch-23-agentic-rl-problem-map/orig-2.png" alt="verl 架构图：顶部 Single Controller RL Trainer（On policy、Full async、One-step-off-policy、VLA）与 SFT Trainer；中部 Model Engine（FSDP、Megatron-Core、VeOmni）、Rollout Engine 内的 AgentLoop（SingleTurn、ToolAgent、SWEAgent）与 LLM Server（vLLM、SGLang、TensorRT-LLM）；底部 TransferQueue 与两侧 CheckpointEngine 经 broadcast/p2p 连接；红色虚线框标注 User responsibility 与 ML Infra responsibility" loading="lazy" decoding="async" width="1072" height="830">
   <figcaption><span class="fnum">图 4</span>verl 的分层架构：顶层 Single Controller RL Trainer 列出 On policy / Full async / One-step-off-policy / VLA 等训练模式；中层左为 Model Engine（FSDP、Megatron-Core、VeOmni），右为 Rollout Engine——AgentLoop（SingleTurn、ToolAgent、SWEAgent）与 LLM Server（vLLM、SGLang、TensorRT-LLM）；底层 TransferQueue 连接训练与推理，两侧 CheckpointEngine 以 broadcast/p2p 同步权重，推理侧以 cuda ipc 加载。红色虚线框把 AgentLoop 标为 User responsibility，其余为 ML Infra responsibility。<span class="chip c-vr">自报</span> 取自 verl 官方仓库 README 引用的架构图（verl-project/verl-data，images/verl-arch.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -173,7 +173,7 @@
 <p>这一域最有用的组织方式是一张失稳模式分类学——agentic RL 有四种典型失败模式，每种对应一族防御。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-23-agentic-rl-problem-map/fig-3.svg" alt="训练稳定性因果链：两个源头（稀疏二元奖励、上百回合长轨迹）导向三种失稳模式（全零组无梯度、reward hacking、截断污染），各对应一条防御，两条虚线表示防御的反作用">
+  <img class="diagram" src="img/dispatch-23-agentic-rl-problem-map/fig-3.svg" alt="训练稳定性因果链：两个源头（稀疏二元奖励、上百回合长轨迹）导向三种失稳模式（全零组无梯度、reward hacking、截断污染），各对应一条防御，两条虚线表示防御的反作用" loading="lazy" decoding="async" width="511" height="1494">
   <figcaption><span class="fnum">图 5</span>训练稳定性因果链（原文图 C）：源头一"稀疏二元奖励——F2P、P2P 最抗 hacking 但信号最稀"与源头二"上百回合长轨迹——OSWorld 2.0 单任务 318 次工具调用"，分别导向失稳模式一（全零组无梯度）、二（reward hacking）、三（截断污染）；防御一 DAPO 动态采样 + pass-rate 窗口 + golden / empty 预过滤，防御二 reward 升 + 长度骤降监控 + 保守二元化 + 同构扰动验证，防御三截断给 0 不丢弃或 compact filtering。虚线：防御二收紧则回到失稳模式一；防御一丢组浪费算力并改变数据分布。<span class="chip c-inf">本站图</span> 由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -267,7 +267,7 @@
 <p><strong>路由层（收敛中）。</strong>MoE 的 top-k 专家选择是离散 argmax——训推两侧 1e-3 级 logit 差就可能翻转专家选择，logprob 偏差跳变而非渐变，IS 对这种非光滑偏差修正无效，是 RL 崩溃的单点放大器。MiMo 的 R3 路由回放（记录推理侧路由分布、训练时原样回放）据报已进量产模型，概率异常 token 数降约一个数量级（provisional）；第二代 Pr2 预测式路由回放在降低记录 / 传输成本（<a href="https://arxiv.org/html/2606.00395">arXiv:2606.00395</a>）。系统约束依旧：EP 下正确回放路由目前只有 Megatron 系后端做得到（D09），FSDP 系结构性缺位；路由记录开销随序列长度线性增长，agentic 长 rollout 尤其不利；回放冻结路由是否损害路由器自身的 RL 学习，无系统研究。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-23-agentic-rl-problem-map/fig-4.svg" alt="训推一致三层十字：左侧根源节点，中间 NVIDIA-CUDA 生态三层根治（算子层 batch-invariant 核与 TBIK、量化层 INT4 QAT 与统一 FP8、路由层 R3 与 Pr2），右侧异构侧三层缺口汇向 align-probe 监控 + IS 补偿的现状，下方代价节点标注 batch-invariant matmul 约 63% 减速">
+  <img class="diagram" src="img/dispatch-23-agentic-rl-problem-map/fig-4.svg" alt="训推一致三层十字：左侧根源节点，中间 NVIDIA-CUDA 生态三层根治（算子层 batch-invariant 核与 TBIK、量化层 INT4 QAT 与统一 FP8、路由层 R3 与 Pr2），右侧异构侧三层缺口汇向 align-probe 监控 + IS 补偿的现状，下方代价节点标注 batch-invariant matmul 约 63% 减速" loading="lazy" decoding="async" width="1370" height="719">
   <figcaption><span class="fnum">图 6</span>训推一致三层十字（原文图 D）：根源"训推 logprob mismatch——与优化过程耦合的动态失稳"；CUDA 生态三层根治：算子层（DeepSeek-V4 batch-invariant 核、SGLang 确定性推理、TBIK 跨 TP 位级一致）、量化层（GLM INT4 QAT、Miles 统一 FP8、换 FP16）、路由层（MiMo R3、Pr2，仅 Megatron 系能正确做 EP 回放）；每层以"移植滞后"虚线指向异构侧对应缺口，三个缺口共同汇向"现状只能软手段：align-probe 监控 logprob MAE 约 0.05 nats 绿区 + IS 算法补偿（D13）"；代价节点：batch-invariant matmul 约 63% 减速。<span class="chip c-inf">本站图</span> 由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -290,7 +290,7 @@
 <p><strong>新增的第四条线：权重同步本身成了赛道。</strong>每步把万亿级参数从训练侧推到多副本推理侧，等于在线 resharding（Megatron TP / EP / PP → 推理 TP），同步窗口内推理引擎空转。NCCL broadcast 直传已成熟（verl 等）；2026 年的演进是 delta / 稀疏同步——SparseRL-Sync 利用 RL 每步更新的稀疏性只传 index + value，报告约 100× 通信减少（provisional，<a href="https://arxiv.org/html/2605.07330">arXiv:2605.07330</a>）；Awex 支持 NCCL / RDMA / 共享内存三模式做万亿参数秒级更新（<a href="https://github.com/inclusionAI/Awex">GitHub</a>）；主流训练库亦有 delta 同步跟进（provisional）。未解：稀疏 delta 会打破 blockwise FP8 scale 的一致性，delta sync × 量化的交互尚无系统性处理。</p>
 
 <figure>
-  <img src="img/dispatch-23-agentic-rl-problem-map/orig-3.png" alt="Awex 架构图：左侧 Meta Server（Meta Exchange、Meta Validation、Service Discovery、Event Notify），上方 Train Workers 各 DP rank 内 WeightWriter 与 TP 分片含 Weights Converter、Shard Meta Collector、Transfer Plan Builder、Weight Transport，下方 Inference Workers 各 Infer Engine 内 WeightReader 与 TP 分片含 Zero-Copy WConverter 等，中间以 NCCL Send/RDMA Write/IPCShm Copy 与对应 Recv/Read/Copy 相连">
+  <img src="img/dispatch-23-agentic-rl-problem-map/orig-3.webp" alt="Awex 架构图：左侧 Meta Server（Meta Exchange、Meta Validation、Service Discovery、Event Notify），上方 Train Workers 各 DP rank 内 WeightWriter 与 TP 分片含 Weights Converter、Shard Meta Collector、Transfer Plan Builder、Weight Transport，下方 Inference Workers 各 Infer Engine 内 WeightReader 与 TP 分片含 Zero-Copy WConverter 等，中间以 NCCL Send/RDMA Write/IPCShm Copy 与对应 Recv/Read/Copy 相连" loading="lazy" decoding="async" width="1800" height="1243">
   <figcaption><span class="fnum">图 7</span>Awex 权重同步架构：左侧 Meta Server 负责 Meta Exchange / Meta Validation / Service Discovery / Event Notify，与训练侧、推理侧交换 train meta 与 infer meta；上方 Train Workers（DP rank 0…M，每 rank 含 WeightWriter 与各 TP 分片）内部四级流水——Weights Converter → Shard Meta Collector → Transfer Plan Builder → Weight Transport；下方 Inference Workers（Infer Engine 0…N，每引擎含 WeightReader 与 TP1…TP3）对称地以 Zero-Copy WConverter 接收；两层之间以 NCCL Send / RDMA Write / IPCShm Copy 与 NCCL Recv / RDMA Read / IPCShm Copy 三模式传输。<span class="chip c-vr">自报</span> 取自 inclusionAI/Awex 官方仓库 README（docs/images/awex_arch.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -371,7 +371,7 @@
 <h2 id="s11"><span class="hnum">11</span>参与方收敛图：八家框架的主攻方向</h2>
 
 <figure>
-  <img class="diagram" src="img/dispatch-23-agentic-rl-problem-map/fig-5.svg" alt="参与方收敛图：左侧八家框架（verl、slime、Miles、prime-rl、SkyRL-Agent、rLLM、AReaL v2.0、MindSpeed-RL），右侧四大问题域，带标注的边表示各框架在各域的主攻方向，下方汇向架构共识节点">
+  <img class="diagram" src="img/dispatch-23-agentic-rl-problem-map/fig-5.svg" alt="参与方收敛图：左侧八家框架（verl、slime、Miles、prime-rl、SkyRL-Agent、rLLM、AReaL v2.0、MindSpeed-RL），右侧四大问题域，带标注的边表示各框架在各域的主攻方向，下方汇向架构共识节点" loading="lazy" decoding="async" width="1084" height="1345">
   <figcaption><span class="fnum">图 8</span>参与方收敛图（原文图 E）：verl（agentic rollout 底座；NVIDIA / ROCm / Ascend 三栈）、slime（三模块解耦 + Data Buffer 中枢，fully_async + Multi-Task Orchestrator，D19）、Miles（R3 路由回放 + 统一 FP8，D09）、prime-rl（三组件全解耦、AIPO、verifiers + Environments Hub，D18）、SkyRL-Agent（后端无关 dispatcher 1.55×、AST 工具提升 Pass@K）、rLLM（GRPO++ compact filtering、Model Gateway 捕 logprob，D22）、AReaL v2.0（四服务微服务化）、MindSpeed-RL（align-probe 监控、截断给 0 不丢弃、沙箱并行成本应对，D13）——各以带标注的边连向 rollout 效率 / 训练稳定性 / 环境与奖励 / 训推一致；效率域与环境域共同指向"架构共识：三方解耦 + 中央 dispatcher"。<span class="chip c-inf">本站图</span> 由原文第 5 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

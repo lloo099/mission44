@@ -77,7 +77,7 @@
 </div>
 
 <figure>
-  <img src="img/dispatch-45-ad-vla-l4/orig-e2e-taxonomy.jpg" alt="端到端自动驾驶综述的全景分类图:第一行对比经典级联与端到端范式,其下依次为方法分类、评测分类、九大挑战与未来趋势">
+  <img src="img/dispatch-45-ad-vla-l4/orig-e2e-taxonomy.webp" alt="端到端自动驾驶综述的全景分类图:第一行对比经典级联与端到端范式,其下依次为方法分类、评测分类、九大挑战与未来趋势" loading="lazy" decoding="async" width="1600" height="987">
   <figcaption><span class="fnum">图 1</span>把地图摊开:经典级联与端到端的分野,以及这条路线自己列出的九大挑战。<span class="chip c-tp">第三方</span> 原图出自综述仓库 <a href="https://github.com/OpenDriveLab/End-to-end-Autonomous-Driving">OpenDriveLab/End-to-end-Autonomous-Driving</a>,MIT。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -98,7 +98,7 @@
 <p class="delta"><span class="dl">本站判断</span>「大模型上车」这句话同时指涉三件事,而它们的证据等级依次递减到零。本篇此后的全部工作,就是把每一条流通的证据归到这三格中的一格——一旦归好,争议大部分自行消失:<strong>真正有分歧的只有第 ③ 格,而第 ③ 格目前是空的</strong>。</p>
 
 <figure>
-  <img src="img/dispatch-45-ad-vla-l4/orig-uniad-pipeline.png" alt="UniAD 的全栈 transformer 流水线:多相机 BEV 特征依次经 TrackFormer、MapFormer、MotionFormer、OccFormer,最后由 Planner 输出轨迹">
+  <img src="img/dispatch-45-ad-vla-l4/orig-uniad-pipeline.webp" alt="UniAD 的全栈 transformer 流水线:多相机 BEV 特征依次经 TrackFormer、MapFormer、MotionFormer、OccFormer,最后由 Planner 输出轨迹" loading="lazy" decoding="async" width="1600" height="412">
   <figcaption><span class="fnum">图 2</span>控制位上坐着的那个东西:全 transformer、无语言模型。<span class="chip c-tp">第三方</span> 原图出自 <a href="https://github.com/OpenDriveLab/UniAD">OpenDriveLab/UniAD</a>(CVPR'23 最佳论文),Apache-2.0。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -148,7 +148,7 @@ FlashDrive 的加速正来自 8-token 块扩散投机草稿：约 10 个被接�
 <p class="delta"><span class="dl">本站判断(已按核验收窄)</span><strong>本站原先在这里有一个错误的论证,核验把它推翻了。</strong> 原稿把 40 ms 解码窗口除以「每帧 10 个 token」得到约 0.76B @INT8 的参数上限,再声称「已出货的系统恰好落在这条线上,吻合到 2 倍以内」。三处站不住:<strong>① 两个举例对象都错了</strong>——理想的 2.2B 是上一代「端到端+VLM」架构里的 VLM 慢系统,跑在第二颗 Orin-X 上给另一个系统提建议,<strong>它不出动作</strong>;实际出货的 MindVLA 车端模型是 <strong>3.2B</strong>(从 32B 云端 VL 基座蒸馏,另有 3.6B 口径);而 <strong>FIVE-VLA(641M)根本没有上车</strong>——A100 上约 30 fps、T4 上约 4 fps,是研究模型。<strong>② 真实出货高出上限约 4 倍,不是 2 倍</strong>——MindVLA 3.2B 是 4.19 倍,小鹏车端约 3B 是 3.92 倍;DeepRoute 自报车端 40B、单步 60–85 ms,是上限的 52 倍且处在同一自报证据层级。<strong>③ 「每帧 10 个 token」是不可观测的自由旋钮</strong>——同一算术在 Thor 上从 7.64B(1 tok)到 0.076B(100 tok),跨度 100 倍;反解各家出货规模所需预算是 1.79 / 2.55 / 2.61,<strong>旋钮不可观测,模型就能回溯任何数字,这个写法不可证伪</strong>。<br><strong>核验留下的、本站现在采用的说法更锋利:</strong>在车规 DRAM 预算上<strong>每帧生成冗长自然语言是负担不起的</strong>——一个 100 ms 帧在 200–550 GB/s 的部件上只够一个数十亿参数模型做个位数次全权重读取。侧面证实它的是一个很硬的事实:<strong>每一家厂商公布的解法都是「停止每帧吐词」,而不是「把模型压小」</strong>——小鹏拆掉语言转译层,FIVE-VLA 完全绕开文本生成,理想靠小词表加投机推理加 token 并行解码换 &gt;10 Hz,其设计目标明写「保证模型规模增长的同时,不降低端侧的推理效率」。<strong>厂商并没有收敛到 0.76–1.53B,他们上了 3–4B,然后把 token 的吐出从回路里工程掉了。参数上限没有生效;token 预算生效了。</strong><br>外推一则:FlashDrive(CoRL 2026)把 Alpamayo-1.5-10B 从 717 ms 压到 151 ms(1.4 → 6.6 Hz),跑在 600 W 工作站 GPU 上;按带宽折算解码、按稠密算力折算其余阶段,10B VLA 在 Thor 上约 <strong>720 ms</strong>、Orin-X 上接近 2 s<span class="chip c-inf">推断</span>——<strong>两个方向的误差不互相抵消</strong>(非解码阶段用数据中心级耗时偏乐观,解码阶段假设无投机无 MoE 偏悲观);而按本站这组折算,Thor 上非解码阶段已达 424 ms,<strong>一个 100 ms 帧的解码预算是负的——这恰好说明那个 40 ms 窗口是假设,不是推导</strong>。</p>
 
 <figure>
-  <img src="img/dispatch-45-ad-vla-l4/orig-vad-arch.png" alt="VAD 的矢量化场景表示架构:多相机图像经 BEV 编码后,用矢量化的地图 query 与 agent query 表征场景,再由规划头输出矢量轨迹">
+  <img src="img/dispatch-45-ad-vla-l4/orig-vad-arch.png" alt="VAD 的矢量化场景表示架构:多相机图像经 BEV 编码后,用矢量化的地图 query 与 agent query 表征场景,再由规划头输出矢量轨迹" loading="lazy" decoding="async" width="1276" height="520">
   <figcaption><span class="fnum">图 3</span>非语言策略的代价结构:矢量化表示,固定开销。<span class="chip c-tp">第三方</span> 原图出自 <a href="https://github.com/hustvl/VAD">hustvl/VAD</a>,Apache-2.0。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -194,7 +194,7 @@ FlashDrive 的加速正来自 8-token 块扩散投机草稿：约 10 个被接�
 <p class="delta"><span class="dl">本站判断(已按核验收窄)</span><strong>这一节诚实的定性是作者自己给的那一个</strong>,写在表 2 的图注里:「我们要强调,SimLingo 能够在纳入若干语言相关能力的同时,<strong>保持与纯驾驶模型 SimLingo-BASE 相同的驾驶性能</strong>。」——<strong>持平,不是增益,也不是损失</strong>。两处标签更正:「纯视觉」在 SimLingo 语境里指只用相机感知,<strong>两个版本都是</strong>;基线是「无语言能力」,不是「无语言模型」(它有一个 50M 的 LLaMA 架构解码器)。一处资历归属:CARLA Leaderboard 2.0 挑战赛的成绩属于<strong>无语言的那条臂</strong>(表 1 脚注「我们把模型从 CarLLaVA 更名为 SimLingo-BASE」),完整版 SimLingo <strong>从未在官方榜上评测过</strong>;基线在官方榜上的 DS 是 <strong>6.25(MAP)/ 6.87(SENSORS)</strong>,与 Bench2Drive 的 85.94 差两个数量级,论文明确警告不可比。<br><strong>闭环榜的排序成立,但归因不成立——这是本节最该带走的一条。</strong> 榜页自己写明「本榜比较的是<strong>整个方法</strong>的最终表现,<strong>包括数据获取方式</strong>,而不只是架构」;而决定性的对照就在同一页上:<strong>BridgeDrive 出现了两次,同一篇论文、同一个架构,86.87 与 96.34,差别只在专家与数据集——单靠数据获取方式就带来 +9.47 DS 的摆动,接近语言/非语言那个 4.3–5.4 分差距的两倍。</strong>而榜首两条都依赖 LEAD 数据,最好的 VLA 条目都不依赖。此外这个榜<strong>不独立于它的头部参赛者</strong>:维护方 autonomousvision / 图宾根组同时是 TFv6、LEAD、TF++ 与 SimLingo 的作者方,而<strong>每一行都是论文作者自报</strong>。榜内还有自相矛盾处:同仓库 <code>main.tex</code> 把 BridgeDrive(LEAD)的 SR 记作 86.81(与 TFv6 相同,像复制错误),与 README 的 89.25 不一致。语言/非语言这个切分是<strong>本站的编辑标注,榜上没有这一列</strong>;按名称标注会漏掉 VLADriver-RAG 89.12、AlignDrive 89.07、GraphPilot 88.89 等语言条件化候选——<strong>但它们也都没突破约 91,所以天花板的结论仍然成立</strong>。<br><strong>合起来三条:</strong>① 在唯一一组同权重对照里,语言的收益<strong>正但不显著</strong>;② 作者自己的定性是<strong>持平</strong>;③ 至今<strong>没有任何闭环榜首是语言模型,最好的语言条目也没突破约 91</strong>,尽管这个差距的归因被数据获取方式严重混淆。<strong>所以:语言在驾驶闭环上至今没有被证明能买到驾驶能力,也没有被证明有害——它处在一个「花了很大代价、收益尚未可测」的位置。</strong>这比原稿的「接近零」弱,但这是证据的形状。</p>
 
 <figure>
-  <img src="img/dispatch-45-ad-vla-l4/orig-senna-vlm-e2e.png" alt="Senna 的 VLM 加端到端双模型总览:左上 VLM 读图与文本输出结构化驾驶语义,交给端到端模型产出规划轨迹">
+  <img src="img/dispatch-45-ad-vla-l4/orig-senna-vlm-e2e.webp" alt="Senna 的 VLM 加端到端双模型总览:左上 VLM 读图与文本输出结构化驾驶语义,交给端到端模型产出规划轨迹" loading="lazy" decoding="async" width="1142" height="570">
   <figcaption><span class="fnum">图 4</span>领域正在收敛到的那个形状:语言出语义,非语言出轨迹。<span class="chip c-tp">第三方</span> 原图出自 <a href="https://github.com/hustvl/Senna">hustvl/Senna</a>,Apache-2.0。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -203,7 +203,7 @@ FlashDrive 的加速正来自 8-token 块扩散投机草稿：约 10 个被接�
 </figure>
 
 <figure>
-  <img src="img/dispatch-45-ad-vla-l4/orig-openemma-pipeline.png" alt="OpenEMMA 的流水线:多视角图像与历史自车状态送入预训练 VLM,以文本形式输出思维链与未来路径点,再解析成轨迹">
+  <img src="img/dispatch-45-ad-vla-l4/orig-openemma-pipeline.webp" alt="OpenEMMA 的流水线:多视角图像与历史自车状态送入预训练 VLM,以文本形式输出思维链与未来路径点,再解析成轨迹" loading="lazy" decoding="async" width="1600" height="829">
   <figcaption><span class="fnum">图 5</span>唯一一张「语言真的在出轨迹」的图,以及它为什么贵。<span class="chip c-tp">第三方</span> 原图出自 <a href="https://github.com/taco-group/OpenEMMA">taco-group/OpenEMMA</a>(Waymo EMMA 的开源复现),Apache-2.0。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -241,7 +241,7 @@ FlashDrive 的加速正来自 8-token 块扩散投机草稿：约 10 个被接�
 <p class="delta"><span class="dl">本站判断</span>DriveBench 作者的结论是模型在「依据通用知识或文本线索生成看似合理的回答,而非真正的视觉接地」;DriveLM 自家微调的专才在去掉图片后也只从 68.71 掉到 65.24。指标本身还火上浇油:ROUGE-L 常年在 0.2 附近,而 DriveLM 在 ROUGE-L 上赢其它 VLM、在 GPT-score 上输——<strong>微调的增益很大程度是答案模板匹配</strong>;人类评分者在干净图的感知任务上只拿 47.67,说明<strong>这套基准自己的天花板都没标定好</strong>。<br>与此对照,NAVSIM 是本站见过最健康的基准设计实践:它把盲基线检查<strong>制度化进了 devkit</strong>。其 <code>docs/agents.md</code> 原文——「<code>EgoStatusMLPAgent</code> 是一个<strong>盲基线</strong>,它忽略所有感知环境的传感器……由此,EgoStatusMLP <strong>充当一个性能上界,即仅靠外推自车的运动学状态所能达到的水平</strong>」。它在 navtest 上得 <strong>65.6 PDMS</strong>,而人类回放 94.8、匀速 21.6——<strong>人类成绩的约 70% 是闭着眼睛能拿到的</strong>,感知与推理一共只在 65.6 → 约 90 这一段里。而当前 navtest SOTA 不分架构都挤在 88–91:ResAD 用 ResNet-34、完全不带语言,88.8(换 V2-99 到 90.6);DAP 用 120M 参数的离散 token 规划器,90.0。<strong>基准已经饱和,且不区分语言与非语言。</strong><br>最后值得记上一笔的是,AD-MLP 的作者把这件事说得比任何批评都狠——仓库 README 原文:「尽管我们的模型在 nuScenes 数据集的范围内表现良好,我们承认<strong>它只是一个无法在真实世界中工作的、不切实际的玩具</strong>;在自车状态之外没有任何感知知识的情况下驾驶是一个无法逾越的挑战。」<strong>AD-MLP 从来不是一个在吹的工作,它是一份诊断报告——而领域花了两年才开始照着它改评测。</strong></p>
 
 <figure>
-  <img src="img/dispatch-45-ad-vla-l4/orig-drivelm-graphvqa.jpg" alt="DriveLM 的 Graph VQA 三联图:左为感知→预测→规划→行为→运动的有向图任务定义,中为问答链样例,右为评测指标">
+  <img src="img/dispatch-45-ad-vla-l4/orig-drivelm-graphvqa.webp" alt="DriveLM 的 Graph VQA 三联图:左为感知→预测→规划→行为→运动的有向图任务定义,中为问答链样例,右为评测指标" loading="lazy" decoding="async" width="1600" height="602">
   <figcaption><span class="fnum">图 6</span>驾驶 VQA 想做的事,以及它缺的那一道独立检验。<span class="chip c-tp">第三方</span> 原图出自 <a href="https://github.com/OpenDriveLab/DriveLM">OpenDriveLab/DriveLM</a>,Apache-2.0。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -308,7 +308,7 @@ NVIDIA 训练 Alpamayo 1.5 实际用的集群配置(配方 README 自述):
 <p class="delta"><span class="dl">本站判断</span>那条 FAQ 的含义值得单独说一遍:<strong>在一家最有动机把语言推上控制位的公司的公开配方里,RL 优化的是那个说话的部分,真正输出连续控制量的那个头被绕过去了。</strong> 这把第 00 节的三分法在代码仓库层面又验证了一遍。同样要紧的是那个替换的性质——<strong>连「推理对不对」这件事,奖励也是一个学出来的模型说的,不是一个可执行的检查器</strong>:这与本站 D43 第 4 节那张「奖励接地四档表」对上了,而驾驶落在最弱的一档。<br>公允地说,存在一个设计更聪明的在线 RL 存在性证明:小米 EV / 华科的 MindDrive(ECCV 2026)——一个 Qwen 骨干(0.5B / 2.5–3B)配两组 LoRA,决策专家出离散的语言化 meta-action,动作专家把它映射成 VAE+GRU 航点,用 PPO 在真实 CARLA rollout 的稀疏成败回报上优化。<strong>诀窍是让 RL 在有限离散的语言动作集上探索,而不是连续轨迹</strong>,这才让探索可行(DS 78.04 @0.5B / 80.59 @3B)。核验确认环境是 CARLA 0.9.15、评测是 Bench2Drive 闭环、<strong>仓库里没有任何东西碰到车</strong>,但收窄两处:<strong>「在线」是算子驱动的批式 on-policy PPO,不是持续学习的车</strong>(释出脚本是两次手动调用:先把 rollout 收集到磁盘,再喂给 PPO);而<strong>那条「性能随 RL 轮数非单调」的消融不在官方 README 里</strong>,只见于第三方论文笔记(其文本经机器比对与论文原文吻合),具体是 rollout 轮数超过 2 时 <strong>DS 从 78.04 掉到 73.69</strong>,作者归因于灾难性遗忘。<strong>所以准确的说法是「超过调好的那个最优点之后更多 RL 会变差」,不是「RL 净有害」。</strong></p>
 
 <figure>
-  <img src="img/dispatch-45-ad-vla-l4/orig-rad-rl-framework.png" alt="RAD 的三阶段训练框架:感知预训练、规划预训练,以及在 3DGS 重建环境里做强化后训练的闭环">
+  <img src="img/dispatch-45-ad-vla-l4/orig-rad-rl-framework.webp" alt="RAD 的三阶段训练框架:感知预训练、规划预训练,以及在 3DGS 重建环境里做强化后训练的闭环" loading="lazy" decoding="async" width="1600" height="847">
   <figcaption><span class="fnum">图 7</span>驾驶 RL 后训练的形状,以及它的可信度挂在哪里。<span class="chip c-tp">第三方</span> 原图出自 <a href="https://github.com/hustvl/RAD">hustvl/RAD</a>,MIT。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -331,7 +331,7 @@ NVIDIA 训练 Alpamayo 1.5 实际用的集群配置(配方 README 自述):
 <p class="delta"><span class="dl">本站判断</span>机器人领域那个 ρ=0.40 到 r=0.99 的跨度就是全部结论:<strong>这个方法不自带可靠性保证</strong>——同一类技术,在不同实现上既可能几乎无预测力,也可能近乎完美。在驾驶上这个数一次都没被公布过,因此「在世界模型里做闭环 RL」的所有增益<strong>目前都无法被定价</strong>。把这一节与第 09 节华为那 6 亿公里自家仿真并读,问题就很具体了:<strong>难例由自家世界引擎生成、再对着自家仿真器报告改进,这正是本站 D43 反复点名的训练集污染失效模式</strong>。</p>
 
 <figure>
-  <img src="img/dispatch-45-ad-vla-l4/orig-diffusiondrive-trunc.png" alt="DiffusionDrive 的截断扩散策略示意:从锚定的多模态高斯先验出发,仅两步去噪即得到多条候选轨迹并打分">
+  <img src="img/dispatch-45-ad-vla-l4/orig-diffusiondrive-trunc.webp" alt="DiffusionDrive 的截断扩散策略示意:从锚定的多模态高斯先验出发,仅两步去噪即得到多条候选轨迹并打分" loading="lazy" decoding="async" width="1331" height="1010">
   <figcaption><span class="fnum">图 8</span>不用语言也能有「多种可能」与「打分」,而且步数固定。<span class="chip c-tp">第三方</span> 原图出自 <a href="https://github.com/hustvl/DiffusionDrive">hustvl/DiffusionDrive</a>(CVPR'25),MIT。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

@@ -92,7 +92,7 @@
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-31-olmo3/fig-1.svg" alt="model flow 全链路工件：数据层（Dolma 3 池、Dolci 套件、Rust 工具链）→ 训练层（OLMo-core、open-instruct、每 1000 步 checkpoint、WandB 曲线）→ 评测与溯源（OLMES、OLMoTrace）；训练层以虚线指向 model flow 主张">
+  <img class="diagram" src="img/dispatch-31-olmo3/fig-1.svg" alt="model flow 全链路工件：数据层（Dolma 3 池、Dolci 套件、Rust 工具链）→ 训练层（OLMo-core、open-instruct、每 1000 步 checkpoint、WandB 曲线）→ 评测与溯源（OLMES、OLMoTrace）；训练层以虚线指向 model flow 主张" loading="lazy" decoding="async" width="2697" height="321">
   <figcaption><span class="fnum">图 1</span>model flow 全链路工件。三层从左到右：数据层（Dolma 3 池 9.3T token、Dolci 后训练套件、duplodocus / datamap-rs / olmOCR 工具链）、训练层（OLMo-core 与 open-instruct 代码、预训练每 1000 步中间 checkpoint、WandB 曲线）、评测与溯源（OLMES、OLMoTrace 逐字回溯到万亿级语料）。<span class="chip c-inf">推断</span> 本站图，依原文图 A 由第 1 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -132,7 +132,7 @@
 <p>数据工程为自研 Rust 工具链：duplodocus 三段式去重（精确哈希 38.7B → 12.8B 文档、MinHash 模糊、后缀数组子串）、WebOrganizer 24 主题 × 20 质量档共 480 桶、fastText 质量分类，混合比例经 swarm 式小模型消融确定。算力口径：<span class="chip c-vr">自报</span> 7B 用 512×H100、32B 用 1024×H100，32B Think 全流程约 56 天、约 $2.75M（二手转述，provisional）。评测定位（多为二手转述）：Think 32B 以<strong>约 1/6 的训练 token 逼近 Qwen 3 32B</strong>（MATH 96.2、AIME'24 80.6），是完全开放阵营首个可与 open-weights 旗舰同档竞争的推理模型；知识型多选（MMLU 系）仍落后数分。"更少 token 打平"的含义：数据配比与后训练配方是主要杠杆。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-31-olmo3/fig-2.svg" alt="三层数据漏斗：Dolma 3 池 9.3T → 主训 Dolma 3 Mix 5.9T → mid-train Dolmino 100B → 长上下文 Longmino；duplodocus 去重以虚线作用于池，WebOrganizer 分桶以虚线作用于主训 Mix；长上下文阶段以虚线指向"配比全公开，D28 配比惯例的唯一完整反例"">
+  <img class="diagram" src="img/dispatch-31-olmo3/fig-2.svg" alt="三层数据漏斗：Dolma 3 池 9.3T → 主训 Dolma 3 Mix 5.9T → mid-train Dolmino 100B → 长上下文 Longmino；duplodocus 去重以虚线作用于池，WebOrganizer 分桶以虚线作用于主训 Mix；长上下文阶段以虚线指向"配比全公开，D28 配比惯例的唯一完整反例"" loading="lazy" decoding="async" width="1778" height="246">
   <figcaption><span class="fnum">图 2</span>三层数据漏斗与训练阶段。主链从 9.3T 池经三次收窄（5.9T → 100B → 50B / 100B）；两个数据工程工具以虚线标注作用位置：duplodocus 三段去重作用于池、WebOrganizer 24 × 20 分桶作用于主训 Mix。<span class="chip c-inf">推断</span> 本站图，依原文图 B 由第 2 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -161,7 +161,7 @@
 <p><strong>③ 每阶段 checkpoint 留档。</strong>SFT / DPO / RL 各阶段模型独立发布（如 Olmo-3-7B-Instruct-SFT），配 WandB 全曲线——后训练从不可见变成可逐段审计的流水线。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-31-olmo3/fig-3.svg" alt="后训练矩阵：Instruct（SFT 215 万条 → DPO 26 万对 → RLVR 17 万 prompt）、Think（R1 重生成长 CoT SFT → Delta Learning DPO → RLVR 10.2 万难题）、RL Zero（从 Base 直接 RLVR）三条路径汇入 OlmoRL 工程包（active sampling、token 级归一化 / 无 KL / clip-higher、截断 IS、异步 + in-flight 更新 1024 H100 提速约 4×），工程包以虚线指向奖励设计">
+  <img class="diagram" src="img/dispatch-31-olmo3/fig-3.svg" alt="后训练矩阵：Instruct（SFT 215 万条 → DPO 26 万对 → RLVR 17 万 prompt）、Think（R1 重生成长 CoT SFT → Delta Learning DPO → RLVR 10.2 万难题）、RL Zero（从 Base 直接 RLVR）三条路径汇入 OlmoRL 工程包（active sampling、token 级归一化 / 无 KL / clip-higher、截断 IS、异步 + in-flight 更新 1024 H100 提速约 4×），工程包以虚线指向奖励设计" loading="lazy" decoding="async" width="351" height="1370">
   <figcaption><span class="fnum">图 3</span>后训练矩阵与 OlmoRL。上：三条路径各自的三阶段数据规模（Instruct SFT 215 万条 / DPO 26 万对 / RLVR 17 万 prompt；Think RLVR 10.2 万难题；RL Zero 跳过 SFT 与 DPO）；下：OlmoRL 四组组件；奖励设计（SymPy、代码执行、IF 约束函数、Qwen3-32B judge）以虚线附于工程包。<span class="chip c-inf">推断</span> 本站图，依原文图 C 由第 3 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -171,7 +171,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-31-olmo3/orig-1.png" alt="Tulu3.1 8B GRPO Fast（粉色）与 Tulu3.1 8B GRPO（墨绿）两条曲线，横轴为训练小时数：左图 objective/verifiable_correct_rate 从约 0.5 分别升至约 0.83（30 小时）与约 0.74（40 小时以上）；右图 val/sequence_lengths 两条曲线在 300–450 区间波动">
+  <img src="img/dispatch-31-olmo3/orig-1.webp" alt="Tulu3.1 8B GRPO Fast（粉色）与 Tulu3.1 8B GRPO（墨绿）两条曲线，横轴为训练小时数：左图 objective/verifiable_correct_rate 从约 0.5 分别升至约 0.83（30 小时）与约 0.74（40 小时以上）；右图 val/sequence_lengths 两条曲线在 300–450 区间波动" loading="lazy" decoding="async" width="1800" height="823">
   <figcaption><span class="fnum">图 4</span>open-instruct 中 grpo_fast（异步、跳零梯度批）与旧版 GRPO 在 Tulu3.1 8B 上的对照，横轴为墙钟时间（小时），数据集 allenai/RLVR-GSM-MATH-IF-Mixed-Constraints。左：可验证正确率；右：验证集序列长度。<span class="chip c-vr">自报</span> 取自 allenai/open-instruct 仓库 docs/algorithms/grpo.md（grpo/tulu3.1_8b_grpo_fast-time.png）。注意这是 OlmoRL 所在代码库的前代实验（Tulu 3.1），不是 OLMo 3 的训练曲线。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -181,7 +181,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-31-olmo3/orig-2.png" alt="与图 4 相同的两条曲线，横轴改为 episodes（查询 - 回复对数量，0 到 2M）：左图正确率粉色约 0.83、墨绿约 0.74；右图序列长度两条曲线交叠波动">
+  <img src="img/dispatch-31-olmo3/orig-2.webp" alt="与图 4 相同的两条曲线，横轴改为 episodes（查询 - 回复对数量，0 到 2M）：左图正确率粉色约 0.83、墨绿约 0.74；右图序列长度两条曲线交叠波动" loading="lazy" decoding="async" width="1800" height="823">
   <figcaption><span class="fnum">图 5</span>与图 4 同一组实验，横轴改为 episodes（查询 - 回复对数量，0–2M）。<span class="chip c-vr">自报</span> 取自 allenai/open-instruct 仓库 docs/algorithms/grpo.md（grpo/tulu3.1_8b_grpo_fast.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -206,7 +206,7 @@
 <p>这解决了社区的结构性痛点：Qwen / Llama 等 base 不公开预训练数据，RLVR 涨分永远无法排除数据泄漏混杂——D30 论证的"污染是评测三威胁之一"在训练研究侧同样成立，RL Zero 是第一个系统性堵住该混杂的公开基座。<span class="chip c-tp">第三方</span> 已在使用：推理链控制研究（<a href="https://arxiv.org/abs/2603.05706">2603.05706</a>）、OlmoLogic（TU Darmstadt，在官方 RLVR 配方上接入 Prolog 符号验证器，<a href="https://huggingface.co/blog/LukasHug/olmo-logic">博客</a>）、预训练动态与 probing 研究直接取用其中间 checkpoint。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-31-olmo3/fig-4.svg" alt="RL Zero 负对照逻辑：结构性痛点（base 数据不公开，RLVR 涨分无法排除泄漏）→ 设计一 Dolci-RLZero 激进去污染 → 设计二 随机奖励负对照（若泄漏则 spurious reward 也涨分，实测不涨 = 增益归因于 RL 本身）→ 结果：首个可做因果归因的公开 RLVR 试验台；虚线指向与 D30 的呼应">
+  <img class="diagram" src="img/dispatch-31-olmo3/fig-4.svg" alt="RL Zero 负对照逻辑：结构性痛点（base 数据不公开，RLVR 涨分无法排除泄漏）→ 设计一 Dolci-RLZero 激进去污染 → 设计二 随机奖励负对照（若泄漏则 spurious reward 也涨分，实测不涨 = 增益归因于 RL 本身）→ 结果：首个可做因果归因的公开 RLVR 试验台；虚线指向与 D30 的呼应" loading="lazy" decoding="async" width="1492" height="166">
   <figcaption><span class="fnum">图 6</span>RL Zero 负对照逻辑。从结构性痛点出发，两个设计串联（去污染 → 随机奖励负对照），得到"首个可做因果归因的公开 RLVR 试验台、四域独立 checkpoint 供消融"；虚线标注与 D30 的呼应：污染既是评测威胁也是训练研究的混杂变量。<span class="chip c-inf">推断</span> 本站图，依原文图 D 由第 4 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

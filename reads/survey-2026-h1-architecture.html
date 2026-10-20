@@ -97,7 +97,7 @@
 <p>标准注意力有两个长上下文痛点：计算上 O(n²)、显存上 KV cache 随长度线性增长。2026 这批模型的回答可归为三个根本不同的家族，外加一条与注意力正交的 MoE 创新轴：<strong>① 全注意力</strong>（MLA 或 GQA，attend 全部，O(n²)，代表 Kimi-K2.6）；<strong>② 稀疏选择</strong>（只选一部分 token / 块再算，次二次，代表 DeepSeek-V4 CSA / HCA、GLM-5 DSA、MiniMax M3 MSA、MiMo SWA）；<strong>③ 线性注意力混合</strong>（线性层 + 少量全注意力层，O(n)，代表 Qwen3.6 Gated DeltaNet）；<strong>（正交）MoE 算力分配</strong>（LongCat-Flash 零计算专家）。家族 ② 内部还能沿两个正交轴细分：KV 底座（GQA vs MLA）× 稀疏方式（压缩 / 不压缩、选 token / 选块）。</p>
 
 <figure>
-  <img class="diagram" src="img/survey-2026-h1-architecture/fig-1.svg" alt="大模型注意力机制总分类：根节点分注意力轴与正交 MoE 算力轴；注意力轴下三大家族——全注意力（Kimi-K2.6 MLA）、稀疏选择（DeepSeek-V4 CSA/HCA、GLM-5 DSA、MiniMax M3 MSA、MiMo SWA）、线性混合（Qwen3.6 Gated DeltaNet）；MoE 轴下 LongCat-Flash 零计算专家">
+  <img class="diagram" src="img/survey-2026-h1-architecture/fig-1.svg" alt="大模型注意力机制总分类：根节点分注意力轴与正交 MoE 算力轴；注意力轴下三大家族——全注意力（Kimi-K2.6 MLA）、稀疏选择（DeepSeek-V4 CSA/HCA、GLM-5 DSA、MiniMax M3 MSA、MiMo SWA）、线性混合（Qwen3.6 Gated DeltaNet）；MoE 轴下 LongCat-Flash 零计算专家" loading="lazy" decoding="async" width="1997" height="528">
   <figcaption><span class="fnum">图 1</span>注意力机制总分类：根节点分出"注意力轴——决定如何算"与"正交 MoE 算力轴——与注意力无关"；注意力轴下三大家族各挂代表模型，稀疏选择一族挂了四个代表（DeepSeek-V4、GLM-5、MiniMax M3、MiMo），MoE 轴下只有 LongCat-Flash 零计算专家。<span class="chip c-inf">本站图</span> 由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -122,7 +122,7 @@
 <p><strong>效果对比（确证 + 解读）</strong>：等 KV 预算下 MLA 表达力严格更强（MLA 能表达 GQA、反之不行：GQA 是"复制 K / V"，MLA 是"每头不同的上投影"）。但"理论更强"不自动兑现——GLM-5 报告里，裸 Muon 下 MLA 追不平 GQA-8，他们做了 Muon Split 才追平；同时 MLA 的 cache（576 维）比 GQA-8（2048 维）小约 3.5×。真正的分水岭不是效果而是工程：GQA 能直接复用 FlashAttention / vLLM / SGLang、实现简单、对 RL 训推一致更友好；MLA 压得更狠但要背 latent KV 的 kernel 工程债。所以 MiMo、MiniMax M3 选 GQA（production-ready 最低风险），DeepSeek 全系、GLM、Kimi、LongCat 选 MLA（极致压缩）。</p>
 
 <figure>
-  <img class="diagram" src="img/survey-2026-h1-architecture/fig-2.svg" alt="KV 缓存底座之争：左链 GQA 五步（分组共享 KV 头、缓存真实 K/V、直接复用 FlashAttention、对 RL 训推一致友好、代表 MiMo 与 MiniMax M3），右链 MLA 五步（压成低秩 latent、上投影还原、解耦 RoPE、latent KV kernel 工程债、代表 DeepSeek/GLM/Kimi/LongCat）">
+  <img class="diagram" src="img/survey-2026-h1-architecture/fig-2.svg" alt="KV 缓存底座之争：左链 GQA 五步（分组共享 KV 头、缓存真实 K/V、直接复用 FlashAttention、对 RL 训推一致友好、代表 MiMo 与 MiniMax M3），右链 MLA 五步（压成低秩 latent、上投影还原、解耦 RoPE、latent KV kernel 工程债、代表 DeepSeek/GLM/Kimi/LongCat）" loading="lazy" decoding="async" width="3358" height="316">
   <figcaption><span class="fnum">图 2</span>KV 缓存底座之争：根节点"等 KV 预算下 MLA 表达力严格更强但需配套"；左链 GQA——H 个 query 头分 G 组共享 KV 头 → 缓存真实完整维度 K / V → 直接复用 FlashAttention → 对 RL 训推一致友好 → 代表 MiMo 与 MiniMax M3；右链 MLA——K / V 压成低秩 latent（如 512 维）→ 算时上投影还原、缓存与头数无关 → 需处理解耦 RoPE（qk_nope + qk_rope）→ 压得狠但背 latent KV kernel 工程债 → 代表 DeepSeek、GLM、Kimi、LongCat。<span class="chip c-inf">本站图</span> 由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -160,7 +160,7 @@
 <p><strong>DSA（DeepSeek Sparse Attention）</strong>：在 MLA 上加一个轻量 lightning indexer，为每个 query 选 token 级 top-k（如 top-2048）。GLM-5 通过"从稠密 MLA 基座继续预训练"加上 DSA，称其"构造上无损"。<strong>CSA / HCA（DeepSeek-V4）</strong>：更激进——CSA 4× 压缩 + 块选择，HCA 128× 重压缩 + dense，层间交替，且每层内嵌一个未压缩的 SWA 局部分支；把 KV 压到 V3.2 的约 10%，撑起 1M 上下文。<strong>MiMo 的 SWA 混合</strong>：最简，纯 GQA + 60 层滑动窗口（窗口 128）+ 10 层全局（6:1）+ 可学习 attention sink；一个反直觉的消融结论：窗口 W=128 反而比 W=512 好，因为小窗口起正则作用、并强制"局部归 SWA、长程归全局层"的清晰分工。<strong>MSA（MiniMax M3）</strong>：= "DSA 的动态块选择 + SWA 的不压缩"。两阶段"先挑再算"：索引分支（单头共享 index key + Block Max Pool → TopK 选块，近零成本）→ 稀疏分支（对选中块在真实未压缩 KV 上算真注意力）。同组 query 共享一份选择，FlashAttention 可复用。稀疏率约 6–7%，1M 下有效感受野约 60–70k。（注：MSA 机制来自架构图反推，待官方报告证实。）</p>
 
 <figure>
-  <img class="diagram" src="img/survey-2026-h1-architecture/fig-3.svg" alt="NSA 原型分化图：NSA 三分支加学习门控，分化为 DSA（MLA 底座、token 级、压缩 latent、代表 GLM-5 与 V3.2）、CSA 与 HCA（序列压缩、块级、4 倍至 128 倍、代表 DeepSeek-V4）、SWA 混合（GQA 底座、窗口 128、不压缩、代表 MiMo）、MSA（GQA 底座、块级、不压缩、代表 MiniMax M3）">
+  <img class="diagram" src="img/survey-2026-h1-architecture/fig-3.svg" alt="NSA 原型分化图：NSA 三分支加学习门控，分化为 DSA（MLA 底座、token 级、压缩 latent、代表 GLM-5 与 V3.2）、CSA 与 HCA（序列压缩、块级、4 倍至 128 倍、代表 DeepSeek-V4）、SWA 混合（GQA 底座、窗口 128、不压缩、代表 MiMo）、MSA（GQA 底座、块级、不压缩、代表 MiniMax M3）" loading="lazy" decoding="async" width="1206" height="350">
   <figcaption><span class="fnum">图 3</span>NSA 的四种分化：根节点 NSA 原型（三分支——压缩 + 选择 + 滑窗 + 学习门控），四个子节点各带一行属性——DSA（MLA 底座、token 级、压缩 latent、在压缩 KV 上算、GLM-5 与 V3.2）、CSA 与 HCA（序列压缩、块级、压 4 倍至 128 倍、DeepSeek-V4）、SWA 混合（GQA 底座、固定窗口 128、不压缩、真实 KV 局部、MiMo）、MSA（GQA 底座、块级、不压缩、真实 KV、MiniMax M3）。<span class="chip c-inf">本站图</span> 由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -170,7 +170,7 @@
 </figure>
 
 <figure>
-  <img src="img/survey-2026-h1-architecture/orig-1.png" alt="MiMo-V2-Flash 架构图：左侧主干由 M 个大块组成，每大块含 N 个 SWA block（RMSNorm、Sliding Window Attention、RMSNorm、Sparse MoE）与 1 个 GA block（RMSNorm、Global Attention、RMSNorm、Sparse MoE）；右侧 K 个 MTP block（Linear、RMSNorm、Sliding Window Attention、RMSNorm、Dense FFN）共享 tied Embedding 与 LM Head">
+  <img src="img/survey-2026-h1-architecture/orig-1.webp" alt="MiMo-V2-Flash 架构图：左侧主干由 M 个大块组成，每大块含 N 个 SWA block（RMSNorm、Sliding Window Attention、RMSNorm、Sparse MoE）与 1 个 GA block（RMSNorm、Global Attention、RMSNorm、Sparse MoE）；右侧 K 个 MTP block（Linear、RMSNorm、Sliding Window Attention、RMSNorm、Dense FFN）共享 tied Embedding 与 LM Head" loading="lazy" decoding="async" width="1800" height="1541">
   <figcaption><span class="fnum">图 4</span>MiMo-V2-Flash 的 SWA / GA 混合主干与 MTP 分支：左侧主干 M 个大块，每块由 N 个 SWA block（RMSNorm → Sliding Window Attention → RMSNorm → Sparse MoE，残差连接）加 1 个 GA block（同结构但用 Global Attention）组成；右侧 K 个 MTP block（RMSNorm 双输入相加 → Linear → RMSNorm → Sliding Window Attention → RMSNorm → Dense FFN），与主干共享 tied Embedding 与 LM Head，预测 x<sub>t+1</sub>、x<sub>t+2</sub>、x<sub>t+3</sub>。<span class="chip c-vr">自报</span> 取自 XiaomiMiMo/MiMo-V2-Flash 官方仓库 README（figures/MiMo-v2-flash-arch.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -180,7 +180,7 @@
 </figure>
 
 <figure>
-  <img src="img/survey-2026-h1-architecture/orig-2.png" alt="MiniMax M3 GQA 与 MSA 效率对比三面板：每 token 注意力 FLOPs 在 1M 下 MSA 降 28.4 倍；prefill 注意力延迟 GQA 约 30 秒对 MSA 约 2 秒，14.2 倍加速；decode 注意力延迟 GQA 约 0.83 毫秒对 MSA 约 0.11 毫秒，7.6 倍加速">
+  <img src="img/survey-2026-h1-architecture/orig-2.png" alt="MiniMax M3 GQA 与 MSA 效率对比三面板：每 token 注意力 FLOPs 在 1M 下 MSA 降 28.4 倍；prefill 注意力延迟 GQA 约 30 秒对 MSA 约 2 秒，14.2 倍加速；decode 注意力延迟 GQA 约 0.83 毫秒对 MSA 约 0.11 毫秒，7.6 倍加速" loading="lazy" decoding="async" width="2544" height="681">
   <figcaption><span class="fnum">图 5</span>MiniMax M3 官方给出的 GQA（蓝）与 MSA（绿）效率对比：左面板每 token 注意力 FLOPs 随序列长度 32k → 1M 的增长，1M 处 MSA 比 GQA 少 28.4×；中面板 prefill 注意力延迟，GQA 在 1M 约 30 s、MSA 约 2 s，14.2× 加速；右面板 decode 注意力延迟随 KV 长度，GQA 约 0.83 ms、MSA 约 0.11 ms，7.6× 加速。<span class="chip c-vr">自报</span> 取自 MiniMax-AI/MiniMax-M3 官方仓库 README（figures/efficiency_gqa_vs_msa.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -190,7 +190,7 @@
 </figure>
 
 <figure>
-  <img src="img/survey-2026-h1-architecture/orig-3.png" alt="DeepSeek-V3.2-Exp 与 V3.1-Terminus 每百万 token 成本随 token 位置的对比：prefill 面板 V3.1 从约 0.05 美元线性升至 128K 处约 0.67 美元，V3.2 升至约 0.18 美元；decode 面板 V3.1 升至约 2.15 美元，V3.2 升至约 0.25 美元">
+  <img src="img/survey-2026-h1-architecture/orig-3.png" alt="DeepSeek-V3.2-Exp 与 V3.1-Terminus 每百万 token 成本随 token 位置的对比：prefill 面板 V3.1 从约 0.05 美元线性升至 128K 处约 0.67 美元，V3.2 升至约 0.18 美元；decode 面板 V3.1 升至约 2.15 美元，V3.2 升至约 0.25 美元" loading="lazy" decoding="async" width="939" height="374">
   <figcaption><span class="fnum">图 6</span>DeepSeek-V3.2-Exp（DSA，橙）与 V3.1-Terminus（稠密 MLA，蓝）的每百万 token 成本随 token 位置（0–128K）的变化：(a) prefill——V3.1 在 128K 处约 0.67 美元，V3.2 约 0.18 美元；(b) decode——V3.1 约 2.15 美元，V3.2 约 0.25 美元。<span class="chip c-vr">自报</span> 取自 deepseek-ai/DeepSeek-V3.2 官方仓库 README（cost.jpg）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -226,7 +226,7 @@
 <p>Qwen3.6 走了和稀疏选择完全不同的路：<strong>线性注意力混合</strong>。它用 <strong>Gated DeltaNet</strong>（一种 O(n) 线性注意力，delta-rule 状态更新 + 门控，类似一个高效的循环记忆系统）与标准 <strong>Gated Attention</strong> 按 3:1 交错——27B 是 64 层 = 16 块 ×（3 个 DeltaNet 子层 + 1 个全注意力子层）。四分之三的层用线性注意力扛长程效率，每四层一个全注意力"锚定"精确的 token 级推理。线性注意力的 KV 不随长度增长，这是它和稀疏选择世界观上的根本区别。值得对照的是 <strong>MiniMax 走了反方向</strong>：M1 用过线性（Lightning Attention）、M2 整代回到全注意力（官方专门发博客《Why Did M2 End Up as a Full Attention Model?》）、M3 又回归稀疏。Qwen 投入线性、MiniMax 放弃线性——同一时间两条路的分歧，说明这个方向远未定论。另外 Qwen3.6-27B 是稠密模型，却在 SWE-bench Verified 上（77.2）打败自家 397B MoE（76.2），并在 Terminal-Bench 2.0 上追平 Claude Opus 4.5。</p>
 
 <figure>
-  <img class="diagram" src="img/survey-2026-h1-architecture/fig-4.svg" alt="Qwen3.6 线性混合结构：27B 共 64 层等于 16 块，每块 3 个 DeltaNet 加 1 个全注意力按 3:1 交错，Gated DeltaNet O(n) 扛长程效率、Gated Attention 每四层锚定精确推理；旁边 MiniMax 反方向演进：M1 线性回退到 M2 全注意力再转 M3 稀疏，两者方向相反">
+  <img class="diagram" src="img/survey-2026-h1-architecture/fig-4.svg" alt="Qwen3.6 线性混合结构：27B 共 64 层等于 16 块，每块 3 个 DeltaNet 加 1 个全注意力按 3:1 交错，Gated DeltaNet O(n) 扛长程效率、Gated Attention 每四层锚定精确推理；旁边 MiniMax 反方向演进：M1 线性回退到 M2 全注意力再转 M3 稀疏，两者方向相反" loading="lazy" decoding="async" width="700" height="562">
   <figcaption><span class="fnum">图 7</span>Qwen3.6 线性混合与 MiniMax 反向演进对照：左子图 Qwen3.6-27B 共 64 层 = 16 块，每块 3 个 Gated DeltaNet 子层（O(n)，delta-rule 状态更新 + 门控，KV 不随长度增长）+ 1 个 Gated Attention 子层（每四层一个全注意力锚定 token 级推理）；右子图 MiniMax M1 线性 → 回退 → M2 全注意力 → 再转 → M3 稀疏；两子图之间以虚线标注"方向相反"。<span class="chip c-inf">本站图</span> 由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -249,7 +249,7 @@
 <p>不是所有创新都在注意力上。<strong>LongCat-Flash</strong> 的方案全在 MoE：<strong>零计算专家</strong>——512 个真专家 + 256 个"零专家"（恒等 / 空操作），top-12 路由，用一个 PID 控制器把平均激活维持在约 27B（560B 总参里）。效果是按 token 重要性动态分配算力：简单 token 路由到更多零专家、少算，难 token 多算。这是这批模型里独一份的"动态算力"。配套的 <strong>ScMoE（Shortcut-connected MoE）</strong>把专家通信藏进计算里重叠，&gt;100 TPS@H800。它的注意力反而是标准 MLA——说明创新可以只在 MoE 这条轴上发生，与注意力家族正交。</p>
 
 <figure>
-  <img class="diagram" src="img/survey-2026-h1-architecture/fig-5.svg" alt="零计算专家流程：输入 token 经 top-12 路由到 512 真专家或 256 零专家；简单 token 多走零专家少算，难 token 多走真专家多算，汇成按 token 重要性动态分配算力；PID 控制器把平均激活维持约 27B 并作用于路由；配 ScMoE 把专家通信藏进计算重叠">
+  <img class="diagram" src="img/survey-2026-h1-architecture/fig-5.svg" alt="零计算专家流程：输入 token 经 top-12 路由到 512 真专家或 256 零专家；简单 token 多走零专家少算，难 token 多走真专家多算，汇成按 token 重要性动态分配算力；PID 控制器把平均激活维持约 27B 并作用于路由；配 ScMoE 把专家通信藏进计算重叠" loading="lazy" decoding="async" width="1168" height="632">
   <figcaption><span class="fnum">图 8</span>LongCat-Flash 零计算专家：输入 token → top-12 路由 → 专家池（512 真专家正常计算 / 256 零专家恒等或空操作不计算）；路由同时分出"简单 token 多走零专家少算"与"难 token 多走真专家多算"两条边汇入"按 token 重要性动态分配算力"；PID 控制器把平均激活维持约 27B 并反馈到路由；下游配 ScMoE 把专家通信藏进计算重叠。<span class="chip c-inf">本站图</span> 由原文第 5 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -272,7 +272,7 @@
 <p>前沿 MoE 预训练的优化器正在从 AdamW 向 <strong>Muon 系</strong>迁移（DeepSeek-V4 用 Muon、GLM-5 用 Muon Split、Kimi-K2.6 用 MuonClip；但 MiMo 仍用 AdamW，未普适）。<strong>机制（三步）</strong>：对一个 2D 权重矩阵 W，① 攒动量 M ← μM + G；② 正交化 M——做 SVD M = UΣVᵀ，把奇异值全拍成 1，用 O = UVᵀ 替换 M（即取离 M 最近的半正交矩阵）；③ 更新 W ← W − ηO。每步真做 SVD 太贵，故用 Newton-Schulz 迭代（只含矩阵乘的多项式迭代，约 5 次）近似 UVᵀ，可跑 bf16。</p>
 
 <figure>
-  <img class="diagram" src="img/survey-2026-h1-architecture/fig-6.svg" alt="Muon 三步流程：梯度 G → 攒动量 M = μM + G → 正交化（SVD 奇异值全拍成 1，O = UVᵀ，Newton-Schulz 约 5 次近似，可跑 bf16）→ 更新 W = W − ηO；配方混合子图：隐层 2D 权重走 Muon，embedding/head/norm/标量走 Adam，MuonClip 加 QK-Clip，Muon Split 按头正交化">
+  <img class="diagram" src="img/survey-2026-h1-architecture/fig-6.svg" alt="Muon 三步流程：梯度 G → 攒动量 M = μM + G → 正交化（SVD 奇异值全拍成 1，O = UVᵀ，Newton-Schulz 约 5 次近似，可跑 bf16）→ 更新 W = W − ηO；配方混合子图：隐层 2D 权重走 Muon，embedding/head/norm/标量走 Adam，MuonClip 加 QK-Clip，Muon Split 按头正交化" loading="lazy" decoding="async" width="2327" height="190">
   <figcaption><span class="fnum">图 9</span>Muon 三步与配方混合：梯度 G → 第一步攒动量 M = μM + G → 第二步正交化（SVD M = UΣVᵀ，奇异值全拍成 1，用 O = UVᵀ 替换；真 SVD 太贵改用 Newton-Schulz 约 5 次迭代近似，可跑 bf16）→ 第三步更新 W = W − ηO；下游"配方混合与稳定化变体"子图：隐层 2D 权重走 Muon、embedding / head / norm / 标量走 Adam、MuonClip = Muon + QK-Clip 钳 logit、Muon Split 按头正交化让 MLA 追平 GQA。<span class="chip c-inf">本站图</span> 由原文第 6 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -310,7 +310,7 @@
 <p>只要做 RL，训练和推理用同一个策略算出的 log-prob 必须对得上，否则训练信号失真、容易失稳。这是整批模型共同处理、却很少被外部讨论的暗线，解法分在三个层次：<strong>算子层（DeepSeek-V4）</strong>——batch-invariant 确定性内核 + TileLang DSL，做到训推逐位一致；<strong>量化层（GLM-5）</strong>——INT4 QAT，让量化后训推逐位一致；<strong>路由层（MiMo）</strong>——R3（Rollout Routing Replay），RL 训练时复用 rollout 阶段记录的专家路由，解决 MoE 因数值精度导致的路由不一致，再配请求级 prefix cache。共同的风险点是离散选择操作（DSA / MSA 的 top-k、MoE 路由）——它们在训推两侧极易因数值差异分叉。这也是 GQA + FlashAttention 比 MLA 更受生产团队欢迎的隐性原因之一：数值路径更标准、更易对齐。</p>
 
 <figure>
-  <img class="diagram" src="img/survey-2026-h1-architecture/fig-7.svg" alt="训推一致性三层：目标节点（RL 中训练与推理算的 log-prob 必须对得上）分出算子层、量化层、路由层，分别对应 DeepSeek-V4 batch-invariant 内核加 TileLang、GLM-5 INT4 QAT、MiMo R3 路由回放加 prefix cache，三者汇向共同风险：离散选择操作在训推两侧易因数值差异分叉">
+  <img class="diagram" src="img/survey-2026-h1-architecture/fig-7.svg" alt="训推一致性三层：目标节点（RL 中训练与推理算的 log-prob 必须对得上）分出算子层、量化层、路由层，分别对应 DeepSeek-V4 batch-invariant 内核加 TileLang、GLM-5 INT4 QAT、MiMo R3 路由回放加 prefix cache，三者汇向共同风险：离散选择操作在训推两侧易因数值差异分叉" loading="lazy" decoding="async" width="896" height="574">
   <figcaption><span class="fnum">图 10</span>训推一致性三层：目标"只要做 RL，训练与推理用同一策略算的 log-prob 必须对得上，否则训练失稳"分出算子层 / 量化层 / 路由层，对应 DeepSeek-V4（batch-invariant 确定性内核 + TileLang DSL，逐位一致）、GLM-5（INT4 QAT，量化后逐位一致）、MiMo R3（复用 rollout 记录的专家路由 + 请求级 prefix cache）；三者汇向"共同风险——离散选择操作（DSA / MSA 的 top-k 与 MoE 路由）在训推两侧易因数值差异分叉"。<span class="chip c-inf">本站图</span> 由原文第 7 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

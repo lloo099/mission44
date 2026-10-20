@@ -95,7 +95,7 @@
 <p>slime 的架构声明里最具立场的一句是：不把系统碎片化为"trainer、rollout 服务、agent 框架"三套割裂组件，而是把 Megatron 训练与 SGLang 推理直接连起来。落到结构上是三个模块：<strong>Training（Megatron）</strong>从 Data Buffer 读数据训练，每步训练后把参数同步给 rollout 模块；<strong>Rollout（SGLang + router）</strong>生成新数据（含 reward / verifier 输出）写入 Data Buffer；<strong>Data Buffer</strong> 是两者之间的桥梁，统一管理 prompt 初始化、自定义数据与 agentic 工作流的接入接口。</p>
 
 <figure>
-  <img src="img/dispatch-19-slime/orig-1.png" alt="slime 官方架构图：左上 data buffer 与右上 custom rollout generation 双向交换 init prompt 与 custom data；data buffer 向下把 train data 送给 megatron（四张 GPU）；megatron 向右 update weights 到两台 sglang server（各两张 GPU），sglang router 位于其上；custom rollout generation 与 router 之间标注 any custom data generation">
+  <img src="img/dispatch-19-slime/orig-1.webp" alt="slime 官方架构图：左上 data buffer 与右上 custom rollout generation 双向交换 init prompt 与 custom data；data buffer 向下把 train data 送给 megatron（四张 GPU）；megatron 向右 update weights 到两台 sglang server（各两张 GPU），sglang router 位于其上；custom rollout generation 与 router 之间标注 any custom data generation" loading="lazy" decoding="async" width="1800" height="998">
   <figcaption><span class="fnum">图 1</span>slime 官方架构图。左侧红色为 megatron 训练组（4 GPU），右侧绿色为 sglang router 下挂两台 sglang server（各 2 GPU），上方黑框为 data buffer 与 custom rollout generation；箭头标注 send init prompt / recv custom data / send train data / update weights from distributed/tensor。<span class="chip c-vr">自报</span> 取自 THUDM/slime 仓库 README（imgs/arch.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -105,7 +105,7 @@
 </figure>
 
 <figure>
-  <img class="diagram" src="img/dispatch-19-slime/fig-1.svg" alt="三模块架构：Training（Megatron）、Rollout（SGLang 加 router）、Data Buffer 中枢三个子图；Buffer 向 Training 输出训练数据，Rollout 向 Buffer 写入生成数据，Training 以虚线向 SGLang 同步权重">
+  <img class="diagram" src="img/dispatch-19-slime/fig-1.svg" alt="三模块架构：Training（Megatron）、Rollout（SGLang 加 router）、Data Buffer 中枢三个子图；Buffer 向 Training 输出训练数据，Rollout 向 Buffer 写入生成数据，Training 以虚线向 SGLang 同步权重" loading="lazy" decoding="async" width="2107" height="255">
   <figcaption><span class="fnum">图 2</span>三模块与两条流。数据流为实线（Buffer → Training 读取；Rollout → Buffer 写入含 reward / verifier 的生成数据），权重流为虚线（Training → SGLang，每步训练后同步参数）；Buffer 内列出 prompt 初始化、自定义数据、agentic 工作流统一接口三项职责。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -128,7 +128,7 @@
 <p>"灵活数据生成"作为官方两大核心能力之一，落地就在 Data Buffer 的自定义数据生成接口上：math / code / search / tools / sandboxes / verifiers / environments / multi-agent，全部通过同一接口接入。agentic 工作流无论多复杂——多轮工具调用、沙箱执行、多智能体协作——最终产出的就是写进 Buffer 的轨迹（含 RLVR 的 reward / verifier 输出），训练侧无需任何修改。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-19-slime/fig-2.svg" alt="八个可插拔数据生成组件（math、code、search、tools、sandboxes、verifiers、environments、multi-agent）汇入 Data Buffer 统一接口；Buffer 向 SGLang 下发生成任务并接收 RLVR 奖励回流；PD Disaggregation 与 External Rollout Engines 以虚线作用于 SGLang；Buffer 向 Training 输出训练数据">
+  <img class="diagram" src="img/dispatch-19-slime/fig-2.svg" alt="八个可插拔数据生成组件（math、code、search、tools、sandboxes、verifiers、environments、multi-agent）汇入 Data Buffer 统一接口；Buffer 向 SGLang 下发生成任务并接收 RLVR 奖励回流；PD Disaggregation 与 External Rollout Engines 以虚线作用于 SGLang；Buffer 向 Training 输出训练数据" loading="lazy" decoding="async" width="1102" height="1200">
   <figcaption><span class="fnum">图 3</span>Data Buffer 作为统一接口：左侧八个数据生成组件全部汇入同一入口，Buffer 与 SGLang 之间是"下发生成任务 / RLVR 奖励回流"的往返，PD Disaggregation 与 External Rollout Engines 两个系统特性在 rollout 侧以虚线生效，训练数据单向流向 Megatron。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -151,7 +151,7 @@
 <p>slime 自称 SGLang-native，这个"native"有非常具体的含义（<span class="chip c-vr">自报</span> provisional，仓库口径）：<strong>你装的那个 SGLang 支持的每一个参数，都可以通过 <code>--sglang-</code> 前缀直通传入</strong>；Megatron 侧同样直通——并行策略、优化器、checkpoint 相关的全部参数原样保留。这是一个反主流的设计选择：两个成熟系统（Megatron 的训练能力、SGLang 的 serving 能力）的<strong>全部</strong>表面积直接暴露给用户，框架自己只做粘合与调度。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-19-slime/fig-3.svg" alt="上半部分为其他框架路线：独立 Trainer、胶水接口层一、独立 Rollout 服务、胶水接口层二、独立 Agent 框架串联，两个胶水层指向训推两套参数语义、配置来回翻译；下半部分为 slime 路线：Megatron 训练与 SGLang 推理直连并经 Data Buffer 回流，Megatron 侧参数直通与 --sglang- 前缀直通分别以虚线接入">
+  <img class="diagram" src="img/dispatch-19-slime/fig-3.svg" alt="上半部分为其他框架路线：独立 Trainer、胶水接口层一、独立 Rollout 服务、胶水接口层二、独立 Agent 框架串联，两个胶水层指向训推两套参数语义、配置来回翻译；下半部分为 slime 路线：Megatron 训练与 SGLang 推理直连并经 Data Buffer 回流，Megatron 侧参数直通与 --sglang- 前缀直通分别以虚线接入" loading="lazy" decoding="async" width="1296" height="643">
   <figcaption><span class="fnum">图 4</span>两条路线对照。上：三套独立组件之间隔着两层胶水接口，训推两套参数语义需来回翻译；下：slime 把 Megatron 与 SGLang 收在一套系统内（直连同步权重、数据经 Buffer 回流），两侧参数分别以直通方式接入。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -176,7 +176,7 @@
 <p><strong>全异步路径</strong>对应 Agent-Oriented Design 博客（《An Asynchronous and Decoupled Framework for Agentic RL》）：经中央 <strong>Multi-Task Rollout Orchestrator</strong> 解耦推理与训练引擎，跨多种 agentic 负载做高吞吐联合训练。训练不再等 rollout，rollout 不再等训练，Orchestrator 负责在多个 agentic 任务之间调度生成容量。代价是 staleness——异步生成的数据来自旧权重，off-policy 程度需由算法侧（Dispatch 02 提到的 TIS / MIS 一类重要性修正）承担。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-19-slime/fig-4.svg" alt="左侧同步路径三节点循环：Megatron 训练一步、同步权重给 SGLang、rollout 生成新一批数据；右侧全异步路径：多个 agentic 负载汇入中央 Multi-Task Rollout Orchestrator，Orchestrator 分别向推理引擎与训练引擎供给，训练引擎以虚线 Delta Weight Sync 异步更新推理引擎；同步路径以虚线演进至异步路径">
+  <img class="diagram" src="img/dispatch-19-slime/fig-4.svg" alt="左侧同步路径三节点循环：Megatron 训练一步、同步权重给 SGLang、rollout 生成新一批数据；右侧全异步路径：多个 agentic 负载汇入中央 Multi-Task Rollout Orchestrator，Orchestrator 分别向推理引擎与训练引擎供给，训练引擎以虚线 Delta Weight Sync 异步更新推理引擎；同步路径以虚线演进至异步路径" loading="lazy" decoding="async" width="1391" height="635">
   <figcaption><span class="fnum">图 5</span>同步路径（一步一环的闭环）与全异步路径（fully_async 示例）。异步侧的中心是 Multi-Task Rollout Orchestrator：N 个 agentic 负载汇入，Orchestrator 分别调度推理请求与供给训练数据，训练引擎经 Delta Weight Sync 异步更新推理引擎。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -215,7 +215,7 @@
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-19-slime/fig-5.svg" alt="slime 节点向下指向 GLM 生产记录链（GLM-4.5 → 4.6 → 4.7 → 5 → 5.1 → 5.2，753B 总参 40B 激活），向右以 fork 共演化指向 Miles，向下以虚线同赛道对照指向 verl、prime-rl、SkyRL-Agent 三个同类节点">
+  <img class="diagram" src="img/dispatch-19-slime/fig-5.svg" alt="slime 节点向下指向 GLM 生产记录链（GLM-4.5 → 4.6 → 4.7 → 5 → 5.1 → 5.2，753B 总参 40B 激活），向右以 fork 共演化指向 Miles，向下以虚线同赛道对照指向 verl、prime-rl、SkyRL-Agent 三个同类节点" loading="lazy" decoding="async" width="2037" height="620">
   <figcaption><span class="fnum">图 6</span>slime 的三类关系：生产记录（六代 GLM 旗舰链，官方自述）、派生（Miles 从 slime fork 共演化，企业特性与 R3 + 统一 FP8 差异化）、同赛道对照（verl、prime-rl、SkyRL-Agent 非派生关系）。<span class="chip c-inf">推断</span> 本站图，由原文第 5 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
