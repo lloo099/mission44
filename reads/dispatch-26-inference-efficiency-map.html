@@ -88,7 +88,7 @@
 <p>DSpark 的意义类似但在另一个轴上。半自回归草稿 + 置信度调度验证,V4 线上对比生产基线 MTP-1 单用户提速 60–85%(<a href="https://arxiv.org/abs/2607.05147">arXiv:2607.05147</a>)。关键词是"置信度调度":投机解码从"训一个更准的 drafter"的算法问题,升级为"draft 多长、何时验证、验证预算怎么分"的<strong>算法 × 调度联合问题</strong>。收益不再来自某个孤立组件更快,而来自算法决策与系统状态(负载、接受率历史、batch 构成)的耦合。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-26-inference-efficiency-map/fig-1.svg" alt="六层大颗粒地图总览图:模型架构、数值、算子、推理框架、服务化、Agent 联合优化六个子图,与三阶段主线及四个跳过相连">
+  <img class="diagram" src="img/dispatch-26-inference-efficiency-map/fig-1.svg" alt="六层大颗粒地图总览图:模型架构、数值、算子、推理框架、服务化、Agent 联合优化六个子图,与三阶段主线及四个跳过相连" loading="lazy" decoding="async" width="3797" height="1382">
   <figcaption><span class="fnum">图 1</span>六层大颗粒地图总览:从"FLOP 更便宜"到"计算不发生"(原文图 A)。六个 subgraph 为地图分层,两个锚点(IndexShare、DSpark)接入阶段二,阶段三下接"四个跳过"。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -114,7 +114,7 @@
 <p><strong>前提修正:dLLM 已远超实验室原型阶段。</strong> 2025-12 到 2026-06 三件事落地——蚂蚁 LLaDA 2.0 发布首个 100B 级 dLLM 权重(flash 100B-A1.4B MoE,<a href="https://arxiv.org/abs/2512.15745">arXiv:2512.15745</a> / <a href="https://github.com/inclusionAI/LLaDA2.X">GitHub</a>);Inception Labs 的 Mercury 2 成为首个推理型商用 dLLM(约 1000 tok/s @ Blackwell,<a href="https://www.inceptionlabs.ai/blog/introducing-mercury-2">官方博客</a>,2025-11 获 5,000 万美元种子轮);Google 放弃让 Gemini Diffusion GA(waitlist 持续 14 个月未开放,<a href="https://deepmind.google/models/gemini-diffusion/">产品页</a>),改以开源形式放出 <a href="https://deepmind.google/models/gemma/diffusiongemma/">DiffusionGemma</a>(26B-A4B,256-token 块并行,约 4× 提速)。</p>
 
 <figure>
-  <img src="img/dispatch-26-inference-efficiency-map/orig-1.png" alt="LLaDA2.0-flash 在 MMLU-Pro、HellaSwag、HumanEval、AIME 2025、BFCL_Live、Spider、MBPP、LiveCodeBench v6 八项基准上与 Ling-flash-2.0 和 Qwen3-30B-A3B-Instruct 的柱状对比">
+  <img src="img/dispatch-26-inference-efficiency-map/orig-1.webp" alt="LLaDA2.0-flash 在 MMLU-Pro、HellaSwag、HumanEval、AIME 2025、BFCL_Live、Spider、MBPP、LiveCodeBench v6 八项基准上与 Ling-flash-2.0 和 Qwen3-30B-A3B-Instruct 的柱状对比" loading="lazy" decoding="async" width="1800" height="780">
   <figcaption><span class="fnum">图 2</span>LLaDA 2.0-flash 八项基准对比:深蓝为 LLaDA2.0-flash、浅蓝为其 preview 版,浅灰为 Ling-flash-2.0、深灰为自回归基线 Qwen3-30B-A3B-Instruct-2507。<span class="chip c-vr">自报</span> 取自 LLaDA 2.X 官方仓库 README(inclusionAI/LLaDA2.X,figures/llada2_flash_main_bench.png)。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -128,7 +128,7 @@
 <p><strong>终局采纳:</strong>"block diffusion 并行草稿 + AR 验证退化为一致性检查"这个猜想不但成立,而且<strong>已经是 2026 上半年该层的实际生产赢家</strong>。DFlash(Z Lab)用轻量 block-diffusion drafter 一次前向出整块草稿,Qwen3-8B 上 &gt;6× 无损加速、比 EAGLE-3 高至 2.5×,已进 SGLang 生态(<a href="https://arxiv.org/abs/2602.06036">arXiv:2602.06036</a> / <a href="https://www.lmsys.org/blog/2026-06-15-next-generation-speculative-decoding-dflash-v2/">LMSYS 博客</a>);DSpark 本身就是这个形态的生产化版本,同时踩在 semi-AR 与投机解码两个格子上。该混合路线的关键优势在于:它将 dLLM 的并行草稿能力与 AR 的质量保证相结合,<strong>绕开了 dLLM 的质量差距问题</strong>(纯扩散在推理基准落后前沿 AR 约 10–20 分、混合路线缩到 5–7 分——此数来自二手汇总,仅供量级参考;硬数据是代码域 dLLM pass@1 已反超同档 AR,HumanEval 89.6 对 84.8,<a href="https://arxiv.org/abs/2509.11252">arXiv:2509.11252</a>)。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-26-inference-efficiency-map/fig-2.svg" alt="生成范式谱系图:自回归、MTP、semi-AR 混合、DFlash、纯 dLLM、block diffusion 与终局猜想的关系,并挂有三条差距与口径警告">
+  <img class="diagram" src="img/dispatch-26-inference-efficiency-map/fig-2.svg" alt="生成范式谱系图:自回归、MTP、semi-AR 混合、DFlash、纯 dLLM、block diffusion 与终局猜想的关系,并挂有三条差距与口径警告" loading="lazy" decoding="async" width="2085" height="612">
   <figcaption><span class="fnum">图 3</span>生成范式谱系:从自回归到"扩散起草、AR 验证"(原文图 B)。主链 AR → MTP → semi-AR(DSpark)与独立支 AR → 纯 dLLM → block diffusion → DFlash,两支汇入终局猜想;三个虚线节点为已知差距、口径警告与混合路线成本。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -177,7 +177,7 @@
 <p><strong>命运四:被资产化——Cartridges 与 KV 语义压缩。</strong> 出处判断准确:Stanford Hazy Research,2025-06(<a href="https://arxiv.org/abs/2506.06266">arXiv:2506.06266</a> / <a href="https://github.com/HazyResearch/cartridges">代码</a>),self-study 合成对话 + 上下文蒸馏把长文档离线训成小 KV,峰值吞吐 26.4×、等效上下文 4×。一处修正:最活跃的后续不是把 test-time training 做大,而是<strong>把训练环节摊销掉</strong>——Attention Matching 解析式求解压缩 KV(<a href="https://arxiv.org/pdf/2602.16284">arXiv:2602.16284</a>)、Still 的单次前向摊销压缩(<a href="https://arxiv.org/pdf/2606.07878">arXiv:2606.07878</a>),外加推理公司的产业兴趣信号(<a href="https://www.baseten.co/research/towards-infinite-context-windows-neural-kv-cache-compaction/">Baseten 研究博客</a>)。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-26-inference-efficiency-map/fig-3.svg" alt="注意力与 KV 演化树:标准全注意力分出算得快、稀疏化、跨层共享、线性混合、语义压缩五支,每支下挂其 KV cache 命运节点">
+  <img class="diagram" src="img/dispatch-26-inference-efficiency-map/fig-3.svg" alt="注意力与 KV 演化树:标准全注意力分出算得快、稀疏化、跨层共享、线性混合、语义压缩五支,每支下挂其 KV cache 命运节点" loading="lazy" decoding="async" width="1206" height="1054">
   <figcaption><span class="fnum">图 4</span>注意力与 KV 演化树:每条支线的"KV cache 命运"(原文图 C)。根为标准全注意力,五条支线分别为 FlashAttention 系、稀疏化(NSA → DSA)、跨层共享、线性混合、语义压缩;稀疏化支下再分出索引摊销(IndexShare)与多级层级化(HiLS)。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -206,7 +206,7 @@
 <p><strong>BitNet 1.58:采纳(定位为远期期权)。</strong> 原生三值 2B/4T 模型开源(<a href="https://arxiv.org/abs/2504.12285">arXiv:2504.12285</a>)、bitnet.cpp CPU 提速 1.37–6.17×、能耗 −82%(<a href="https://github.com/microsoft/BitNet">GitHub</a>),并有厂商跟进迹象显示生态在向边端扩散。但关键判断:BitNet 与 FP4 是<strong>替代关系而非叠加关系</strong>,FP4 有 Blackwell 硬件支持,BitNet 没有原生硬件,这一轮资本开支已把胜负判给 FP4;BitNet 真实生态位滑向边端 / CPU。三值模型的 RL 后训练完全空白。</p>
 
 <figure>
-  <img src="img/dispatch-26-inference-efficiency-map/orig-2.png" alt="bitnet.cpp 在 AMD EPYC 7V13、Intel i7-13800H、Cobalt 100 三种 CPU 上的 prompt processing 与 token generation 速度柱状图,红色为原始版本、蓝色为最新版本">
+  <img src="img/dispatch-26-inference-efficiency-map/orig-2.webp" alt="bitnet.cpp 在 AMD EPYC 7V13、Intel i7-13800H、Cobalt 100 三种 CPU 上的 prompt processing 与 token generation 速度柱状图,红色为原始版本、蓝色为最新版本" loading="lazy" decoding="async" width="1520" height="1800">
   <figcaption><span class="fnum">图 5</span>bitnet.cpp 的 CPU 推理性能:三行分别为 AMD EPYC 7V13、Intel i7-13800H、Cobalt 100,左列 prompt processing、右列 token generation,红色为原始版本、蓝色为最新版本,柱上标注绝对速度(tokens/sec)与相对倍数。<span class="chip c-vr">自报</span> 取自 BitNet 官方仓库 README(microsoft/BitNet,assets/performance.png)。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -289,7 +289,7 @@
 <p><strong>(4) 语义缓存 / 压缩表示作为 serving 原语——半成立半修正,取决于指哪一半。</strong> 如果指"压缩 KV 直接注入代替重 prefill":不空白,UChicago 系已跟进并生产化——CacheGen 把 KV 编码成比特流跨网络传输注入(SIGCOMM'24,<a href="https://arxiv.org/abs/2310.07240">arXiv:2310.07240</a>)、CacheBlend 多段 KV 拼接 + 选择性重算恢复交叉注意力(EuroSys'25,TTFT 降 2.2–3.3×,<a href="https://arxiv.org/abs/2405.16444">arXiv:2405.16444</a>)、LMCache 是它们的产品化层。如果指"学习型语义压缩表示(gist / soft token)作为一等 serving 原语":<strong>空白成立</strong>——gist 压缩有系统性质量损失(<a href="https://arxiv.org/abs/2412.17483">arXiv:2412.17483</a>),且换模型缓存作废,模型侧研究与 serving 侧之间的衔接尚无人建立。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-26-inference-efficiency-map/fig-4.svg" alt="Agent-aware serving 空白核实图:三个负载特性连向四个子项,每个子项下接一个核实结论节点">
+  <img class="diagram" src="img/dispatch-26-inference-efficiency-map/fig-4.svg" alt="Agent-aware serving 空白核实图:三个负载特性连向四个子项,每个子项下接一个核实结论节点" loading="lazy" decoding="async" width="1168" height="894">
   <figcaption><span class="fnum">图 6</span>Agent-aware serving:空白领域的真伪核实(原文图 D)。左侧 TR 子图为 agent 负载三特性,中间 SUB 子图为四个子项,右侧 V1–V4 为逐项核实结论,底部 COIN 节点标注与 D25 的镜像关系。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -347,7 +347,7 @@
 <p><strong>三、结构性受限。</strong> 数值层的 FP4 红利昇腾无对应硬件,D23 的"根治层缺位"在 FP4 时代<strong>加重</strong>——当对手的 rollout 用 NVFP4 而你停在 FP8/FP16,训推一致问题之外又多了代际算力差。这是本篇所有裁定里对国产栈最不利的一条。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-26-inference-efficiency-map/fig-5.svg" alt="颗粒度乘成熟度矩阵图:现阶段可落地、一年内可落地、研究期权三个大区,每区再分 5-10 倍与 2-3 倍两档,各路线放入象限">
+  <img class="diagram" src="img/dispatch-26-inference-efficiency-map/fig-5.svg" alt="颗粒度乘成熟度矩阵图:现阶段可落地、一年内可落地、研究期权三个大区,每区再分 5-10 倍与 2-3 倍两档,各路线放入象限" loading="lazy" decoding="async" width="2638" height="959">
   <figcaption><span class="fnum">图 7</span>颗粒度 × 成熟度矩阵:每条路线放进象限(原文图 E)。三个大区为现阶段可落地、一年内可落地、研究期权,每区内再分"颗粒 5–10×"与"颗粒 2–3×"两档。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

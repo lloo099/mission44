@@ -92,7 +92,7 @@
 <p>MiMo 采取的并非"块稀疏选择"路线（MSA 选块、DSA token 级 top-k、GLM-5.2 IndexShare 复用索引器），而是经典但有效的<strong>局部 / 全局交替</strong>：<strong>SWA（Sliding-Window Attention）</strong>层只读取 128 token 的局部窗口，开销极低、解码友好；<strong>全局注意力</strong>每隔几层插入一层，补充长程视野；<strong>比例 6:1</strong>——每 6 层 SWA 配 1 层全局，绝大多数层是低成本的局部注意力，少数全局层承接长程依赖。效果是长上下文下 <strong>KV cache 约 7× 降</strong>、质量不下降、支撑 <strong>1M</strong> 上下文。</p>
 
 <figure>
-  <img src="img/dispatch-07-mimo-v2-5/orig-1.png" alt="MiMo 混合注意力架构图：左侧为 N 层 SWA block 与 1 层 GA block 组成的循环单元重复 M 次，右侧为 K 个 MTP block">
+  <img src="img/dispatch-07-mimo-v2-5/orig-1.webp" alt="MiMo 混合注意力架构图：左侧为 N 层 SWA block 与 1 层 GA block 组成的循环单元重复 M 次，右侧为 K 个 MTP block" loading="lazy" decoding="async" width="1800" height="1541">
   <figcaption><span class="fnum">图 1</span>MiMo 系列公开的混合注意力架构图：左侧主干由 <strong>N× SWA block</strong>（Sliding Window Attention + Sparse MoE）与 <strong>1× GA block</strong>（Global Attention + Sparse MoE）组成一个循环单元，整体重复 M 次；右侧为 K 个 MTP block，共享（tied）Embedding 与 LM Head。<span class="chip c-vr">自报</span> 取自 XiaomiMiMo/MiMo-V2-Flash 仓库 README（figures/MiMo-v2-flash-arch.png）。注意该图来自前代 MiMo-V2-Flash 仓库，V2.5-Pro 未公开单独架构图；图中 N 的取值与本文所述 V2.5 的 6:1 配比不必一致，读图时只取"N 层 SWA + 1 层 GA 循环堆叠"的结构。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -102,7 +102,7 @@
 </figure>
 
 <figure>
-  <img class="diagram" src="img/dispatch-07-mimo-v2-5/fig-1.svg" alt="7 层循环单元：第 1 至 6 层为 128 局部窗 SWA，第 7 层为全局注意力，循环重复构成整个网络">
+  <img class="diagram" src="img/dispatch-07-mimo-v2-5/fig-1.svg" alt="7 层循环单元：第 1 至 6 层为 128 局部窗 SWA，第 7 层为全局注意力，循环重复构成整个网络" loading="lazy" decoding="async" width="346" height="1391">
   <figcaption><span class="fnum">图 2</span>7 层循环单元的堆叠示意：第 1–6 层为 SWA（128 局部窗，低成本局部），第 7 层为全局注意力（读取全部历史，承接长依赖），按 6:1 循环重复；绝大多数层是低成本局部、少数全局层承接长程，KV cache 约 7 倍降、支撑 1M 上下文。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -131,7 +131,7 @@
 <p><strong>6:1 是成本—质量取舍。</strong>全局层是 O(n²)（或线性近似）的全序列注意力、KV 要保留全部历史，是成本最高、显存占用最大的部分；把占比压到 1/7 意味着只有约 14% 的层承担"全历史 KV"存储，其余 86% 的层 KV 是常数级 128 窗。全局层过少则长程直达通道稀疏、汇聚—广播频率不足，深层多跳可能漏检。注意 7× 和 6:1 直接呼应：约 6/7 的层从"线性增长全历史 KV"降级为"常数 128 窗 KV"，整体 KV 占用即降到约 1/7——配比和显存节省是同一机制的两个方面。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-07-mimo-v2-5/fig-2.svg" alt="SWA 局部窗占 6 份与全局注意力占 1 份的两列对比，汇合为 6 比 1 混合堆叠，整体 KV cache 约 7 倍降">
+  <img class="diagram" src="img/dispatch-07-mimo-v2-5/fig-2.svg" alt="SWA 局部窗占 6 份与全局注意力占 1 份的两列对比，汇合为 6 比 1 混合堆叠，整体 KV cache 约 7 倍降" loading="lazy" decoding="async" width="726" height="683">
   <figcaption><span class="fnum">图 3</span>两类层的职责与成本对比：左列 SWA（占 6 份）——每个 token 只看前 128 个、KV 访存近常数级不随长度增长、开销极低且 kernel 最成熟；右列全局注意力（占 1 份）——每个 token 看全部历史、KV 访存随序列长度线性增长、补长程视野。两列汇合为 6:1 混合堆叠，整体 KV cache 约 7 倍降、支撑 1M 上下文。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -182,7 +182,7 @@
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-07-mimo-v2-5/fig-3.svg" alt="2026 长上下文节省路线两大流派：局部窗派（MiMo）与选块派（MiniMax MSA、DeepSeek CSA+HCA、GLM-5.2 DSA+IndexShare）">
+  <img class="diagram" src="img/dispatch-07-mimo-v2-5/fig-3.svg" alt="2026 长上下文节省路线两大流派：局部窗派（MiMo）与选块派（MiniMax MSA、DeepSeek CSA+HCA、GLM-5.2 DSA+IndexShare）" loading="lazy" decoding="async" width="1346" height="497">
   <figcaption><span class="fnum">图 4</span>2026 长上下文节省路线的两大流派：局部窗派——MiMo SWA×Global 6:1（局部 128 窗加周期全局层，KV 约 7 倍降，kernel 最现成）；选块派——MiniMax MSA（真实 KV 上块选 top-k、每 query 固定看 2048 token）、DeepSeek CSA 加 HCA（KV 压 4 倍或 128 倍、1M 下 FLOPs 约 4 倍降）、GLM-5.2 DSA 加 IndexShare（token 级稀疏、索引器每 4 层复用）。局部窗派标注"工程最成熟、NPU 移植风险最低"。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -232,7 +232,7 @@
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-07-mimo-v2-5/fig-4.svg" alt="评测分数由模型能力与 harness 脚手架共同决定，读榜须知：harness 加模型一起测，换 harness 数字会变，需裸模型复现">
+  <img class="diagram" src="img/dispatch-07-mimo-v2-5/fig-4.svg" alt="评测分数由模型能力与 harness 脚手架共同决定，读榜须知：harness 加模型一起测，换 harness 数字会变，需裸模型复现" loading="lazy" decoding="async" width="1891" height="679">
   <figcaption><span class="fnum">图 5</span>评测分数的构成：模型能力（V2.5-Pro）与 harness 脚手架（MiMo Code）共同决定最终基准分数；读榜须知——harness 加模型一起测、换 harness 数字会变、厂商口径，需裸模型复现才知真实水平。下方列出厂商基准：SWE-bench Verified 82 vs 79、SWE-bench Pro 62 vs 55、Terminal-Bench 2 73 vs 69、开源榜 GDPVal-AA 加 ClawEval 第一、200 步以上超长 agentic 任务更稳。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

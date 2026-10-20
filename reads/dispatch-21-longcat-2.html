@@ -84,7 +84,7 @@
 这仍不是一份可复现训练报告：训练代码、完整数据配方、MFU、故障率与第三方复现均未公开。更准确的结论是：官方给出了高具体度的存在性证据，但尚未给出公共复现路径。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-21-longcat-2/fig-1.svg" alt="LongCat-2.0 主链流程图：1M 长上下文数据数千亿 token → 预训练超过 5 万片国产 AI ASIC → 后训练 MOPD 多教师在线蒸馏 → LongCat-2.0 1.6T 总参约 48B 激活 → 国产集群部署 PD 分离 + KVP + EP128；证据边界注释指向后训练：厂商/型号未披露、RL 算法未披露">
+  <img class="diagram" src="img/dispatch-21-longcat-2/fig-1.svg" alt="LongCat-2.0 主链流程图：1M 长上下文数据数千亿 token → 预训练超过 5 万片国产 AI ASIC → 后训练 MOPD 多教师在线蒸馏 → LongCat-2.0 1.6T 总参约 48B 激活 → 国产集群部署 PD 分离 + KVP + EP128；证据边界注释指向后训练：厂商/型号未披露、RL 算法未披露" loading="lazy" decoding="async" width="1415" height="222">
   <figcaption><span class="fnum">图 1</span>LongCat-2.0 的官方主链：1M 长上下文数据（数千亿 token）→ 预训练（超过 5 万片国产 AI ASIC）→ 后训练（MOPD 多教师在线蒸馏）→ 模型（1.6T 总参 / 约 48B 激活）→ 国产集群部署（PD 分离 + KVP + EP128）；虚线"证据边界"指向后训练节点：芯片厂商 / 型号未披露、RL 算法未披露。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -112,7 +112,7 @@
 LSA 还被扩展到 <strong>3-step MTP</strong>：Target 模型每两个连续层共享一次索引，三个 Draft step 则共用 Step 1 的索引结果——把稀疏索引成本与投机解码放进同一套系统设计里。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-21-longcat-2/fig-2.svg" alt="LSA 结构图：DSA Lightning Indexer 分出 SI（连续访问 + 动态选择）、CLI（跨层复用索引）、HI（block 粗召回 + token 精选）三支，汇入 LongCat Sparse Attention，再接 3-step MTP（Draft steps 共享索引）">
+  <img class="diagram" src="img/dispatch-21-longcat-2/fig-2.svg" alt="LSA 结构图：DSA Lightning Indexer 分出 SI（连续访问 + 动态选择）、CLI（跨层复用索引）、HI（block 粗召回 + token 精选）三支，汇入 LongCat Sparse Attention，再接 3-step MTP（Draft steps 共享索引）" loading="lazy" decoding="async" width="1142" height="374">
   <figcaption><span class="fnum">图 2</span>LSA 的三项索引优化及其与 MTP 的衔接：从 DSA Lightning Indexer 出发，SI（连续访问 + 动态选择）、CLI（跨层复用索引）、HI（block 粗召回 + token 精选）三支汇入 LongCat Sparse Attention，再向下接 3-step MTP（Draft steps 共享索引）。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -206,7 +206,7 @@ EPLB 的统计与分布计算异步化，并兼容 constrained decoding、multi-
 <p>官方 benchmark 为内部 harness 自测，主张优于部分闭源模型，待统一第三方复现；SWE-bench Pro 59.5 是原文跟进段唯一点名的分数（<span class="chip c-vr">自报</span>，无第三方复测）。以下为原文对全部主张的证据分级。</p>
 
 <figure>
-  <img src="img/dispatch-21-longcat-2/orig-1.png" alt="LongCat-2.0 官方六项基准柱状图：Terminal-Bench 2.1、SWE-bench Pro、SWE-bench Multilingual、FORTE、RWSearch、BrowseComp，对比 Gemini 3.1 Pro、GPT-5.5、Opus 4.6、Opus 4.7、Opus 4.8">
+  <img src="img/dispatch-21-longcat-2/orig-1.png" alt="LongCat-2.0 官方六项基准柱状图：Terminal-Bench 2.1、SWE-bench Pro、SWE-bench Multilingual、FORTE、RWSearch、BrowseComp，对比 Gemini 3.1 Pro、GPT-5.5、Opus 4.6、Opus 4.7、Opus 4.8" loading="lazy" decoding="async" width="1512" height="1044">
   <figcaption><span class="fnum">图 3</span>LongCat-2.0 官方六项基准对比（2026-06-29 版）：每个面板从左至右为 LongCat-2.0（绿）、Gemini 3.1 Pro、GPT-5.5、Claude Opus 4.6、Opus 4.7、Opus 4.8；上排 Terminal-Bench 2.1、SWE-bench Pro、SWE-bench Multilingual，下排 FORTE、RWSearch、BrowseComp。<span class="chip c-vr">自报</span> 取自 meituan-longcat/LongCat-2.0 仓库 README（figures/longcat-pro-benchmark-charts-2026-06-29.svg，本站栅格化）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

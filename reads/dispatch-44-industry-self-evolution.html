@@ -68,7 +68,7 @@
 </div>
 
 <figure>
-  <img src="img/dispatch-44-industry-self-evolution/orig-gepa-fastslow.png" alt="GEPA 快慢双环图:上半慢环经 RL/RFT/SFT 更新权重、只消费标量奖励;下半快环用反思式优化按帕累托前沿更新上下文种群、消费完整 rollout 文本">
+  <img src="img/dispatch-44-industry-self-evolution/orig-gepa-fastslow.webp" alt="GEPA 快慢双环图:上半慢环经 RL/RFT/SFT 更新权重、只消费标量奖励;下半快环用反思式优化按帕累托前沿更新上下文种群、消费完整 rollout 文本" loading="lazy" decoding="async" width="1600" height="571">
   <figcaption><span class="fnum">图 1</span>全篇的题眼:快慢双环。<span class="chip c-vr">自报</span> 原图出自 GEPA 仓库博客《Learning Fast and Slow》(2026-05-11),<a href="https://github.com/gepa-ai/gepa">gepa-ai/gepa</a>,MIT。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -96,7 +96,7 @@
 <p class="delta"><span class="dl">差在哪</span>差异在<b>「自主」的边界被划在哪里</b>:环内全自动,环的两端(评估器、部署)全是人。<span class="chip c-inf">推断</span> θ 侧更值得记录:AlphaProof(Nature 2025-11,已过同行评审——AlphaEvolve 白皮书 16 个月仍未过)对最难的题启用<strong>测试时 RL</strong>,推理时生成数百万道变体并继续训练,权重在部署中真的动了,把关者只有 Lean 验证器;但 IMO 2024 银牌需要人工翻译赛题、单题最长三天,2025 年金牌换成自然语言路线后,<strong>上架的只是降级铜牌档变体</strong>。产品侧 <code>adk optimize</code>(GEPA 包装,<code>@experimental</code>)结果打印到控制台由开发者手工采纳——无自动写回。</p>
 
 <figure>
-  <img src="img/dispatch-44-industry-self-evolution/orig-openevolve-arch.png" alt="OpenEvolve 架构图:Controller 编排程序库、提示采样器、LLM 集成与评估器池的异步流水线">
+  <img src="img/dispatch-44-industry-self-evolution/orig-openevolve-arch.webp" alt="OpenEvolve 架构图:Controller 编排程序库、提示采样器、LLM 集成与评估器池的异步流水线" loading="lazy" decoding="async" width="1444" height="1216">
   <figcaption><span class="fnum">图 2</span>AlphaEvolve 的开源复刻 OpenEvolve 的架构(官方不放出可运行系统,这是公开世界最接近的实现;仓库创建于官方公告次日)。<span class="chip c-tp">第三方</span> 原图出自 <a href="https://github.com/codelion/openevolve">codelion/openevolve</a>,Apache-2.0。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -106,7 +106,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-44-industry-self-evolution/orig-openevolve-circle.png" alt="OpenEvolve 第 460 代的 26 圆填充解,半径和 2.634292">
+  <img src="img/dispatch-44-industry-self-evolution/orig-openevolve-circle.png" alt="OpenEvolve 第 460 代的 26 圆填充解,半径和 2.634292" loading="lazy" decoding="async" width="800" height="800">
   <figcaption><span class="fnum">图 3</span>复现的边界:OpenEvolve 在 n=26 圆填充上追平官方(官方 2.6358,复现 2.635,后续 issue 报 2.635977 略超)。<span class="chip c-tp">第三方</span> 同图 2 出处,Apache-2.0。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -170,7 +170,7 @@
 <p class="delta"><span class="dl">差在哪</span>差异在<b>头条与记录簿</b>:这家公司的失败记录比多数公司的成功记录更透明,也更有用——v1 改自己的启动脚本、DGM 删日志、CUDA 钻 harness 漏洞,三件事都是 D43 第 7 节「打分者在被打分者下游」的实景案例。<span class="chip c-inf">推断</span> 更要紧的是 Sakana 每次的补救方向:<strong>加固验证器、加人审,从不试图「教育」agent</strong>——与 MAI 的时间旅行仓库、Seed 的抗刷裁判同一路线,产业已用脚投票:治理失效模式的位置在评估器,不在策略。</p>
 
 <figure>
-  <img src="img/dispatch-44-industry-self-evolution/orig-dgm-overview.gif" alt="Darwin Gödel Machine 归档树动画:自改代码的 agent 分支成不断生长的归档,分数随代际上升">
+  <img src="img/dispatch-44-industry-self-evolution/orig-dgm-overview.gif" alt="Darwin Gödel Machine 归档树动画:自改代码的 agent 分支成不断生长的归档,分数随代际上升" loading="lazy" decoding="async" width="1080" height="608">
   <figcaption><span class="fnum">图 4</span>DGM 的归档进化(动图)。<span class="chip c-vr">自报</span> 原图出自 <a href="https://github.com/jennyzzt/dgm">jennyzzt/dgm</a>(官方代码在 UBC 学生个人账号下,非 SakanaAI 组织),Apache-2.0。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -193,7 +193,7 @@
 <p class="delta"><span class="dl">差在哪</span>差异在<b>自主性的位置</b>:训练侧的「自」(自造数据、自评、自蒸馏)已经制度化,但全部由实验室按下每一次按钮;运行时的「自」只被允许写文本。<span class="chip c-inf">推断</span> 对 RL-on-NPU 最要紧的一条:AgentEvolver 跑在 veRL、Youtu-Agent 集成 Agent-Lightning(verl 后端)、AWorld 训练配方同源——<strong>中国自进化的 θ 侧已经把 verl 当事实标准</strong>,这是 D33 的直接下游;昇腾承接这些框架的路径与 D33/D43 第 10 节相同。</p>
 
 <figure>
-  <img src="img/dispatch-44-industry-self-evolution/orig-agentevolver-system.png" alt="AgentEvolver 系统架构:任务合成、rollout worker、经验管理器、训练 worker 与更新权重的回边">
+  <img src="img/dispatch-44-industry-self-evolution/orig-agentevolver-system.webp" alt="AgentEvolver 系统架构:任务合成、rollout worker、经验管理器、训练 worker 与更新权重的回边" loading="lazy" decoding="async" width="1600" height="671">
   <figcaption><span class="fnum">图 5</span>AgentEvolver 的系统图——图上明确画着 "Updating Weights" 这条边。<span class="chip c-vr">自报</span> 原图出自 <a href="https://github.com/modelscope/AgentEvolver">modelscope/AgentEvolver</a>(阿里/ModelScope,arXiv 2511.10395),Apache-2.0。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -203,7 +203,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-44-industry-self-evolution/orig-agentevolver-perf.png" alt="AgentEvolver 结果散点:7B/14B 在 AppWorld 与 BFCL v3 上超过更大的 Qwen 基线">
+  <img src="img/dispatch-44-industry-self-evolution/orig-agentevolver-perf.webp" alt="AgentEvolver 结果散点:7B/14B 在 AppWorld 与 BFCL v3 上超过更大的 Qwen 基线" loading="lazy" decoding="async" width="1600" height="650">
   <figcaption><span class="fnum">图 6</span>AgentEvolver 的头图结果:约 14B 的模型在 AppWorld 上超过 Qwen3-235B-A22B 基线。<span class="chip c-vr">自报</span>,读数取自官方仓库图表,分母为任务目标完成率。同图 5 出处。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -213,7 +213,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-44-industry-self-evolution/orig-youtu-webwalker.png" alt="Youtu-Agent WebWalkerQA 柱状图:免训练配置约 71.5% 对训练过的 web agent 约 34–52%">
+  <img src="img/dispatch-44-industry-self-evolution/orig-youtu-webwalker.webp" alt="Youtu-Agent WebWalkerQA 柱状图:免训练配置约 71.5% 对训练过的 web agent 约 34–52%" loading="lazy" decoding="async" width="1600" height="894">
   <figcaption><span class="fnum">图 7</span>腾讯的反训练论点:免训练脚手架(左组)对 RL 训练过的 web agent(右组)。<span class="chip c-vr">自报</span> 原图出自 <a href="https://github.com/Tencent/Youtu-agent">Tencent/Youtu-agent</a>,MIT;GAIA 72.8% 仅为纯文本验证子集。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -223,7 +223,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-44-industry-self-evolution/orig-openviking-studio.png" alt="OpenViking Studio 截图:viking:// 上下文树与检索终端">
+  <img src="img/dispatch-44-industry-self-evolution/orig-openviking-studio.webp" alt="OpenViking Studio 截图:viking:// 上下文树与检索终端" loading="lazy" decoding="async" width="1600" height="1116">
   <figcaption><span class="fnum">图 8</span>OpenViking 的产品形态:记忆即文件系统(用户记忆、agent 身份、会话、资源、技能各占一枝)。<span class="chip c-vr">自报</span> 原图出自 <a href="https://github.com/volcengine/OpenViking">volcengine/OpenViking</a>,AGPL-3.0。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -233,7 +233,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-44-industry-self-evolution/orig-aworld-arch.png" alt="AWorld 架构:Swarm 与环境交换动作观察,轨迹送入 Training 块、模型参数回流">
+  <img src="img/dispatch-44-industry-self-evolution/orig-aworld-arch.webp" alt="AWorld 架构:Swarm 与环境交换动作观察,轨迹送入 Training 块、模型参数回流" loading="lazy" decoding="async" width="1021" height="887">
   <figcaption><span class="fnum">图 9</span>AWorld 的架构图:右侧 Training 块与 "Model Params" 回边是论文侧的 θ 环;出货 CLI 只跑左侧的上下文环。<span class="chip c-vr">自报</span> 原图出自 <a href="https://github.com/inclusionAI/AWorld">inclusionAI/AWorld</a>(蚂蚁集团),MIT。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -243,7 +243,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-44-industry-self-evolution/orig-aworld-hitl.png" alt="AWorld 人在环序列图:HumanTool 触发 HUMAN_CONFIRM,运行时挂起任务等待用户确认">
+  <img src="img/dispatch-44-industry-self-evolution/orig-aworld-hitl.png" alt="AWorld 人在环序列图:HumanTool 触发 HUMAN_CONFIRM,运行时挂起任务等待用户确认" loading="lazy" decoding="async" width="1016" height="556">
   <figcaption><span class="fnum">图 10</span>「谁把关」被画成一等运行时事件:HUMAN_CONFIRM 挂起任务直至用户确认。<span class="chip c-vr">自报</span> 同图 9 出处,MIT。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -275,7 +275,7 @@
 <p class="delta"><span class="dl">差在哪</span>差异在<b>基础设施先于产品成熟</b>:环境库、数据飞轮、RL 工具链都已可用,而用它们闭合运行时 θ 环的产品仍然只有零星例外。<span class="chip c-inf">推断</span> AWS rl-toolkit 的三件工程细节是给任何「生产 agent → NPU 训练 → 回部署」团队的现成清单,其中「网关捕获精确 token ID 防再分词漂移」在昇腾栈上同样成立(vLLM-Ascend 侧的再分词问题与 CUDA 侧同构)。xAI 的对照最有讽刺性:同一家公司,推荐系统无人审逐次更新权重,编码 agent 的记忆却默认关——<strong>把关强度跟着错误成本走,不跟着技术能力走</strong>。</p>
 
 <figure>
-  <img src="img/dispatch-44-industry-self-evolution/orig-gepa-throughput.png" alt="GEPA 并行提议结果:留出集分数对优化墙钟,并行 2.5 小时 71.6% 对串行 7.7 小时 68.9%">
+  <img src="img/dispatch-44-industry-self-evolution/orig-gepa-throughput.png" alt="GEPA 并行提议结果:留出集分数对优化墙钟,并行 2.5 小时 71.6% 对串行 7.7 小时 68.9%" loading="lazy" decoding="async" width="1600" height="595">
   <figcaption><span class="fnum">图 11</span>Σ 侧优化器的工程化程度:GEPA 并行提议把优化墙钟从 7.7 小时压到 2.5 小时且分数更高(LiveBench-Math,5k 次评估调用)。<span class="chip c-vr">自报</span> 同图 1 出处,MIT。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

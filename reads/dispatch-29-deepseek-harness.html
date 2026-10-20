@@ -79,7 +79,7 @@
 <p><strong>热度</strong>：<span class="chip c-tp">第三方</span> 发布 90 分钟破 2.2 万 star、两天破 9 万、四天约 13.5–14.1 万（报道口径有出入），检索时点 <strong>177.1k star / 19.3k fork</strong>；发布 4 天社区插件（topic <code>dsh-plugin</code>）超 1,200 个；<a href="https://news.ycombinator.com/item?id=49285244">HN 主帖</a>不足一天 734 分。与模型发布的同步不是偶然：<span class="chip c-vr">自报</span> V4-Flash-0731 与 V4-Pro-0813 的公开 agent 基准（Terminal-Bench 2.1 87.9、CyberGym 83.3、DeepSWE 62.7 等）均声明在 <strong>DeepSeek Harness minimal 模式</strong>下测得。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-29-deepseek-harness/fig-1.svg" alt="dsh 总体架构：Cordis 插件内核位于顶部，中间是一组可替换插件（llm、tools、mcp、sandbox、context、plan 与 goal、agent 主循环），底部是 Web、CLI、headless 三种运行形态，预设模式以虚线指向插件层">
+  <img class="diagram" src="img/dispatch-29-deepseek-harness/fig-1.svg" alt="dsh 总体架构：Cordis 插件内核位于顶部，中间是一组可替换插件（llm、tools、mcp、sandbox、context、plan 与 goal、agent 主循环），底部是 Web、CLI、headless 三种运行形态，预设模式以虚线指向插件层" loading="lazy" decoding="async" width="640" height="1588">
   <figcaption><span class="fnum">图 1</span>dsh 总体架构：Cordis 内核与插件环。顶部为无特权核心（事件总线与生命周期，源自 Koishi 框架谱系，配套 88 页论文），中层七个插件均可替换，底层为三种运行形态；预设模式（full agent / code / minimal / creator）以虚线作用于插件层。<span class="chip c-inf">推断</span> 本站图，依原文图 A 由第 1 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -157,7 +157,7 @@ turn/start → 组装 prompt → agent/pre-step → step 执行 → 工具调用
 <p>同时须注意双线策略：V4-Flash-0731 原生支持 <strong>Responses API 并专门适配 Codex</strong>——DeepSeek 在"自家 harness"与"他家 harness 兼容"两条线同时投入，dsh 的 <code>ctx.llm</code> adapter 层也不锁定自家模型（内置 Anthropic/OpenAI/Bedrock/Vertex 等 provider）。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-29-deepseek-harness/fig-2.svg" alt="协同设计闭环：dsh harness 采集轨迹→数据回流微调→V4 系模型固化 DSML 与 prompt 分布→minimal 模式即训练分布→公榜分数产生于此回到 harness；右侧为三项接口摩擦，下方为双线策略">
+  <img class="diagram" src="img/dispatch-29-deepseek-harness/fig-2.svg" alt="协同设计闭环：dsh harness 采集轨迹→数据回流微调→V4 系模型固化 DSML 与 prompt 分布→minimal 模式即训练分布→公榜分数产生于此回到 harness；右侧为三项接口摩擦，下方为双线策略" loading="lazy" decoding="async" width="2012" height="624">
   <figcaption><span class="fnum">图 2</span>协同设计闭环与接口摩擦。左侧闭环：harness 采集数据 → 回流微调 → 模型固化 tool-call 格式与 prompt 分布 → minimal 模式复现训练分布 → 公榜分数产生于此 → 回到 harness。右侧为 DSML 引发的三项接口摩擦，下方为"双线策略"（Responses API + Codex 适配）。<span class="chip c-inf">推断</span> 本站图，依原文图 B 由第 2 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -194,7 +194,7 @@ turn/start → 组装 prompt → agent/pre-step → step 执行 → 工具调用
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-29-deepseek-harness/fig-3.svg" alt="harness 即分数：顶部为测量证据与结论节点，下方分出路线一 K3 多 harness 混训与路线二 DeepSeek 单接口产品化，两条路线以虚线汇入底部的判定节点：需第三方统一协议测量，目前不存在">
+  <img class="diagram" src="img/dispatch-29-deepseek-harness/fig-3.svg" alt="harness 即分数：顶部为测量证据与结论节点，下方分出路线一 K3 多 harness 混训与路线二 DeepSeek 单接口产品化，两条路线以虚线汇入底部的判定节点：需第三方统一协议测量，目前不存在" loading="lazy" decoding="async" width="1232" height="764">
   <figcaption><span class="fnum">图 3</span>harness 即分数：证据与两条路线。顶部为三组测量证据（9.5pt / 约 15pt / 36pt）与由此得出的结论（分数 = 模型 × harness 联合产物），下方分出 K3 与 DeepSeek 两条路线，两者以虚线汇入"需第三方统一协议测量——目前不存在"。<span class="chip c-inf">推断</span> 本站图，依原文图 C 由第 3 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

@@ -85,7 +85,7 @@
 <p>一个 SWE agent 任务就是 <strong>（真实代码仓库的某个 buggy commit + 一段 issue 描述 + 一组隐藏测试）</strong>；agent 在沙箱里用工具（bash / 编辑 / 搜索）多轮探索并产出一个 patch，reward 是"打上这个 patch 后，原本失败的测试（FAIL_TO_PASS）是否全过、且原本通过的测试（PASS_TO_PASS）不退化"。P2P 检查的作用是防止 agent 靠删代码"修复"；测试执行加超时，超时记 0。</p>
 
 <figure>
-  <img src="img/dispatch-12-swe-agents/orig-4.png" alt="SWE-bench 任务示意图：左侧 Issue 与 Codebase，中间 Language Model 生成 PR，右侧单元测试 Pre PR 与 Post PR 的通过情况对照">
+  <img src="img/dispatch-12-swe-agents/orig-4.webp" alt="SWE-bench 任务示意图：左侧 Issue 与 Codebase，中间 Language Model 生成 PR，右侧单元测试 Pre PR 与 Post PR 的通过情况对照" loading="lazy" decoding="async" width="1800" height="423">
   <figcaption><span class="fnum">图 1</span>SWE-bench 任务格式示意：左侧为输入（Issue 文本 + 仓库快照），中间为语言模型生成的 PR（含改动文件与增删行数），右侧为单元测试在 PR 前后的通过情况表。<span class="chip c-tp">第三方</span> 取自 SWE-bench/SWE-bench 仓库 README（docs/assets/figures/teaser.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -95,7 +95,7 @@
 </figure>
 
 <figure>
-  <img class="diagram" src="img/dispatch-12-swe-agents/fig-1.svg" alt="一个 SWE 任务的输入到奖励流程图：buggy repo 快照与 issue 进入 agent 产出 patch，打回 repo 后在沙箱跑测试，F2P 全过且 P2P 不退化且未超时则 reward 1.0，否则 0.0">
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-1.svg" alt="一个 SWE 任务的输入到奖励流程图：buggy repo 快照与 issue 进入 agent 产出 patch，打回 repo 后在沙箱跑测试，F2P 全过且 P2P 不退化且未超时则 reward 1.0，否则 0.0" loading="lazy" decoding="async" width="1256" height="936">
   <figcaption><span class="fnum">图 2</span>一个 SWE 任务从输入到奖励的完整链路：输入四件（buggy repo 快照、issue 描述、隐藏 F2P 测试、隐藏 P2P 测试）→ agent 产出 patch → 打回 repo → 沙箱跑测试套件 → 三条件判定（F2P 全过、P2P 不退化、未超时）→ reward 1.0 或 0.0；超时以虚线直接指向 0.0。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -118,7 +118,7 @@
 <p>评测定义任务格式与奖励，训练数据向 RL 喂可验证任务，脚手架包住模型产出 trajectory，RL 反过来用测试套件当 verifier——四块之间的依赖关系不是线性的，而是互为输入。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-12-swe-agents/fig-2.svg" alt="四块咬合关系图：评测（SWE-bench 家族、Scale Pro 或 Atlas）、训练数据（SWE-smith、SWE-Gym、R2E-Gym）、脚手架（ReAct、Agentless、混合）、agentic RL（RLVR、稀疏结果奖励 + GRPO 系）之间的依赖箭头">
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-2.svg" alt="四块咬合关系图：评测（SWE-bench 家族、Scale Pro 或 Atlas）、训练数据（SWE-smith、SWE-Gym、R2E-Gym）、脚手架（ReAct、Agentless、混合）、agentic RL（RLVR、稀疏结果奖励 + GRPO 系）之间的依赖箭头" loading="lazy" decoding="async" width="2440" height="410">
   <figcaption><span class="fnum">图 3</span>四块咬合：评测向训练数据与 RL 输出"任务格式与奖励"，向脚手架输出"统一打分口径"；训练数据向 RL 喂可验证任务；脚手架包住模型产出 trajectory；RL 以测试套件当 verifier 回指评测。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -187,7 +187,7 @@
 <p>Scaffold = 模型外的一切（控制循环、工具 / ACI、上下文检索、状态管理）。三种主导模式：<strong>A. ReAct agentic loop</strong>（SWE-agent、OpenHands、mini-swe-agent、CCA）：Thought → Action → Observation，模型自己决定每一步，最灵活，但成本高、易陷循环、上下文易爆；<strong>B. Localize → repair 流水线</strong>（Agentless，arXiv 2407.01489）：固定三阶段（定位 → 修复 → 验证），LLM 不决定控制流，便宜、可复现，但僵化；<strong>C. 混合 / 组合循环</strong>（AutoCodeRover、Moatless、SpecRover、2026 多数系统）：结构化检索 / 定位（AST / SBFL / 语义）+ 有界 agentic 循环 + retry / test-repair / planning / tree-search（MCTS）/ reviewer / memory 等原语。"Inside the Scaffold"分类研究（arXiv 2604.03515）发现 13 个里 11 个都叠加了多个循环原语。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-12-swe-agents/fig-3.svg" alt="脚手架三模式图：模式 A ReAct 循环（Thought → Action → Observation 闭环）、模式 B Agentless 流水线（定位 → 修复 → 验证）、模式 C 混合组合循环（结构化检索 → 有界 agentic 循环 → retry / MCTS / reviewer / memory），三者以虚线映射到一条灵活-控制权衡轴">
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-3.svg" alt="脚手架三模式图：模式 A ReAct 循环（Thought → Action → Observation 闭环）、模式 B Agentless 流水线（定位 → 修复 → 验证）、模式 C 混合组合循环（结构化检索 → 有界 agentic 循环 → retry / MCTS / reviewer / memory），三者以虚线映射到一条灵活-控制权衡轴" loading="lazy" decoding="async" width="2605" height="451">
   <figcaption><span class="fnum">图 4</span>三种脚手架模式及其在权衡轴上的位置：A 最灵活高成本、B 强控制低成本、C 居中。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -210,7 +210,7 @@
 <p>中心设计轴是<strong>真实 PR 挖掘 vs 合成 bug 注入</strong>。<strong>SWE-Gym</strong>（arXiv 2412.21139）：首个为"训练"而非评测建的环境，2438 个真实任务 / 11 repo，挖真 PR（真实但慢、规模小），还训 verifier 做 best-of-n。<strong>SWE-smith</strong>（arXiv 2504.21798）：把任意 Python repo 自动变成任务工厂，四种造 bug 策略（LM Rewrite / AST 改写 / PR Mirroring 反转真实修复 / Combine Bugs），只保留能把 ≥1 个通过测试翻成失败的 patch 来验证；<strong>一个 repo 一个执行环境</strong>是规模化关键（解决旧方法每任务数 GB 容器的问题），产出约 5 万任务 + 2.6 万条 trajectory（可作 SFT）。<strong>R2E-Gym</strong>（arXiv 2504.07164）：8.1k 程序化环境，SWE-GEN 从 commit 反向翻译出环境 + 测试，无需人写 issue / test。<strong>BugPilot</strong>（arXiv 2510.19898）专攻"合成 bug 太简单"的批评。</p>
 
 <figure>
-  <img src="img/dispatch-12-swe-agents/orig-3.png" alt="R2E-Gym 数据集统计表与仓库分布环形图：表格对比 APPS、R2E、SWE-Bench train、SWE-Gym Raw、SWE-Bench test、SWE-Gym、R2E-Gym-Subset、R2E-Gym 的 Repo、Executable 与实例数；环形图为 R2E-Gym Subset 4578 实例的仓库占比">
+  <img src="img/dispatch-12-swe-agents/orig-3.webp" alt="R2E-Gym 数据集统计表与仓库分布环形图：表格对比 APPS、R2E、SWE-Bench train、SWE-Gym Raw、SWE-Bench test、SWE-Gym、R2E-Gym-Subset、R2E-Gym 的 Repo、Executable 与实例数；环形图为 R2E-Gym Subset 4578 实例的仓库占比" loading="lazy" decoding="async" width="1588" height="628">
   <figcaption><span class="fnum">图 5</span>R2E-Gym 的数据集统计（Table 1）与训练子集仓库分布（Table 2）：左表按"是否为仓库级、是否可执行、实例数"对比八个数据集，R2E-Gym 全集 8,135、子集 4,578；右图为子集的仓库占比，pandas 31.5%、numpy 17.1%、pillow 13.5%、orange3 10.5%，其余为 aiohttp、tornado、pyramid、scrapy、datalad、coveragepy。<span class="chip c-vr">自报</span> 取自 R2E-Gym/R2E-Gym 仓库 README（assets/docs-env-stats-v1.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -220,7 +220,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-12-swe-agents/orig-1.png" alt="R2E-Gym 三面板总览：(a) 合成数据 SWEGEN 相比人类 PR 的可执行训练环境数为 2.5 倍；(b) 混合 test-time scaling 从 Pass@1 34.4% 经 execution-free 42.8%、execution-based 43.7% 到 hybrid 51.0%；(c) 开源权重模型 SWE-Bench Verified Best@K 对比，Ours 51.0%">
+  <img src="img/dispatch-12-swe-agents/orig-1.webp" alt="R2E-Gym 三面板总览：(a) 合成数据 SWEGEN 相比人类 PR 的可执行训练环境数为 2.5 倍；(b) 混合 test-time scaling 从 Pass@1 34.4% 经 execution-free 42.8%、execution-based 43.7% 到 hybrid 51.0%；(c) 开源权重模型 SWE-Bench Verified Best@K 对比，Ours 51.0%" loading="lazy" decoding="async" width="1724" height="580">
   <figcaption><span class="fnum">图 6</span>R2E-Gym 总览三面板：(a) SWEGEN 合成的可执行训练环境数为人类 PR 的 2.5×；(b) 混合 test-time scaling——四根柱分别为 Pass@1 34.4%、execution-free 42.8%、execution-based 43.7%、hybrid 51.0%，图中箭头标注 +16.6% / +8.2% / +7.3%；(c) SWE-Bench Verified Best@K 对比，开源权重组中 Ours 51.0%，SweRL 41%、SweGym 32%、SweFixer 30.2%；商用组 Sonnet-3.5 OpenHands 53.0%、Sonnet-3.5 w/ Tools 49%、O1 48%、O1-preview 41.3%。<span class="chip c-vr">自报</span> 取自 R2E-Gym/R2E-Gym 仓库 README（assets/docs-teaser-v1.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -243,7 +243,7 @@
 <p><strong>RLVR 用测试套件当 verifier</strong>，跑 F2P 得到客观 0/1 reward。经验共识：稀疏的、基于结果的 test-pass 奖励是主力且最安全——多轮 agentic RL 实践指南（<a href="https://arxiv.org/abs/2510.01132">arXiv 2510.01132</a>）发现稀疏奖励在稳定性和最终分数上都胜过 dense / piecewise-dense，而 dense shaping 可靠地诱发 reward hacking。稀疏奖励的弱点是"可区分性低"（两条都通过 / 都失败的轨迹分不开），两种缓解：<strong>execution-free reward model</strong>（SWE-RM、R2E-Gym 的非执行 verifier，与执行信号互补可突破约 42–43% 单 verifier 天花板）和<strong>相似度规则奖励</strong>（Meta SWE-RL，<a href="https://arxiv.org/abs/2502.18449">arXiv 2502.18449</a>，用与 ground-truth patch 的序列相似度，绕开执行）。<strong>信用分配</strong>：别把一个轨迹级 reward 平摊到每个 token——把每轮当成 MDP step，用 turn-level advantage（即时反馈 + 折扣后的最终结果份额）（MT-GRPO arXiv 2505.11821、Kevin arXiv 2507.11948）；process / checklist 奖励（CM2、SWE-TRACE）能给中间信号但必须防 hacking。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-12-swe-agents/fig-4.svg" alt="奖励设计决策树：稀疏结果奖励或 dense shaping → 稀疏是否导致可区分性低 → 叠加 execution-free reward model 或相似度规则奖励 → 信用分配用 turn-level advantage 或 GiGPO，不推荐 token 平摊">
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-4.svg" alt="奖励设计决策树：稀疏结果奖励或 dense shaping → 稀疏是否导致可区分性低 → 叠加 execution-free reward model 或相似度规则奖励 → 信用分配用 turn-level advantage 或 GiGPO，不推荐 token 平摊" loading="lazy" decoding="async" width="741" height="1406">
   <figcaption><span class="fnum">图 7</span>奖励设计的决策路径：先选稀疏结果奖励（默认最安全）而非 dense shaping（易诱发 reward hacking）；若可区分性低则叠加 execution-free reward model 或相似度规则奖励；信用分配把每轮当 MDP step，用 turn-level advantage 或 GiGPO，token 平摊为不推荐分支。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -253,7 +253,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-12-swe-agents/orig-2.png" alt="R2E-Gym 训练效果表：7B、14B、32B 三种规模在 SWE-Bench Lite 与 Verified 上 Base-model、SWE-Gym、Ours 的分数及增量">
+  <img src="img/dispatch-12-swe-agents/orig-2.png" alt="R2E-Gym 训练效果表：7B、14B、32B 三种规模在 SWE-Bench Lite 与 Verified 上 Base-model、SWE-Gym、Ours 的分数及增量" loading="lazy" decoding="async" width="1274" height="238">
   <figcaption><span class="fnum">图 8</span>R2E-Gym 训练效果：三种模型规模（7B / 14B / 32B）在 SWE-Bench Lite 与 Verified 上，基座、SWE-Gym 训练、R2E-Gym 训练（Ours）的分数与相对 SWE-Gym 的增量 Δ。Verified 列：7B 1.8 → 10.6 → 19.0（Δ +8.4），14B 4.0 → 16.4 → 26.8（+10.4），32B 7.0 → 20.6 → 34.4（+13.8）。<span class="chip c-vr">自报</span> 取自 R2E-Gym/R2E-Gym 仓库 README（assets/docs-training-v1.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -375,7 +375,7 @@
 <p><strong>环境</strong> = 任务实例（buggy commit 的 repo 快照 + 问题描述 + F2P / P2P 测试列表 + golden patch），包进可运行 Docker 镜像；reward = 打 patch 跑隐藏测试，全部 F2P 通过且 P2P 不退化 → 1.0，否则 0.0；测试执行加超时，超时记 0。→ <strong>rollout（scaffold）</strong>把一个任务变成多轮 trajectory：策略看 issue → 发工具调用（bash / 编辑 / 搜索 / submit）→ 沙箱执行 → 反馈 → 循环；trajectory 的 token 即 RL 训练序列（<strong>务必 mask 掉 observation / 工具输出 token，只对策略自己生成的 token 算 loss——这是常见 bug 源</strong>）。→ <strong>trainer</strong> 分成训练引擎（FSDP2 / Megatron 算梯度）+ 推理引擎（vLLM / SGLang 出 rollout），周期性 weight sync；算法几乎都用 GRPO 系（DAPO / GiGPO / GSPO），无 value network、组归一化、对稀疏二元奖励更稳。→ <strong>异步 + 信用分配</strong>：SWE rollout 常 30–50 轮、分钟级容器时间，同步批生成会让 GPU 干等最慢轨迹，所以用 server-based 解耦异步（推理独立成 vLLM / SGLang server，trainer 拉完成的轨迹），并 per-trajectory（而非 per-batch）与沙箱交互；信用分配默认"结果奖励 + 长度归一化广播 + GRPO 组采样（8–16 / 任务）"，太稀疏时上 GiGPO / turn-level。→ <strong>数据</strong>：SFT 冷启动（SWE-smith-trajectories 几千条专家轨迹）→ 在过滤后的任务池上 GRPO（按 pass-rate 区间丢掉无解 / 秒解任务以保住梯度信号）。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-12-swe-agents/fig-5.svg" alt="端到端数据流时序图：训练引擎、推理引擎（独立 server）、rollout 与 scaffold、环境（repo 沙箱与 F2P/P2P 奖励）四个参与者之间的消息：提供权重做生成、工具调用、沙箱反馈、循环到 submit、跑测试给 reward、trainer 拉轨迹并 mask observation、GRPO 算梯度、周期 weight sync">
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-5.svg" alt="端到端数据流时序图：训练引擎、推理引擎（独立 server）、rollout 与 scaffold、环境（repo 沙箱与 F2P/P2P 奖励）四个参与者之间的消息：提供权重做生成、工具调用、沙箱反馈、循环到 submit、跑测试给 reward、trainer 拉轨迹并 mask observation、GRPO 算梯度、周期 weight sync" loading="lazy" decoding="async" width="1336" height="634">
   <figcaption><span class="fnum">图 9</span>server-based 解耦异步的数据流：推理引擎向 scaffold 提供策略权重做生成；scaffold 与环境多轮交互直到 submit；环境跑测试给出 reward；trainer 拉完成轨迹（mask observation token）、以 GRPO 系组归一化算梯度；周期性 weight sync 回流推理引擎。<span class="chip c-inf">推断</span> 本站图，由原文第 5 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -425,7 +425,7 @@
 <p><strong>Flaky / 错测试</strong>：自动化合成任务的测试质量未经校验，标签噪声直接进 reward。预过滤（golden / empty patch 双跑）、固定 seed、沙箱禁网、隔离运行、隔离 flaky 任务；order / time / network 依赖测试会随机给 0。<strong>Reward hacking</strong>：绝不把隐藏测试放进 prompt；agent 会改 / mock / 删测试、写 `assert True`、硬编码期望值——防御：打分前从 golden 恢复测试文件、强制 P2P 回归检查、禁止 agent 改测试文件、留 held-out 测试集。典型崩溃信号：<strong>轨迹长度骤降而 reward 上升</strong>，务必并行监控（Agent-RLVR，<a href="https://arxiv.org/abs/2506.11425">arXiv 2506.11425</a>）。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-12-swe-agents/fig-6.svg" alt="reward hacking 监控与防御流程图：监控 reward 与轨迹长度 → 若 reward 升且长度稳为正常学习，若 reward 升但长度骤降为崩溃信号 → 启用防御（禁止改动测试文件、P2P 回归检查、held-out 隐藏测试集）→ 重跑并回到监控">
+  <img class="diagram" src="img/dispatch-12-swe-agents/fig-6.svg" alt="reward hacking 监控与防御流程图：监控 reward 与轨迹长度 → 若 reward 升且长度稳为正常学习，若 reward 升但长度骤降为崩溃信号 → 启用防御（禁止改动测试文件、P2P 回归检查、held-out 隐藏测试集）→ 重跑并回到监控" loading="lazy" decoding="async" width="914" height="892">
   <figcaption><span class="fnum">图 10</span>reward hacking 的监控与防御闭环：以"reward 与轨迹长度的关系"作为判定，reward 升且长度稳为正常学习；reward 升但长度骤降为疑似 hacking，触发三项防御（禁止改动测试文件、P2P 回归检查、held-out 隐藏测试集）后重跑并回到监控。<span class="chip c-inf">推断</span> 本站图，由原文第 6 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

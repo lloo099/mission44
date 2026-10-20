@@ -79,7 +79,7 @@
 <p>2026 年 1 月，<strong>vLLM → Inferact</strong>：8 亿美元估值、1.5 亿美元种子，a16z + Lightspeed 领投（另有 Sequoia / Altimeter / Redpoint / ZhenFund），创始团队 Simon Mo、Woosuk Kwon、Kaichao You、Roger Wang + Ion Stoica（Databricks 联创），vLLM 运行在 40 万+ GPU 上。<strong>SGLang → RadixArk</strong>：约 4 亿美元估值、1 亿美元种子，Accel 领投，Intel CEO 陈立武（Lip-Bu Tan）天使，创始为 SGLang 核心团队（LMSYS 系），2026-01 spin-out、2026-05 launch，引擎日均处理万亿 token。两家均出自 UC Berkeley 系，面向同一个高速增长的推理市场。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-1.svg" alt="两家公司谱系图：UC Berkeley 与 LMSYS 同源，左支 Inferact 源自 vLLM，右支 RadixArk 源自 SGLang，各列估值、领投、创始、规模与定位">
+  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-1.svg" alt="两家公司谱系图：UC Berkeley 与 LMSYS 同源，左支 Inferact 源自 vLLM，右支 RadixArk 源自 SGLang，各列估值、领投、创始、规模与定位" loading="lazy" decoding="async" width="3250" height="340">
   <figcaption><span class="fnum">图 1</span>两家公司的谱系：根节点为 UC Berkeley / LMSYS 同源，左支 Inferact（vLLM）依次列出估值、领投、创始团队、40 万+ GPU 与"通用稳、生态最大"定位；右支 RadixArk（SGLang）依次列出估值、领投、天使、Miles 与"prefix-heavy / agent 专精"定位。<span class="chip c-inf">本站图</span> 由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -102,7 +102,7 @@
 <p>承接 D10。<strong>vLLM / PagedAttention</strong>：用分页管理 KV、解决显存碎片；前缀缓存是精确哈希命中（APC）。通用、稳、生态最大——支持的模型 / 硬件最广，是事实上的默认。<strong>SGLang / RadixAttention</strong>：用基数树 + cache-aware 调度做自动前缀复用，多轮 / agent / RAG / fork 场景强。整体吞吐比充分优化的 vLLM 高约 29%，prefix-heavy 下可达 6×；唯一 prompt 批任务两者趋同。一句话：vLLM 是"什么都能跑得不错"的默认，SGLang 是"在前缀重度 / agent 上更快"的专精。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-2.svg" alt="引擎机制对照图：vLLM 分页 KV 与精确哈希 APC，SGLang 基数树与 cache-aware 调度，两者在 prefix-heavy 场景的吞吐差异与唯一 prompt 场景的趋同">
+  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-2.svg" alt="引擎机制对照图：vLLM 分页 KV 与精确哈希 APC，SGLang 基数树与 cache-aware 调度，两者在 prefix-heavy 场景的吞吐差异与唯一 prompt 场景的趋同" loading="lazy" decoding="async" width="1386" height="578">
   <figcaption><span class="fnum">图 2</span>引擎机制对照：上左 vLLM 链（分页 KV → APC 精确哈希 → 通用稳）、上右 SGLang 链（基数树 → cache-aware 调度 → 多轮 / agent / RAG / fork 强），下方为 prefix-heavy 场景：共享长前缀的大量请求分别进入两条路径，SGLang 路径标注"高约 29%，prefix-heavy 可达 6 倍"，两条路径共同汇入"唯一 prompt 批任务两者趋同"。<span class="chip c-inf">本站图</span> 由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -142,7 +142,7 @@
 <p>vLLM 的 APC（Automatic Prefix Caching）用精确哈希对 KV block 分块缓存，只要前缀的 block 内容逐块哈希相同就命中。差距在于：APC 是块级精确匹配，前缀对齐和 block 边界稍有偏移就可能错过命中。反过来，当 workload 是"每条 prompt 都唯一、几乎没有共享前缀"的批处理（一次性、互不相关的离线打分 / 抽取），前缀复用本身无收益，两套机制都退化为只靠分页 KV 提升显存利用率，此时二者趋同——公认两家差距最小的场景。</p>
 
 <figure>
-  <img src="img/dispatch-11-vllm-vs-sglang/orig-1.png" alt="vLLM 前缀缓存组件总览：Block Pool 双向链表、Free Block Queue 的头尾指针、Cache Blocks 的 Hash Key 到 Block IDs 映射、Request Blocks 的 Request ID 到 Block IDs 映射">
+  <img src="img/dispatch-11-vllm-vs-sglang/orig-1.png" alt="vLLM 前缀缓存组件总览：Block Pool 双向链表、Free Block Queue 的头尾指针、Cache Blocks 的 Hash Key 到 Block IDs 映射、Request Blocks 的 Request ID 到 Block IDs 映射" loading="lazy" decoding="async" width="743" height="331">
   <figcaption><span class="fnum">图 3</span>vLLM v1 前缀缓存（APC）的组件总览：Block Pool 是一个按 ID 编号的块列表（每块含 Hash / Prev / Next），Free Block Queue 以 Head / Tail 指针串起空闲块，下方两张表分别是 Cache Blocks（Hash Key → Block IDs）与 Request Blocks（Request ID → Block IDs）。<span class="chip c-vr">自报</span> 取自 vLLM 官方仓库设计文档（vllm-project/vllm，docs/assets/design/prefix_caching/overview.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -152,7 +152,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-11-vllm-vs-sglang/orig-2.png" alt="vLLM 前缀缓存示例：Request 0 的 prompt A-O 被切成四个 block，前三块哈希为 A-D、A-H、A-L 并登记进 Cache Blocks，第四块 MNO 未满不做哈希；Block Pool 剩余 6 个空闲块">
+  <img src="img/dispatch-11-vllm-vs-sglang/orig-2.png" alt="vLLM 前缀缓存示例：Request 0 的 prompt A-O 被切成四个 block，前三块哈希为 A-D、A-H、A-L 并登记进 Cache Blocks，第四块 MNO 未满不做哈希；Block Pool 剩余 6 个空闲块" loading="lazy" decoding="async" width="676" height="256">
   <figcaption><span class="fnum">图 4</span>APC 的分块示例：Request 0 的 prompt（token A–O）按每块 4 个 token 切成 ID 0–3 四块，前三块的哈希键分别为 A-D、A-H、A-L（每块哈希包含其前缀），登记进 Cache Blocks；第四块（MNO）未满，Hash 为 None；Block Pool 中 ID 4–9 仍在空闲队列，num_free_blocks = 6。<span class="chip c-vr">自报</span> 取自 vLLM 官方仓库设计文档（docs/assets/design/prefix_caching/example-time-1.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -175,7 +175,7 @@
 <p>核心叙事：vLLM / Inferact 是"最广的开源推理标准"，SGLang / RadixArk 是"最快的 agent / 前缀场景 + RL 训练（Miles）"。硬件：vLLM 中立、覆盖最广（含 vLLM-Ascend）；SGLang-Ascend 等覆盖较窄但在追。训练侧：vLLM 主打推理；SGLang 同时握 RL 后训练（Miles：FP8 + R3）。生态 / 资金：前者更大更厚，后者较小更聚焦。团队牌面：Ion Stoica 对 SGLang 原班 + Intel CEO 背书。最大的结构差异：<strong>RadixArk 同时卡住"推理 + RL 训练"两个入口</strong>，而 Inferact 目前更纯粹是推理，这让 RadixArk 在"前沿 MoE 后训练"这条线上的故事更完整（D09）。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-3.svg" alt="入口结构图：推理入口有 vLLM 与 SGLang 两家，RL 训练入口只有 Miles；vLLM 指向 Inferact 单入口，SGLang 与 Miles 共同指向 RadixArk 双入口">
+  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-3.svg" alt="入口结构图：推理入口有 vLLM 与 SGLang 两家，RL 训练入口只有 Miles；vLLM 指向 Inferact 单入口，SGLang 与 Miles 共同指向 RadixArk 双入口" loading="lazy" decoding="async" width="912" height="272">
   <figcaption><span class="fnum">图 5</span>入口结构：推理入口下 vLLM 与 SGLang 并列，RL 训练入口下仅有 Miles（RadixArk，FP8 + R3）；vLLM 汇入"Inferact 单入口——目前更纯推理"，SGLang 与 Miles 共同汇入"RadixArk 双入口——训推一体结构优势"。<span class="chip c-inf">本站图</span> 由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -240,7 +240,7 @@
 <p>生产部署默认：vLLM（广度、社区、硬件）。prefix-heavy / agent / 结构化输出 / RL rollout：SGLang。大多数团队 2026 年其实在两者之间二选一——很多 RL 栈（AReaL、Miles）默认用 SGLang 做 rollout，而通用服务默认 vLLM。两者<strong>长期共存</strong>的概率高于一家通吃。</p>
 
 <figure>
-  <img src="img/dispatch-11-vllm-vs-sglang/orig-3.png" alt="SGLang 采用方 logo 墙：xAI、NVIDIA、AMD、Intel、LinkedIn、Cursor、Oracle、Google Cloud、Microsoft Azure、AWS、Atlas Cloud、Voltage Park、Nebius、Novita、DataCrunch、RunPod、innomatrix、MIT、UCLA、UW、Stanford、Berkeley、CMU、清华、百度、baseten、Meituan、微信、蚂蚁集团、阿里云、腾讯云等">
+  <img src="img/dispatch-11-vllm-vs-sglang/orig-3.webp" alt="SGLang 采用方 logo 墙：xAI、NVIDIA、AMD、Intel、LinkedIn、Cursor、Oracle、Google Cloud、Microsoft Azure、AWS、Atlas Cloud、Voltage Park、Nebius、Novita、DataCrunch、RunPod、innomatrix、MIT、UCLA、UW、Stanford、Berkeley、CMU、清华、百度、baseten、Meituan、微信、蚂蚁集团、阿里云、腾讯云等" loading="lazy" decoding="async" width="1800" height="672">
   <figcaption><span class="fnum">图 6</span>SGLang 官方 README 引用的采用方一览：五行 logo 依次为模型与芯片厂商（xAI、NVIDIA、AMD、Intel）与应用方（LinkedIn、Cursor）、公有云（Oracle、Google Cloud、Azure、AWS、Atlas Cloud）、GPU 云（Voltage Park、Nebius、Novita、DataCrunch、RunPod）、高校（MIT、UCLA、UW、Stanford、Berkeley、CMU、清华）与国内互联网（百度、美团、微信、蚂蚁、阿里云、腾讯云）。<span class="chip c-vr">自报</span> 取自 sgl-project/sgl-learning-materials 仓库（slides/adoption.png），SGLang README 引用。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -291,7 +291,7 @@
 <p><strong>rollout 引擎选型</strong>：在昇腾上做 RL，rollout 引擎基本就是 vLLM-Ascend 与 SGLang-Ascend 二选一。vLLM-Ascend 覆盖广、社区成熟；SGLang-Ascend 带 RadixAttention 的前缀复用红利（D10）。<strong>训练侧</strong>：SGLang 一侧有 Miles 的 R3 + 端到端 FP8（D09）——这是"训推一致 + FP8 RL"在 GPU 上的完整答案；能否随 SGLang-Ascend 一起落到昇腾，是 RL-on-NPU 最值得追的工程线。换言之：<strong>vLLM 给昇腾最广的 rollout 覆盖，SGLang / RadixArk 给昇腾最完整的 RL 训练蓝图</strong>——两条都值得持续跟踪。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-4.svg" alt="昇腾 rollout 引擎选型决策树：先判断是否 prefix-heavy 或 agent 或多轮场景，否则选 vLLM-Ascend；是则选 SGLang-Ascend，再判断是否要训推一致加 FP8 RL，是则搭配 Miles，否则仅用 SGLang-Ascend 做 rollout">
+  <img class="diagram" src="img/dispatch-11-vllm-vs-sglang/fig-4.svg" alt="昇腾 rollout 引擎选型决策树：先判断是否 prefix-heavy 或 agent 或多轮场景，否则选 vLLM-Ascend；是则选 SGLang-Ascend，再判断是否要训推一致加 FP8 RL，是则搭配 Miles，否则仅用 SGLang-Ascend 做 rollout" loading="lazy" decoding="async" width="1042" height="993">
   <figcaption><span class="fnum">图 7</span>昇腾 rollout 引擎选型决策树：第一个菱形问"是否 prefix-heavy / agent / 多轮场景"，否则走 vLLM-Ascend（覆盖广、社区成熟、模型硬件支持稳），是则走 SGLang-Ascend（RadixAttention 前缀复用红利）；第二个菱形问"是否要训推一致 + FP8 RL"，是则搭配 Miles（R3 + 端到端 FP8），否则仅用 SGLang-Ascend 做 rollout。<span class="chip c-inf">本站图</span> 由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

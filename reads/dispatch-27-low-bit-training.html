@@ -86,7 +86,7 @@
 <p>盘点之前先立坐标系。低比特训练的动机可以拆成三条主线,它们经常被混为一谈但收益结构完全不同:<strong>省显存</strong>(权重、优化器状态、KV cache、激活的存储位宽下降;Kimi K2 只用 FP8 做存储而不做计算,见 <a href="https://huggingface.co/moonshotai/Kimi-K2-Instruct/discussions/30">HF 讨论区官方确认</a>,就是纯粹这一条);<strong>省算力</strong>(GEMM 用低位宽 tensor core 跑,FP8 相对 BF16 理论 2×、GB200 上 FP4 GEMM 相对 FP8 又约 2×,见 <a href="https://arxiv.org/abs/2509.25149">arXiv:2509.25149</a>;但端到端往往打折——FP8 预训练实测加速只有约 1.2–1.4×,因为 attention、通信、优化器尚未打通);<strong>训推一致</strong>(RL 训练里 rollout 引擎与训练引擎的数值分歧会直接毒化 on-policy 假设,见 D02 与综述 §8,低比特让分歧更大,也催生了更系统的对齐方法)。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-27-low-bit-training/fig-1.svg" alt="低比特训练全景地图:三条主线与预训练、后训练量化、强化学习三大战场的连接关系">
+  <img class="diagram" src="img/dispatch-27-low-bit-training/fig-1.svg" alt="低比特训练全景地图:三条主线与预训练、后训练量化、强化学习三大战场的连接关系" loading="lazy" decoding="async" width="2039" height="1012">
   <figcaption><span class="fnum">图 1</span>低比特训练全景地图:三大战场与三条主线(原文图 A)。左侧三条主线分别指向预训练的 FP8/NVFP4/BitNet、后训练的 PTQ/末段 QAT、以及 RL 侧的 FP8 rollout 与 INT4/FP4 前沿。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -141,7 +141,7 @@
 <p>PTQ 一侧已高度商品化:GPTQ(<a href="https://arxiv.org/abs/2210.17323">2210.17323</a>)、AWQ(<a href="https://arxiv.org/abs/2306.00978">2306.00978</a>)、SmoothQuant(<a href="https://arxiv.org/abs/2211.10438">2211.10438</a>)构成基础设施,<strong>W4A16 基本默认无损</strong>。旋转类方法将激活量化纳入范围:QuaRot(<a href="https://arxiv.org/abs/2404.00456">2404.00456</a>)→ SpinQuant(<a href="https://arxiv.org/abs/2405.16406">2405.16406</a>)→ FlatQuant(<a href="https://arxiv.org/abs/2410.09426">2410.09426</a>,W4A4 损失 &lt;1 分、prefill 2.3×)→ OSTQuant(<a href="https://arxiv.org/abs/2501.13987">2501.13987</a>)/ReSpinQuant(<a href="https://arxiv.org/abs/2604.11080">2604.11080</a>)。极低比特有 QuIP#(<a href="https://arxiv.org/abs/2402.04396">2402.04396</a>)、AQLM(<a href="https://arxiv.org/abs/2401.06118">2401.06118</a>)、SignRoundV2(<a href="https://arxiv.org/abs/2512.04746">2512.04746</a>);KV cache 有 KIVI(<a href="https://arxiv.org/abs/2402.02750">2402.02750</a>)、KVQuant(<a href="https://arxiv.org/abs/2401.18079">2401.18079</a>)、RotateKV(<a href="https://arxiv.org/abs/2501.16383">2501.16383</a>)。但边界清晰:<strong>W3 陡降,W2 纯 PTQ 不可用</strong>(<a href="https://arxiv.org/abs/2404.14047">2404.14047</a>)。QAT 能把 W2 的损失压到 3.4 分(ParetoQ,<a href="https://arxiv.org/abs/2502.02631">2502.02631</a>)——这是两条路线分界最直观的证据。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-27-low-bit-training/fig-2.svg" alt="QAT 对 PTQ 决策图:按目标比特位分流到 PTQ 或 QAT,并汇入训练末段 QAT 的工业收敛点">
+  <img class="diagram" src="img/dispatch-27-low-bit-training/fig-2.svg" alt="QAT 对 PTQ 决策图:按目标比特位分流到 PTQ 或 QAT,并汇入训练末段 QAT 的工业收敛点" loading="lazy" decoding="async" width="1315" height="750">
   <figcaption><span class="fnum">图 2</span>QAT 对 PTQ 决策图:比特位边界与工业收敛点(原文图 D)。入口按目标比特位分流,8 比特与 W4A16 走 PTQ,W4A4 需旋转预处理,3 比特与 2 比特必须进训练环节。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -166,7 +166,7 @@
 <p>D02 记录过 FP8 量化 rollout 三个工作带来 +20–80% 加速、rollout 占 wall-clock 70%+ 的背景。到 2026 年这已是框架默认能力:NeMo-RL 端到端 FP8(<a href="https://developer.nvidia.com/blog/run-high-throughput-reinforcement-learning-training-with-end-to-end-fp8-precision/">NVIDIA 技术博客</a>,Qwen3-30B 约 +48%,<a href="https://github.com/nvidia-nemo/rl">github.com/nvidia-nemo/rl</a>);<a href="https://verl.readthedocs.io/en/latest/low_precision/fp8.html">verl 官方 FP8 文档</a>提供"FP8 rollout-only + TIS"和全 FP8 两档;阿里 <a href="https://github.com/alibaba/ROLL">ROLL</a>、<a href="https://unsloth.ai/docs/get-started/reinforcement-learning-rl-guide/fp8-reinforcement-learning">Unsloth</a> 亦有支持。</p>
 
 <figure>
-  <img src="img/dispatch-27-low-bit-training/orig-1.png" alt="FlashRL DAPO 32B 训练曲线:左图 AIME 准确率 mean/maj/best@32 三组曲线中 INT8 与 BF16 rollout 重合,右图每小时更新数 INT8 显著高于 BF16">
+  <img src="img/dispatch-27-low-bit-training/orig-1.webp" alt="FlashRL DAPO 32B 训练曲线:左图 AIME 准确率 mean/maj/best@32 三组曲线中 INT8 与 BF16 rollout 重合,右图每小时更新数 INT8 显著高于 BF16" loading="lazy" decoding="async" width="1800" height="593">
   <figcaption><span class="fnum">图 3</span>FlashRL 的 DAPO 32B 实验:左图为 AIME 准确率(实线 mean@32、虚线 maj@32、点线 best@32),右图为每小时更新数;蓝色为 BF16 rollout,橙色为 INT8 rollout。<span class="chip c-vr">自报</span> 取自 FlashRL 官方仓库 README(yaof20/Flash-RL,images/dapo_32b.png)。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -189,7 +189,7 @@
 <p>训推一致问题上,方法论清晰地裂成两派。<strong>IS 修正派</strong>承认 rollout 策略与训练策略数值不一致,用重要性采样修正:FlashRL(<a href="https://github.com/yaof20/Flash-RL">github.com/yaof20/Flash-RL</a>,INT8/FP8 + 截断 IS)、AIS(<a href="https://arxiv.org/abs/2605.13907">2605.13907</a>,用三个诊断量自适应混合修正策略,1.5–2.76× 加速保精度)。<strong>数值对齐派</strong>直接消灭分歧:Jet-RL(<a href="https://arxiv.org/abs/2601.14243">2601.14243</a>,统一 FP8 精度流,训练侧 +41%、端到端 +16%);QaRL(<a href="https://arxiv.org/abs/2604.07853">2604.07853</a>,ACL 2026,训练前向用与 rollout 对齐的低比特 GEMM 算 logprob,配 TBPO 信任带);NeMo-RL;以及 D09 记录过的 Miles(<a href="https://github.com/radixark/miles">github.com/radixark/miles</a>,首个端到端 FP8 采样 + 训练统一管线,并扩展至 INT4 QAT/W4A16)。<strong>两派至今无头对头比较</strong>——这本身是一个待填补的空白。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-27-low-bit-training/fig-3.svg" alt="低比特 RL 训推一致的两派分化图:IS 修正派与数值对齐派并列,下接更低比特前沿与昇腾 HiF8 空白窗口">
+  <img class="diagram" src="img/dispatch-27-low-bit-training/fig-3.svg" alt="低比特 RL 训推一致的两派分化图:IS 修正派与数值对齐派并列,下接更低比特前沿与昇腾 HiF8 空白窗口" loading="lazy" decoding="async" width="1397" height="1302">
   <figcaption><span class="fnum">图 4</span>低比特 RL 训推一致两派分化与 HiF8 空白窗口(原文图 E)。上方问题节点分流到 IS 修正派与数值对齐派,数值对齐派下接更低比特前沿,右下 ASCEND 子图为昇腾侧现状。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -228,7 +228,7 @@
 <p>FP8 的经典设定是前向 E4M3(精度)、反向 E5M2(范围),出自 NVIDIA/Arm/Intel 的 FP8 论文(<a href="https://arxiv.org/abs/2209.05433">2209.05433</a>)。这个惯例已被"细粒度缩放 + 全程 E4M3"取代:DeepSeek-V3 如此,NVIDIA 的 MXFP8 配方(<a href="https://arxiv.org/abs/2506.08027">2506.08027</a>)更明确发现<strong>块缩放之下全程 E4M3 优于分工方案</strong>——当缩放粒度细到 32/128 元素,动态范围压力被缩放因子吸收,元素格式就应该把位数全花在尾数上。这个教训对理解 HiF8 的设计哲学很重要。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-27-low-bit-training/fig-4.svg" alt="datatype 谱系树:从 FP16/BF16 到 FP8 双口味,分出 MX 家族、NVFP4 与 HiF8/HiF4,底部为硬件归属子图">
+  <img class="diagram" src="img/dispatch-27-low-bit-training/fig-4.svg" alt="datatype 谱系树:从 FP16/BF16 到 FP8 双口味,分出 MX 家族、NVFP4 与 HiF8/HiF4,底部为硬件归属子图" loading="lazy" decoding="async" width="2013" height="872">
   <figcaption><span class="fnum">图 5</span>datatype 谱系树:8 比特归标准、4 比特起分歧(原文图 B)。上半为格式演化,SHIFT 节点标注惯例更替,下半 HW 子图为各代硬件的格式归属。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -273,7 +273,7 @@
 <p>设计直觉是:训练张量(尤其归一化后的激活和梯度)量级集中在 1 附近呈重尾分布,将尾数位集中于分布中心、用长尾指数覆盖离群值,单一格式就能同时满足 E4M3 的精度需求和 E5M2 的范围需求。<strong>这与 posit 的锥形思想同源,与"E4M3/E5M2 分工"是两条对立的解法</strong>:NVIDIA 系用细粒度缩放在格式外解决范围问题(第 07 节),HiF8 把范围问题解决在格式内部。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-27-low-bit-training/fig-5.svg" alt="HiF8 机理与训练配方图:左侧为 E4M3 固定划分与 HiF8 变长编码的对比,右侧为训练数据流配方与实验证据">
+  <img class="diagram" src="img/dispatch-27-low-bit-training/fig-5.svg" alt="HiF8 机理与训练配方图:左侧为 E4M3 固定划分与 HiF8 变长编码的对比,右侧为训练数据流配方与实验证据" loading="lazy" decoding="async" width="2206" height="627">
   <figcaption><span class="fnum">图 6</span>HiF8 机理与训练配方:锥形编码 × 数据流(原文图 C)。左半 ENC 子图对比 E4M3 固定划分与 HiF8 的 dot 域变长前缀码,右半 FLOW 子图给出训练数据流配方,底部 EXP 节点为实验证据及其上限。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

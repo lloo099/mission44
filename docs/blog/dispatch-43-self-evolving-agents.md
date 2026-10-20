@@ -44,7 +44,7 @@
 
 ## 2 · 最精确的那把刀:θ 与 Σ
 
-![自我改进的形式化:A=(θ,Σ),Σ:=(p,m,T,g),左侧为基础模型改进,右侧为脚手架改进](reads/img/dispatch-43-self-evolving-agents/orig-theta-sigma.png)
+![自我改进的形式化:A=(θ,Σ),Σ:=(p,m,T,g),左侧为基础模型改进,右侧为脚手架改进](reads/img/dispatch-43-self-evolving-agents/orig-theta-sigma.webp)
 
 *图 2 · 本篇最关键的一张图。原图出自 Ren 等(Schmidhuber 组)《Self-Improving AI Agents: A Survey》,arXiv 2607.13104,仓库 [selfimproving-agent/awesome-Self-Improving-Agents](https://github.com/selfimproving-agent/awesome-Self-Improving-Agents),**MIT**。左侧 FM 改进:`θ_{t+1} = IMPROVE_θ(θ_t; S_t)`,Σ 不变,按信号分三类——内生示范 `S≈D_t`、内生反馈 `S≈r_t`、外生经验 `S≈τ_t`。右侧脚手架改进:`Σ_{t+1} = IMPROVE_Σ(Σ_t; S_t)`,θ 不变,按分量分四类——提示词、工具、记忆、全脚手架。*
 
@@ -63,7 +63,7 @@ A_t = (θ_t, Σ_t) ,  Σ_t := (p_t, m_t, T_t, g_t)
 
 ## 3 · 三支路线与它们的体量
 
-![自进化的三支分类:模型侧、环境侧、模型-环境共进化,外加 Benchmarks](reads/img/dispatch-43-self-evolving-agents/orig-intro.png)
+![自进化的三支分类:模型侧、环境侧、模型-环境共进化,外加 Benchmarks](reads/img/dispatch-43-self-evolving-agents/orig-intro.webp)
 
 *图 3 · 厦大综述的三支分类全景。原图出自 Xiang 等《A Systematic Survey of Self-Evolving Agents: From Model-Centric to Environment-Driven Co-Evolution》(TechRxiv,DOI 10.36227/techrxiv.177203250.05832634),仓库 [XMUDeepLIT/Awesome-Self-Evolving-Agents](https://github.com/XMUDeepLIT/Awesome-Self-Evolving-Agents)。该仓库未附 LICENSE,此处为署名引用。*
 
@@ -75,7 +75,7 @@ A_t = (θ_t, Σ_t) ,  Σ_t := (p_t, m_t, T_t, g_t)
 | 环境侧自进化 | **110** | 终身经验演化(16)、工具增强演化 |
 | 模型-环境共进化 | **25** | 几乎全为 2025–2026 年 |
 
-![约 100 个代表方法按年代排布、按三支着色的演进趋势](reads/img/dispatch-43-self-evolving-agents/orig-trend.png)
+![约 100 个代表方法按年代排布、按三支着色的演进趋势](reads/img/dispatch-43-self-evolving-agents/orig-trend.webp)
 
 *图 4 · 领域演进趋势。同上出处。粉色为模型侧、蓝色为环境侧、绿色为共进化。左下角起点是 2022 年的 Self-Consistency 与 STaR,右上角是 2026 年的 DreamGym、AutoEnv、GenEnv、RLVE、CoMAS——**颜色随时间从粉变绿**,这是三支路线依次激活的直接可视化。*
 
@@ -83,7 +83,7 @@ A_t = (θ_t, Σ_t) ,  Σ_t := (p_t, m_t, T_t, g_t)
 
 ## 4 · 模型侧:自己改自己,以及它为什么常常失败
 
-![模型侧自进化:合成驱动的离线演化与探索驱动的在线演化](reads/img/dispatch-43-self-evolving-agents/orig-model-centric.png)
+![模型侧自进化:合成驱动的离线演化与探索驱动的在线演化](reads/img/dispatch-43-self-evolving-agents/orig-model-centric.webp)
 
 *图 5 · 模型侧的两个家族。同图 3 出处。左:合成驱动离线演化(SFT 型 / 离线 RL 型 / 参考型),特征是静态自举、知识精炼、泛化受限。右:探索驱动在线演化,分**纯自博弈(无人类数据)**与**人类数据引导的自博弈**,结构都是 Challenger 出题、Solver 解题的在线循环。*
 
@@ -128,7 +128,7 @@ A_t = (θ_t, Σ_t) ,  Σ_t := (p_t, m_t, T_t, g_t)
 
 ## 5 · 环境侧:冻结权重,改其余一切
 
-![静态知识演化与动态经验演化的机制对照](reads/img/dispatch-43-self-evolving-agents/orig-exp-driven.png)
+![静态知识演化与动态经验演化的机制对照](reads/img/dispatch-43-self-evolving-agents/orig-exp-driven.webp)
 
 *图 6 · 环境侧的两大类。同图 3 出处。左:静态知识演化(Agentic RAG、推理驱动的深度研究),特征是补充世界知识、知识密集任务、泛化受限。右:动态经验演化,分离线经验编译、在线经验适配、终身经验优化三段,特征是**蒸馏抽象经验、逻辑密集任务、强跨任务泛化**。注意右侧第三格明确画出了 Write / Read / Update / Delete 四个操作——记忆是被 CRUD 的。*
 
@@ -148,7 +148,7 @@ A_t = (θ_t, Σ_t) ,  Σ_t := (p_t, m_t, T_t, g_t)
 
 ## 6 · 共进化:自适应课程其实是梯度信号保全装置
 
-![四组件闭环:System Inputs、Agent System、Environment、Optimiser](reads/img/dispatch-43-self-evolving-agents/orig-loop.png)
+![四组件闭环:System Inputs、Agent System、Environment、Optimiser](reads/img/dispatch-43-self-evolving-agents/orig-loop.webp)
 
 *图 7 · Fang 等的四组件控制回路。原图出自 arXiv 2508.07407,仓库 [ANative-Lab/Awesome-Self-Evolving-Agents](https://github.com/ANative-Lab/Awesome-Self-Evolving-Agents),**MIT**。Setup → Execution → Feedback → Mutation → Refine 五条边闭合;Optimiser 的搜索空间含提示词模板、工具选择、LLM 参数与架构,优化算法含规则启发式、梯度下降、贝叶斯/MCTS/RL、学习型策略。这张图的价值在于给出"反馈从哪里进入"的统一词汇——提示词优化器、记忆管理器、工作流搜索器都是 Optimiser 这一个槽位的实例。*
 
@@ -169,7 +169,7 @@ SPICE 给出了这一支**最干净的共进化动力学证据**:Reasoner 对**�
 
 ## 7 · 失效模式:打分者位于被打分者的下游
 
-![三支路线各自的局限,以及共进化如何回应](reads/img/dispatch-43-self-evolving-agents/orig-co-evolving.png)
+![三支路线各自的局限,以及共进化如何回应](reads/img/dispatch-43-self-evolving-agents/orig-co-evolving.webp)
 
 *图 8 · 综述自己承认的失效模式。同图 3 出处。左(模型侧):缺乏外部验证与低质数据、迭代中的误差累积、高概率过估计与高方差。中(环境侧):被动且有限的环境反馈(稀疏奖励)、静态环境与训练脱节、不可扩展的单任务环境。右(共进化):自适应难度调整、按需的定向反馈、可扩展多任务环境。**这张图的读法是从左到右的因果链——每一支的存在,都是前一支失效模式逼出来的。***
 
@@ -216,7 +216,7 @@ SEAGym 自己的数字说明了多视图评测的价值:TF-GRPO 与 AHE 在验�
 
 ## 9 · 产业:所有已出货的自进化都写文本,不写权重
 
-![从 MOP 到 MOA 到 MAO 再到 MASE 的历史路径](reads/img/dispatch-43-self-evolving-agents/orig-path.png)
+![从 MOP 到 MOA 到 MAO 再到 MASE 的历史路径](reads/img/dispatch-43-self-evolving-agents/orig-path.webp)
 
 *图 9 · 产业路径。同图 7 出处,**MIT**。模型离线预训练(2018–19 BERT/GPT-1)→ 模型在线适配(2020–22 GPT-3/LoRA/Prompt-Tuning/InstructGPT/RLHF)→ 多智能体编排(2023–24 MetaGPT/AutoGen/LangGraph/CrewAI)→ 多智能体自进化(2024–25 ADAS/AFlow/MIPRO/EvoFlow/MASS/EvoAgentX)。*
 

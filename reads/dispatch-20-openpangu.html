@@ -73,7 +73,7 @@
 <p>一项必须注意的事项：<strong>许可是 OpenPangu Model License v2.0，不是 Apache 2.0</strong>。这是华为自定义许可，具体条款（尤其是商用限制、衍生模型义务、再分发条件）需要逐条细读，商用可行性待确认。将其按 Apache 使用存在法务风险——评估引入前应由法务审阅许可全文。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-20-openpangu/fig-1.svg" alt="openPangu 2.0 七大组件分批开源：首发批次、后续批次、7 月批次，以及许可与发布地">
+  <img class="diagram" src="img/dispatch-20-openpangu/fig-1.svg" alt="openPangu 2.0 七大组件分批开源：首发批次、后续批次、7 月批次，以及许可与发布地" loading="lazy" decoding="async" width="2293" height="394">
   <figcaption><span class="fnum">图 1</span>七大组件的分批安排：首发批次（2026-06-30）为 Flash 模型权重（约 92B 总参 / 6B 激活，512K 上下文，预训练约 34T token）、基础推理代码、训推算子、Int8 变体仓库（openPangu-2.0-Flash-Int8）与推理仓库（openPangu-2.0-Infer）；后续分批放出预训练代码与后训练代码；7 月批次为 Pro 版权重（505B 总参 / A18B 激活）。许可 OpenPangu Model License v2.0（非 Apache）全系适用，发布地为 GitCode ascend-tribe 与 HF openpangu。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染；批次安排为 06-30 时的承诺口径。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -97,7 +97,7 @@
 <p>值得关注的不是积木本身——每一块都是已验证的公开设计——而是<strong>配比哲学的反转</strong>。MiMo 的混合注意力是 SWA:全局 = 6:1，即绝大多数层做低成本的局部注意力，间隔插入一层全局层做聚合；openPangu 是 DSA:SWA = 1:2，稀疏全局层占到三分之一，全局聚合层的密度显著更高。一种合理的解读是：openPangu 判断 512K 超长上下文场景下全局信息聚合是瓶颈，愿意为此支付更多稀疏注意力的开销；MiMo 则更侧重压缩推理成本。哪种配比在长上下文任务上更优，目前没有对照实验，是值得社区基于开源代码做消融验证的第一个问题。Flash 档的定位也清晰：92B 总参 / 6B 激活，激活量级与主流 dense 7B 相当，权重可容纳、单卡（昇腾单卡口径）可推理，配合 Int8 变体仓库，定位明显是"昇腾生态的默认可运行模型"。华为自报昇腾单卡吞吐约为主流开源模型的 2 倍——<span class="chip c-vr">自报</span> self-reported，无第三方复测，读法见第 06 节。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-20-openpangu/fig-2.svg" alt="openPangu-2.0-Flash 架构：MLA 底座、DSA 与 SWA 1:2 分层混合、4-stream mHC 残差，以及各积木在本看板谱系中的出处">
+  <img class="diagram" src="img/dispatch-20-openpangu/fig-2.svg" alt="openPangu-2.0-Flash 架构：MLA 底座、DSA 与 SWA 1:2 分层混合、4-stream mHC 残差，以及各积木在本看板谱系中的出处" loading="lazy" decoding="async" width="1890" height="571">
   <figcaption><span class="fnum">图 2</span>架构组合与谱系：MLA 注意力底座 → DSA 与 SWA 分层混合（层比 1:2，SWA 层做局部窗口建模、DSA 层做稀疏全局聚合）→ 4-stream mHC 残差；右侧标注积木出处（DSA 出自 GLM-5 与 DeepSeek-V3.2 系；SWA 出自 MiMo 系，MiMo 用 SWA:全局 = 6:1，openPangu 反配比 DSA:SWA = 1:2；mHC 出自 DeepSeek-V4 系）；底部提示全系在昇腾 910B 上训练（报道口径）、华为自报单卡吞吐约业界主流开源模型 2 倍（self-reported）。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -121,7 +121,7 @@
 <p>openPangu 这一例还额外回答了一个此前无人回答的问题：<strong>该范式能在昇腾上端到端完整运行</strong>。多专家 RL 意味着多条 RL 流水线，on-policy 蒸馏意味着教师模型在线推理加学生模型训练的混合负载——这些在 NVIDIA 栈上已被 slime 等框架解决的工程问题，在 NPU 上此前没有公开的完整实现证据。openPangu 的存在本身就是可行性证明，后训练代码放出后则是可阅读的实现。需要划清的边界：README 只给了配方骨架，<strong>具体 RL 算法覆盖（GRPO？DPO？其他？）未明说</strong>，专家 RL 的领域划分、蒸馏时的合并策略也都待仓库代码放出后确认。本节的对照基于配方结构，不基于算法细节。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-20-openpangu/fig-3.svg" alt="openPangu 后训练配方：统一 SFT → 多个专家 RL 并行 → on-policy 蒸馏合并进单体模型">
+  <img class="diagram" src="img/dispatch-20-openpangu/fig-3.svg" alt="openPangu 后训练配方：统一 SFT → 多个专家 RL 并行 → on-policy 蒸馏合并进单体模型" loading="lazy" decoding="async" width="930" height="509">
   <figcaption><span class="fnum">图 3</span>后训练三段式：统一 SFT（慢思考加快思考）→ 多个专家 RL 并行养专家（RL 专家 1 … N）→ on-policy 蒸馏合并多个 RL 专家进单体模型；谱系旁注：与 DeepSeek-V4 OPD、MiMo MOPD 同构，第三家独立收敛、首个昇腾实现。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染；配方为 README 骨架口径。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -147,7 +147,7 @@
 <p><strong>仍未回答的。</strong>FP8 训推一致：Dispatch 09 讲过 Miles 的方案——R3 路由回放加统一 FP8 是 MoE RL 训推一致的两半，openPangu 是否在昇腾上有对应的低精度一致性方案，未知。R3 式路由回放：MoE RL 中训练侧重放推理侧路由决策的机制，openPangu 的多专家 RL 是否需要且实现了类似机制，待代码确认。具体 RL 算法覆盖：GRPO / DPO / 其他，未明说，不作猜测。结论：这次开源把昇腾 RL 的问题从"可行性"推进到了"实现细节"层面，但四项难点与三点缺口里难度最高的数值一致性问题，还要等代码放齐后逐项验证。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-20-openpangu/fig-4.svg" alt="本看板圈定的六项 RL-on-Ascend 缺口与 openPangu 2.0 开源件的对应：三项对上、三项仍待验证">
+  <img class="diagram" src="img/dispatch-20-openpangu/fig-4.svg" alt="本看板圈定的六项 RL-on-Ascend 缺口与 openPangu 2.0 开源件的对应：三项对上、三项仍待验证" loading="lazy" decoding="async" width="806" height="708">
   <figcaption><span class="fnum">图 4</span>缺口对照：左侧六项缺口——训练算子数值语义、后训练实现参考、910B 全程训练实证、R3 式路由回放、FP8 训推一致、具体 RL 算法覆盖；前三项分别对上训推算子开源、后训练代码（统一 SFT、专家 RL、蒸馏合并）、全系昇腾 910B 训练（报道口径）；后三项以虚线指向"仍待验证"（前两项未见对应件，第三项待后训练代码放出后核对）。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

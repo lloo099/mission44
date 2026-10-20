@@ -80,7 +80,7 @@
 <p>MiniMax 的注意力路线经历了多次转折。<strong>M1 / MiniMax-01</strong>：选择投入 Lightning Attention（线性 / 次二次注意力），以线性复杂度换取长上下文能力。<strong>M2</strong>：规模扩大后发现，线性 / 滑窗注意力严重损伤"多跳推理"——跨长文档将分散线索串联起来的能力；团队只能退回完整二次注意力，承担算力成本以保住前沿智能。<strong>M3 → MSA</strong>：既要避免线性注意力的推理缺陷，又不愿承担二次注意力的全部成本，于是采取稀疏注意力这条中间路线——只在需要关注的位置做精确注意力。概括而言：<strong>MSA 是 MiniMax 在"线性能力不足、全注意力成本过高"之间确立的第三条路线。</strong></p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-04-minimax-msa/fig-1.svg" alt="流程图：M1 投入 Lightning Attention 以线性复杂度降低长上下文成本；因线性能力不足损伤推理，M2 发现线性或滑窗严重损伤多跳推理、退回完整二次注意力保智能但成本过高；因全注意力成本过高，M3 采取稀疏注意力第三条路线、只在需要关注的位置做精确注意力；结论 MSA 等于两者之间的折中">
+  <img class="diagram" src="img/dispatch-04-minimax-msa/fig-1.svg" alt="流程图：M1 投入 Lightning Attention 以线性复杂度降低长上下文成本；因线性能力不足损伤推理，M2 发现线性或滑窗严重损伤多跳推理、退回完整二次注意力保智能但成本过高；因全注意力成本过高，M3 采取稀疏注意力第三条路线、只在需要关注的位置做精确注意力；结论 MSA 等于两者之间的折中" loading="lazy" decoding="async" width="2279" height="164">
   <figcaption><span class="fnum">图 1</span>MiniMax 三代模型的注意力路线：M1（Lightning Attention，线性）→ M2（退回完整二次注意力）→ M3（MSA，稀疏），两条转折箭头上分别标注转折原因——"线性能力不足损伤推理"与"全注意力成本过高"。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -103,7 +103,7 @@
 <p>MSA 把注意力拆成两段，跑在普通 <strong>GQA</strong> 主干上——不像 DeepSeek MLA 把 KV 压进低维潜空间，MSA 用的是真实、未压缩的 KV。<strong>① Index 分支（选块）</strong>：把 KV 序列切成大小 Bk = 128 的块；对每个注意力组（GQA group），用 max-pooling 打分给每个 KV 块算一个相关度，选 top-k（默认 k = 16）个块；永远保留最近的那个块（保证局部性 + 训练稳定）。<strong>② Main 分支（算注意力）</strong>：只在 Index 分支选出的那 k 个块上，跑精确的 softmax 注意力。<strong>复杂度为 O(n) 而非 O(n²) 的原因</strong>：每个 query 的预算被固定在 k · Bk = 16 · 128 = 2048 个 KV token——无论上下文是 8K 还是 1M，单 query 读取的 KV 量不变；上下文越长，节省越显著（1M 时约 28×）。</p>
 
 <figure>
-  <img src="img/dispatch-04-minimax-msa/orig-1.png" alt="MSA 架构图：左侧 Hidden States 分两路，Index 分支经 Linear Projection、Norm 与 RoPE 得 K_idx 与 Q_idx，计算 Score 等于 Q_idx 乘 K_idx 转置，再 Block Max Pooling 得 Top-K Index；Main 分支经 Linear Projection、Norm 与 RoPE 得 V、K、Q，用 Top-K KV Block 做 Sparse Attention 输出 Attention Output；右侧 Attention Mask 显示 Query Group 1 与 Query Group 2 两个下三角块掩码，深色为 Selected、浅色为 Non-selected，每行 query 对应若干被选中的 Key Block">
+  <img src="img/dispatch-04-minimax-msa/orig-1.webp" alt="MSA 架构图：左侧 Hidden States 分两路，Index 分支经 Linear Projection、Norm 与 RoPE 得 K_idx 与 Q_idx，计算 Score 等于 Q_idx 乘 K_idx 转置，再 Block Max Pooling 得 Top-K Index；Main 分支经 Linear Projection、Norm 与 RoPE 得 V、K、Q，用 Top-K KV Block 做 Sparse Attention 输出 Attention Output；右侧 Attention Mask 显示 Query Group 1 与 Query Group 2 两个下三角块掩码，深色为 Selected、浅色为 Non-selected，每行 query 对应若干被选中的 Key Block" loading="lazy" decoding="async" width="1666" height="768">
   <figcaption><span class="fnum">图 2</span>MSA 架构：左框为两个分支——Index 分支（Q<sub>idx</sub> · K<sub>idx</sub><sup>⊤</sup> → Block Max Pooling → Top-K Index）与 Main 分支（Q, K, V → Sparse Attention）；右侧为两个 query 组各自的注意力掩码，深色块为被选中的 Key Block。<span class="chip c-vr">自报</span> 取自 MiniMax 官方 kernel 仓库 README（<a href="https://github.com/MiniMax-AI/MSA">MiniMax-AI/MSA</a>，docs/architecture.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -113,7 +113,7 @@
 </figure>
 
 <figure>
-  <img class="diagram" src="img/dispatch-04-minimax-msa/fig-2.svg" alt="流程图：KV 序列长度 n 可达 1M，切成 Bk 等于 128 的块；Index 分支对每个 GQA 组用 max-pooling 给每个 KV 块打相关度分、选 top-k 等于 16 块、永远保留最近那个块；Main 分支只在选中的 16 块上跑精确 softmax；每 query 固定看 k 乘 Bk 等于 2048 个 KV token；预算与上下文长度无关，O n 平方压成近 O n">
+  <img class="diagram" src="img/dispatch-04-minimax-msa/fig-2.svg" alt="流程图：KV 序列长度 n 可达 1M，切成 Bk 等于 128 的块；Index 分支对每个 GQA 组用 max-pooling 给每个 KV 块打相关度分、选 top-k 等于 16 块、永远保留最近那个块；Main 分支只在选中的 16 块上跑精确 softmax；每 query 固定看 k 乘 Bk 等于 2048 个 KV token；预算与上下文长度无关，O n 平方压成近 O n" loading="lazy" decoding="async" width="346" height="1090">
   <figcaption><span class="fnum">图 3</span>MSA 的数据流：KV 序列 → 切块（Bk = 128）→ Index 分支（max-pooling 打分 → top-k = 16 → 保留最近块）→ Main 分支（选中块上精确 softmax）→ 固定预算 2048 token → 复杂度近 O(n)。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -176,7 +176,7 @@
 <p>这是 MSA 设计中最精巧的部分。<strong>top-k 块选择是不可导的</strong>——语言建模损失的梯度无法传到 Index 分支的投影参数上，Index 分支无法学习"应选哪些块"。MSA 的解法：<strong>KL 对齐损失（KL alignment loss）</strong>——让 Index 分支打分得到的块分布对齐 Main 分支真实的注意力分布。即以 Main 分支"实际关注的位置"为教师信号，反向监督 Index 分支"应选择的位置"。再配合"永远保留最近块"作为保障，训练即可保持稳定。训练规模：在一个 <strong>109B 参数的 MoE</strong> 上做了原生多模态训练，token 预算约 <strong>3T</strong>。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-04-minimax-msa/fig-3.svg" alt="流程图：top-k 选块不可导，LM 损失梯度无法传到 Index 分支投影参数，需要额外监督信号；KL 对齐子框内 Main 分支真实注意力分布作为教师信号、Index 分支打分的块分布被监督，两者以虚线汇入 KL 对齐损失；Index 学会正确选块；永远保留最近块保障训练稳定">
+  <img class="diagram" src="img/dispatch-04-minimax-msa/fig-3.svg" alt="流程图：top-k 选块不可导，LM 损失梯度无法传到 Index 分支投影参数，需要额外监督信号；KL 对齐子框内 Main 分支真实注意力分布作为教师信号、Index 分支打分的块分布被监督，两者以虚线汇入 KL 对齐损失；Index 学会正确选块；永远保留最近块保障训练稳定" loading="lazy" decoding="async" width="884" height="760">
   <figcaption><span class="fnum">图 4</span>KL 对齐的逻辑链：top-k 不可导 → LM 梯度到不了 Index 投影 → 需要额外监督 → 以 Main 真实注意力分布为教师、Index 块分布为学生构造 KL 损失 → Index 学会选块 → "永远保留最近块"作为稳定性保障。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -228,7 +228,7 @@
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-04-minimax-msa/fig-4.svg" alt="树状图：长上下文注意力方案分为压 KV 一类与不压 KV 一类；压 KV 下有 MLA（DeepSeek V3，KV 压低维潜向量，省显存要专门 kernel）与 DSA（V3.2，MLA 上 lightning indexer，token 级 top-k，质量稳 kernel 重）；不压 KV 按块选下有 NSA（三分支压缩与选择与滑窗加门控，上限高最复杂）、MoBA（块级选择接近 MSA）、MSA（Index 选块加 Main 真实 KV 精确注意力，务实复用现有 kernel 最易移植）；MSA 引出差异化等于不压 KV 加按块选加跑真实 KV">
+  <img class="diagram" src="img/dispatch-04-minimax-msa/fig-4.svg" alt="树状图：长上下文注意力方案分为压 KV 一类与不压 KV 一类；压 KV 下有 MLA（DeepSeek V3，KV 压低维潜向量，省显存要专门 kernel）与 DSA（V3.2，MLA 上 lightning indexer，token 级 top-k，质量稳 kernel 重）；不压 KV 按块选下有 NSA（三分支压缩与选择与滑窗加门控，上限高最复杂）、MoBA（块级选择接近 MSA）、MSA（Index 选块加 Main 真实 KV 精确注意力，务实复用现有 kernel 最易移植）；MSA 引出差异化等于不压 KV 加按块选加跑真实 KV" loading="lazy" decoding="async" width="1525" height="576">
   <figcaption><span class="fnum">图 5</span>长上下文注意力方案的两分法：压 KV 一类（MLA、DSA）与不压 KV 一类（NSA、MoBA、MSA），MSA 的差异化被概括为"不压 KV + 按块选 + 跑真实 KV"。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -251,7 +251,7 @@
 <p><strong>质量</strong>：109B 模型上与 GQA 持平（无线性注意力那类推理性能下降）。<strong>算力</strong>：1M 上下文下，每 token 注意力算力降 28.4×。<strong>墙钟提速</strong>（配套 co-designed kernel，H800）：prefill 14.2× / decode 7.6×。厂商早期 teaser 给过约 20× 算力、&gt;9× prefill、&gt;15× decode 的口径，以论文 28.4 / 14.2 / 7.6 为准；均 provisional。</p>
 
 <figure>
-  <img src="img/dispatch-04-minimax-msa/orig-2.png" alt="三面板折线图对比 GQA 与 MSA：左图 Per-Token Attention FLOPs，横轴 Sequence Length 从 32k 到 1M，纵轴 Attention FLOPs per Token 到 18 G，GQA 线性上升至约 17.5 G、MSA 接近水平，标注 28.4 倍 FLOPs reduction at 1M tokens；中图 Prefilling，纵轴 Attention Latency 到 30 s，GQA 二次上升至约 29 s、MSA 约 2 s，标注 14.2 倍 speedup at 1M tokens；右图 Decoding，横轴 KV Length，纵轴 Attention Latency 到 0.9 ms，GQA 线性上升至约 0.83 ms、MSA 约 0.11 ms，标注 7.6 倍 speedup at 1M tokens">
+  <img src="img/dispatch-04-minimax-msa/orig-2.png" alt="三面板折线图对比 GQA 与 MSA：左图 Per-Token Attention FLOPs，横轴 Sequence Length 从 32k 到 1M，纵轴 Attention FLOPs per Token 到 18 G，GQA 线性上升至约 17.5 G、MSA 接近水平，标注 28.4 倍 FLOPs reduction at 1M tokens；中图 Prefilling，纵轴 Attention Latency 到 30 s，GQA 二次上升至约 29 s、MSA 约 2 s，标注 14.2 倍 speedup at 1M tokens；右图 Decoding，横轴 KV Length，纵轴 Attention Latency 到 0.9 ms，GQA 线性上升至约 0.83 ms、MSA 约 0.11 ms，标注 7.6 倍 speedup at 1M tokens" loading="lazy" decoding="async" width="2544" height="681">
   <figcaption><span class="fnum">图 6</span>GQA（深蓝）与 MSA（绿）在三个量上随长度变化的对比：左为每 token 注意力 FLOPs（横轴序列长度 32k → 1M）、中为 prefill 注意力延迟、右为 decode 注意力延迟（横轴 KV 长度）；三个面板分别标注 1M 处的 28.4× / 14.2× / 7.6×。<span class="chip c-vr">自报</span> 取自 MiniMax-M3 官方仓库 README（<a href="https://github.com/MiniMax-AI/MiniMax-M3">MiniMax-AI/MiniMax-M3</a>，figures/efficiency_gqa_vs_msa.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

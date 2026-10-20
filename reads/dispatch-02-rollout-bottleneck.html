@@ -77,7 +77,7 @@
 <p>rollout 是自回归生成，<strong>慢、长尾、且占用大量显存</strong>。原文列出三个痛点：<strong>时间</strong>——rollout 普遍占 RL 单步 70% 以上的 wall-clock，它才是真正的瓶颈，不是反向传播；<strong>长尾</strong>——同一 batch 里少数超长轨迹拖住整组（APRIL 等工作专门解决这一问题）；<strong>显存</strong>——推理引擎的 KV cache 与权重要常驻，CUDA 上可以靠 vLLM 的 <strong>sleep-mode</strong> 在 train 阶段释放，<strong>昇腾目前没有这个机制</strong>（见 NPU 架构页的"RL 显存争用"视图）。于是 2026 H1 的 RL 系统工作基本沿两条线展开。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-02-rollout-bottleneck/fig-1.svg" alt="GRPO 或 RLVR 单步迭代：Rollout → Train → 权重同步 → 下一轮；Rollout 引出时间、长尾、显存三大痛点">
+  <img class="diagram" src="img/dispatch-02-rollout-bottleneck/fig-1.svg" alt="GRPO 或 RLVR 单步迭代：Rollout → Train → 权重同步 → 下一轮；Rollout 引出时间、长尾、显存三大痛点" loading="lazy" decoding="async" width="996" height="654">
   <figcaption><span class="fnum">图 1</span>GRPO/RLVR 单步迭代（左）与 rollout 的三大痛点（右）：Rollout 阶段占 70% 以上 wall-clock，Train 阶段做反向传播，权重同步把新策略推回采样器后进入下一轮；三条痛点箭头全部从 Rollout 引出。<span class="chip c-inf">本站图</span> 由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -105,7 +105,7 @@
 ④ 显存反向加剧 rollout    KV cache 随生成长度线性增长、权重常驻；昇腾无 sleep-mode，rollout 与 train 争用同一 64GB HBM</div>
 
 <figure>
-  <img src="img/dispatch-02-rollout-bottleneck/orig-1.png" alt="verl 架构图：上层 Single Controller RL Trainer（On policy / Full async / One-step-off-policy / VLA）与 SFT Trainer；下层 Model Engine（FSDP / Megatron-Core / VeOmni）、Rollout Engine（AgentLoop + LLM Server：vLLM / SGLang / TensorRT-LLM）、TransferQueue 与两侧 CheckpointEngine">
+  <img src="img/dispatch-02-rollout-bottleneck/orig-1.png" alt="verl 架构图：上层 Single Controller RL Trainer（On policy / Full async / One-step-off-policy / VLA）与 SFT Trainer；下层 Model Engine（FSDP / Megatron-Core / VeOmni）、Rollout Engine（AgentLoop + LLM Server：vLLM / SGLang / TensorRT-LLM）、TransferQueue 与两侧 CheckpointEngine" loading="lazy" decoding="async" width="1072" height="830">
   <figcaption><span class="fnum">图 2</span>verl 的分层架构：上层是 Single Controller RL Trainer（On policy / Full async / One-step-off-policy / VLA）；下层左侧 Model Engine（FSDP、Megatron-Core、VeOmni）负责 train，右侧 Rollout Engine（AgentLoop + LLM Server：vLLM、SGLang、TensorRT-LLM）负责 rollout；中间 TransferQueue 传样本，底部两个 CheckpointEngine 以 broadcast/p2p 与 cuda ipc 做权重同步。红色虚线划分 User responsibility 与 ML Infra responsibility。<span class="chip c-vr">自报</span> 取自 verl 官方仓库 README（verl-project/verl-data，images/verl-arch.png）。原文未直接引用此图，此处用于对照 rollout 与 train 在主流框架中的物理分离。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -128,7 +128,7 @@
 <p>核心直觉：rollout 是推理，<strong>推理可以用低精度</strong>。难点是 RL 里<strong>策略每步都在变</strong>——要反复量化、把权重同步进推理引擎，还得防止低精度 rollout 与高精度 trainer 之间的 <strong>train-inference mismatch</strong> 破坏训练稳定性。原文列出三项代表工作：<strong>Jet-RL</strong>（统一训练与 rollout 的精度流，做 on-policy FP8 RL，让 FP8 rollout 与 trainer 数值一致、消除 mismatch）；<strong>FP8-RL</strong>（veRL 生态里的实用 FP8 栈，FSDP/Megatron + vLLM/SGLang，工程 + 算法手段稳住 FP8 RL 循环）；<strong>Quantized Rollout</strong>（仅对 rollout 做 INT8/FP8 量化，7B/14B/32B 上吞吐 <strong>+20–80%</strong>）。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-02-rollout-bottleneck/fig-2.svg" alt="线一流程：高精度 trainer 权重 → 量化到 FP8 或 INT8 → 推理引擎采样；引出两个难点（反复量化同步、train-inference mismatch）与三项代表工作（Jet-RL、FP8-RL、Quantized Rollout）">
+  <img class="diagram" src="img/dispatch-02-rollout-bottleneck/fig-2.svg" alt="线一流程：高精度 trainer 权重 → 量化到 FP8 或 INT8 → 推理引擎采样；引出两个难点（反复量化同步、train-inference mismatch）与三项代表工作（Jet-RL、FP8-RL、Quantized Rollout）" loading="lazy" decoding="async" width="1587" height="643">
   <figcaption><span class="fnum">图 3</span>线一的流程与难点：策略权重（高精度 trainer）→ 量化到 FP8/INT8 → 推理引擎采样（vLLM 或 SGLang，占用更小、吞吐 +20–80%）；引擎引出两个难点——策略每步在变、train-inference mismatch；mismatch 指向 Jet-RL，而 Jet-RL 反向连回权重。<span class="chip c-inf">本站图</span> 由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -171,7 +171,7 @@ FP8 误差进入 logπ_old（采样侧）· trainer 侧 logπ_new 无同一份�
 <p>另一条线直接<strong>把 rollout 和 train 解耦</strong>成异步流水，让生成器一直跑、训练器消费稍旧的样本——吞吐上去了，但样本"陈旧"（staleness）会让重要性权重出现重尾、把 GRPO/REINFORCE 带偏。所以 2026 H1 的重点从"做异步"转向了"<strong>把异步做稳</strong>"：<strong>GAC</strong>（Gradient Alignment Control）对齐异步产生的梯度方向、抑制不稳定；<strong>Staleness-Constrained Rollout Coordination</strong> 给样本陈旧度设上界，在高异步度下保持可控；<strong>Periodic Asynchrony</strong> 用"周期性"的近 on-policy 方式拿异步的吞吐、还原 on-policy 的稳定；<strong>APRIL</strong>（Active Partial Rollouts）主动截断长尾生成，解决 rollout 的长尾问题。这些与看板 RL 标签下已有的 Stable Asynchrony、RollMux、AsyncFlow、ROLL Flash 是同一条系统脉络。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-02-rollout-bottleneck/fig-3.svg" alt="同步基线（train 等 rollout 全跑完、GPU 等待长尾）虚线指向异步解耦流水（生成器一直跑、训练器消费稍旧样本、staleness 重尾）；再引出四个稳定化手段 GAC、Staleness 约束、Periodic Asynchrony、APRIL">
+  <img class="diagram" src="img/dispatch-02-rollout-bottleneck/fig-3.svg" alt="同步基线（train 等 rollout 全跑完、GPU 等待长尾）虚线指向异步解耦流水（生成器一直跑、训练器消费稍旧样本、staleness 重尾）；再引出四个稳定化手段 GAC、Staleness 约束、Periodic Asynchrony、APRIL" loading="lazy" decoding="async" width="1276" height="776">
   <figcaption><span class="fnum">图 4</span>线二的三层结构：同步基线（train 等 rollout 全跑完，GPU 等待长尾轨迹、利用率低）→ 异步解耦流水（生成器一直跑、训练器消费稍旧样本，吞吐高但 staleness 让重要性权重重尾）→ 四个稳定化手段（GAC、Staleness 约束、Periodic Asynchrony、APRIL）。<span class="chip c-inf">本站图</span> 由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -202,7 +202,7 @@ APRIL                  压 staleness 来源 + 长尾   超长轨迹既拖慢 rol
 核心工程旋钮：够用阈值   吞吐随允许陈旧度上升，重尾方差也随之上升 → 存在临界点</div>
 
 <figure>
-  <img src="img/dispatch-02-rollout-bottleneck/orig-2.png" alt="MindSpeed-RL 异步引擎 partial rollout 示意：iteration 1 与 iteration 2 各有两个 vLLM engine，条形为 prompt 与生成的 response，灰色为待续推的部分响应；当 TransferDock 中 N_ready ≥ GBS 时发送 stop_signal，截断样本在下一轮优先续推">
+  <img src="img/dispatch-02-rollout-bottleneck/orig-2.png" alt="MindSpeed-RL 异步引擎 partial rollout 示意：iteration 1 与 iteration 2 各有两个 vLLM engine，条形为 prompt 与生成的 response，灰色为待续推的部分响应；当 TransferDock 中 N_ready ≥ GBS 时发送 stop_signal，截断样本在下一轮优先续推" loading="lazy" decoding="async" width="1004" height="398">
   <figcaption><span class="fnum">图 5</span>MindSpeed-RL 的 partial rollout（异步引擎方案）：两个迭代各含两个 vLLM engine，每条横条为一条样本（斜纹为 prompt、彩色为已生成 response、灰色为待续推的部分响应）；当 TransferDock 中就绪样本数 N_ready ≥ GBS 时向引擎发送 stop_signal，被截断样本在 iteration 2 中优先续推。<span class="chip c-vr">自报</span> 取自华为 Ascend/MindSpeed-RL 仓库文档（docs/zh/figures/partial_rollout/async.png）。原文未直接引用此图；此处用作"主动截断长尾"这一思路在昇腾底座上的对照实现，与 APRIL 不是同一工作。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -212,7 +212,7 @@ APRIL                  压 staleness 来源 + 长尾   超长轨迹既拖慢 rol
 </figure>
 
 <figure>
-  <img src="img/dispatch-02-rollout-bottleneck/orig-3.png" alt="MindSpeed-RL partial rollout 同步引擎验证结果：12 个面板，上排为 Timing all、Response length mean、Grpo score mean，下排为 Actor pg loss、Response length max、Timing rollout，各配一张 Comparison 误差图；蓝线为 partial rollout，红线为基线">
+  <img src="img/dispatch-02-rollout-bottleneck/orig-3.webp" alt="MindSpeed-RL partial rollout 同步引擎验证结果：12 个面板，上排为 Timing all、Response length mean、Grpo score mean，下排为 Actor pg loss、Response length max、Timing rollout，各配一张 Comparison 误差图；蓝线为 partial rollout，红线为基线" loading="lazy" decoding="async" width="1535" height="1204">
   <figcaption><span class="fnum">图 6</span>MindSpeed-RL partial rollout 同步引擎验证结果：六个指标曲线（Timing all、Response length mean、Grpo score mean、Actor pg loss、Response length max、Timing rollout）各配一张对照误差图；蓝线为开启 partial rollout（sync_partial_2），红线为基线（training(1,False,True)），横轴为训练步（约 0–100）。<span class="chip c-vr">自报</span> 取自 Ascend/MindSpeed-RL 仓库文档（docs/zh/figures/partial_rollout/sync_partial_compare_result.png）。原文未引用此图，数字为该仓库自报。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -235,7 +235,7 @@ APRIL                  压 staleness 来源 + 长尾   超长轨迹既拖慢 rol
 <p>把两条线叠在昇腾的现实约束上，原文给出四条结论。<strong>量化 rollout 直接缓解显存争用</strong>：昇腾没有 sleep-mode、rollout 与 train 争用同一份 64GB HBM；FP8/INT8 的 rollout 占用更小，等于绕开了一部分"无法释放 KV cache"的痛点，是把 GPU 上的量化-rollout 配方移植到 NPU 的<strong>最高性价比方向</strong>。<strong>Ascend 950 的 FP8 让"FP8 RL on Ascend"从设想变可行</strong>：Jet-RL/FP8-RL 这类配方 + 950 原生 FP8，是一个新颖度高、已有工作少的选题。<strong>但需关注数值漂移</strong>：FP8 rollout 以及自定义稀疏注意力（DSA/MSA/CSA）在 NPU 上重写后，train-inference mismatch 会更隐蔽——这正是看板里 <strong>align-probe</strong> 这个想法应承担的职责，在 NPU 上量化 train-inference 的 log-prob 偏差。<strong>MindSpeed-RL 是现成底座</strong>：华为已开源的 MindSpeed-RL（910B、384-NPU 上跑过 DeepSeek-R1-671B）用 vLLM-Ascend 做生成、MindSpeed 做训练，量化 rollout 与异步稳定化正好可以接在它上面做实验。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-02-rollout-bottleneck/fig-4.svg" alt="两条线落到昇腾：线一指向缓解显存争用与 Ascend 950 原生 FP8；线二指向 MindSpeed-RL 底座；950 FP8 引出 NPU 重写算子的 mismatch 风险，再引出 align-probe 监控">
+  <img class="diagram" src="img/dispatch-02-rollout-bottleneck/fig-4.svg" alt="两条线落到昇腾：线一指向缓解显存争用与 Ascend 950 原生 FP8；线二指向 MindSpeed-RL 底座；950 FP8 引出 NPU 重写算子的 mismatch 风险，再引出 align-probe 监控" loading="lazy" decoding="async" width="1322" height="540">
   <figcaption><span class="fnum">图 7</span>两条线落到昇腾：线一（量化 rollout）→ 缓解显存争用（昇腾无 sleep-mode、同一 64GB HBM）与 Ascend 950 原生 FP8/MXFP4；线二（异步解耦与稳定化）→ 接 MindSpeed-RL 底座（vLLM-Ascend 生成 + MindSpeed 训练）；950 FP8 → NPU 重写算子使 mismatch 更隐蔽 → align-probe 监控数值漂移。<span class="chip c-inf">本站图</span> 由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

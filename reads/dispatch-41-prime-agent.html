@@ -84,7 +84,7 @@
 <p>主流 coding agent 的形状是固定的：固定 system prompt → 固定 tool schema → tool call → observation → 固定压缩策略 → 回到模型。harness 决定有哪些工具、工具签名长什么样、上下文满了怎么压、子代理怎么调、记忆怎么存、技能是什么。这些决定<strong>在模型能力冻结的假设下</strong>是合理的。Prime Intellect 的出发点是这个假设不成立：模型每几个月强一档，却始终被迫适配几个月前定下的 tool schema 与压缩策略。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-41-prime-agent/fig-1.svg" alt="左侧为传统 harness：模型下方是固定 tool schema、固定压缩策略、固定 subagent 编排与固定 memory 与 skills；右侧为 Prime Agent：模型下方只有一个 ipython kernel，再由它分出文件与 shell、子代理、技能与 harness 状态四支，harness 状态以虚线反馈回模型">
+  <img class="diagram" src="img/dispatch-41-prime-agent/fig-1.svg" alt="左侧为传统 harness：模型下方是固定 tool schema、固定压缩策略、固定 subagent 编排与固定 memory 与 skills；右侧为 Prime Agent：模型下方只有一个 ipython kernel，再由它分出文件与 shell、子代理、技能与 harness 状态四支，harness 状态以虚线反馈回模型" loading="lazy" decoding="async" width="1671" height="676">
   <figcaption><span class="fnum">图 1</span>控制面的位置：传统 harness 与 Prime Agent。左侧五个方框全部由 harness 作者预先固定；右侧模型之下只有一个入口（<code>ipython</code>），其余能力都是 kernel 里可调用的对象，其中第五支 <code>p·G·K·M</code> 还带一条回到模型的虚线。<span class="chip c-inf">推断</span> 本站图，依原文图 A 由第 1 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -146,7 +146,7 @@
 <p>一个被普遍略过、但对 RL 与可审计性最关键的事实：<strong>Prime Agent 不是一个 Python 程序</strong>。官方架构文档写明：<strong>"Provider calls, session persistence, child lifecycles, scheduling, and safety policy remain in the TypeScript host; the Python REPL is the model-facing programming surface."</strong> 凭据、模型执行、转录写入、worker 路由与调度都不在 Python 里；需要动这些权威状态的能力（<code>goal</code>、<code>agent_message</code>、<code>rlm_heartbeat</code>、<code>compact</code>）走一条类型化的宿主请求通道 <code>rlm.host_request(...)</code>，由 TypeScript 会话校验并拥有状态转移。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-41-prime-agent/fig-2.svg" alt="一个 turn 的执行链：客户端只管渲染，守护进程 supervisor 负责发现路由附着与跨代理消息投递，会话 worker 内含 AgentSession、Scheduler、根 Python kernel 与 RLM 子运行时，右侧为模型 provider 与会话 JSONL 与产物，kernel 以虚线经类型化宿主请求回到 AgentSession">
+  <img class="diagram" src="img/dispatch-41-prime-agent/fig-2.svg" alt="一个 turn 的执行链：客户端只管渲染，守护进程 supervisor 负责发现路由附着与跨代理消息投递，会话 worker 内含 AgentSession、Scheduler、根 Python kernel 与 RLM 子运行时，右侧为模型 provider 与会话 JSONL 与产物，kernel 以虚线经类型化宿主请求回到 AgentSession" loading="lazy" decoding="async" width="1766" height="639">
   <figcaption><span class="fnum">图 2</span>一个 turn 的执行链与状态归属。<code>AgentSession</code> 拥有 provider 调用、队列、工具、压缩、目标、子代理生命周期与转录写入；Python kernel 只是模型面向的控制环境，动权威状态要经虚线上的类型化宿主请求。<span class="chip c-inf">推断</span> 本站图，依原文图 B 由第 2 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -200,7 +200,7 @@
 <p>第二个抽象才是"self-improving"这个词的来源。Continual Harness 把 harness 状态形式化为四个可编辑分量：<strong>p</strong>（system prompt，编码当前策略的文本状态，含活跃假设、计划中的实验、最优工具用法、已知失效模式）、<strong>G</strong>（可复用子代理规格）、<strong>K</strong>（技能，可复用的 Python 例程，针对当前观测运行，或发出动作，或返回结构化结果）、<strong>M</strong>（记忆，持久事实与候选规则），外加一个自动化的 <strong>Refiner</strong> 从轨迹分析出发就地重写这些分量。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-41-prime-agent/fig-3.svg" alt="Continual Harness 回路：轨迹窗口进入失效签名识别，再进入与 agent 同模型的 Refiner，Refiner 分别重写提示词 p 与 CRUD 子代理 G、技能 K、记忆 M；不可变基础 prompt 与快照回滚以虚线约束 Refiner；harness 状态流向后续轨迹并回到轨迹窗口">
+  <img class="diagram" src="img/dispatch-41-prime-agent/fig-3.svg" alt="Continual Harness 回路：轨迹窗口进入失效签名识别，再进入与 agent 同模型的 Refiner，Refiner 分别重写提示词 p 与 CRUD 子代理 G、技能 K、记忆 M；不可变基础 prompt 与快照回滚以虚线约束 Refiner；harness 状态流向后续轨迹并回到轨迹窗口" loading="lazy" decoding="async" width="1176" height="728">
   <figcaption><span class="fnum">图 3</span>Continual Harness 的回路。Refiner 与 agent 使用同一个模型，对 agent 暴露为单一工具 <code>evolve_harness</code>；四个分量中只有 <code>p</code> 是"重写"，其余三个是 CRUD。<span class="chip c-inf">推断</span> 本站图，依原文图 C 由第 3 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -268,7 +268,7 @@
 <p>配置与协议全部公开：每局 500 个动作、每次 agent 调用至多 20 个动作、每局独立运行、game-over 消耗一次计数的 <code>RESET</code>。<strong>agent 只能通过本地 broker socket 触达游戏，从不 import ARC SDK，也从不看到 provider 凭据</strong>；<code>AGENTS.md</code> 是游戏无关的，禁止查看引擎源码、其他游戏或先前运行，并要求<strong>程序化分析画面帧而非用眼睛转录</strong>——最后这条正是第 02 节 PTC 论点在评测里的落地。Prime Intellect 自己把功劳给了 harness，原话：<strong>"The agent is unmodified Prime Agent. What makes the run is the prompt plus the protocol."</strong></p>
 
 <figure>
-  <img src="img/dispatch-41-prime-agent/fig-5.svg" alt="ARC-AGI-3 哑铃图：GPT-6 Astra 从中立 harness 的 62.7 到 provider adapter 的 99.9，Claude Opus 5 从 30.2 到 Prime Agent 的 95.24，GPT-5.6 Sol 从 7.8 到开启两个 API 设置后的 38.3，纵向虚线标出人类专家基线 95.4">
+  <img src="img/dispatch-41-prime-agent/fig-5.svg" alt="ARC-AGI-3 哑铃图：GPT-6 Astra 从中立 harness 的 62.7 到 provider adapter 的 99.9，Claude Opus 5 从 30.2 到 Prime Agent 的 95.24，GPT-5.6 Sol 从 7.8 到开启两个 API 设置后的 38.3，纵向虚线标出人类专家基线 95.4" loading="lazy" decoding="async" width="960" height="384">
   <figcaption><span class="fnum">图 4</span>同一基准、换 harness 的分差。横轴是 RHAE Best@1，一根哑铃的两端是同一个模型的两套 harness；蓝端为中立 harness，橙端为放大后。<span class="chip c-inf">推断</span> 本站图，数据来自 ARC Prize 记分卡、<code>arc-agi-3-prime-agent</code> 仓库与 D39/D40。三条线的模型与动作协议均不同，成本为估算档，属量级观察而非受控对比。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -295,7 +295,7 @@
 <p>D29 详解过 dsh 的三个技术支点：Cordis 插件内核（连 agent 主循环本身都是可替换插件）、append-only 会话日志（凡进入模型请求的内容必须可从日志重建，压缩即投影）、"Model + Harness = Agent"协同设计（公榜成绩在自家 minimal 模式下测得，该模式实质复现 RL 训练分布）。两者同为 harness、同以轨迹回流训练栈为商业逻辑，但设计哲学在四条轴上相反。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-41-prime-agent/fig-4.svg" alt="共同问题 harness 决定分数分出两条路线：左侧 dsh 由 Cordis 插件内核到 append-only 日志再到 minimal 模式；右侧 Prime Agent 由 RLM 到 Continual Harness 再到 harness 是能力放大器；两条路线汇入轨迹回流训练栈，再以虚线指向尚无第三方统一协议测量">
+  <img class="diagram" src="img/dispatch-41-prime-agent/fig-4.svg" alt="共同问题 harness 决定分数分出两条路线：左侧 dsh 由 Cordis 插件内核到 append-only 日志再到 minimal 模式；右侧 Prime Agent 由 RLM 到 Continual Harness 再到 harness 是能力放大器；两条路线汇入轨迹回流训练栈，再以虚线指向尚无第三方统一协议测量" loading="lazy" decoding="async" width="1888" height="668">
   <figcaption><span class="fnum">图 5</span>两条路线的分叉与合流点。左路把 harness 做成可替换的模块，右路把 harness 做成 agent 的状态；二者在"轨迹回流训练栈"处合流，但至今没有第三方以统一协议同时测量。<span class="chip c-inf">推断</span> 本站图，依原文图 E 由第 4 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

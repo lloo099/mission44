@@ -98,7 +98,7 @@
 
 <h2 id="s5"><span class="hnum">05</span>前沿管线的分工重组</h2>
 <figure>
-  <img class="diagram" src="img/dispatch-38-distillation-vs-rl/fig-1.svg" alt="2026 前沿后训练配方：预训练基座、SFT 冷启动、RL 专家阶段、OPD 合并、旗舰模型与小模型蒸馏">
+  <img class="diagram" src="img/dispatch-38-distillation-vs-rl/fig-1.svg" alt="2026 前沿后训练配方：预训练基座、SFT 冷启动、RL 专家阶段、OPD 合并、旗舰模型与小模型蒸馏" loading="lazy" decoding="async" width="1676" height="421">
   <figcaption><span class="fnum">图 1</span>2026 前沿后训练配方：SFT 冷启动后，各域专家分别以 RL 训练（能力来源），再由在线策略蒸馏 OPD 合并为旗舰；小模型只接受来自旗舰的强到弱蒸馏。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>看 RL 的位置：它不再是最后一步，而是中间的"专家阶段"——每个域一个专家，各自用可验证奖励、agent 环境或生成式奖励模型训练。看蒸馏的位置：OPD 把多个专家合并成一个学生（取代了 V3.2 时代的"混合 RL 阶段"），旗舰再作为教师蒸馏出小模型。</p>
@@ -122,7 +122,7 @@
 
 <h2 id="s6"><span class="hnum">06</span>RL 不可替代：四个维度</h2>
 <figure>
-  <img class="diagram" src="img/dispatch-38-distillation-vs-rl/fig-2.svg" alt="RL 不可替代的四个维度与蒸馏占优的四个维度，共同指向真实分界：是否拥有环境与验证器">
+  <img class="diagram" src="img/dispatch-38-distillation-vs-rl/fig-2.svg" alt="RL 不可替代的四个维度与蒸馏占优的四个维度，共同指向真实分界：是否拥有环境与验证器" loading="lazy" decoding="async" width="736" height="796">
   <figcaption><span class="fnum">图 2</span>左：RL 不可替代的四个维度（无教师前沿、可验证超人域、长程 agent 行为、保持可塑性）；右：蒸馏占优的四个维度（小模型迁移、旗舰合并压缩、算力样本效率、可复现性）；两侧汇于真实分界。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>两侧各四项不是对称的正反面：左侧的四项都关于<strong>"能力从哪里来"</strong>（没有教师、超越人类、需要在线交互、需要保留继续学习的余地），右侧的四项都关于<strong>"能力怎么传"</strong>（传给小模型、合并多个专家、传得便宜、传得可复现）。</p>
@@ -138,7 +138,7 @@
 <h2 id="s7"><span class="hnum">07</span>长程 agent 行为的证据</h2>
 <p>理论：离线模仿有 exposure bias 与复合误差（DAgger 论证）。经验：DeepSWE（Qwen3-32B 纯 RL、无 agent SFT 冷启动）SWE-bench Verified 42.2%，超过使用更多数据、蒸馏自更强闭源教师的 SFT 方案；<strong>在 Claude Sonnet 思维轨迹 SFT 过的模型上继续 RL，100 步后不再提升</strong>（<a href="https://www.together.ai/blog/deepswe">Together AI</a>）；OEC（ICML 2026）以 DAgger 式混合轨迹相对纯模仿 +14%/+13%；Agent RL Scaling Law（<a href="https://arxiv.org/abs/2505.07773">2505.07773</a>）：无任何工具使用示例，RL 步数增加使代码执行频率、响应长度、准确率单调上升。</p>
 <figure>
-  <img src="img/dispatch-38-distillation-vs-rl/orig-1.png" alt="Kimi K3 技术报告图 8：八项评测在 RL FLOPs 扩展过程中的得分与平均助手步数">
+  <img src="img/dispatch-38-distillation-vs-rl/orig-1.png" alt="Kimi K3 技术报告图 8：八项评测在 RL FLOPs 扩展过程中的得分与平均助手步数" loading="lazy" decoding="async" width="1005" height="415">
   <figcaption><span class="fnum">图 3</span>Kimi K3 技术报告 Figure 8：八个面板（Coding Experience、General Tool Use、Web Development、Agentic Search、Professional Workflows、Office Deliverables、Agentic Chart Understanding、Agentic Visual Puzzles），横轴 RL FLOPs，蓝色实线为得分、红色虚线为平均助手步数。<span class="chip c-vr">自报</span> 取自 K3 技术报告（arXiv 2607.24653，第 13 页），经本站 K3 精读页原图转录。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>这张图是"长程 agent 行为由 RL 学得"的最直接厂商证据。要读的是<strong>两条线的同步性</strong>：八个面板中，随 RL FLOPs 增长，得分（实线）与平均工具调用步数（虚线）大体同向上升——模型不只是分数变高，<strong>它自发地愿意多走几步</strong>。这与 Agent RL Scaling Law 的独立结果（RL 步数增加使工具调用频率单调上升）互相印证。</p>
@@ -160,7 +160,7 @@
 
 <h2 id="s9"><span class="hnum">09</span>同一枚硬币</h2>
 <figure>
-  <img class="diagram" src="img/dispatch-38-distillation-vs-rl/fig-3.svg" alt="on-policy 的两面：少遗忘与边界受限；蒸馏作为压缩；OPD 介于两者之间并带来新失效模式">
+  <img class="diagram" src="img/dispatch-38-distillation-vs-rl/fig-3.svg" alt="on-policy 的两面：少遗忘与边界受限；蒸馏作为压缩；OPD 介于两者之间并带来新失效模式" loading="lazy" decoding="async" width="1080" height="724">
   <figcaption><span class="fnum">图 4</span>同一枚硬币：on-policy 采样同时带来少遗忘（隐式 KL 最小、稀疏更新）与边界受限（不超基座支撑集）；蒸馏是外部信息压缩，扩展边界当且仅当引入新知识；OPD 介于两者之间并带来新失效模式。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout"><h5>这张图怎么读</h5>
     <p>左上节点"on-policy 采样"分出两条实线——少遗忘与边界受限——它们是<strong>同一机制的两个后果</strong>：梯度只落在模型已高概率的区域，所以既不会漂远（少遗忘），也不会跳到新区域（边界受限）。虚线的"富解空间例外"解释了代码与 agent 域的反证：组合式解空间加执行奖励提供了更强的探索信号。</p>

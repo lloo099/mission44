@@ -98,7 +98,7 @@
 <p><a href="https://www.ithome.com/0/994/735.htm">Qwen3.8-Flash-Next</a>（08-26）125B 总参、每 token 仅激活 6B（另有 51B n-gram 嵌入），官方定位 <strong>Qwen4 架构预览</strong>，自报训练成本约前代 1/9。此前 <a href="https://github.com/stepfun-ai/Step-3.5-Flash">Step 3.5 Flash</a>（196B/11B，3:1 滑窗:全注意力交错 + MTP-3 多 token 预测）、DeepSeek V4-Flash（284B/13B）已验证同一配方；而总参上探 2–3T（K3 2.8T、Qwen3.8-Max 2.4T）与激活压到 6–13B 同时发生。</p>
 
 <figure>
-  <img src="img/dispatch-35-frontier-scan/orig-1.png" alt="Step 3.5 Flash 在推理、编码、agent 三类九项基准上与开源与闭源模型的对比柱状图">
+  <img src="img/dispatch-35-frontier-scan/orig-1.webp" alt="Step 3.5 Flash 在推理、编码、agent 三类九项基准上与开源与闭源模型的对比柱状图" loading="lazy" decoding="async" width="1800" height="1479">
   <figcaption><span class="fnum">图 1</span>Step 3.5 Flash 九项基准对比：三行分别为 Reasoning、Coding、Agent，每行三个面板；左侧为按总参排序的开源模型，右侧为闭源旗舰。<span class="chip c-vr">自报</span> 取自 StepFun 官方仓库 README（stepfun-ai/Step-3.5-Flash，assets/step-bar-chart.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -244,7 +244,7 @@
 <p>资本密度最高的方向：World Labs 新一轮 10 亿美元，Genie 3 进入 Waymo 生产仿真链路。对本站最相关的是方法论转折：<a href="https://arxiv.org/abs/2608.27508">WM-R1</a> 用世界模型<strong>完全替代真实 Android 环境</strong>做 GUI agent 的 RL rollout。</p>
 
 <figure>
-  <img src="img/dispatch-35-frontier-scan/orig-2.png" alt="WM-R1 与传统 RL 的对照：左侧轨迹在真实环境中步进，右侧每一步状态转移由世界模型生成">
+  <img src="img/dispatch-35-frontier-scan/orig-2.webp" alt="WM-R1 与传统 RL 的对照：左侧轨迹在真实环境中步进，右侧每一步状态转移由世界模型生成" loading="lazy" decoding="async" width="1800" height="543">
   <figcaption><span class="fnum">图 2</span>真实环境 rollout（左）与世界模型 rollout（右）的对照：右侧每一次状态转移 φ<sub>t</sub> → φ<sub>t+1</sub> 都由世界模型（地球图标）生成，组内比较（Group Comp.）不变。<span class="chip c-vr">自报</span> 取自 WM-R1 官方仓库 README（genalyu/WM-R1，assets/comparison.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -254,7 +254,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-35-frontier-scan/orig-3.png" alt="WM-R1 框架图：轨迹生成、轨迹采样、策略更新三阶段">
+  <img src="img/dispatch-35-frontier-scan/orig-3.webp" alt="WM-R1 框架图：轨迹生成、轨迹采样、策略更新三阶段" loading="lazy" decoding="async" width="1800" height="872">
   <figcaption><span class="fnum">图 3</span>WM-R1 框架三阶段：① 轨迹生成——策略模型在思考段内调用世界模型做预见（Reasoning），动作交由世界模型生成下一帧；② 轨迹采样——奖励规则与组内比较得到优势 A<sub>i</sub>；③ 策略更新。<span class="chip c-vr">自报</span> 取自 WM-R1 官方仓库 README（assets/framework.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -264,7 +264,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-35-frontier-scan/orig-4.png" alt="Qwen-AgentWorld 总览：七域语言世界模型、AgentWorldBench 结果、解耦与统一两种用法">
+  <img src="img/dispatch-35-frontier-scan/orig-4.webp" alt="Qwen-AgentWorld 总览：七域语言世界模型、AgentWorldBench 结果、解耦与统一两种用法" loading="lazy" decoding="async" width="1800" height="1054">
   <figcaption><span class="fnum">图 4</span>Qwen-AgentWorld 总览：(1) 以 1,000 万+ 环境轨迹经 CPT→SFT→RL 训练覆盖 SWE / Terminal / Search / MCP / Web / OS / Android 七域的语言世界模型，AgentWorldBench 58.8；(2) 两种用法——[i] 解耦为环境模拟器做模拟 RL，[ii] 统一进单一 agent。<span class="chip c-vr">自报</span> 取自 QwenLM/Qwen-AgentWorld 仓库 README（assets/teaser.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -314,7 +314,7 @@
 <p>超长程 RL 未入六方向榜——证据真实但多为 #2 与 #5 的伴生问题。综述 <a href="https://arxiv.org/abs/2604.09459">arXiv 2604.09459</a> 指出核心断层：部署中的 agent 轨迹已达 100K–1M token、100+ 轮交互，而现有信用分配方法多只在 5–30 轮任务上验证。</p>
 
 <figure>
-  <img src="img/dispatch-35-frontier-scan/orig-5.png" alt="LLM 强化学习信用分配方法的谱系网格：纵轴粒度从 token 到多 agent，横轴方法从蒙特卡洛到信息论">
+  <img src="img/dispatch-35-frontier-scan/orig-5.webp" alt="LLM 强化学习信用分配方法的谱系网格：纵轴粒度从 token 到多 agent，横轴方法从蒙特卡洛到信息论" loading="lazy" decoding="async" width="1800" height="862">
   <figcaption><span class="fnum">图 5</span>信用分配方法谱系：纵轴为粒度（Token / Segment / Step-Turn / Multi-Agent），横轴为方法族（Monte Carlo / TD-Value / LLM-as-Critic / Game-theoretic / Info-theoretic）；蓝色为推理 RL、红色为 agentic RL、紫红为多 agent；虚线箭头标注演化趋势。<span class="chip c-tp">第三方</span> 取自综述配套仓库（xxzcc/Awesome-Credit-Assignment-in-LLM-RL，assets/taxonomy.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

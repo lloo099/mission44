@@ -90,7 +90,7 @@
 <p><strong>执行流程</strong>:恢复 base commit → 应用模型 patch(应用失败即判负)→ 应用官方 test patch(仅替换测试文件)→ 执行判分。测试内容对模型隐藏。</p>
 
 <figure>
-  <img src="img/dispatch-30-agent-eval/orig-1.png" alt="SWE-bench 官方示意图:左侧 issue 文本与代码库,中间语言模型生成 PR,右侧单元测试表格标注 Pre PR 与 Post PR 的通过与失败状态">
+  <img src="img/dispatch-30-agent-eval/orig-1.webp" alt="SWE-bench 官方示意图:左侧 issue 文本与代码库,中间语言模型生成 PR,右侧单元测试表格标注 Pre PR 与 Post PR 的通过与失败状态" loading="lazy" decoding="async" width="1800" height="423">
   <figcaption><span class="fnum">图 1</span>SWE-bench 官方任务示意:左为 issue 文本(sklearn GBDT warm start 数据泄漏)与代码库快照,中为模型生成的 PR(+20 −12,改动 gradient_boosting.py 与 helper.py),右为单元测试表——Pre PR 与 Post PR 两列即 F2P/P2P 的判据来源。<span class="chip c-tp">第三方</span> 取自 SWE-bench 官方仓库 README(SWE-bench/SWE-bench,docs/assets/figures/teaser.png)。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -100,7 +100,7 @@
 </figure>
 
 <figure>
-  <img class="diagram" src="img/dispatch-30-agent-eval/fig-1.svg" alt="SWE-bench 判分流程图:从 issue 与仓库快照到模型 patch,再经恢复 base commit、应用模型 patch、应用官方 test patch、执行双测试到 resolved 判据">
+  <img class="diagram" src="img/dispatch-30-agent-eval/fig-1.svg" alt="SWE-bench 判分流程图:从 issue 与仓库快照到模型 patch,再经恢复 base commit、应用模型 patch、应用官方 test patch、执行双测试到 resolved 判据" loading="lazy" decoding="async" width="2327" height="193">
   <figcaption><span class="fnum">图 2</span>SWE-bench 判分流程与双测试语义(原文图 A)。主链为输入 → patch → 恢复 base commit → 应用模型 patch(失败即判负)→ 应用官方 test patch(仅替换测试文件)→ 执行两组测试,下接 resolved 判据。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -127,7 +127,7 @@
 <p><strong>轴三:拉长与原创化。</strong> <strong>SWE-Lancer</strong>(OpenAI,<a href="https://arxiv.org/abs/2502.12115">2502.12115</a>):1,400+ 个真实自由职业任务,总真实报酬 $1,000,000,核心指标为<strong>经济价值加权的 earned dollars</strong>——从"解题数"到"赚到的钱"。2026 年的新一代包括 DeepSWE(Datacurve,<a href="https://arxiv.org/abs/2607.07946">2607.07946</a>,113 个全原创任务、配作弊审查)、SWE-Marathon(<a href="https://arxiv.org/abs/2606.07682">2606.07682</a>,20 个多小时级任务、平均轨迹 <strong>27.2M token</strong>、封闭网络执行)与 FrontierSWE——共同批评是既有基准的解平均仅约百行、数分钟即完成,与真实工程尺度脱节。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-30-agent-eval/fig-2.svg" alt="SWE-bench 谱系演化三条轴的分支图:从 2023 年原始基准分出清洗题目、扩域抗污染、拉长原创化三支,右下为 2026-02 弃用 Verified 节点">
+  <img class="diagram" src="img/dispatch-30-agent-eval/fig-2.svg" alt="SWE-bench 谱系演化三条轴的分支图:从 2023 年原始基准分出清洗题目、扩域抗污染、拉长原创化三支,右下为 2026-02 弃用 Verified 节点" loading="lazy" decoding="async" width="1097" height="852">
   <figcaption><span class="fnum">图 3</span>谱系演化三条轴(原文图 B)。根节点为 SWE-bench 2023(2,294 题,F2P 与 P2P 口径确立),三个 subgraph 分别为清洗题目、扩域与抗污染、拉长与原创化;虚线指向 2026-02 OpenAI 官宣弃用 Verified、改报 Pro 公开集。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -163,7 +163,7 @@
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-30-agent-eval/fig-3.svg" alt="效度危机数字链图:五个证据节点汇聚到 2026-02 OpenAI 弃用 SWE-bench Verified,并旁接评测作弊与训练 reward hacking 的镜像关系">
+  <img class="diagram" src="img/dispatch-30-agent-eval/fig-3.svg" alt="效度危机数字链图:五个证据节点汇聚到 2026-02 OpenAI 弃用 SWE-bench Verified,并旁接评测作弊与训练 reward hacking 的镜像关系" loading="lazy" decoding="async" width="1458" height="318">
   <figcaption><span class="fnum">图 4</span>效度危机数字链(原文图 C)。五个证据节点(32.67% 泄漏、Verified 15.7% 假通过、76% 凭文本定位、59.4% 测试误杀、63% 通过靠检索)汇聚到 2026-02 的弃用决定,右下虚线指向"评测作弊与训练 reward hacking 为同一现象两面"。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -214,7 +214,7 @@
 <p>补充一类:<strong>Elo/BT 聚合</strong>。Chatbot Arena(<a href="https://arxiv.org/abs/2403.04132">2403.04132</a>)并非在线 Elo,而是 Bradley-Terry 模型的最大似然拟合 + bootstrap 置信区间;Artificial Analysis 把该范式移植到 agent 工作产物(GDPval-AA 以统一 Stirrup harness 跑 44 个职业的真实交付物再盲测投票)。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-30-agent-eval/fig-4.svg" alt="指标四个正交轴与测量协议三威胁的关系图,两个 subgraph 分别汇入结论节点">
+  <img class="diagram" src="img/dispatch-30-agent-eval/fig-4.svg" alt="指标四个正交轴与测量协议三威胁的关系图,两个 subgraph 分别汇入结论节点" loading="lazy" decoding="async" width="726" height="748">
   <figcaption><span class="fnum">图 5</span>四轴与三个效度威胁(原文图 D)。上方 AXES 子图列出 pass@k、pass^k、成本 Pareto、time horizon 四轴;下方 THREATS 子图列出 harness 不披露、无误差棒、数据污染三威胁,共同指向"任一威胁都足以使 1–2 个百分点的领先失去意义"。<span class="chip c-inf">推断</span> 本站图,依原文 mermaid 源渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

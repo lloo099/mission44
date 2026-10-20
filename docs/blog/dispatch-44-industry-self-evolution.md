@@ -16,7 +16,7 @@
 2. **谁按下接受键?** 全自动闭环、人审后采纳、还是根本没有闭环(一次性优化)。
 3. **上线了还是只发了论文?** 生产部署、产品(含 beta)、cookbook 演示、论文,四档分开记。
 
-![GEPA 的快慢双环:慢环用 RL/RFT/SFT 把 θ_c 更新为 θ_c+1,只消费标量奖励;快环用反思式优化把上下文种群 Φ 按帕累托前沿选优,消费完整 rollout 文本](reads/img/dispatch-44-industry-self-evolution/orig-gepa-fastslow.png)
+![GEPA 的快慢双环:慢环用 RL/RFT/SFT 把 θ_c 更新为 θ_c+1,只消费标量奖励;快环用反思式优化把上下文种群 Φ 按帕累托前沿选优,消费完整 rollout 文本](reads/img/dispatch-44-industry-self-evolution/orig-gepa-fastslow.webp)
 
 *图 1 · 全篇的题眼:快慢双环。原图出自 GEPA 仓库博客(2026-05-11《Learning Fast and Slow》),仓库 [gepa-ai/gepa](https://github.com/gepa-ai/gepa),**MIT**。上半 Slow Learning:`θ_c → θ_c+1`,经 RL / RFT / SFT,**只消费标量奖励**;下半 Fast Learning:`Φ_c+1 ← top-K(Pareto(Φ_c))`,GEPA 反思式优化,**消费完整 rollout 文本**——思考、工具调用、报错栈、反馈。图中 rollout 例子刻意画了一个 `r=0.0` 加 `ZeroDivisionError: division by zero (line 5)`:标量奖励只知道 0.0,文本回路知道**为什么**是 0.0。产业几乎全部活在下半环,原因见各家卷宗。*
 
@@ -48,7 +48,7 @@ Google 同时跑着三条互不相同的自进化机制,更新目标与把关方
 
 2026-07-09 起 AlphaEvolve 成为 Google Cloud Agent Platform 上的 GA 产品(客户自带种子算法与"确定性的客户端评估脚本"——分工与论文完全一致),另有面向 IDE 的 AlphaEvolve Skill(Antigravity、Claude Code)。客户数字(BASF +80%、Kinaxis +22%、Klarna 吞吐翻倍等)均为**客户经厂商转述的自报**,无方法学与分母。
 
-![OpenEvolve 架构:Controller 调度 Program Database、Prompt Sampler、LLM Ensemble 与 Evaluator Pool 的异步流水线](reads/img/dispatch-44-industry-self-evolution/orig-openevolve-arch.png)
+![OpenEvolve 架构:Controller 调度 Program Database、Prompt Sampler、LLM Ensemble 与 Evaluator Pool 的异步流水线](reads/img/dispatch-44-industry-self-evolution/orig-openevolve-arch.webp)
 
 *图 2 · AlphaEvolve 的开源复刻 OpenEvolve 的架构图(官方不放出可运行系统,这是公开世界能拿到的最接近的实现)。原图出自 [codelion/openevolve](https://github.com/codelion/openevolve)(创建于官方公告次日,7,388 星),**Apache-2.0**。中央 Controller 编排四件事:程序库(存程序与指标)、提示采样器(从历史程序构造富上下文)、LLM 集成(生成代码修改)、评估器池(执行打分)——与白皮书描述逐项对应。*
 
@@ -142,29 +142,29 @@ Sakana 的作品谱系恰好沿 θ/Σ 分界排开。**θ 族(全部离线、人
 
 **阿里(公开管线最完整的飞轮,出货冻结)。** 通义 DeepResearch:全自动合成数据管线 → agentic 持续预训练(AgentFounder 把语料重组为实体锚定 QA)→ SFT → 严格 on-policy 的定制 GRPO;出货物是**冻结的** 30B-A3B。AgentEvolver(modelscope,arXiv 2511.10395)把权重更新环写成显式框架:Self-Questioning(agent 在环境中自造任务)+ Self-Navigating(经 ReMe 复用跨任务经验)+ Self-Attributing(ADCA-GRPO 归因记账),跑在 veRL 上——7B 在 AppWorld+BFCLv3 均分 45.2(avg@8),**超过 Qwen2.5-14B 基线的 29.8**(自报,官方仓库)。Qwen3 报告则披露上一代吃进下一代:"用 Qwen2.5/Math/Coder 合成数万亿 token",且小模型上"强到弱蒸馏显著优于强化学习"。
 
-![AgentEvolver 系统架构:任务管理器合成与过滤任务,rollout worker 带上下文管理,经验管理器做召回与语义摘要,训练 worker 显式更新权重回异步 LLM 服务](reads/img/dispatch-44-industry-self-evolution/orig-agentevolver-system.png)
+![AgentEvolver 系统架构:任务管理器合成与过滤任务,rollout worker 带上下文管理,经验管理器做召回与语义摘要,训练 worker 显式更新权重回异步 LLM 服务](reads/img/dispatch-44-industry-self-evolution/orig-agentevolver-system.webp)
 
 *图 5 · AgentEvolver 的系统图——图里明确画着 "Updating Weights" 这条边:θ 写回环加文本经验库(Σ)并行。原图出自 [modelscope/AgentEvolver](https://github.com/modelscope/AgentEvolver),**Apache-2.0**。*
 
-![AgentEvolver 头图结果:7B/14B 模型在 AppWorld 与 BFCL v3 上超过大得多的 Qwen 基线](reads/img/dispatch-44-industry-self-evolution/orig-agentevolver-perf.png)
+![AgentEvolver 头图结果:7B/14B 模型在 AppWorld 与 BFCL v3 上超过大得多的 Qwen 基线](reads/img/dispatch-44-industry-self-evolution/orig-agentevolver-perf.webp)
 
 *图 6 · AgentEvolver 的头图散点(任务目标完成率对模型规模)。约 14B 的模型在 AppWorld 上超过 Qwen3-235B-A22B 基线。**厂商自报**,读数取自官方仓库图表;分母为 AppWorld / BFCL v3 任务目标完成率。同图 5 出处。*
 
 **腾讯(押 Σ 最重的一家)。** Youtu-Agent 的立论与训练派相反:**免训练**脚手架配冻结 DeepSeek-V3.1 在 WebWalkerQA 拿 71.47%,超过 WebDancer 等一批**训练过的** web agent(约 34–52%,均自报);Training-Free GRPO 更极端——冻结模型,从约 100 个样本学一个 token 先验(上下文经验库),自称约 8 美元跑一次"RL"。R-Zero 出自腾讯 AI Lab 西雅图但停在学术(个人仓库、8 卡规模),其后继 R-Few 靠**重新加入人类数据**修复迭代扩展——与 D43 第 7 节的结论闭环。混元 Hyra-1.0 是挂着 recursive-self-improvement 标签的研究 agent,公开成绩仓库(nanogpt-speedrun 76.4s 对前最优 77.5s、100 项 packing 纪录)——但 Packing Center 上的署名是人类研究员,人机贡献比例未披露。
 
-![Youtu-Agent 的 WebWalkerQA 柱状图:免训练配置(DeepSeek-V3.1 约 71.5%)对一排训练过的 web agent(约 34–52%)](reads/img/dispatch-44-industry-self-evolution/orig-youtu-webwalker.png)
+![Youtu-Agent 的 WebWalkerQA 柱状图:免训练配置(DeepSeek-V3.1 约 71.5%)对一排训练过的 web agent(约 34–52%)](reads/img/dispatch-44-industry-self-evolution/orig-youtu-webwalker.webp)
 
 *图 7 · 腾讯的反训练论点:免训练脚手架(左组)对 RL 训练过的 web agent(右组)。原图出自 [Tencent/Youtu-agent](https://github.com/Tencent/Youtu-agent),**MIT**;数字为官方 README 自报,GAIA 72.8% 仅为纯文本验证子集。*
 
 **字节(最大的中国 Σ 产品,θ 侧反而克制)。** Seed-Thinking-v1.5 没有自博弈——有的是两个**训练出来的裁判**(Seed-Verifier 与专为抗 reward hacking 训练的 Seed-Thinking-Verifier),报告表 1 直接列了前者被钻空子的案例。OpenViking(3.8 万星,AGPL-3.0 + 火山引擎 SaaS)把记忆做成 `viking://` 虚拟文件系统,L0 一句摘要 / L1 概览 / L2 全文三级懒加载;自报 LoCoMo 80.32–82.86%(对原生记忆 24.2–57.2%)、输入 token 降 34.3–91.0%——**测量用的是自家 Doubao 模型加自家复现脚本,未经独立复现**。Doubao 消费端出货了端上持久记忆。
 
-![OpenViking Studio 截图:viking:// 上下文树(用户记忆、agent 身份、会话、资源、技能)与检索终端](reads/img/dispatch-44-industry-self-evolution/orig-openviking-studio.png)
+![OpenViking Studio 截图:viking:// 上下文树(用户记忆、agent 身份、会话、资源、技能)与检索终端](reads/img/dispatch-44-industry-self-evolution/orig-openviking-studio.webp)
 
 *图 8 · OpenViking 的产品形态:记忆即文件系统。原图出自 [volcengine/OpenViking](https://github.com/volcengine/OpenViking),**AGPL-3.0**。值得注意的负面细节:仓库里没有任何记忆架构示意图——架构文档纯文本,这张产品截图已是最信息密度的图。*
 
 **蚂蚁(AWorld 的演化环是上下文内的)。** Build → Evaluate → Evolve:Developer agent 写、Evaluator agent 按 Skill 评,"循环直到你的标准满足"(用户设目标分),自然语言反馈"作为下一轮演化的高优先级指令"——**Σ 环,人可随时插手**;θ 只在论文里(Qwen3-32B-AWorld,GAIA 67.89 pass@1)。README 引用的 evolution_loop_poster.png 至今 404(2026-09-18 复核)。
 
-![AWorld 架构:多智能体 Swarm 与环境交换动作/观察,轨迹送入 Training 块、模型参数回流——θ 环画在图上](reads/img/dispatch-44-industry-self-evolution/orig-aworld-arch.png)
+![AWorld 架构:多智能体 Swarm 与环境交换动作/观察,轨迹送入 Training 块、模型参数回流——θ 环画在图上](reads/img/dispatch-44-industry-self-evolution/orig-aworld-arch.webp)
 
 *图 9 · AWorld 的架构图,右侧 Training 块与 "Model Params" 回边就是它论文侧的 θ 环;出货的 CLI 只跑左侧的上下文环。原图出自 [inclusionAI/AWorld](https://github.com/inclusionAI/AWorld),**MIT**。*
 

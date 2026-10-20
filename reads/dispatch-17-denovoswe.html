@@ -78,7 +78,7 @@
 <p>SWE-bench Verified 的实例平均只触及 <strong>1.3 个文件、改动 11.6 行</strong>。模型不需要做架构决策，不需要决定模块如何拆分、接口如何定义、依赖如何组织，它要做的是在既定结构上做局部补全。这一方向已接近解决：GPT-5.2、Gemini3Pro、DeepSeek-V3.2 在 SWE-bench Verified 上都已 &gt;80%（provisional），逼近饱和，继续争夺零点几个百分点的边际信息量已经很低。DeNovoSWE 给出的对照数字直接揭示了 gap：这些在 Verified 上 &gt;80% 的前沿模型，在 BeyondSWE 整体上<strong>全部 &lt;45%</strong>；即便是相对"最像传统建仓库"的 Doc2Repo 设定，前沿的 DeepSeek-V3.2 也只有 <strong>54.99%</strong>（均 provisional）。</p>
 
 <figure>
-  <img src="img/dispatch-17-denovoswe/orig-1.png" alt="DeNovoSWE 总览图：左侧以任务难度为纵轴、任务范围为横轴，Scale-SWE（数据集，issue fixing）、BeyondSWE（小规模基准，issue fixing + whole-repo generation）、DeNovoSWE（数据集，large-scale real-world repo generation from scratch）沿 Maintainer → Architect 箭头上升；右上两张柱状图为 Doc2Repo 与 NL2Repo 分数；右下为仓库生成任务数：BeyondSWE 50、NL2Repo 104、DeNovoSWE 4,818，标注 46×">
+  <img src="img/dispatch-17-denovoswe/orig-1.webp" alt="DeNovoSWE 总览图：左侧以任务难度为纵轴、任务范围为横轴，Scale-SWE（数据集，issue fixing）、BeyondSWE（小规模基准，issue fixing + whole-repo generation）、DeNovoSWE（数据集，large-scale real-world repo generation from scratch）沿 Maintainer → Architect 箭头上升；右上两张柱状图为 Doc2Repo 与 NL2Repo 分数；右下为仓库生成任务数：BeyondSWE 50、NL2Repo 104、DeNovoSWE 4,818，标注 46×" loading="lazy" decoding="async" width="1800" height="640">
   <figcaption><span class="fnum">图 1</span>DeNovoSWE 总览：左图以 Task Difficulty（Single-bug fixing → Long-horizon SWE）为纵轴、Task Scope（局部修改 → 从零生成整仓）为横轴，Scale-SWE、BeyondSWE、DeNovoSWE 三者沿 "Maintainer → Architect" 箭头排列；右上 Doc2Repo 柱状图：DeNovoSWE-35A3B 50.0、Qwen3.5-35B-A3B 43.8、DeNovoSWE-30A3B 47.2、Scale-SWE-Agent 29.2、Qwen3-30B-A3B-Inst 5.8；NL2Repo 柱状图：27.1、23.5、23.0、18.3、4.3；右下仓库生成任务数：BeyondSWE 50、NL2Repo 104、DeNovoSWE 4,818（46×）。<span class="chip c-vr">自报</span> 取自 AweAI-Team/DeNovoSWE 仓库 README（figures/main.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -88,7 +88,7 @@
 </figure>
 
 <figure>
-  <img class="diagram" src="img/dispatch-17-denovoswe/fig-1.svg" alt="范式对照图：SWE-bench 范式（输入已有 buggy 仓库 + issue → 定位并修改局部代码 → 小 patch 1.3 文件 / 11.6 行）与 DeNovoSWE / Doc2Repo 范式（输入高层规格 → 从零架构并实现整个仓库 → 完整可运行仓库 5.6 文件 / 209.9 行），复杂度 18 倍提升；旁注运行预算 max turns 500 / 256k 上下文">
+  <img class="diagram" src="img/dispatch-17-denovoswe/fig-1.svg" alt="范式对照图：SWE-bench 范式（输入已有 buggy 仓库 + issue → 定位并修改局部代码 → 小 patch 1.3 文件 / 11.6 行）与 DeNovoSWE / Doc2Repo 范式（输入高层规格 → 从零架构并实现整个仓库 → 完整可运行仓库 5.6 文件 / 209.9 行），复杂度 18 倍提升；旁注运行预算 max turns 500 / 256k 上下文" loading="lazy" decoding="async" width="1997" height="287">
   <figcaption><span class="fnum">图 2</span>两种范式的输入—过程—产出对照：SWE-bench 的小 patch（1.3 文件 / 11.6 行）与 Doc2Repo 的完整可运行仓库（5.6 文件 / 209.9 行），复杂度 18×；运行预算 max turns 500 / 256k 上下文。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -137,7 +137,7 @@
 <p>流水线的核心是两个机制。<strong>分而治之（divide-and-conquer）</strong>：一个完整仓库整体合成文档复杂度过高、模型难以一次处理、产出质量差，流水线把大仓库拆成可管理的模块 / 部件分别合成局部规格再组合，等于把一次"超高复杂度的整体规格生成"降维成若干次中等复杂度的局部生成，每一步都落在模型能稳定产出高质量结果的区间内。<strong>迭代 critic-repair</strong>：单次草稿必然存在缺漏，流水线引入批评者（critic）闭环——生成草稿 → critic 找缺漏 / 歧义 / 不可实现处 → 针对性修复 → 再批评，循环直到文档完整到"足够可执行"（足够支撑一次从零重建），把"文档质量"从一次性的不确定产出变成可收敛的迭代优化。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-17-denovoswe/fig-2.svg" alt="doc2repo 数据流水线图：真实仓库经分而治之拆成模块，进入迭代 critic-repair 闭环（生成文档草稿 → 批评者找缺漏 → 修复文档 → 循环直至完整），再到沙箱配置（单元测试 + Docker 环境），产出 doc2repo 任务实例（规格文档到应当生成的仓库）">
+  <img class="diagram" src="img/dispatch-17-denovoswe/fig-2.svg" alt="doc2repo 数据流水线图：真实仓库经分而治之拆成模块，进入迭代 critic-repair 闭环（生成文档草稿 → 批评者找缺漏 → 修复文档 → 循环直至完整），再到沙箱配置（单元测试 + Docker 环境），产出 doc2repo 任务实例（规格文档到应当生成的仓库）" loading="lazy" decoding="async" width="380" height="864">
   <figcaption><span class="fnum">图 3</span>doc2repo 数据流水线：真实仓库 → 分而治之拆模块 → critic-repair 闭环（草稿 → 批评 → 修复 → 循环）→ 沙箱配置（单元测试 + Docker）→ 任务实例。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -175,7 +175,7 @@
 <p>所以过滤是<strong>难度感知（difficulty-aware）</strong>的，同时压两个维度：<strong>质量</strong>（留下真正解对、轨迹干净、没有明显放弃 / hacking / 冗余绕路的样本）与<strong>多样性</strong>（不能因为追求"干净"就只保留简单实例——否则模型只学会简单任务、高难度实例得不到覆盖，难度感知正是为在过滤时刻意保留足够比例的高难度样本）。采集用的 agent 是 AweAgent，配置 <strong>max turns 500、max seq 256k、temperature 1</strong>。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-17-denovoswe/fig-3.svg" alt="轨迹过滤流程图：DeNovoSWE 实例 → DeepSeek-V4-High 采样 → 34k 条轨迹 → 难度感知过滤（平衡质量与多样性）→ 11k 条轨迹 → SFT 微调">
+  <img class="diagram" src="img/dispatch-17-denovoswe/fig-3.svg" alt="轨迹过滤流程图：DeNovoSWE 实例 → DeepSeek-V4-High 采样 → 34k 条轨迹 → 难度感知过滤（平衡质量与多样性）→ 11k 条轨迹 → SFT 微调" loading="lazy" decoding="async" width="1225" height="70">
   <figcaption><span class="fnum">图 4</span>轨迹采集与过滤：DeepSeek-V4-High 采样 34k 条，难度感知过滤到 11k 条用于 SFT。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -198,7 +198,7 @@
 <p>DeNovoSWE 的成绩报在 <strong>BeyondSWE-Doc2Repo</strong> 上，它是同团队 BeyondSWE 基准套件里的一个设定。BeyondSWE 共 <strong>500 实例 / 246 仓库</strong>，刻意把评测从"单仓库局部修复"扩到"全局解析 + 知识范围"两个维度，整体比 SWE-bench Verified 复杂约 18×（每实例 5.6 文件 / 209.9 行 vs 1.3 文件 / 11.6 行）。四个设定各考一种"超出 SWE-bench"的能力：<strong>CrossRepo</strong>（200 / 67，修需查外部仓库 / StackOverflow / 上游库的 issue，考跨仓库取知识）、<strong>DomainFix</strong>（72 / 12，量子物理 / 生物信息这类专业领域的 bug，考领域知识）、<strong>DepMigrate</strong>（178 / 120，因依赖破坏性升级的全库迁移，考全局一致性）、<strong>Doc2Repo</strong>（50 / 50，从自然语言规格构建整个可运行仓库，考从零架构）。评测一律在 Docker 里跑单元测试，并带反作弊：用 regex 黑名单阻止 agent 访问目标仓库、并把目标 commit 之后的提交从环境中清除，防止答案泄漏。Harness 是 <strong>SearchSWE</strong>（SearchTool 网页搜索 + BrowserTool 取网页内容），跑在 AweAgent 上。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-17-denovoswe/fig-4.svg" alt="BeyondSWE 基准套件结构图：共 500 实例 / 246 仓库，四个设定 CrossRepo（200/67）、DomainFix（72/12）、DepMigrate（178/120）、Doc2Repo（50/50），全部经 SearchSWE harness（SearchTool + BrowserTool，on AweAgent）到 Docker 跑单元测试 + 反作弊（regex 黑名单 + 清理目标 commit 后的提交）">
+  <img class="diagram" src="img/dispatch-17-denovoswe/fig-4.svg" alt="BeyondSWE 基准套件结构图：共 500 实例 / 246 仓库，四个设定 CrossRepo（200/67）、DomainFix（72/12）、DepMigrate（178/120）、Doc2Repo（50/50），全部经 SearchSWE harness（SearchTool + BrowserTool，on AweAgent）到 Docker 跑单元测试 + 反作弊（regex 黑名单 + 清理目标 commit 后的提交）" loading="lazy" decoding="async" width="1206" height="648">
   <figcaption><span class="fnum">图 5</span>BeyondSWE 的四个设定与评测基础设施：四个设定共用 SearchSWE harness 与 Docker 单测 + 反作弊。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -234,7 +234,7 @@
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-17-denovoswe/fig-5.svg" alt="效果链路图：DeNovoSWE 4818 实例 → AweAgent 采轨迹（500 轮 / 256k）→ 34k 轨迹 → 难度感知过滤 → 11k 轨迹 → SFT 微调 Qwen3-30B-A3B 与 Qwen3.5-35B-A3B → BeyondSWE-Doc2Repo 评测（50 实例）：Qwen3-30B 5.8% 到 47.2%、Qwen3.5-35B 到 50%、前沿 DeepSeek-V3.2 54.99%（逼近前沿）">
+  <img class="diagram" src="img/dispatch-17-denovoswe/fig-5.svg" alt="效果链路图：DeNovoSWE 4818 实例 → AweAgent 采轨迹（500 轮 / 256k）→ 34k 轨迹 → 难度感知过滤 → 11k 轨迹 → SFT 微调 Qwen3-30B-A3B 与 Qwen3.5-35B-A3B → BeyondSWE-Doc2Repo 评测（50 实例）：Qwen3-30B 5.8% 到 47.2%、Qwen3.5-35B 到 50%、前沿 DeepSeek-V3.2 54.99%（逼近前沿）" loading="lazy" decoding="async" width="1965" height="280">
   <figcaption><span class="fnum">图 6</span>从数据到效果的完整链路：4818 实例 → 34k → 11k 轨迹 → 两个学生模型 → Doc2Repo（50 实例）上 47.2% / 50%，对前沿 54.99%。<span class="chip c-inf">推断</span> 本站图，由原文第 5 个 mermaid 图预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -244,7 +244,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-17-denovoswe/orig-2.png" alt="DeNovoSWE 仓库 README 结果表：Doc2Repo 与 NL2Repo 两列；闭源组 GPT-5.4(CodeX) 0.617、GPT-5.4 0.563、DeepSeek-V4-Pro 0.566、GLM-5 0.568、Seed-Coder-2.0 0.568、Qwen3.5-Plus 0.524、Gemini3-Pro 0.520；Qwen3-30B-A3B 组：Instruct 0.058 / 0.043、Scale-SWE-Agent 0.292 / 0.183、DeNovoSWE-Agent-30A3B 0.472 / 0.230；Qwen3.5-35B-A3B 组：基座 0.438 / 0.235、DeNovoSWE-Agent-35A3B 0.500 / 0.271">
+  <img src="img/dispatch-17-denovoswe/orig-2.webp" alt="DeNovoSWE 仓库 README 结果表：Doc2Repo 与 NL2Repo 两列；闭源组 GPT-5.4(CodeX) 0.617、GPT-5.4 0.563、DeepSeek-V4-Pro 0.566、GLM-5 0.568、Seed-Coder-2.0 0.568、Qwen3.5-Plus 0.524、Gemini3-Pro 0.520；Qwen3-30B-A3B 组：Instruct 0.058 / 0.043、Scale-SWE-Agent 0.292 / 0.183、DeNovoSWE-Agent-30A3B 0.472 / 0.230；Qwen3.5-35B-A3B 组：基座 0.438 / 0.235、DeNovoSWE-Agent-35A3B 0.500 / 0.271" loading="lazy" decoding="async" width="925" height="695">
   <figcaption><span class="fnum">图 7</span>DeNovoSWE 仓库 README 结果表（Doc2Repo / NL2Repo 两列）：Proprietary Models 组 GPT-5.4(CodeX) 0.617、GPT-5.4 0.563、DeepSeek-V4-Pro 0.566、GLM-5 0.568、Seed-Coder-2.0 0.568、Qwen3.5-Plus 0.524、Gemini3-Pro 0.520（NL2Repo 列均为 -）；Qwen3-30B-A3B 组：Instruct 0.058 / 0.043、Scale-SWE-Agent 0.292 / 0.183、DeNovoSWE-Agent-30A3B 0.472 / 0.230；Qwen3.5-35B-A3B 组：基座 0.438 / 0.235、DeNovoSWE-Agent-35A3B 0.500 / 0.271。<span class="chip c-vr">自报</span> 取自 AweAI-Team/DeNovoSWE 仓库 README（figures/performance.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

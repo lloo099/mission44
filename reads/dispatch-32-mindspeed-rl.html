@@ -91,7 +91,7 @@
 <p>MindSpeed-RL 自述为"端到端的 RL 训推解决方案"，结构上是两个引擎的组合（本看板 D02 口径）：训练侧是 <strong>MindSpeed</strong>——昇腾的 Megatron 系训练引擎；生成侧是 <strong>vLLM-Ascend</strong>。算法覆盖 GRPO、DAPO、PPO、DPO，按 Released/Preview 分级。部署形态有两种：<strong>训推共卡 colocate</strong>（训练与生成分时复用同一批 NPU）与<strong>训推异构切分</strong>（训练与生成各占独立资源、各选并行策略，依赖专门的训推异构切分通信）。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-32-mindspeed-rl/fig-1.svg" alt="MindSpeed-RL 训推栈：MindSpeed 训练底座与 vLLM-Ascend 生成引擎双向箭头，两种部署形态，以及 Partial Rollout、异步流水调度、去 padding 与 CP 三个特性">
+  <img class="diagram" src="img/dispatch-32-mindspeed-rl/fig-1.svg" alt="MindSpeed-RL 训推栈：MindSpeed 训练底座与 vLLM-Ascend 生成引擎双向箭头，两种部署形态，以及 Partial Rollout、异步流水调度、去 padding 与 CP 三个特性" loading="lazy" decoding="async" width="1430" height="498">
   <figcaption><span class="fnum">图 1</span>MindSpeed-RL 训推栈（原文第 2 节图）：MindSpeed 训练底座与 vLLM-Ascend 生成引擎之间以"权重重切分"与"轨迹数据回流"双向连接；colocate 与训推异构两种形态以虚线分别挂到训练侧与生成侧；三个特性各指向其作用的引擎。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -101,7 +101,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-32-mindspeed-rl/orig-1.png" alt="MindSpeed-RL 全共卡方案示意：从上到下依次为 Actor infer param 与 KV cache、Ref param、Reward param、Actor train param、Actor train param 加 optimizer 与 grad，每段标注 onload/offload 与 enter/exit 模式">
+  <img src="img/dispatch-32-mindspeed-rl/orig-1.png" alt="MindSpeed-RL 全共卡方案示意：从上到下依次为 Actor infer param 与 KV cache、Ref param、Reward param、Actor train param、Actor train param 加 optimizer 与 grad，每段标注 onload/offload 与 enter/exit 模式" loading="lazy" decoding="async" width="769" height="1075">
   <figcaption><span class="fnum">图 2</span>MindSpeed-RL 官方文档中的"全共卡方案"示意：一次 RL 迭代内，同一批 NPU 依次承载 Actor 推理参数与 KV cache → Ref 参数 → Reward 参数 → Actor 训练参数 → Actor 训练参数 + 优化器 + 梯度，每一段之间以 onload / offload 切换，右侧黄色标注 enter_infer_mode、exit_infer_mode、enter_forward_mode、enter_train_mode、exit_train_mode 五个模式切换点，红字 resharding 标出权重重切分发生的位置。<span class="chip c-vr">自报</span> 取自 Ascend/MindSpeed-RL 仓库 docs/zh/figures/integrated_worker/pipeline.png。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -124,7 +124,7 @@
 <p>特性清单不是并列的功能点，每一项对应一个具体问题，且大多能对回本看板既有的两组观察。<strong>权重重切分</strong>：训练与生成的最优并行布局不同（训练要 TP/PP/EP 组合，生成要低延迟的推理切分），每步权重同步时需在两种布局间转换。这是所有"训练 Megatron 系 + 推理 vLLM 系"框架的共同必修课，MindSpeed-RL 把它做在 HCCL 语义之上。<strong>Partial Rollout</strong>：直接回应 Dispatch 02 的核心量化——rollout 占 RL 单步 70% 以上 wall-clock，且长尾样本决定整批等待时间。截断长尾、跨步续采，以有限的 off-policy 代价换整批吞吐。<strong>多模型异步流水调度</strong>：RL 单步涉及 actor、reference、reward 等多个模型的计算，异步流水将其重叠，减少串行空转。<strong>训推共卡 colocate</strong>：对应 Dispatch 13 昇腾四问题中的第一条——vLLM-Ascend 彼时无 sleep-mode，训推共卡时显存争用无法优雅切换。<strong>数据调度与去 padding</strong>：变长序列不补齐，长序列走 CP 并行——长 CoT 时代的吞吐基本功。</p>
 
 <figure>
-  <img src="img/dispatch-32-mindspeed-rl/orig-2.png" alt="Partial Rollout 同步引擎方案示意：两次迭代中 vLLM engine1 与 engine2 在 N_ready 小于 GBS 时循环生成，截断样本经 TransferDock 在下一轮优先续采，中间为 parameter update">
+  <img src="img/dispatch-32-mindspeed-rl/orig-2.png" alt="Partial Rollout 同步引擎方案示意：两次迭代中 vLLM engine1 与 engine2 在 N_ready 小于 GBS 时循环生成，截断样本经 TransferDock 在下一轮优先续采，中间为 parameter update" loading="lazy" decoding="async" width="1004" height="297">
   <figcaption><span class="fnum">图 3</span>MindSpeed-RL 官方文档中的 Partial Rollout 同步引擎方案：iteration 1 与 iteration 2 各以 <code>while N_ready &lt; GBS: llm.generate()</code> 驱动两个 vLLM engine；红色虚线为截断点（图中标 0.5max_tokens），灰色段为待续采的部分响应，底部绿色 TransferDock（data size: 2GBS）负责 count &amp; update N_ready 与数据缓存；中间灰柱为 parameter update。图例：斜纹 prompt、实色 generated response、灰色 partial response to be generated。<span class="chip c-vr">自报</span> 取自 Ascend/MindSpeed-RL 仓库 docs/zh/figures/partial_rollout/sync.png。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -134,7 +134,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-32-mindspeed-rl/orig-3.png" alt="训练态与推理态参数分桶对比：上半为不分桶时推理态无法完全复用训练态连续内存、形成无法卸载的冗余；下半为分桶后训练与推理各有独立且形状匹配的参数桶，可整体 offload 与 D2D copy">
+  <img src="img/dispatch-32-mindspeed-rl/orig-3.png" alt="训练态与推理态参数分桶对比：上半为不分桶时推理态无法完全复用训练态连续内存、形成无法卸载的冗余；下半为分桶后训练与推理各有独立且形状匹配的参数桶，可整体 offload 与 D2D copy" loading="lazy" decoding="async" width="1175" height="711">
   <figcaption><span class="fnum">图 4</span>MindSpeed-RL 官方文档中权重重切分的参数分桶示意。上半：训练态与推理态参数不分桶时，tensor 形状变化使推理态无法完全复用训练态连续内存空间，形成无法卸载的冗余（标注"无法 offload"）。下半：训练态与推理态各有独立且 tensor 形状匹配的参数桶（训练内存 Bucket、推理内存 Bucket、训推转换 Bucket），通过分时装卸实现"完全 0 冗余转换"，可整体 offload，以 D2D copy 完成转换。<span class="chip c-vr">自报</span> 取自 Ascend/MindSpeed-RL 仓库 docs/zh/figures/resharding/param_buckets.png。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -170,7 +170,7 @@
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-32-mindspeed-rl/fig-2.svg" alt="论文口径子图：分布式数据流设计指向吞吐提升 1.42 至 3.97 倍与 384 NPU 超节点实验；已验证模型矩阵子图列四类模型">
+  <img class="diagram" src="img/dispatch-32-mindspeed-rl/fig-2.svg" alt="论文口径子图：分布式数据流设计指向吞吐提升 1.42 至 3.97 倍与 384 NPU 超节点实验；已验证模型矩阵子图列四类模型" loading="lazy" decoding="async" width="2007" height="274">
   <figcaption><span class="fnum">图 5</span>成绩单结构（原文第 3 节图）：左侧论文口径（arXiv 2507.19017）——分布式数据流设计分别导出吞吐提升 1.42 至 3.97 倍与 384 NPU 超节点实验；右侧仓库口径的已验证模型矩阵；两者之间标注"论文实验覆盖 dense、MoE 与 671B 级"。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -193,7 +193,7 @@
 <p>时间线各节点（2026-08-27 核验）：① <strong>v2.0 Preview → v2.1/v2.2 商用</strong>：框架走完了从预览到商用的正常生命周期，v2.2.0 的 EOL 标注为 2026-03-30。② <strong>2026.4</strong>：README 声明"已完成既定开发目标，将暂停新增功能"。措辞是"完成目标后的暂停"，不是废弃。③ <strong>2026-05-20</strong>：master 最后一次提交，内容为文档类；此后 6、7、8 月零提交。暂停坐实。④ <strong>README 导流</strong>：新增指引"最新的昇腾强化学习方案，可以访问 verl 昇腾实践"，链接直指 github.com/verl-project/verl。官方亲自把用户导向社区框架——这是整条时间线中信息量最大的一步。⑤ <strong>社区规模对照</strong>：GitHub 镜像口径 59 stars / 5 forks，对 verl 的 23.2k。须注明：主仓可能在 Gitee，GitHub 数字可能显著低估其真实使用面；但即便如此，量级差距的方向不受影响。另一个核验结论：openPangu 后训练管线（快慢融合 SFT + 多域 RL + 在线渐进蒸馏，Dispatch 20）与 MindSpeed-RL 的关系无公开证据——华为自家旗舰模型的 RL 是否构建其上，始终未被官方确认。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-32-mindspeed-rl/fig-3.svg" alt="谢幕时间线：v2.0 Preview 到 v2.1/v2.2 商用到 2026.4 暂停声明到 05-20 末次提交到 6 至 8 月零提交到 README 导流，虚线指向 verl 社区框架">
+  <img class="diagram" src="img/dispatch-32-mindspeed-rl/fig-3.svg" alt="谢幕时间线：v2.0 Preview 到 v2.1/v2.2 商用到 2026.4 暂停声明到 05-20 末次提交到 6 至 8 月零提交到 README 导流，虚线指向 verl 社区框架" loading="lazy" decoding="async" width="2137" height="118">
   <figcaption><span class="fnum">图 6</span>谢幕时间线（原文第 4 节图）：v2.0 Preview → v2.1 与 v2.2 商用（v2.2.0 EOL 2026-03-30）→ 2026.4 README 暂停声明 → 2026-05-20 末次提交 → 6 至 8 月零提交 → README 导流；虚线标注"GitHub 镜像口径：59 stars 对 verl 23.2k"指向 verl。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染；节点事实为 2026-08-27 GitHub 镜像核验。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -229,7 +229,7 @@
 <p>谢幕不等于清零。<strong>工程遗产流向 verl 昇腾适配。</strong>colocate 共卡的显存管理经验、训推异构切分通信在 HCCL 上的实现、权重重切分的布局转换——这些是任何框架在昇腾上做 RL 都绕不开的问题，MindSpeed-RL 给出过完整答案。verl 的昇腾后端无论是否直接复用其代码，这些问题的解法路径已被验证存在（工程经验的流向为推断，代码级复用未核验）。384 NPU / R1-671B 的验证记录则作为"昇腾能跑大规模 RL"的可行性锚点继续有效——框架谢幕不使实验作废。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-32-mindspeed-rl/fig-4.svg" alt="MindSpeed-RL 遗产四项流向 verl 昇腾适配主线，再流向 D13 与 D19 的看板结论更新，openPangu 后训练线以虚线独立存续">
+  <img class="diagram" src="img/dispatch-32-mindspeed-rl/fig-4.svg" alt="MindSpeed-RL 遗产四项流向 verl 昇腾适配主线，再流向 D13 与 D19 的看板结论更新，openPangu 后训练线以虚线独立存续" loading="lazy" decoding="async" width="1694" height="570">
   <figcaption><span class="fnum">图 7</span>遗产流向与看板结论更新（原文第 6 节图）：四项遗产（colocate 经验、训推异构切分通信、权重重切分与 Partial Rollout 实践、384 NPU 与 R1-671B 验证记录）流向 verl 昇腾适配主线；verl 主线再指向 D13 trainer 选型更新与 D19 三线表更新；openPangu 后训练线以虚线"第三线独立存续"接入 D19。<span class="chip c-inf">推断</span> 本站图，由原文 mermaid 预渲染；工程经验流向为推断。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>

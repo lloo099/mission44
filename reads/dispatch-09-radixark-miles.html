@@ -81,7 +81,7 @@
 <p><strong>出身</strong>：SGLang 源自 LMSYS / 伯克利系开源，是"日均处理万亿 token"的推理引擎。2026-01 项目 spin-out 成 <strong>RadixArk</strong>，<span class="chip c-tp">第三方</span> 约 <strong>$400M 估值</strong>（TechCrunch）。<strong>融资</strong>：2026-05 宣布 <strong>$100M 种子轮</strong>，<strong>Accel 领投</strong>，天使含 <strong>Intel CEO Lip-Bu Tan</strong>。<strong>使命</strong>："Democratize Frontier AI Infrastructure" / "Ship AI for All"——做开放的前沿 AI 基础设施。<strong>时机</strong>：HuggingFace 的 TGI 在 2025-12 进入维护模式，SGLang 顺势成为主要开源替代；推理市场被各方称为 "battleground"。<strong>两条产品线</strong>：推理 = SGLang，RL 训练 = Miles。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-1.svg" alt="RadixArk 结构图：融资节点向下分出产品线一（SGLang，RadixAttention）与产品线二（Miles，SGLang rollout + Megatron 训练，从 slime fork），两条产品线分别通向基础设施入口一推理服务与入口二 RL 后训练；SGLang 以"rollout 复用同一引擎"指向 Miles">
+  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-1.svg" alt="RadixArk 结构图：融资节点向下分出产品线一（SGLang，RadixAttention）与产品线二（Miles，SGLang rollout + Megatron 训练，从 slime fork），两条产品线分别通向基础设施入口一推理服务与入口二 RL 后训练；SGLang 以"rollout 复用同一引擎"指向 Miles" loading="lazy" decoding="async" width="858" height="844">
   <figcaption><span class="fnum">图 1</span>RadixArk 的两条产品线与两个基础设施入口。融资信息（约 $400M 估值、Accel 领投、$100M 种子轮、Intel CEO 天使）位于顶部；SGLang 与 Miles 之间的边标注"rollout 复用同一引擎"。<span class="chip c-inf">推断</span> 本站图，由原文第 1 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -106,7 +106,7 @@
 <p><strong>Miles（RL 训练框架）</strong>。栈 = SGLang（rollout）+ Megatron-LM（训练），从 slime（智谱框架，已用于 GLM-4.6 与大规模 MoE 训练）fork 而来。核心创新：<span class="chip c-vr">自报</span> <strong>统一 FP8 流水线</strong>——首个端到端 FP8 采样 + 训练，让训练和推理用完全相同的 FP8 量化逻辑，消除 MoE RL 里量化不一致导致的"RL 崩溃"；<strong>Rollout Routing Replay（R3）</strong>——在 SGLang 推理时记录 MoE 的专家路由决策，在 Megatron 训练时回放，专家选择逐比特对齐，根治 MoE 的 train-inference mismatch，是 Miles 最具技术难度的创新；<strong>INT4 QAT</strong>——量化感知训练，让 1TB+ 模型单机可部署；<strong>在线 draft 模型投机解码</strong>——rollout 提速 25%+；<strong>零拷贝权重同步</strong>（CUDA IPC）、<strong>partial rollout</strong>（多轮）、<strong>截断 + 掩码重要性采样</strong>（修正 off-policy 偏差）、<strong>多智能体协同训练</strong>、<strong>VLM + LLM 统一</strong>。支持 DeepSeek（R1 / V3 / V3.2）、Qwen、Llama、Gemma、GLM。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-2.svg" alt="Miles 技术栈：Rollout 采样侧 SGLang（记录 MoE 专家路由）→ 训推桥接核心（R3 路由回放、统一 FP8、零拷贝权重同步 CUDA IPC）→ 训练侧 Megatron-LM（支持 EP）；外围加速与稳定（INT4 QAT、在线 draft 投机解码、partial rollout、截断加掩码 IS、多智能体与 VLM 统一）以虚线覆盖桥接层；支持模型列表指向 SGLang">
+  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-2.svg" alt="Miles 技术栈：Rollout 采样侧 SGLang（记录 MoE 专家路由）→ 训推桥接核心（R3 路由回放、统一 FP8、零拷贝权重同步 CUDA IPC）→ 训练侧 Megatron-LM（支持 EP）；外围加速与稳定（INT4 QAT、在线 draft 投机解码、partial rollout、截断加掩码 IS、多智能体与 VLM 统一）以虚线覆盖桥接层；支持模型列表指向 SGLang" loading="lazy" decoding="async" width="3394" height="399">
   <figcaption><span class="fnum">图 2</span>Miles 技术栈四层：rollout 采样侧、训推桥接核心创新、训练侧、外围加速与稳定。R3 与统一 FP8 从 SGLang 指向 Megatron，零拷贝权重同步反向从 Megatron 回传到 SGLang。<span class="chip c-inf">推断</span> 本站图，由原文第 2 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -152,7 +152,7 @@
 <p>传统对齐手段是"<strong>训练时重算</strong>"：拿到 rollout 后训练引擎重跑前向、重算 logprob（乃至重算 gating）逼近 <code>π_old</code>。但这在 MoE 上有固有缺陷——训练引擎重算 gating 时，argmax 边界可能已经翻转，重算出的专家集合和采样时不是同一套。重算越精确，越是在用 Megatron 的 router 数值复现一个本属于 SGLang 的离散决策，而离散决策恰是不可复现的那部分。R3 换了思路：<strong>不重算路由，而是记录 - 回放路由。</strong></p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-3.svg" alt="R3 时序图：采样请求发起 rollout；SGLang 逐 token 生成时选择专家并把选中的专家记录到 Replay Buffer；返回采样序列；Buffer 保存完整专家路由决策；训练时回放同样的专家选择给 Megatron，Megatron 不重新路由、直接用回放的专家，专家选择与推理逐比特对齐，消除 MoE 训推失配">
+  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-3.svg" alt="R3 时序图：采样请求发起 rollout；SGLang 逐 token 生成时选择专家并把选中的专家记录到 Replay Buffer；返回采样序列；Buffer 保存完整专家路由决策；训练时回放同样的专家选择给 Megatron，Megatron 不重新路由、直接用回放的专家，专家选择与推理逐比特对齐，消除 MoE 训推失配" loading="lazy" decoding="async" width="1047" height="750">
   <figcaption><span class="fnum">图 3</span>R3 时序：SGLang 在逐 token 生成循环内把每步选中的专家记录到 Replay Buffer；Megatron 训练走到 MoE 层时不用自己的 gating argmax，直接回放 Buffer 中的专家集合。<span class="chip c-inf">推断</span> 本站图，由原文第 3 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -179,7 +179,7 @@
 <p>R3 把离散路由固定为逐比特一致，但前向里还有<strong>连续数值通路</strong>——专家 FFN 的矩阵乘、attention、归一化。如果训练和推理在这条通路上用的 FP8 量化逻辑不同，即使专家选对了，logprob 照样会漂。量化不一致独立于路由就能破坏一致性：推理侧（SGLang）为吞吐用一套 FP8（scale 选取、per-tensor / per-channel / per-block 粒度、累加与反量化顺序、kernel），训练侧（Megatron）若用另一套 FP8 甚至 BF16，同一组权重和激活在两边算出的 logits 就有系统性偏差，经 softmax 进 logprob、进 <code>r</code>——和路由失配是同一根源的两条并行通道；而且 FP8 量化误差和 scale、激活分布相关，是<strong>有偏</strong>的，无法靠采样平均掉，长训练里累积成崩溃。</p>
 
 <figure>
-  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-4.svg" alt="两条链对照：旧做法——训练 FP8 与推理 FP8 量化逻辑不同 → 数值漂移 → MoE RL 崩溃；Miles 做法——端到端统一 FP8 → 采样与训练同一套量化 → 数值完全一致 → RL 稳定；旧做法以虚线"Miles 用统一量化根治"指向新做法">
+  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-4.svg" alt="两条链对照：旧做法——训练 FP8 与推理 FP8 量化逻辑不同 → 数值漂移 → MoE RL 崩溃；Miles 做法——端到端统一 FP8 → 采样与训练同一套量化 → 数值完全一致 → RL 稳定；旧做法以虚线"Miles 用统一量化根治"指向新做法" loading="lazy" decoding="async" width="1101" height="386">
   <figcaption><span class="fnum">图 4</span>不一致（旧做法）与统一 FP8（Miles 做法）两条因果链。<span class="chip c-inf">推断</span> 本站图，由原文第 4 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -189,7 +189,7 @@
 </figure>
 
 <figure>
-  <img src="img/dispatch-09-radixark-miles/orig-2.png" alt="Miles 文档中的端到端 MXFP8 RL 配方数据流图：BF16 activation 与 BF16 weight 各量化为 row-wise 与 col-wise 的 1x32 block MXFP8 副本；row-wise 副本进入 Fprop，col-wise 副本进入 Wgrad 与 Dgrad；MXFP8 weight 一条虚线标注 to rollout；Wgrad 输出到 Optimizer states / FP32 master weight，再以虚线回到 BF16 weight；BF16 gradient 量化为 MXFP8 gradient 进入 Wgrad 与 Dgrad，Dgrad 输出虚线 to prev layer">
+  <img src="img/dispatch-09-radixark-miles/orig-2.webp" alt="Miles 文档中的端到端 MXFP8 RL 配方数据流图：BF16 activation 与 BF16 weight 各量化为 row-wise 与 col-wise 的 1x32 block MXFP8 副本；row-wise 副本进入 Fprop，col-wise 副本进入 Wgrad 与 Dgrad；MXFP8 weight 一条虚线标注 to rollout；Wgrad 输出到 Optimizer states / FP32 master weight，再以虚线回到 BF16 weight；BF16 gradient 量化为 MXFP8 gradient 进入 Wgrad 与 Dgrad，Dgrad 输出虚线 to prev layer" loading="lazy" decoding="async" width="1800" height="1048">
   <figcaption><span class="fnum">图 5</span>Miles 文档中的端到端 MXFP8 RL 配方（Blackwell 上的低精度路线，属统一低精度流水线的后续形态）。BF16 激活与权重各被量化为两份 1×32 block 微缩放副本（row-wise / col-wise），分别供前向（Fprop）、权重梯度（Wgrad）与数据梯度（Dgrad）三类 GEMM 使用；优化器状态与主权重保持 FP32；量化后的权重经虚线 "to rollout" 直接供 rollout 使用。<span class="chip c-vr">自报</span> 取自 radixark/miles 仓库文档（docs/assets/images/low-precision/mxfp8-e2e.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -236,7 +236,7 @@
 </div>
 
 <figure>
-  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-5.svg" alt="Megatron 系（verl、slime、Miles、NeMo-RL、ROLL，能正确做 EP）与非 Megatron 系（OpenRLHF，MoE 较弱）两组；slime 以 fork 共演化指向 Miles；"前沿模型几乎都是稀疏 MoE"节点以"需要 EP 才能正确训练"指向 Megatron 系，以虚线"EP 缺位则难以承载"指向非 Megatron 系">
+  <img class="diagram" src="img/dispatch-09-radixark-miles/fig-5.svg" alt="Megatron 系（verl、slime、Miles、NeMo-RL、ROLL，能正确做 EP）与非 Megatron 系（OpenRLHF，MoE 较弱）两组；slime 以 fork 共演化指向 Miles；"前沿模型几乎都是稀疏 MoE"节点以"需要 EP 才能正确训练"指向 Megatron 系，以虚线"EP 缺位则难以承载"指向非 Megatron 系" loading="lazy" decoding="async" width="1155" height="724">
   <figcaption><span class="fnum">图 6</span>RL 框架按能否正确做 EP 分组。前沿模型的稀疏 MoE 形态把需求推向 Megatron 系；Miles 在该组内以端到端 FP8 + R3 与 SGLang 原生 rollout 区别于 verl / slime；NeMo-RL 有 FP8 但绑定 NVIDIA 栈。<span class="chip c-inf">推断</span> 本站图，由原文第 5 个 mermaid 块渲染。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
@@ -261,7 +261,7 @@
 <p><strong>风险</strong>：开源基础设施变现未验证——能否从"免费引擎"转为"盈利的企业产品"仍待验证；vLLM 生态更大、融资更多（Inferact $800M），社区与广度上 SGLang 仍追赶；巨头竞争——NVIDIA（NeMo-RL + 硬件捆绑）、各云厂自带推理服务、价格战导致推理商品化；栈依赖——深度绑定 Megatron / NVIDIA，对国产 NPU（昇腾）的支持是另一条战线；团队 / 项目的开源中国渊源（slime / THUDM 共演化），在部分企业 / 政府采购上可能成为考量。</p>
 
 <figure>
-  <img src="img/dispatch-09-radixark-miles/orig-1.png" alt="Miles 仓库的致谢图：六行组织标识，包括硬件与框架厂商、云与算力服务商、AI 初创公司、模型实验室与多所大学">
+  <img src="img/dispatch-09-radixark-miles/orig-1.webp" alt="Miles 仓库的致谢图：六行组织标识，包括硬件与框架厂商、云与算力服务商、AI 初创公司、模型实验室与多所大学" loading="lazy" decoding="async" width="1800" height="818">
   <figcaption><span class="fnum">图 7</span>Miles 仓库 README 的致谢图，标题为"在 Miles 上构建、为其贡献、与其协作的组织"，含硬件与框架厂商、云与算力服务商、agent 与环境类初创公司、多家模型实验室与多所大学的标识。<span class="chip c-vr">自报</span> 取自 radixark/miles 仓库（docs/assets/images/acknowledgment.png）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
