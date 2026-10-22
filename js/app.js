@@ -1088,6 +1088,9 @@ async function wireCompare() {
     ${M ? `<div class="cmp-metricbar"><h4 class="cmp-sub" style="margin:0">Benchmarks</h4>${sel}</div>
     <div class="swe-legend"><span><i class="sw open"></i>open-weight</span><span><i class="sw closed"></i>closed (ref)</span></div>
     <div id="metric-chart"></div>` : ""}
+    ${d.accelerators ? `<h4 class="cmp-sub">${escapeHtml(d.accelerators.title)}</h4>
+    ${table(d.accelerators)}
+    <div class="cmp-note">${escapeHtml(d.accelerators.note || "")}</div>` : ""}
     <h4 class="cmp-sub">Sparse-attention designs (the 2026 dividing line)</h4>
     ${table(d.attention)}
     ${takeaways ? `<div class="cmp-take"><strong>For RL-on-NPU:</strong><ul>${takeaways}</ul></div>` : ""}
