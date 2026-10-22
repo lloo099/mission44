@@ -8,7 +8,7 @@
 
 1. **逐条核验**。底稿内嵌了两篇论文的原始 PDF(哈希与其声明值一致),本站据此对照原文核对了 66 处承重数字,**全部吻合**;底稿自己标出的 MiMo-V2.6 Table 1 中 Pro 激活参数写作"42T"(引言为 42B)的笔误,在原文中确认存在。详见文末「本站核验」。
 2. **格式转换**。底稿的四个交互计算器与一段交互时序改为按其默认参数计算的静态算例与表格;三幅"架构简图"与一幅部署组件图改为本站 Mermaid 图(图 1–4)。
-3. **图与原文的处理**。底稿内嵌的两篇论文完整 PDF 与 30 幅论文原图,**本站未转载**:两篇论文在本环境都查不到可核实的再发布许可,这与本站 D44、D45 弃用许可不明原图的规则一致。每处原图位置保留了底稿对该图的解读与适用范围,并注明原文图号与页码。
+3. **图与原文的处理**。底稿内嵌的 **30 幅论文原图经站长确认可以使用,已全部随文发布**,每幅保留原文图号与页码,并附底稿对该图的解读与适用范围;两篇论文的**完整 PDF 未随本篇发布**,原文请经 [arXiv:2609.22978](https://arxiv.org/abs/2609.22978) 与 [MiMo-V2.6 官方页面](https://mimo.xiaomi.com/mimo-v2-6) 查阅。
 
 承接 D29(DeepSeek Harness 与 DSec 初见)、D33(verl)、D36(沙箱执行层)、D43 / D44(自进化与把关)、D27(低比特训练)。
 
@@ -784,10 +784,12 @@ flowchart TB
     ST --- BE
 ```
 
-*图 2 · 本站图(据原稿「DSec 分层职责与数据通路」架构简图重绘,对应 DSec §2–3、§5–6)。概括逻辑职责,不表示物理节点或设备数量。论文自己的平台架构图见原文 Figure 1(p.6)。*
+*图 2 · 本站图(据原稿「DSec 分层职责与数据通路」架构简图重绘,对应 DSec §2–3、§5–6)。概括逻辑职责,不表示物理节点或设备数量。论文自己的平台架构图见下方的原图 DSec Figure 1(p.6)。*
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 1 — 平台架构 〔DSec · Figure 1 · p.6〕
->
+![DSec Figure 1: 平台架构](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d1.png)
+
+*论文原图 · DSec · Figure 1 — 平台架构〔DSec · Figure 1 · p.6〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**创建路径经过鉴权、节点选择与 Edge 准入；已建立会话的操作路径为 API Server → Edge → Aether → Chronus。底部存储提供环境镜像。
 >
 > **适用范围：**FnCall 使用单独的预创建容器执行路径，不应硬套 Aether / Chronus。图中的框不是独立物理节点。
@@ -835,14 +837,18 @@ flowchart TB
 
 *CPU 间歇忙、内存长期占，叠加批量创建与低复用镜像，是 DSec 设计的起点。*
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 3 — 一次 sandbox 的 CPU / 内存时间线 〔DSec · Figure 3 · p.10〕
->
+![DSec Figure 3: 一次 sandbox 的 CPU / 内存时间线](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d3.png)
+
+*论文原图 · DSec · Figure 3 — 一次 sandbox 的 CPU / 内存时间线〔DSec · Figure 3 · p.10〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**一次执行包含 setup、tool call 与 test 三个阶段。CPU 呈现短时峰值，内存和执行状态则跨阶段持续保留。
 >
 > **适用范围：**这是一条代表性轨迹，不是全体任务的平均曲线。
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 5 — 平均使用与峰值使用 〔DSec · Figure 5 · p.11〕
->
+![DSec Figure 5: 平均使用与峰值使用](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d5.png)
+
+*论文原图 · DSec · Figure 5 — 平均使用与峰值使用〔DSec · Figure 5 · p.11〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**横轴为使用量与申请量之比。约 90% 的环境平均 CPU 使用不超过申请额度的 5%，但平均值与峰值分布明显不同。
 >
 > **适用范围：**5% 不是可以无条件超配 20 倍的证明；并发测试和编译峰值可能相关。
@@ -858,22 +864,30 @@ flowchart TB
 
 **补充原图：突发、存活密度与镜像工作集**
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 2 — 每个作业创建的 sandbox 数 〔DSec · Figure 2 · p.9〕
->
+![DSec Figure 2: 每个作业创建的 sandbox 数](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d2.png)
+
+*论文原图 · DSec · Figure 2 — 每个作业创建的 sandbox 数〔DSec · Figure 2 · p.9〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**分布具有明显长尾。这里的 task 是批量作业口径，数千个环境对应一个作业，而不是单道题的固定环境需求。
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 6 — 一天内单节点存活实例数 〔DSec · Figure 6 · p.12〕
->
+![DSec Figure 6: 一天内单节点存活实例数](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d6.png)
+
+*论文原图 · DSec · Figure 6 — 一天内单节点存活实例数〔DSec · Figure 6 · p.12〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**该采样日的单节点峰值为 1,048 个 container 和 524 个 microVM；更高的稳定运行点在正文另行报告。
 >
 > **适用范围：**不能把不同采样窗口的峰值混成同一台机器同一时刻的数量。
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 7 — 环境生命周期 CDF 〔DSec · Figure 7 · p.12〕
->
+![DSec Figure 7: 环境生命周期 CDF](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d7.png)
+
+*论文原图 · DSec · Figure 7 — 环境生命周期 CDF〔DSec · Figure 7 · p.12〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**生命周期采用对数横轴，中位数约 15–17 分钟，p99 超过三小时。长尾增加了状态驻留和恢复的重要性。
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 8 — 任务内镜像 fanout 〔DSec · Figure 8 · p.13〕
->
+![DSec Figure 8: 任务内镜像 fanout](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d8.png)
+
+*论文原图 · DSec · Figure 8 — 任务内镜像 fanout〔DSec · Figure 8 · p.13〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**多数镜像在单个任务内只服务少量实例，因此热点缓存难以覆盖整个环境工作集。
 
 > **分析**:低平均 CPU 使用解释了超配的可行性，长寿命和持续内存占用则决定了超配的上限。两种现象必须同时成立于容量模型中：仅按平均 CPU 利用率增加实例数，会忽略内存驻留和相关性峰值。
@@ -905,8 +919,10 @@ flowchart TB
 
 > **工程连接**:E09 将分层机制转换为第一版环境构建、版本锁定与隔离检查。
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 4 — 整体打包与组合层 〔DSec · Figure 4 · p.11〕
->
+![DSec Figure 4: 整体打包与组合层](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d4.png)
+
+*论文原图 · DSec · Figure 4 — 整体打包与组合层〔DSec · Figure 4 · p.11〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**整体镜像方案需要重建所有包含 Toolkit T1 的组合；独立分层方案只更新 T1，再与已有 base 和 workspace 组合。
 >
 > **适用范围：**降低重建数量不等于免做依赖兼容性测试。
@@ -940,8 +956,10 @@ Agent 看到的目录 = 独立可写 upper ⊕ Toolkit ⊕ Workspace ⊕ Base
 
 *virtio-pmem / DAX 减少重复文件缓存，DAMON 与 free-page reporting 回收闲置内存；两条路径针对不同的内存浪费。*
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 9 — 核心系统机制总览 〔DSec · Figure 9 · p.14〕
->
+![DSec Figure 9: 核心系统机制总览](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d9.png)
+
+*论文原图 · DSec · Figure 9 — 核心系统机制总览〔DSec · Figure 9 · p.14〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**中间为环境组合层；左侧为 container 的 CPU QoS 及镜像读取；右侧为 microVM 的共享映射、冷页回收与空闲页报告。
 >
 > **适用范围：**图里的 Host Disk Image / 3FS 与模型 KV cache 无关。
@@ -1076,8 +1094,10 @@ Agent 在同一平台安装依赖、准备仓库并验证，然后通过 pack_di
 
 〔DSec · §2.4 · pp.5–6〕〔DSec · §8.1 · p.21〕
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 10 — 按需加载与冷拉 / 热缓存 〔DSec · Figure 10 · p.22〕
->
+![DSec Figure 10: 按需加载与冷拉 / 热缓存](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d10.png)
+
+*论文原图 · DSec · Figure 10 — 按需加载与冷拉 / 热缓存〔DSec · Figure 10 · p.22〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**8,192 个容器在 10 节点上突发启动。按需加载约 35 分钟完成，接近全缓存对照，冷拉取超过 60 分钟；累计写入减少约 57%。右侧实线和虚线分别对应 IOPS 与累计写入。
 >
 > **适用范围：**1.71×是该环境负载的完成时间对照，不是完整RL或任意网络条件下固定加速。
@@ -1088,8 +1108,10 @@ Agent 在同一平台安装依赖、准备仓库并验证，然后通过 pack_di
 
 右图实线是瞬时写 IOPS，虚线是累计写入 GB，分别读取左右轴。冷拉取约 60+ 分钟、按需约 35 分钟；57% 是累计写入降低，不是完整 RL 训练成本降低。
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 11 — EROFS 挂载与每环境 tar 解压 〔DSec · Figure 11 · p.22〕
->
+![DSec Figure 11: EROFS 挂载与每环境 tar 解压](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d11.png)
+
+*论文原图 · DSec · Figure 11 — EROFS 挂载与每环境 tar 解压〔DSec · Figure 11 · p.22〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**固定预录制工具调用后，仅改变环境准备方式。完成时间由 tar 路径约 79 分钟降至 EROFS 路径约 45 分钟；tar 的总写入和峰值写吞吐分别约为 5.5 倍与 3.4 倍。
 >
 > **适用范围：**此实验隔离环境准备方式，不验证模型准确率；两个存储实验加速比不能相乘。
@@ -1100,8 +1122,10 @@ Agent 在同一平台安装依赖、准备仓库并验证，然后通过 pack_di
 
 该实验用预录工具序列固定任务行为。79→45 分钟对应此批环境工作负载；5.5× 是累计写入之比，3.4× 是峰值吞吐之比，二者不是同一指标。
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 12 — 内存共享与主动回收 〔DSec · Figure 12 · p.23〕
->
+![DSec Figure 12: 内存共享与主动回收](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d12.png)
+
+*论文原图 · DSec · Figure 12 — 内存共享与主动回收〔DSec · Figure 12 · p.23〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**pmem 使峰值内存下降 40.2%，DAMON + FPR 使内存时间积分下降 21.2%。CPU 图使用分段时间尺度，pmem 的短时峰值从 26.5% 升至 41.4%。
 >
 > **适用范围：**两个百分比口径不同不可相加；单看平均内存会漏掉OOM峰值。
@@ -1112,8 +1136,10 @@ Agent 在同一平台安装依赖、准备仓库并验证，然后通过 pack_di
 
 右图是 CPU 使用率，时间轴前段放大、后段压缩，不能按视觉横向距离比较等长时间。40.2% 是 pmem 的峰值内存改善；21.2% 是 FPR 的时间积分改善；26.5→41.4% 提示 pmem 的瞬时 CPU 成本。
 
-> **论文原图(本站未转载,见原文)**:DSec · Figure 13 — 高超配下的 CPU QoS 〔DSec · Figure 13 · p.24〕
->
+![DSec Figure 13: 高超配下的 CPU QoS](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-d13.png)
+
+*论文原图 · DSec · Figure 13 — 高超配下的 CPU QoS〔DSec · Figure 13 · p.24〕,出自 DSec(arXiv:2609.22978)。*
+
 > **图示解读：**在 50% BE 背景负载下，两级 QoS 将 LS 单步延迟膨胀从 45.2% 限制到 17.3%；仅使用 SCHED_IDLE 的改善有限。
 >
 > **适用范围：**尚有带宽、LLC和睿频干扰，未实现零干扰。
@@ -1157,10 +1183,12 @@ flowchart TB
     PK -->|"权重更新 + expert QDQ"| INF
 ```
 
-*图 3 · 本站图(据原稿「MiMo:从任务到参数更新的职责图」重绘,对应 MiMo-V2.6 Figure 14 与 §6)。控制面负责派单、长度、奖励、引用与计划;数据面按需写入 / 读取大张量。每条工具调用 ≠ 每次模型参数更新。论文自己的 RL 基础设施总览见原文 Figure 14(p.28)。*
+*图 3 · 本站图(据原稿「MiMo:从任务到参数更新的职责图」重绘,对应 MiMo-V2.6 Figure 14 与 §6)。控制面负责派单、长度、奖励、引用与计划;数据面按需写入 / 读取大张量。每条工具调用 ≠ 每次模型参数更新。论文自己的 RL 基础设施总览见下方的原图 MiMo-V2.6 Figure 14(p.28)。*
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 14 — RL infrastructure 总览 〔MiMo-V2.6 · Figure 14 · p.28〕
->
+![MiMo-V2.6 Figure 14: RL infrastructure 总览](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m14.png)
+
+*论文原图 · MiMo-V2.6 · Figure 14 — RL infrastructure 总览〔MiMo-V2.6 · Figure 14 · p.28〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**下半部通过 Harness Pool 与 Inference Engine 执行多轮交互；上半部以 metadata 管理调度，以 payload 保存训练数据。Packer 组织消费，Learner 更新权重并回流推理侧。
 >
 > **适用范围：**图没有披露精确设备共置、卡数及所有屏障。不能仅从图推导每步的物理时序或“无任何等待”。
@@ -1181,8 +1209,10 @@ flowchart TB
 
 *先建立足够强的探索基础，再扩大环境交互；架构、长上下文和低精度适应是基础条件。*
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 2 — 模型架构，而不是 RL 系统架构 〔MiMo-V2.6 · Figure 2 · p.5〕
->
+![MiMo-V2.6 Figure 2: 模型架构，而不是 RL 系统架构](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m2.png)
+
+*论文原图 · MiMo-V2.6 · Figure 2 — 模型架构，而不是 RL 系统架构〔MiMo-V2.6 · Figure 2 · p.5〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**视觉、音频和文本映射为共享 token 序列，主干交替使用局部 SWA、全局注意力与稀疏 MoE，右侧为 MTP 辅助结构。
 >
 > **适用范围：**模型结构与 Figure 14 的服务及数据流结构是不同层次；主干预训练MTP配置与RL默认DFlash block配置也不同。
@@ -1220,8 +1250,10 @@ MiMo-ViT以行/列序列化的局部SWA与周期性GA降低高分辨率处理成
 
 *训练计算、环境与 Harness 覆盖、grader 计算构成三条扩展轴；大批次更新同时增加经验量、存储压力和采样调度复杂度。*
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 1 — RL全过程的多领域进展 〔MiMo-V2.6 · Figure 1 · p.1〕
->
+![MiMo-V2.6 Figure 1: RL全过程的多领域进展](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m1.png)
+
+*论文原图 · MiMo-V2.6 · Figure 1 — RL全过程的多领域进展〔MiMo-V2.6 · Figure 1 · p.1〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**六类基准在 RL 更新过程中总体改善，各 checkpoint 之间存在波动；横轴为训练更新步，而非工具交互轮数。
 >
 > **适用范围：**这是整体recipe的结果，不能将所有变化归因于其中一个组件。
@@ -1243,8 +1275,10 @@ MiMo-ViT以行/列序列化的局部SWA与周期性GA降低高分辨率处理成
 
 〔MiMo-V2.6 · §5.1 · pp.20–21〕
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 3 — 成本—能力曲线与成本分解 〔MiMo-V2.6 · Figure 3 · p.8〕
->
+![MiMo-V2.6 Figure 3: 成本—能力曲线与成本分解](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m3.png)
+
+*论文原图 · MiMo-V2.6 · Figure 3 — 成本—能力曲线与成本分解〔MiMo-V2.6 · Figure 3 · p.8〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**Pro 与 Flash 的本轮 RL 成本约为 260 万和 90 万美元。训练／rollout／grader 占比分别为 Pro 43.5%／43.8%／12.7%、Flash 40.9%／44.9%／14.2%。左图采用 DeepSWE v1.1 average@3。
 >
 > **适用范围：**不是从预训练开始的总成本；不能用美元直接精确反推卡型和卡数；average@3不是三次任一成功就算成功的pass@3。
@@ -1259,16 +1293,20 @@ MiMo-ViT以行/列序列化的局部SWA与周期性GA降低高分辨率处理成
 
 *训练数据的核心不是题目数量，而是任务说明、执行环境和验收标准的一致性。*
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 4 — 代码任务合成与监督审查 〔MiMo-V2.6 · Figure 4 · p.10〕
->
+![MiMo-V2.6 Figure 4: 代码任务合成与监督审查](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m4.png)
+
+*论文原图 · MiMo-V2.6 · Figure 4 — 代码任务合成与监督审查〔MiMo-V2.6 · Figure 4 · p.10〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**多来源任务合成后分别检查监督准确性与执行稳定性：前者关注规格—测试一致，后者关注重复执行结果。
 >
 > **适用范围：**正确参考patch通过，不等于测试不会奖励错误实现或拒绝其他正确方案。
 
 代码任务来自GitHub Issue/PR、内部日常开发需求、复杂规格实现、现有代码功能反推、逐步加长的工程任务，再补充公共/授权数据。每题先由Coding Agent尝试4次，Auditor联查题意、测试、参考patch和四条轨迹；发现“错解却通过”的假阳性及“合理解却失败”的假阴性。对有参考patch的任务，要求F2P/P2P修复前后的预期结果稳定重复8次。〔MiMo-V2.6 · §4.2.1 · pp.9–11〕
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 5 — 通用工作流环境与任务构造 〔MiMo-V2.6 · Figure 5 · p.12〕
->
+![MiMo-V2.6 Figure 5: 通用工作流环境与任务构造](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m5.png)
+
+*论文原图 · MiMo-V2.6 · Figure 5 — 通用工作流环境与任务构造〔MiMo-V2.6 · Figure 5 · p.12〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**真实文件和本地软件 mock 组成可重置环境；Agent 探索后合成任务与 rubric，多模型 rollout 用于修订判分标准。
 >
 > **适用范围：**重复判分一致仅说明稳定，不足以说明判断正确；mock覆盖范围仍限定所测能力。
@@ -1296,8 +1334,10 @@ MiMo-ViT以行/列序列化的局部SWA与周期性GA降低高分辨率处理成
 
 〔MiMo-V2.6 · Heterogeneous Agent Harnesses · p.28〕
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 6 — 训练前与训练中的反作弊 〔MiMo-V2.6 · Figure 6 · p.16〕
->
+![MiMo-V2.6 Figure 6: 训练前与训练中的反作弊](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m6.png)
+
+*论文原图 · MiMo-V2.6 · Figure 6 — 训练前与训练中的反作弊〔MiMo-V2.6 · Figure 6 · p.16〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**训练前进行制品、缓存、Git 历史和网络清理，再由 hack agent 迭代探测；训练期间通过离线轨迹审计发现新的利用路径。
 >
 > **适用范围：**日志中确证作弊低于2%不等于真实作弊率已知或全部漏洞被消除。
@@ -1395,8 +1435,10 @@ Rule 可以用手写逻辑或模型judge，在segment/context/sequence上识别�
 
 > **工程连接**:E14 将论文公式映射为源选择、准入、放置与训练接受四类决策。
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 15 — 25个数据源的异质性 〔MiMo-V2.6 · Figure 15 · p.30〕
->
+![MiMo-V2.6 Figure 15: 25个数据源的异质性](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m15.png)
+
+*论文原图 · MiMo-V2.6 · Figure 15 — 25个数据源的异质性〔MiMo-V2.6 · Figure 15 · p.30〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**两个坐标轴均为对数：横轴是平均生成 token 数，纵轴是活跃 rollout 时长。起止点展示不同源随训练变化的情况，长度与时长跨度约为 90 倍和 66 倍。
 >
 > **适用范围：**不能用一次固定平均值永久估计所有后续任务；active时长排除了训练阶段暂停。
@@ -1422,8 +1464,10 @@ m_i = B_i / r_i；稳态并发需求 ∝ t_i · B_i / r_i
 
 〔MiMo-V2.6 · 式(6)–(7) · pp.30–31〕
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 16 — 调度策略仿真 〔MiMo-V2.6 · Figure 16 · p.31〕
->
+![MiMo-V2.6 Figure 16: 调度策略仿真](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m16.png)
+
+*论文原图 · MiMo-V2.6 · Figure 16 — 调度策略仿真〔MiMo-V2.6 · Figure 16 · p.31〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**上排为保留组数相对目标的收集进度，下排为 sequence slot 占用份额。依次比较缺口型、目标型、缺口校正与稳态启动配置，超额收集可跨步结转。
 >
 > **适用范围：**这是6源trace-driven simulation；明确排除training time、credit-assignment latency、staleness expiry和replay，不能当完整生产端到端加速实验。
@@ -1540,8 +1584,10 @@ M = 1[(A ≥ 0 且 ε^l_+ ≤ r ≤ ε^h_+) 或 (A < 0 且 ε^l_− ≤ r ≤ ε
 
 *GRS改变奖励的细分依据，GAR重分配成功轨迹的正优势；它们用于不同代码任务子集，不是每条轨迹必然顺序叠加。*
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 7 — 两条groupwise grading路线 〔MiMo-V2.6 · Figure 7 · p.17〕
->
+![MiMo-V2.6 Figure 7: 两条groupwise grading路线](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m7.png)
+
+*论文原图 · MiMo-V2.6 · Figure 7 — 两条groupwise grading路线〔MiMo-V2.6 · Figure 7 · p.17〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**GRS 离线比较多条轨迹提炼 rubric，在线逐条评分；GAR 在线联查同组轨迹，纠正确证作弊、排序通过解并重分配序列优势。
 >
 > **适用范围：**GAR是sequence-level，最终广播response tokens；不是learned critic + GAE。
@@ -1589,8 +1635,10 @@ A′_i = λ f_iA_i（通过）；A′_i = A_i（失败）
 
 质量因子与 λ 上限为假设参数。截断并全组居中后，失败轨迹优势可能变化；此计算未包含 grader 排名和不可用结果的回退流程。
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 8 — GAR消融：通过率、轮数、总token 〔MiMo-V2.6 · Figure 8 · p.19〕
->
+![MiMo-V2.6 Figure 8: GAR消融：通过率、轮数、总token](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m8.png)
+
+*论文原图 · MiMo-V2.6 · Figure 8 — GAR消融：通过率、轮数、总token〔MiMo-V2.6 · Figure 8 · p.19〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**Flash code-only 对照采用 batch 128 与 token-mean。加入 GAR 后交互轮数相对稳定，通过率持续改善到第 52 步，但总 token 长度仍增长。
 >
 > **适用范围：**有GAR的token长度仍增长；不是“绝对越来越短”。该消融也不是主实验1568 prompt、prompt-mean设置。
@@ -1645,8 +1693,10 @@ H±/C±在**整个训练batch**按token收集，不是仅在每条轨迹内部�
 
 *有些组件减少可塑性，反而让大规模训练更稳定；冻结Router与Routing Replay解决的是不同问题。*
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 11 — 冻结Router的受控对照 〔MiMo-V2.6 · Figure 11 · p.24〕
->
+![MiMo-V2.6 Figure 11: 冻结Router的受控对照](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m11.png)
+
+*论文原图 · MiMo-V2.6 · Figure 11 — 冻结Router的受控对照〔MiMo-V2.6 · Figure 11 · p.24〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**两条 Pro run 仅 Router 是否冻结不同。不冻结时前 20 步的第 9 层 CV 从 0.78 增至 2.0，峰值负载从平均值的 6 倍增至 16 倍，冷专家比例由 0.5% 增至 22%。
 >
 > **适用范围：**只定位该设置下的Router drift，不证明任何MoE RL都必须冻结全部Router。
@@ -1680,8 +1730,10 @@ W固定后，上游hidden state和两引擎的数值差异仍可能变，因此R
 
 *既保留完整student rollout，也用teacher/SFT前缀启动新的student单轮；示范提供上下文，不是固定续写答案。*
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 13 — MOPD2三条路径 〔MiMo-V2.6 · Figure 13 · p.25〕
->
+![MiMo-V2.6 Figure 13: MOPD2三条路径](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m13.png)
+
+*论文原图 · MiMo-V2.6 · Figure 13 — MOPD2三条路径〔MiMo-V2.6 · Figure 13 · p.25〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**Standard MOPD 由 student 完整生成；Teacher-Prefix 与 SFT-Prefix 将源轨迹拆成多个决策点前的完整历史，由 student 生成新的单轮 continuation，再接受领域 teacher 监督。
 >
 > **适用范围：**前缀来自teacher或SFT，不能说整条状态分布都来自当前student；也不是每轮一定重跑前面环境操作。
@@ -1704,20 +1756,26 @@ W固定后，上游hidden state和两引擎的数值差异仍可能变，因此R
 
 *整体变强不代表同成本下所有组件都有独立收益；失败日志揭示了平均指标隐藏的风险。*
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 9 — 分数提高伴随更多token 〔MiMo-V2.6 · Figure 9 · p.22〕
->
+![MiMo-V2.6 Figure 9: 分数提高伴随更多token](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m9.png)
+
+*论文原图 · MiMo-V2.6 · Figure 9 — 分数提高伴随更多token〔MiMo-V2.6 · Figure 9 · p.22〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**性能曲线与 token 曲线共同显示：分数总体上升通常伴随着更多总 token 使用。
 >
 > **适用范围：**不能将“更高token效率”表述为绝对输出不断缩短，或相同推理预算下全部增益已证明。
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 10 — 训练与held-out Harness 〔MiMo-V2.6 · Figure 10 · p.23〕
->
+![MiMo-V2.6 Figure 10: 训练与held-out Harness](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m10.png)
+
+*论文原图 · MiMo-V2.6 · Figure 10 — 训练与held-out Harness〔MiMo-V2.6 · Figure 10 · p.23〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**四种训练 mini-harness 和三种 held-out harness 均出现提升；held-out 平均 Pass@1 约由 50% 升至 66%。
 >
 > **适用范围：**这是跨Harness迁移证据，不是严格的等预算single-vs-multi-harness因果消融。
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 12 — 30步训练的中断时间线 〔MiMo-V2.6 · Figure 12 · p.24〕
->
+![MiMo-V2.6 Figure 12: 30步训练的中断时间线](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m12.png)
+
+*论文原图 · MiMo-V2.6 · Figure 12 — 30步训练的中断时间线〔MiMo-V2.6 · Figure 12 · p.24〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**30 步运行总时长为 Pro 123.1 小时、Flash 81.8 小时，包含完成步骤以及不同类型的故障和恢复区间。
 >
 > **适用范围：**总时长/30只是含故障的run平均间隔，不是稳态纯计算step耗时，更不能迁移到512卡配置。
@@ -1762,8 +1820,10 @@ Table7另比较四种训练Harness和三种held-out Harness的7列结果；SWE-b
 
 **展开原图：MiMo-V2.6 Figure 17 · 视觉案例：原模型、SFT、RL**
 
-> **论文原图(本站未转载,见原文)**:MiMo-V2.6 · Figure 17 — 视觉案例：原模型、SFT、RL 〔MiMo-V2.6 · Figure 17 · p.37〕
->
+![MiMo-V2.6 Figure 17: 视觉案例：原模型、SFT、RL](reads/img/dispatch-46-dsec-mimo-rl-infra/orig-m17.png)
+
+*论文原图 · MiMo-V2.6 · Figure 17 — 视觉案例：原模型、SFT、RL〔MiMo-V2.6 · Figure 17 · p.37〕,出自 MiMo-V2.6 技术报告。*
+
 > **图示解读：**同一网页任务的输出并排展示原模型、SFT 与 RL 的定性差异；总体性能仍需结合 Table 6 评价。
 >
 > **适用范围：**少量挑选案例不是完整质量分布，也不能验证全部交互功能。
@@ -2119,7 +2179,7 @@ GRPO依赖同题不同结果形成相对信号；正常失败也可以是有效�
 
 **图表引用(本站版本)**
 
-图注使用论文名称、图号和页码定位,〔…〕内为原文章节与页码。论文原图与架构简图区别标示,图表数据和公式保持各自来源的定义。原稿内嵌了两篇论文的完整 PDF 与 30 幅论文原图,**本站版本未转载**(许可无法核实,见文首说明),原文请经 [arXiv:2609.22978](https://arxiv.org/abs/2609.22978) 与 [MiMo-V2.6 官方页面](https://mimo.xiaomi.com/mimo-v2-6) 查阅;原稿的四个交互计算器与交互时序已改为静态算例与表格。
+图注使用论文名称、图号和页码定位,〔…〕内为原文章节与页码。论文原图与架构简图区别标示,图表数据和公式保持各自来源的定义。原稿内嵌的 30 幅论文原图已随本篇发布(经站长确认可用);两篇论文的完整 PDF **未随本篇发布**,原文请经 [arXiv:2609.22978](https://arxiv.org/abs/2609.22978) 与 [MiMo-V2.6 官方页面](https://mimo.xiaomi.com/mimo-v2-6) 查阅;原稿的四个交互计算器与交互时序已改为静态算例与表格。
 
 #### 实施参考：官方项目文档
 

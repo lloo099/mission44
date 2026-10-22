@@ -35,7 +35,7 @@
   <div class="byline">
     <span>RL-on-NPU Research Dashboard · D46</span>
     <span>承接 D29 / D33 / D36 / D43 / D44 / D27</span>
-    <span>原图 0 张 · 本站图 4 张</span>
+    <span>原图 12 张 · 本站图 4 张</span>
     <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
   </div>
 </header>
@@ -63,7 +63,7 @@
 
 <div class="note">
   <span class="ntitle">本文的读法</span>
-  <p>每节固定三段：<strong>朴素实现</strong>（左栏，灰）——不看论文时最自然的做法，也是最常见的错误；<strong>论文与底稿的做法</strong>（右栏，橙）——两篇论文的机制与底稿给出的工程方案；<strong>差在哪</strong>（下方色块）——差异的后果，以及对 RL-on-NPU 的含义。数字来源三分：<span class="chip c-tp">第三方</span> 本站对照原文核验过的论文报告值（本页的论文数字均已逐条核对原文）；<span class="chip c-vr">自报</span> 论文作者口径的生产与实验数字；<span class="chip c-inf">推断</span> 底稿或本站的设计建议与算例。<strong>两点限定</strong>：其一，底稿内嵌的 30 幅论文原图与两篇完整 PDF 本站未转载（许可无法核实，与 D44 / D45 同一规则），本页四幅图均为据底稿架构简图重绘的本站图；其二，底稿中标为"设计建议""实施方案""集成方案"的内容不是两篇论文的结论。</p>
+  <p>每节固定三段：<strong>朴素实现</strong>（左栏，灰）——不看论文时最自然的做法，也是最常见的错误；<strong>论文与底稿的做法</strong>（右栏，橙）——两篇论文的机制与底稿给出的工程方案；<strong>差在哪</strong>（下方色块）——差异的后果，以及对 RL-on-NPU 的含义。数字来源三分：<span class="chip c-tp">第三方</span> 本站对照原文核验过的论文报告值（本页的论文数字均已逐条核对原文）；<span class="chip c-vr">自报</span> 论文作者口径的生产与实验数字；<span class="chip c-inf">推断</span> 底稿或本站的设计建议与算例。<strong>两点限定</strong>：其一，底稿内嵌的 30 幅论文原图经站长确认可用，本页选用其中 12 幅并逐张配读图说明（Markdown 源收录全部 30 幅），另有 4 幅据底稿架构简图重绘的本站图；两篇论文的完整 PDF 未随文发布；其二，底稿中标为"设计建议""实施方案""集成方案"的内容不是两篇论文的结论。</p>
 </div>
 
 <div class="formula">
@@ -271,11 +271,20 @@
 
 <figure>
   <img class="diagram" src="img/dispatch-46-dsec-mimo-rl-infra/fig-2.svg" alt="DSec 分层职责图：调用方经 libdsec 到 IAM 与 API Server，经 Placement 与 Watcher 放置到节点侧 Edge；会话操作经 Aether 到 Chronus；FnCall 走独立路径；后端为 Container、MicroVM 与 Full VM；底层为共享只读环境与私有可写状态">
-  <figcaption><span class="fnum">图 2</span>DSec 分层职责与数据通路（对应原文 §2–3、§5–6）。<span class="chip c-inf">推断</span> 本站图，据底稿架构简图重绘；概括逻辑职责，不表示物理节点或设备数量。论文自己的平台架构图见原文 Figure 1（p.6），本站未转载。</figcaption>
+  <figcaption><span class="fnum">图 2</span>DSec 分层职责与数据通路（对应原文 §2–3、§5–6）。<span class="chip c-inf">推断</span> 本站图，据底稿架构简图重绘；概括逻辑职责，不表示物理节点或设备数量。论文自己的平台架构图见下文图 3（原文 Figure 1）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
     <p>顺着实线看<strong>创建路径</strong>：调用方 → IAM + API Server（鉴权、配额、统一转发，同时把可信的训练侧与不可信的环境隔开）→ Placement + Watcher（健康与负载视图、随机少量候选的 power-of-k 选择）→ 节点侧 Edge。Edge 保留<strong>最终准入权</strong>——调度器用的是略旧的周期视图，两台调度器可能同时看到某节点有空位，Edge 负责拒绝越界请求。</p>
     <p>再看从 API Server 分出的<strong>会话路径</strong>：后续的执行、文件与流式 I/O 经 Aether（定位终端会话）到 Chronus（执行命令并记录结果）。右上方那条从调用方出发的虚线指向 FnCall：预创建的 CPU / GPU 容器池走独立路径，<strong>不经过 Aether / Chronus 会话链</strong>，所以不能把会话语义硬套到 FnCall 上。最底部的存储层表达的是"共享只读环境 + 私有可写状态"，这是第 06 节表格里几项内存与 I/O 机制的共同前提。</p>
+  </div>
+</figure>
+
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-d1.png" alt="DSec 平台架构原图：左侧集群级服务 IAM、API Server、Placement Engine 与 Watcher；右侧每节点运行时 Edge、Aether、Chronus 与四种沙箱后端；底部 3FS 上的 EROFS 与 OverlayBD 镜像">
+  <figcaption><span class="fnum">图 3</span>DSec Figure 1（p.6）：平台架构。<span class="chip c-vr">自报</span> 原图出自 <a href="https://arxiv.org/abs/2609.22978">DSec 论文（arXiv:2609.22978）</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>图例只有两种线：<strong>红线是管理请求，蓝线是数据请求</strong>。顺着红线走，libdsec 的创建请求经 IAM 与 API Server，由 Placement Engine 选点后落到某个节点的 Edge，再由 Edge 发出 Create / Delete；顺着蓝线走，数据请求经 API Server 的 Ingress Proxy 进入同一个 Edge，再到 Aether 与 Chronus——这就是图 2 里"会话路径"的原始画法。</p><p>右下的四个后端是读图的重点：FnCall 与 Container 都画在 <strong>QEMU VM</strong> 框里，说明容器路径本身也套在虚拟机内；FnCall 与 FullVM 带 GPU 标签；Container、MicroVM 与 FullVM 顶上各有一个 Proxy，由 Chronus 用蓝色虚线连过去，而 FnCall 没有——这与"FnCall 走独立路径、不经会话链"一致。虚线框标出隔离手段是 AppArmor + eBPF，最底层的 3FS 同时承载 EROFS 与 OverlayBD 两种镜像，分别对应容器路径与 microVM 的可写磁盘路径。</p>
   </div>
 </figure>
 
@@ -292,6 +301,23 @@
 </table>
 </div>
 
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-d3.png" alt="一次沙箱执行的 CPU 与内存时间线：setup、tool call、test 三个阶段，CPU 呈短时尖峰，内存阶梯上升并持续保持">
+  <figcaption><span class="fnum">图 4</span>DSec Figure 3（p.10）：一次 sandbox 执行的 CPU / 内存时间线。<span class="chip c-vr">自报</span> 原图出自 <a href="https://arxiv.org/abs/2609.22978">DSec 论文（arXiv:2609.22978）</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左轴是 CPU 核数（实线），右轴是内存 GB（虚线），横轴 0–800 秒被分成 setup、tool call、test 三段。<strong>CPU 几乎全程贴近零</strong>，只在少数时刻出现尖峰——setup 段容器约 0.9 核，test 段 microVM 约 1.4 核；而<strong>内存是阶梯状只升不降</strong>：microVM 从约 1.0 GB 爬到约 1.3 GB，测试阶段跳到约 1.8 GB，容器则稳定在约 0.6 GB。</p><p>这张图就是 DSec 整套设计的出发点：如果按 CPU 峰值独占资源，绝大部分时间在空转；如果按 CPU 平均值回收资源，又会丢掉一直驻留的内存与执行状态。DSec 的回答是 CPU 超配、内存另行回收、状态保留。注意它是<strong>一条代表性轨迹</strong>，不是全体任务的平均曲线。</p>
+  </div>
+</figure>
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-d5.png" alt="沙箱资源使用量与申请量之比的 CDF：实线为平均值，虚线为峰值；CPU 平均值曲线在 5% 附近已接近 0.9，峰值曲线明显右移">
+  <figcaption><span class="fnum">图 5</span>DSec Figure 5（p.11）：平均使用与峰值使用（使用量 / 申请量）。<span class="chip c-vr">自报</span> 原图出自 <a href="https://arxiv.org/abs/2609.22978">DSec 论文（arXiv:2609.22978）</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>横轴是使用量占申请量的百分比，<strong>在约 18% 处有断轴</strong>，左段放大、右段压缩；纵轴是累计分布。两条<strong>实线（平均值）的 CPU 曲线</strong>——容器红、microVM 蓝——在横轴 5% 左右已升到约 0.9，这就是"约 90% 的沙箱平均 CPU 不超过申请的 5%"的出处。</p><p>要同时看<strong>虚线（峰值）</strong>：microVM 的 CPU 峰值主要落在 20%–40%，容器的 CPU 峰值拖着很长的右尾一直延伸到 100%。平均值与峰值分布差得这么远，正是底稿反复提醒"5% 不是可以无条件超配 20 倍的证明"的原因——并发的测试与编译会让峰值同时出现。</p>
+  </div>
+</figure>
+
 <div class="vs">
   <div class="base">
     <h4>朴素实现</h4>
@@ -302,6 +328,31 @@
     <p><strong>四种后端按需选择</strong>（FnCall / 容器 / Firecracker microVM / 完整 VM）；<strong>Base、Workspace、Toolkit 独立发布</strong>，运行时由 OverlayFS 组合、EROFS 存只读层、3FS 供给共享数据，更新 k 个 Toolkit 的重建量从 O(kN) 降到 O(k)；<strong>内存两条路径</strong>：virtio-pmem + DAX 避免各 guest 重复缓存同一文件页，DAMON + free-page reporting 把冷页还给 host；<strong>CPU 两级 QoS</strong>：best-effort 任务用 SCHED_IDLE，再用 core scheduling 防止它与延迟敏感任务共享同一物理核的 SMT 兄弟线程；<strong>状态解耦</strong>：worker container 与 agent sandbox 都在可抢占 GPU 池之外，trainer 恢复后重新连接<span class="chip c-tp">第三方</span>。</p>
   </div>
 </div>
+
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-d10.png" alt="按需加载实验：左图为每个 VM 上运行中的容器数随时间变化，cached 与 EROFS 曲线重合并在约 33 分钟结束，冷拉取约 60 分钟结束；右图为写 IOPS 与累计写入">
+  <figcaption><span class="fnum">图 6</span>DSec Figure 10（p.22）：按需加载与冷拉 / 热缓存。<span class="chip c-vr">自报</span> 原图出自 <a href="https://arxiv.org/abs/2609.22978">DSec 论文（arXiv:2609.22978）</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左图看<strong>三条曲线何时归零</strong>：Docker（cached）与 EROFS 两条几乎完全重合，开局几分钟内就爬到每 VM 约 850 个运行中的容器，约 33–35 分钟全部结束；Docker（cold）因为要先拉完镜像，爬升缓慢，约 20 分钟时才到约 630 的峰值，拖到约 60 分钟才结束。按需加载因此做到了和"全部预缓存"一样快。</p><p>右图实线是写 IOPS（左轴）、虚线是累计写入 GB（右轴）：冷拉取前 20 分钟的写 IOPS 持续在约 2 万，累计写入最终约 1,650 GB，EROFS 约 700 GB——<strong>这就是"累计写入降低 57%"</strong>。这个降幅说的是磁盘写入，不是完整 RL 训练成本。</p>
+  </div>
+</figure>
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-d12.png" alt="内存实验：左图为 host 内存随时间变化，baseline 峰值约 4000 GB，pmem 与 pmem+fpr 峰值约 2400 GB；右图为 CPU 使用率，横轴在约 10 分钟后被压缩">
+  <figcaption><span class="fnum">图 7</span>DSec Figure 12（p.23）：内存共享（pmem）与主动回收（FPR）。<span class="chip c-vr">自报</span> 原图出自 <a href="https://arxiv.org/abs/2609.22978">DSec 论文（arXiv:2609.22978）</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左图读两件事：<strong>峰值看曲线最高点</strong>——baseline 约 4,000 GB，只开 fpr 约 3,800 GB，开 pmem（无论是否叠加 fpr）都压到约 2,400 GB，这是 pmem"峰值内存降 40.2%"的来源；<strong>持续成本看曲线下面积</strong>——fpr 让曲线在中后段下降得更快，这是"时间积分降 21.2%"的来源。两个百分比口径不同，不能相加。</p><p>右图 CPU 的横轴<strong>在约 10 分钟后断开并压缩</strong>，不能按视觉距离比较时长。开局约 1 分钟内 pmem 的瞬时 CPU 峰值比 baseline 高（原文 26.5% → 41.4%），对应冷访问时同步建立映射的代价——共享映射省内存，但不是免费的。</p>
+  </div>
+</figure>
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-d13.png" alt="CPU QoS 实验：横轴为后台 CPU 负载 10% 至 50%，纵轴为延迟敏感 agent 的单步耗时；baseline 与 idle 两条线随负载明显上升，idle 加 core 一线增长平缓，虚线为无后台负载的参考值 0.23 秒">
+  <figcaption><span class="fnum">图 8</span>DSec Figure 13（p.24）：高超配下的 CPU QoS。<span class="chip c-vr">自报</span> 原图出自 <a href="https://arxiv.org/abs/2609.22978">DSec 论文（arXiv:2609.22978）</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>横轴不是时间，而是<strong>同机后台 CPU 负载</strong>（10%–50%）；纵轴是延迟敏感 agent 的单步耗时，越低越好；水平虚线约 0.23 秒是没有后台负载时的参考值。在 50% 负载下，baseline 约 0.335 秒、比参考值高约 45%；只用 SCHED_IDLE（idle）几乎没有改善，且误差棒很大。</p><p>只有叠加了 core scheduling 的那条线（idle + core）<strong>增长平缓</strong>，50% 负载下约 0.27 秒，即膨胀约 17%——这就是原文"45.2% → 17.3%"。两个百分比都是相对参考值的膨胀，不是两个方案直接相除的加速比；而 0.27 仍高于 0.23，说明内存带宽、LLC 与频率干扰仍在。</p>
+  </div>
+</figure>
 
 <div class="tbl">
 <table>
@@ -325,13 +376,23 @@
 
 <figure>
   <img class="diagram" src="img/dispatch-46-dsec-mimo-rl-infra/fig-3.svg" alt="MiMo RL 基础设施职责图：任务进入 Sample Mixer，派发到 Harness Pool 与 Agent Loop，与 SGLang 推理往返；完成轨迹进入 Verifier、Grader 与 Penalty，生成记录写入分布式轨迹存储，再经 Packer 进入 Megatron Learner，权重更新回流推理侧">
-  <figcaption><span class="fnum">图 3</span>MiMo：从任务到参数更新的职责图（对应 MiMo-V2.6 Figure 14 与 §6）。<span class="chip c-inf">推断</span> 本站图，据底稿架构简图重绘；论文自己的 RL 基础设施总览见原文 Figure 14（p.28），本站未转载。</figcaption>
+  <figcaption><span class="fnum">图 9</span>MiMo：从任务到参数更新的职责图（对应 MiMo-V2.6 Figure 14 与 §6）。<span class="chip c-inf">推断</span> 本站图，据底稿架构简图重绘；论文自己的 RL 基础设施总览见紧随其后的原图（原文 Figure 14）。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
     <p>六个编号节点自上而下排成一列，读法是<strong>分清实线与虚线</strong>。实线是重数据与控制动作：Sample Mixer 派发任务组；② Harness Pool 与最底部的 ③ SGLang 推理之间，左右两条长弧就是多轮往返（左弧送 tokens / 新图像下去，右弧把生成结果送回来）；完成的轨迹分两路——环境证据进 Verifier / Grader / Penalty，生成记录与 payload 进分布式轨迹存储；学习信号写回存储后，Packer 按 TP / CP 窗口读取并交给 Megatron Learner。</p>
     <p>唯一的虚线从 ⑤ 轨迹存储向上连回 ① Sample Mixer，标签"轻量 metadata 反馈"属于这条虚线（渲染时它落在虚线与右弧之间，不要误读成右弧的标签）——调度器始终主要看元数据，而不是把大张量搬回中心。图的另一个要点在最下方 ⑥ → ③ 那条竖直边：权重更新与专家 QDQ 回流推理侧，而 ③ 的说明里写着"新版本后重新 prefill"。<strong>每条工具调用不等于一次参数更新</strong>，这张图把两种节奏画在了同一张图上。</p>
   </div>
 </figure>
+
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-m14.png" alt="MiMo RL 基础设施总览原图：Payload Porter 虚线框包含控制面与数据面，下方为 Harness Pool，右侧为 Training Engine 与 Inference Engine，箭头标注 Dispatch、Metadata、Payload、Packed Data、QDQ weights 等">
+  <figcaption><span class="fnum">图 10</span>MiMo-V2.6 Figure 14（p.28）：RL infrastructure 总览。<span class="chip c-vr">自报</span> 原图出自 <a href="https://mimo.xiaomi.com/mimo-v2-6">MiMo-V2.6 技术报告</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>最外层的<strong>虚线框 Payload Porter</strong> 只框住了控制面（Sample Mixer、Packer）与数据面（Distributed Trajectory Storage），而没有框住训练与推理引擎——这正是"控制面与数据面分离"在图上的位置。Harness Pool 向上的两条边分别是 <strong>Metadata（到控制面）</strong>与 <strong>Payload（到数据面）</strong>：轻重两类数据从源头就走不同的路。</p><p>右侧顺时针看一圈：数据面把 Packed Data 交给 Training Engine（SWA CP、Loss Fusion），训练引擎把 <strong>QDQ weights</strong> 交给 Inference Engine；推理引擎内部的 Context Cache 同时连着 MoE IDs / Top-p 与 L2Cache——这三个框分别对应路由重放、候选集重放与分层 KV 缓存。Harness Pool 内部是 Harness A / B / C 的多实例与 Endpoint + Agent Loop 的组合，以 Tokens &amp; Δimages 与 Response 两条边和推理引擎往返。原图没有标设备共置与卡数，不能据此推导物理时序。</p>
+  </div>
+</figure>
+
 
 <div class="tbl">
 <table>
@@ -347,6 +408,15 @@
 </table>
 </div>
 
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-m3.png" alt="成本—能力曲线：横轴为累计成本（百万美元），纵轴为 DeepSWE 分数，Pro 曲线终点 72.57，Flash 曲线终点 65.68；右侧两张饼图为训练、rollout 与 grader 的成本占比">
+  <figcaption><span class="fnum">图 11</span>MiMo-V2.6 Figure 3（p.8）：成本—能力曲线与成本分解。<span class="chip c-vr">自报</span> 原图出自 <a href="https://mimo.xiaomi.com/mimo-v2-6">MiMo-V2.6 技术报告</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左图横轴是<strong>累计成本</strong>（百万美元）而不是训练步数，纵轴是 DeepSWE v1.1 average@3。Flash（浅色）约 0.85 百万美元时停在 65.68，Pro（深色）约 2.6 百万美元时停在 72.57；两条曲线都明显锯齿状——Flash 在中途约 0.78 百万美元处曾到约 68，终点反而更低，单个 checkpoint 的波动不小。</p><p>右侧饼图是本页规模表的出处：Pro 的 rollout / 训练 / grader 为 43.8% / 43.5% / 12.7%，Flash 为 44.9% / 40.9% / 14.2%。<strong>rollout 与训练几乎各占一半，grader 也有一成多</strong>——比较 RL 效率时只看生成速度或训练步数都会漏掉大头。这些成本是本轮 RL 的，不是从预训练开始的总成本。</p>
+  </div>
+</figure>
+
 <div class="vs">
   <div class="base">
     <h4>朴素实现</h4>
@@ -357,6 +427,15 @@
     <p><strong>Sample Mixer</strong> 用四个子机制把调度与训练贡献挂钩：有界的自适应在途预算、目标与缺口混合的加权轮转、按总序列长度先验预估 KV 的派发、启动与恢复后的首轮补样。<strong>Partial rollout</strong> 在收齐批次时中断在途序列，下一阶段续接并重新 prefill。<strong>训推一致性分三层</strong>：rollout 专家用 MXFP4、每次参数更新后按 Humming GEMM 约束做 QDQ；保存 rollout 的专家索引在训练端回放（R3）；保存 Top-k / Top-p 候选集，训练 logprob 在同一集合内重新归一化——原文典型 top-p = 0.97 时平均候选集不足 5 个 token<span class="chip c-tp">第三方</span>。</p>
   </div>
 </div>
+
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-m15.png" alt="25 个数据源的异质性：双对数坐标，横轴为每次 rollout 的平均生成 token 数（千），纵轴为平均 rollout 时长（秒），按 Chat、Visual、General、Cyber、Code 着色，每条线从训练初期指向末期">
+  <figcaption><span class="fnum">图 12</span>MiMo-V2.6 Figure 15（p.30）：25 个数据源的异质性。<span class="chip c-vr">自报</span> 原图出自 <a href="https://mimo.xiaomi.com/mimo-v2-6">MiMo-V2.6 技术报告</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p><strong>两个坐标轴都是对数</strong>。每个数据源是一条短线：淡色小点是训练第 1–5 步的均值，深色大点是第 26–30 步的均值。Chat 源聚在左下（几千 token、约 60–180 秒），Code 源一路延伸到右上（最长约 28 万 token、约 6,000 秒）——这就是原文"生成长度与活跃时长分别相差约 90 倍与 66 倍"。</p><p>几乎所有线都<strong>朝右上方走</strong>：随着训练推进，各源的轨迹变长、变慢。这张图说明两件事：Sample Mixer 必须按耗时 t 与接受率 r 动态分配在途预算，而不能用一个固定比例；用训练初期的平均值永久估计后续任务也会出错——这正是 MiMo 故障表里"长度先验偏短导致 KV 池 OOM"的背景。</p>
+  </div>
+</figure>
 
 <p class="delta"><span class="dl">差在哪</span><strong>KV 与 logprob 在参数更新后的处理恰好相反</strong>：KV 是特定参数下的计算结果，新参数后必须重建；行为 logprob 是生成时的历史记录，必须保留。候选集归一化的必要性可以用底稿的例子说明：某 token 全词表概率 0.4，Top-p 候选总质量 0.8，实际采样概率是 0.5；训练端若仍用 0.4，比值就是 0.8——这是<strong>归一化口径制造的差异</strong>，不是策略改变。三层对齐减少的是实现层面的不一致，<strong>不能替代对真实策略陈旧度的处理</strong>，也不构成两个引擎逐位一致的保证。<strong>本站判断</strong>：三层里第一层依赖 MXFP4 kernel，而昇腾一侧原生支持 MXFP4 的是 950（见 D03），950 的推理软件支持近期又在收窄（见 ascend 标签下 vLLM-Ascend v0.30.0rc1 卡）——这一层是三者中迁移到昇腾成本最高、证据最少的一层。</p>
 
@@ -383,6 +462,15 @@
   </div>
 </div>
 
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-m7.png" alt="两条 groupwise grading 路线：左侧 GRS 离线由多条 rollout 提炼 Solution 与 Behavior rubric，在线由 Rubric Grader 打分并做奖励乘法合成；右侧 GAR 在线由 Groupwise Grader 联查同组通过与失败轨迹，排序通过解、确证作弊清零并重分配优势">
+  <figcaption><span class="fnum">图 13</span>MiMo-V2.6 Figure 7（p.17）：两条 groupwise grading 路线（GRS 与 GAR）。<span class="chip c-vr">自报</span> 原图出自 <a href="https://mimo.xiaomi.com/mimo-v2-6">MiMo-V2.6 技术报告</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>左半是 <strong>GRS</strong>，分成上下两个虚线框：离线框里，多条 rollout 被用来"Build Rubrics"，产出 Solution 与 Behavior 两类标准；在线框里，单条轨迹 τ_i 交给复用这些标准的 Rubric Grader，最后进入 <strong>Reward Refinement：R_i = R_i^test · S_i^sol · S_i^beh</strong>——测试分在最前面做乘法门控，测试不过整条奖励就是 0。</p><p>右半是 <strong>GAR</strong>，只有在线一个框：同组的 τ_1 Pass、τ_2 Pass……τ_n Fail 一起交给 Groupwise Grader，分出两路——"Rank Passing Patches"给通过解排序，"Confirmed Hack"把确证作弊的奖励置 0。底部的 Before / After 小柱图表达的是<strong>在通过解之间重分配正优势</strong>：低质量的变矮、高质量的变高。两条路线最终都汇到 RL Policy Update，但它们作用于不同的代码任务子集，不是每条轨迹先过 GRS 再过 GAR。</p>
+  </div>
+</figure>
+
 <div class="tbl">
 <table>
 <caption>GAR 参数算例：三条成功、一条失败（底稿交互计算器默认参数：f = 1 / 0.5 / 0.25，λ 上限 1.2）<span class="chip c-inf">推断</span></caption>
@@ -395,6 +483,15 @@
 </tbody>
 </table>
 </div>
+
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-m11.png" alt="冻结 Router 的受控对照：三个子图分别为第 9 层的负载 CV、峰值负载（最大值与均值之比）与冷专家比例，橙线为不冻结、蓝线为冻结，横轴为训练步">
+  <figcaption><span class="fnum">图 14</span>MiMo-V2.6 Figure 11（p.24）：冻结 Router 的受控对照（Pro，第 9 层）。<span class="chip c-vr">自报</span> 原图出自 <a href="https://mimo.xiaomi.com/mimo-v2-6">MiMo-V2.6 技术报告</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>三个子图共用一个横轴（训练步），<strong>橙线不冻结、蓝线冻结</strong>，两次运行只有这一处不同。橙线在前 20 步单调上升：CV 从约 0.78 到约 2.0、峰值负载从平均的约 6 倍到约 16 倍、冷专家比例（负载低于均值 0.1 倍的专家）从约 0.5% 到约 23%；蓝线三项全程持平（CV 约 0.7、峰值约 5.5 倍、冷专家约 1%）。</p><p>注意橙线在第 22 步左右就<strong>结束了</strong>，蓝线一直延伸到第 28 步——不冻结的那次运行没有继续下去。图本身只能说明"负载随 router 漂移恶化"，原文更有力的证据在正文：只把第 20 步的 router 恢复成 RL 前的值、其余参数不动，负载就回到接近初始，而基准表现不变。</p>
+  </div>
+</figure>
 
 <p class="delta"><span class="dl">差在哪</span>三处容易读错。其一，<strong>clip 是 mask 而不是截断</strong>，复现时目标函数、停止梯度位置与归一化单位要一起核对；正文没有披露完整的熵目标与区间变化序列，四个初始边界不足以复原全部稳定性控制。其二，<strong>GAR 的守恒性有前提</strong>：未截断时成功轨迹的正优势总量不变（上表未截断列之和仍为 0.750）、失败优势不变；实际实现对 λ 加上限后再全组居中，失败轨迹的优势就变了（上表 −0.750 → −0.694），参数梯度也从不守恒。其三，<strong>冻结 router 与 R3 解决的是不同问题</strong>：冻结控制训练参数的漂移，R3 控制训练与 rollout 的执行路径差异——专家选择 = TopK(W_router · h_θ)，W 固定后上游 hidden state 与两引擎的数值差异仍可能让选择翻转。原文更有力的诊断是：只把第 20 步的 router 恢复成 RL 前的值、其余参数不动，负载回到接近初始而基准表现不变。</p>
 
@@ -426,13 +523,22 @@
   </div>
 </div>
 
+<figure>
+  <img src="img/dispatch-46-dsec-mimo-rl-infra/orig-m12.png" alt="30 步训练的中断时间线：上方为 MiMo-V2.6-Pro 共 123.1 小时，下方为 Flash 共 81.8 小时，浅色块为完成的步，其余颜色块分别为基础设施、推理、训练与 driver 故障">
+  <figcaption><span class="fnum">图 15</span>MiMo-V2.6 Figure 12（p.24）：30 步训练的中断时间线。<span class="chip c-vr">自报</span> 原图出自 <a href="https://mimo.xiaomi.com/mimo-v2-6">MiMo-V2.6 技术报告</a>，经站长确认可用。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>每一行是一次完整的 30 步运行，横轴是实际经过的小时数：<strong>浅色格是完成的训练步，彩色格是中断</strong>。Pro 共 123.1 小时，中断类型最杂——前后约四次推理故障（橙）、数次基础设施故障（浅灰），以及第 16 步附近一段持续约 5 小时的训练故障（深棕），是全图最长的单次中断；Flash 共 81.8 小时，最长的中断是第 15 步附近约 5–6 小时的基础设施故障，后段另有两次 driver 故障（深灰）。</p><p>这张图要读出的是：<strong>故障成本是 RL 运行时间的一部分</strong>，而且分布在推理、训练、基础设施与 driver 各层。所以"总时长 / 30"只是含故障的平均间隔，不是稳态单步耗时，更不能迁移到别的卡数配置；这也是底稿主张把模型失败与平台失败分开记录、分开计入恢复成本的依据。</p>
+  </div>
+</figure>
+
 <p class="delta"><span class="dl">差在哪</span>整体 recipe 的有效性<strong>不等于每个组件都有独立、同成本的因果收益</strong>——论文没有逐组件的统一消融，也没有披露精确的生产卡型与并行拓扑，不能只由总成绩、成本和步数复原资源方案。开放资源与旗舰生产系统也要分别界定：§7 的开放声明没有逐项建立 Sample Mixer、TP / CP Packer、GAR、R3 与 MOPD2 和公开代码的对应关系，完整复现仍需确认提交版本、入口配置与运行结果。故障表里最可迁移的一条：<strong>局部峰值不能用全局均值掩盖</strong>，冷启动与分布漂移要保守估计。</p>
 
 <h2 id="s10"><span class="hnum">10</span>集成与昇腾迁移：先固定数据契约，再引入调度与低精度（3.1–3.4、E16–E18）</h2>
 
 <figure>
   <img class="diagram" src="img/dispatch-46-dsec-mimo-rl-infra/fig-4.svg" alt="跨系统集成概念图：任务执行与轨迹编排、模型计算服务、环境执行平台三个分区，用跨层契约节点连接，契约说明环境快照、Agent 轨迹、KV cache 与权重优化器状态互不等价">
-  <figcaption><span class="fnum">图 4</span>跨系统集成的概念架构：两个控制闭环，用状态与数据契约衔接。<span class="chip c-inf">推断</span> 本站图，据底稿架构简图重绘；展示接口与状态所有权，不代表两家已部署的联合系统。</figcaption>
+  <figcaption><span class="fnum">图 16</span>跨系统集成的概念架构：两个控制闭环，用状态与数据契约衔接。<span class="chip c-inf">推断</span> 本站图，据底稿架构简图重绘；展示接口与状态所有权，不代表两家已部署的联合系统。</figcaption>
   <div class="readout">
     <h5>这张图怎么读</h5>
     <p>三个分区就是三个状态所有者：左侧的任务执行与轨迹编排拥有执行进度与 token 记录，中上的模型计算服务拥有 KV（推理端）与权重和优化器（训练端），中下的环境执行平台拥有文件、进程、镜像与恢复。实线标出它们之间流动的东西——tokens 与生成结果、工具请求与真实观察、轨迹、模型版本。</p>
@@ -488,7 +594,7 @@
 <ul>
   <li><strong>本站核验</strong>：底稿内嵌的两份 PDF 经 SHA-256 校验与其声明一致（DSec 31 页，arXiv:2609.22978v1；MiMo-V2.6 44 页）。本站抽取原文后逐条检索底稿的承重数字，<strong>66 处全部在原文中找到对应表述</strong>，并确认底稿指出的 MiMo Table 1 "42T" 笔误存在。两处细节：DSec 摘要把按需加载的收益写作"1.7×"，正文为 1.71×（冷拉取相对按需）；tar 与 EROFS 的对照在原文是另一组实验，加速 1.76×——底稿已提醒两个存储实验的加速比不能相乘。核验范围限于数字与引文。</li>
   <li><strong>原文没给的东西</strong>：DSec 没有量化暂停恢复时间、恢复成功率与最终模型收益，也没有对任意主机故障、外部连接恢复与跨云迁移给出通用保证；MiMo 没有披露完整的熵目标与 clip 区间变化序列、完整的 OPD 损失与混合权重、精确的生产卡型与并行拓扑，以及 staleness = 4 背后的版本门槛与同步细节。GRS、组过滤与 grader 的先后顺序，原文 §4.1、§4.3.1 与 §6.2 的表述不完全一致，复现时需按源码核对。</li>
-  <li><strong>本站未转载的内容</strong>：底稿内嵌的两篇论文完整 PDF 与 30 幅论文原图。两篇论文在本环境都查不到可核实的再发布许可，按本站 D44 / D45 的同一规则不转载；本页的图注与表格保留了底稿对这些原图的解读，原图请回原文查看。底稿提到的随附 contracts.py 与单元测试未随本篇发布。</li>
+  <li><strong>未随文发布的内容</strong>：两篇论文的完整 PDF（原文请经 arXiv 与小米官方页面查阅），以及底稿提到的随附 contracts.py 与单元测试。30 幅论文原图经站长确认可用，Markdown 源收录全部 30 幅，本页选用 12 幅。</li>
   <li><strong>未经本站验证的</strong>：底稿中的协议、状态机、算例与验收标准是设计建议；四个交互计算器改为按其默认参数计算的静态算例，数值由本站按底稿脚本中的同一公式重算。</li>
 </ul>
 
