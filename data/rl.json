@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07",
+  "updated": "2026-10-22",
   "items": [
     {
       "title": "训推失配修正跨框架落地:verl 合入 Score Centering,与 slime、SkyRL 的 support replay 形成同一答案",
@@ -1782,6 +1782,25 @@
         "contamination"
       ],
       "confidence": "provisional"
+    },
+    {
+      "title": "开源旗舰的 Day-0 支持开始包含 RL 配方:SkyRL × Reflection Beam(LoRA / 全参 / MXFP8 RL)",
+      "org": "NovaSky-AI(SkyRL)/ Reflection AI",
+      "year": "2026-10",
+      "category": "framework",
+      "innovation": "训练框架在模型发布当天即提供低精度 RL 后训练配方,而不只是推理部署",
+      "summary": "本站直读 SkyRL README:**2026-10-16** SkyRL 宣布对 Reflection AI 的 Beam(501B-A23B MoE)提供 **Day-0 支持**,在 `beam-release` 分支上给出 LoRA、全参微调与 **MXFP8 RL** 三套配方,附博客、文档与代码目录 `examples/train/models/reflection/beam`。同一窗口内,Step 5 Preview 放权重当天 NVIDIA 即给出 NVFP4 检查点,Beam 则由 Reflection 自己同时发布 NVFP4 权重。",
+      "analysis": "这是本站第一次记录到**'发布当天就能做 RL'**:此前的 day-0 支持几乎都只指推理部署(vLLM / SGLang 适配、量化检查点)。对 RL-on-NPU 主线的含义有二:一是**开源模型的 RL 后训练门槛正在被框架方前移**,用户不再需要等社区移植;二是这类 day-0 配方用的是 MXFP8 这种低精度 RL,与本站 D27 / D33 记录的'量化 rollout 权重回灌契约'是同一条技术线——而昇腾侧本窗口既没有这些模型的 day-0 推理适配公告,更没有 RL 配方。另记:verl 主分支版本号已到 0.10.0.dev,但窗口内未见正式版发布(最新正式版仍为本站已记录的 v0.9.1)。",
+      "url": "https://github.com/NovaSky-AI/SkyRL",
+      "tags": [
+        "SkyRL",
+        "day-0",
+        "MXFP8",
+        "low-precision-RL",
+        "Beam",
+        "framework"
+      ],
+      "confidence": "confirmed"
     }
   ]
 }

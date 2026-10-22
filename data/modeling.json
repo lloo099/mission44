@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07",
+  "updated": "2026-10-22",
   "items": [
     {
       "title": "Claude Sonnet 5.5:中档位成为前沿战场,以及推理轨迹被设计成不可移植",
@@ -40,13 +40,13 @@
       "confidence": "self-reported"
     },
     {
-      "title": "开源权重承诺与实际发布的裂口:一个窗口内三家中国实验室\"宣布开源、先发 API\"",
+      "title": "开源权重承诺与实际发布的裂口:一个窗口内三家中国实验室\"宣布开源、先发 API\"(10-22:两家已兑现)",
       "org": "阿里 Qwen / 阶跃星辰 StepFun / 蚂蚁 inclusionAI",
       "year": "2026-10",
       "category": "trend",
       "innovation": "两个调研窗口内出现同一模式三次:**宣布开放权重,实际先上 API,权重延后且无期**。① **Qwen 4 27B**:09-22 云栖大会点名四档(Max/Plus/Flash/27B),27B 为开放权重档——截至 09-29,四款在 HuggingFace、ModelScope 与 Qwen Cloud API 上均无踪影,无日期、无价格、无上下文长度、无基准,27B 档的许可亦未公布。② **StepFun Step 5**:09-20 付费 API 上线,官网挂 2026-10-15 开放权重倒计时——HuggingFace 仓库据报仍只有一个 `.gitattributes`,无权重、无许可、无模型卡。③ **Ling-3.1-flash**(蚂蚁 inclusionAI,10-01):约 560B 总参 / 25B 激活(激活率约 4.5%)的稀疏 MoE,设计目标 1M 上下文但两周免费试用期只开到 256K,官方称'试用结束后再开放更大窗口并开源';当前无权重、无许可。",
       "summary": "本站据此主张在开源板上把**\"已宣布\"与\"权重真的可下载\"分成两列**。注意 Qwen3.8 一代在不同档位上用过三种不同许可,因此'开放权重'对 Qwen 4 27B 并不等于 Apache 2.0。另:25B 激活于 560B 这个比例,延续了本站已记录的极稀疏趋势(Qwen3.8-Max 约 4%、DeepSeek V4-Pro 约 3.1%、MiMo-V2.6 Pro 约 4%),而 25B 激活恰好落在**单台昇腾 950 节点有望承载**的区间——这正是权重缺位才是整件事重点的原因。",
-      "analysis": "判断:本站此前在开源板上把\"宣布\"当作\"发布\"处理,这个习惯需要改。一个窗口内三家连续采用同一节奏,说明这**不是某一家的延期而是系统性做法**:先用 API 占住发布时点与榜单位置,再把权重推到不确定的未来。对本站的直接影响有二:一是**昇腾适配评估不能从发布公告起算**——没有权重就没有量化、没有算子适配、没有 vLLM-Ascend 支持;二是所有\"开源旗舰追平闭源\"的论证都必须先核对权重是否真的可下;StepFun 的 10-15 与 Haiku 5.5 的'数周内'都落在下一个窗口,届时可一并验证。缺口:HuggingFace 与各厂商站点在本环境不可达,三条均为搜索摘要级的**缺席证据**(well-supported absence),即\"查不到\"而非\"已证实不存在\"。",
+      "analysis": "判断:本站此前在开源板上把\"宣布\"当作\"发布\"处理,这个习惯需要改。一个窗口内三家连续采用同一节奏,说明这**不是某一家的延期而是系统性做法**:先用 API 占住发布时点与榜单位置,再把权重推到不确定的未来。对本站的直接影响有二:一是**昇腾适配评估不能从发布公告起算**——没有权重就没有量化、没有算子适配、没有 vLLM-Ascend 支持;二是所有\"开源旗舰追平闭源\"的论证都必须先核对权重是否真的可下;StepFun 的 10-15 与 Haiku 5.5 的'数周内'都落在下一个窗口,届时可一并验证。缺口:HuggingFace 与各厂商站点在本环境不可达,三条均为搜索摘要级的**缺席证据**(well-supported absence),即\"查不到\"而非\"已证实不存在\"。 【10-22 更新】**三条承诺有两条在两周左右兑现,本卡原先的判断过强,此处收窄。** ① StepFun Step 5 Preview:**10-15 按期放出** BF16 与 FP8 权重(Hugging Face 与 ModelScope;据报 BF16 当天晚些时候才到),许可为自定义的 StepFun Model License 1.0,NVIDIA 同日给出 NVFP4 检查点。② 蚂蚁 Ling-3.1-flash:**10-14 放出权重**,Hugging Face 仓库约 574 GB、54 个 safetensors 分片,据报为 MIT 许可;仓库页把其编码类成绩标为未经核实,且部分用自家 LingCode harness 测得。③ **Qwen 4 27B 截至 10-22 仍无权重**,也无日期、规格与许可。另有一个非中国实验室的同形案例:Reflection AI Beam 先发 API、约十天后放 Apache 2.0 权重。所以更准确的说法是:**'API 先行、权重延后约两周'已是常见节奏,但多数会兑现**;'推到不确定的未来'只对 Qwen 4 27B 仍然成立。本卡'把已宣布与可下载分成两列'的建议不变——兑现之前,昇腾适配评估仍不能从发布公告起算。",
       "url": "https://huggingface.co/stepfun-ai",
       "tags": [
         "open-weights",
@@ -117,13 +117,13 @@
       "confidence": "self-reported"
     },
     {
-      "title": "StepFun Step 5 Preview:600B-A27B、1M 上下文,API 先行、权重承诺 10-15 开放",
+      "title": "StepFun Step 5 Preview:600B-A27B、1M 上下文,API 先行、权重承诺 10-15 开放(10-15 已兑现)",
       "org": "阶跃星辰 StepFun",
       "year": "2026-09",
       "category": "model-report",
       "innovation": "2026-09-16 首次出现在 API 目录,2026-09-20 付费上线并公开announce。稀疏 MoE,600B 总参 / 27B 激活,1M 上下文,输入支持文本/图像/视频、输出文本;自有通道最大输出 64K;reasoning effort 取 low/medium/high。官网挂出 **2026-10-15 开放权重**倒计时(models.dev 当前仍标 open_weights = false)。",
       "summary": "标价每百万 token ¥7 输入 / ¥20 输出 / ¥0.35 缓存读(models.dev 按 7.2973 折合约 $0.959 / $2.741 / $0.048)。第三方 Artificial Analysis 自行测得智能指数 **44**:与 Kimi K3(max)并列,低于 GLM-5.3(max)与 Qwen3.8-Max 的 45;每任务成本约 **$0.72**,对 Kimi K3 max 约 $2.00、GLM-5.3 max 约 $2.01,AA 的措辞是'约低 2.8 倍'(厂商与媒体转述为'低约 65%',是同一比较的另一种说法)。AA 同时指出它在 agentic 评测上落后:GDPval-AA 1,566 Elo,对 Qwen3.8-Max 1,668、GLM-5.3 max 1,646。",
-      "analysis": "判断:27B 激活 + 1M 上下文这个尺寸,正是单台昇腾超节点上做 RL 后训练的现实区间,因此 10-15 的权重开放(以及届时的许可与注意力设计)值得专门回看。注意区分两类数字:指数 44 与每任务成本来自 AA 自测(第三方),而'Sparse GQA 加块级 token 合并'的架构描述与'StepFun Community License'均为媒体转述、本站未能对照厂商原文。另需提醒:HuggingFace 上名为 Step-5-Preview-BF16 的仓库为第三方上传,非官方权重。",
+      "analysis": "判断:27B 激活 + 1M 上下文这个尺寸,正是单台昇腾超节点上做 RL 后训练的现实区间,因此 10-15 的权重开放(以及届时的许可与注意力设计)值得专门回看。注意区分两类数字:指数 44 与每任务成本来自 AA 自测(第三方),而'Sparse GQA 加块级 token 合并'的架构描述与'StepFun Community License'均为媒体转述、本站未能对照厂商原文。另需提醒:HuggingFace 上名为 Step-5-Preview-BF16 的仓库为第三方上传,非官方权重。 【10-22 更新】**权重已于 10-15 按期放出**:BF16 与 FP8 上架 Hugging Face 与 ModelScope,同时发布技术博客;许可为自定义的 StepFun Model License 1.0(严格说是开放权重而非开源)。NVIDIA 同日发布 NVFP4 检查点,自称在 GB300 上约每 GPU 每秒 8,000 token。部署门槛据报为 FP8 需 4×B300 或 8×H200、BF16 需 8×B300 或 16×H200。注意有一个归属不明的第三方命名空间也挂了同名仓库,应以官方 stepfun-ai 仓库为准。",
       "url": "https://platform.stepfun.com",
       "tags": [
         "Step-5",
@@ -1216,6 +1216,97 @@
         "contamination"
       ],
       "confidence": "confirmed"
+    },
+    {
+      "title": "Gemini 4 Argon 全面可用(10-13):AA 指数 53 与 GPT-6 Astra 持平,引入价到 11-30 后翻倍",
+      "org": "Google DeepMind",
+      "year": "2026-10",
+      "category": "model-report",
+      "innovation": "Gemini 4 代首个全面可用档;此前只向审核过的网络防御方限量开放",
+      "summary": "2026-10-13 起对付费 Gemini API 开发者与 Gemini 应用订阅用户全面可用(9 月下旬曾只向审核过的网络防御方限量开放)。定价为**引入价** $2 / $10(每百万输入/输出 token),**12-01 起所有档位翻倍到 $4 / $20**;批量与 Flex 档为标准价的一半,缓存输入比输入价便宜 95%(即约为输入价的 5%)。Artificial Analysis 智能指数(v4.3)上 Argon(High)为 **53**,与 GPT-6 Astra(52.7)持平、低于 Claude Opus 5.5 的 57.6。Google 自测:DeepSWE v1.1 77.9%、LVBench 91.7%、Terminal-Bench 4.0 57.4%;AA 实测 Terminal-Bench 4.0 为 57.1%。",
+      "analysis": "三点值得记下。① **引入价是有期限的**:比价时必须注明 11-30 之前还是之后,本站价格板按引入价 $10 入榜并在注中写明。② **厂商自测与 AA 实测在 Terminal-Bench 4.0 上基本一致**(57.4 对 57.1),这在本站记录过的发布里并不常见——对照 Anthropic 自测 Opus 5.5 66.4 而 AA 实测 59.6 的约 7 分差,Argon 是一个'自报可信'的反例。③ AA 智能指数榜首仍是 Opus 5.5(58),Argon 与 Astra 并列中游;同期 Meta Muse Wonder Full(56)与 Sonnet 5.5(56)都排在它前面。缺口:Google 表格未给 SWE-bench Verified、GPQA 与 HLE;ARC-AGI-2 未找到结果。另有来源称 AA 测得每任务成本 Argon $1.99、GPT-6 Astra $3.26、Opus 5.5 $5.98,但本站每任务成本板上 Astra(max)为 $1.67,口径显然不同,故不入板。全部经二手摘要读取(AA 与 Google 页面在本环境不可达)。",
+      "url": "https://artificialanalysis.ai/models/gemini-4-argon",
+      "tags": [
+        "Gemini-4",
+        "frontier",
+        "AA-index",
+        "pricing",
+        "vendor-vs-third-party"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Meta Muse Wonder / Wonder Full(10-12):Meta 首个前沿档,闭源权重,AA 指数 56 并列第二",
+      "org": "Meta Superintelligence Labs",
+      "year": "2026-10",
+      "category": "model-report",
+      "innovation": "Meta 第一个前沿档模型,且以闭源权重发布;开源线只保留较小的 Muse Glimmer",
+      "summary": "2026-10-12 由 Meta Superintelligence Labs 发布两档:Muse Wonder 经 Meta Model API 与 Muse Code 提供,价格 $4 / $20(每百万输入/输出 token);**Wonder Full 只对 Muse Code 订阅用户开放,没有 API**。**两档都不放权重**;Meta 的开放权重模型仍是更小的 Muse Glimmer(Apache 2.0),对 Wonder 系列是否开源不置可否(Alexandr Wang:'我们仍然致力于开源')。Artificial Analysis 智能指数(v4.3,最高推理档):**Wonder Full 56、Wonder 52**,Wonder Full 与 Claude Sonnet 5.5 并列第二,仅次于 Opus 5.5 的 58,在 GPT-6 Astra 与 Gemini 4 Argon 之前。Terminal-Bench 4.0 上 Meta 模型卡给 Wonder Full 57.1,较 Muse Spark 1.3 的 33 提升 24 分。",
+      "analysis": "对本站的意义在于**开源阵营又少了一个前沿档的潜在来源**:Llama 时代 Meta 是开放权重旗舰的主要供给方,而它的第一个前沿档选择了闭源,且最强那档连 API 都不给,只放在自家编码产品里——这与 OpenAI、Anthropic 用产品绑定最强档的做法一致。对昇腾适配评估,Wonder 系列因此不在范围内。一处未能核实的出入:一篇日文二手稿称 Meta 模型卡上 Wonder Full 的智能指数一栏写 59.0,而 AA 公布的是 56;本站无法读到 Meta 模型卡原文,按 AA 的 56 入榜,并提示**厂商卡上的'第三方指数'数字需要回到第三方页面核对**。全部经二手摘要读取。",
+      "url": "https://techcrunch.com/2026/10/12/meta-releases-its-first-frontier-model-muse-wonder/",
+      "tags": [
+        "Meta",
+        "Muse",
+        "closed-weights",
+        "AA-index",
+        "frontier"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Claude Haiku 5.5(10-07):$0.10 / $0.50,小模型档首次支持推理强度调节",
+      "org": "Anthropic",
+      "year": "2026-10",
+      "category": "model-report",
+      "innovation": "5.5 代最小档;Haiku 系列首次支持可调推理强度(effort)",
+      "summary": "2026-10-07 发布,兑现了 Opus 5.5 发布时'Sonnet 5.5 与 Haiku 5.5 数周内跟进'的说法。定价:100K token 以内 **$0.10 / $0.50**(每百万输入/输出),超过 100K 为 $0.50 / $2.50;对照 Haiku 4.5 的 $1 / $5。'降价 75%'是 Anthropic 所称跨负载的平均运行成本降幅,'90%'是 100K 以内输入单价的降幅,两个数字说的不是同一件事。Anthropic 自测:OSWorld 2.1(离线子集)72.4%(Haiku 4.5 为 15.7%、Sonnet 5.5 为 83.9%),GDPval-AA v2.1 1620 Elo(Sonnet 5.5 为 1840)。上架 AWS、Google Cloud 与 Azure。",
+      "analysis": "价格上 Haiku 5.5 的输出价 $0.50 与 GPT-6 Luna 相同,闭源厂商的最小档现在已落到与 DeepSeek-V4.1-Flash 非高峰价同一量级——这一轮对自建推理服务(含昇腾)的盈亏门槛是又一次挤压。注意**分段定价**:超过 100K 后单价乘 5,长上下文 agentic 负载不能按头条价估算。基准全部为 Anthropic 自测,第三方结果尚未出现;本站仅记 OSWorld 与 GDPval 两项,另有单一来源给出的 Terminal-Bench 39.2% 未经交叉核对,不入榜。",
+      "url": "https://www.androidauthority.com/claude-haiku-5-5-launched-3720550/",
+      "tags": [
+        "Claude",
+        "Haiku",
+        "pricing",
+        "small-model",
+        "self-reported"
+      ],
+      "confidence": "self-reported"
+    },
+    {
+      "title": "DeepSeek-V4.1-Flash-1017:小版本更新,11 项基准全涨、输出更短,但各项用的 harness 不同",
+      "org": "DeepSeek",
+      "year": "2026-10",
+      "category": "model-report",
+      "innovation": "同架构、同配置的小版本迭代,目标是缩短 agent 任务的执行时间与输出长度",
+      "summary": "2026-10-17 发布,Hugging Face 模型卡自称对 V4.1-Flash 的'小幅更新(minor update)',已替换 9 月版本,在 deepseek-flash 这一 API 名称、网页与 App 中生效,价格不变;权重 MIT。官方表格显示**所列 11 项基准全部提升**,例如 DeepSWE v1.1 从 74.2 升到 77.0;并称缩短了任务执行时间与输出长度。专门适配了 DeepSeek Harness、腾讯 CodeBuddy 与 WorkBuddy,建议把 DeepSeek Harness 升级到 0.2.1-rc.1 及以上。",
+      "analysis": "两处引用纪律。① **同一张表里不同基准用的是不同 harness**:Terminal-Bench 4.0 在 Claude Code 中测得,DeepSWE v1.1 用 Mini-SWE-V2——这正是本站 D29 / D42 反复记录的'harness 即分数'问题,跨厂商比较时必须对齐 harness。② 有媒体称 1017 版'引入'了 CED 架构与原生图像理解,**这是错的**:这些早已写在 09-10 发布的 V4.1-Flash 模型卡里(本站 D42 已拆解),1017 的配置文件与 9 月版相同。对昇腾:vLLM-Ascend v0.30.0rc1 已在 A2/A3 上以 W8A8 支持 DeepSeek V4.1,配置不变意味着 1017 大概率可直接沿用,但发布说明未单独声明 1017,且未覆盖昇腾 950。全部经二手摘要读取。",
+      "url": "https://technode.com/2026/10/19/deepseek-releases-v4-1-flash-1017-with-stronger-coding-and-agent-capabilities/",
+      "tags": [
+        "DeepSeek",
+        "V4.1-Flash",
+        "harness",
+        "open-weights",
+        "MIT"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "Reflection AI Beam:501B-A23B 开放权重(Apache 2.0),先发 API、约十天后放权重",
+      "org": "Reflection AI",
+      "year": "2026-10",
+      "category": "model-report",
+      "innovation": "美国创业公司的首个开放权重大模型;同时发布 BF16 / FP8 / NVFP4 权重与 DFlash 投机解码草稿模型",
+      "summary": "约 10-05/06 发布并开放 beta API,当时称权重、技术报告与模型卡'本月晚些时候'发布(10-06 时 Hugging Face 上尚无权重);约 **10-16 权重上线**,BF16、FP8、NVFP4 三种格式,附 DFlash 草稿模型,许可为 Apache 2.0(厂商口径)。稀疏 MoE,501B 总参 / 23B 激活,纯文本,定位编码、推理与 agent 工作负载。自测:SWE-bench Verified 80.9、Terminal-Bench 2.1 80.1、AIME 2026 97.8;厂商称推理基准上与 GLM-5.2 相当而推理算力省 3–4 倍。**SkyRL 于 10-16 宣布 Day-0 支持**:LoRA、全参微调与 MXFP8 RL 配方(本站直读 SkyRL README)。",
+      "analysis": "三点。① **权重节奏与本站'开源承诺裂口'卡记录的中国实验室同形**(先 API、后权重),但约十天即兑现;这说明那张卡里'系统性推迟'的判断过强,详见该卡 10-22 更新。② **Day-0 生态已经包含 RL**:训练框架在模型发布当天就给出 RL 配方(且是 MXFP8 这种低精度 RL),这在本站记录里是第一次——此前 day-0 支持基本只指推理部署。③ 发布当天即有 NVFP4 权重,而本窗口内**没有找到任何昇腾 day-0 适配公告**(见昇腾标签 vLLM-Ascend v0.30.0rc1 卡)。Terminal-Bench 2.1 的 80.1 低于该榜开源前列(DeepSeek V4.1-Flash 90.6、MiMo-V2.6-Pro 89.9),另有报道称其 agent 编码仍落后 Kimi K3;所有基准为厂商自测,第三方评测尚未出现,Hugging Face 页面在本环境不可达。",
+      "url": "https://reflection.ai/blog/introducing-beam",
+      "tags": [
+        "Reflection-AI",
+        "Beam",
+        "open-weights",
+        "MoE",
+        "day-0",
+        "NVFP4"
+      ],
+      "confidence": "secondary"
     }
   ]
 }
