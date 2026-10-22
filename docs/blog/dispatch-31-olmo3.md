@@ -10,7 +10,7 @@
 
 ## 1 · 定位:model flow 与开放度光谱
 
-OLMo 3 的核心主张不是单点性能,而是 **model flow**:模型完整生命周期的每个阶段、每个 checkpoint、每条数据、每个依赖全部开放,研究者可在任意节点介入或分叉——研究能力涌现、对特定阶段做消融、在 mid-train 换入领域数据、从更早的 checkpoint 分叉后训练。与之对照,多数 open-weights 模型是"带公开接口的黑箱":可用,不可审计,不可复训。
+OLMo 3 的核心主张不是单点性能,而是 **model flow**:模型完整生命周期的每个阶段、每个 checkpoint、每条数据、每个依赖全部开放,研究者可在任意节点介入或分叉——研究能力涌现、对特定阶段做消融、在 mid-train 换入领域数据、从更早的 checkpoint 分叉后训练。与之对照,多数 open-weights 模型是"带公开接口、内部未公开的系统":可用,不可审计,不可复训。
 
 该主张已获第三方评级背书:[Artificial Analysis Openness Index](https://artificialanalysis.ai/articles/announcing-artificial-analysis-openness-index) 中 OLMo 家族以 **89 分居首**(Nemotron Nano 67 分),[欧洲 OSAI Index](https://osai-index.eu/) 亦长期将其列为最开放。放进本看板追踪过的开放度光谱:
 
@@ -56,7 +56,7 @@ flowchart LR
 
 ## 3 · 数据体系:三层漏斗与公开配比
 
-Dolma 3 的组织是三层漏斗,**配比全部公开**——对照 D28 记录的"工业界数据配比黑箱惯例",这是唯一的完整反例:
+Dolma 3 的组织是三层漏斗,**配比全部公开**——对照 D28 记录的"工业界数据配比不公开的惯例",这是唯一的完整反例:
 
 - **主训**:Dolma 3 Mix,5.9T token(从 9.3T 池筛出;代码与数学占比高于前代);
 - **mid-train**:Dolmino Mix,100B(从约 2.2T 高质量池采样:数学/科学/代码/指令/思维链);
@@ -79,7 +79,7 @@ flowchart LR
     BUCKET["WebOrganizer 分桶<br/>24 主题 × 20 质量档"]
     DEDUP -.-> POOL
     BUCKET -.-> MIX
-    NOTE["与工业界对照:配比全公开<br/>D28 记录的配比黑箱惯例的唯一完整反例"]
+    NOTE["与工业界对照:配比全公开<br/>D28 记录的配比不公开惯例的唯一完整反例"]
     LONG -.-> NOTE
 ```
 
@@ -93,7 +93,7 @@ flowchart LR
 
 **② OlmoRL 工程包。** GRPO/DAPO 系改进的完整公开实现:零梯度组过滤 + **active sampling**(持续补采样直到凑满整批非零优势)、token 级损失归一化(去长度偏置)、**无 KL 惩罚**、clip-higher、截断重要性采样(容忍异步 off-policy);基建为全异步 RL + continuous batching + **in-flight 权重更新**,最多 1024 张 H100 上提速约 4×,32B Think 的 RL 从超 15 天压缩到约 6 天。奖励设计:数学 SymPy 符号等价、代码测试执行(AWS Lambda、pass-rate 阈值)、精确 IF 约束函数、通用对话用 Qwen3-32B 作 judge。这套组合与看板 D18/D19/D22 记录的工业实践(AIPO/TIS/compact filtering 系)高度同源,差异在于**全部脚本、超参与 WandB 曲线公开**——7B Think RL 的复现开销约 32-72 张 H100 级 GPU,处于高校实验室可及范围。
 
-**③ 每阶段 checkpoint 留档。** SFT/DPO/RL 各阶段模型独立发布(如 Olmo-3-7B-Instruct-SFT),配 WandB 全曲线——后训练从黑箱变成可逐段审计的流水线。
+**③ 每阶段 checkpoint 留档。** SFT/DPO/RL 各阶段模型独立发布(如 Olmo-3-7B-Instruct-SFT),配 WandB 全曲线——后训练从未公开变成可逐段审计的流水线。
 
 ### 图 C · 后训练矩阵与 OlmoRL
 

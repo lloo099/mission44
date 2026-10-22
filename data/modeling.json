@@ -225,7 +225,7 @@
       "year": "2026-08",
       "category": "model-report",
       "innovation": "Llama 线搁置、闭源 Muse Spark 之后,Meta 以 Apache 2.0 重返开源:30B 稠密多模态(文本+图像),128K 上下文,面向端侧(4-bit 约 18-20GB 显存);训练含 logit 蒸馏+长上下文 agent 数据+RL",
-      "analysis": "Innovation:与开源主流的大总参小激活 MoE 反向——押注端侧稠密小模型承接 agent 工作负载;llama.cpp/Ollama/MLX/vLLM 首日支持。Performance:厂商自报 agentic 能力优化,无第三方指数;Apache 2.0 为当前旗舰级发布中最宽松许可之一。对 RL-on-NPU 意义:30B 稠密是 RL 复现实验友好规模(对照 OLMo 3 32B);Meta 开源策略转向(先闭后开、开的是小模型)标注了开放光谱的新位置——旗舰闭源+端侧开源的分层开放。",
+      "analysis": "Innovation:与开源主流的大总参小激活 MoE 反向——投入端侧稠密小模型承接 agent 工作负载;llama.cpp/Ollama/MLX/vLLM 首日支持。Performance:厂商自报 agentic 能力优化,无第三方指数;Apache 2.0 为当前旗舰级发布中最宽松许可之一。对 RL-on-NPU 意义:30B 稠密是 RL 复现实验友好规模(对照 OLMo 3 32B);Meta 开源策略转向(先闭后开、开的是小模型)标注了开放光谱的新位置——旗舰闭源+端侧开源的分层开放。",
       "url": "https://www.infoq.com/news/2026/08/meta-muse-glimmer/",
       "tags": [
         "Meta",

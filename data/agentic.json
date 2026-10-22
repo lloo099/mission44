@@ -1056,7 +1056,7 @@
       "year": "2026-03",
       "category": "product",
       "track": "industry",
-      "summary": "a16z 领投 4300 万美元 A 轮,构建模拟职场工作流的 RL 训练环境。头部 VC 押注「职业角色级」高保真 RL 环境,环境赛道进入规模化融资(媒体口径)。",
+      "summary": "a16z 领投 4300 万美元 A 轮,构建模拟职场工作流的 RL 训练环境。头部 VC 投入「职业角色级」高保真 RL 环境,环境赛道进入规模化融资(媒体口径)。",
       "url": "https://fortune.com/2026/03/19/andreessen-horowitz-ai-startups-deeptune-series-a/",
       "tags": [
         "industry",
@@ -1305,7 +1305,7 @@
       "track": "industry",
       "innovation": "协议与基础设施收敛:MCP 破 9700 万安装",
       "summary": "2025-12 成立,锚定 Anthropic 的 MCP、OpenAI 的 AGENTS.md、Block 的 goose。MCP 在 2026-03 破 9700 万安装。agentic 生态从「各做各的」走向「共享协议 + 标准环境/工具接口」——RL 训练的环境标准化由此受益。",
-      "analysis": "Innovation:Linux 基金会 2025-12 成立 Agentic AI Foundation,锚定三个中立化资产——Anthropic 的 MCP、OpenAI 的 AGENTS.md、Block 的 goose,协议与基础设施从'各做各的'走向共享标准。Performance:MCP 于 2026-03 突破 9700 万安装,事实标准地位确立;基金会治理进一步降低单厂商控制风险。对 RL-on-NPU 意义:协议收敛对训练侧是重大利好——工具接口标准化(MCP)意味着训练环境的工具层可复用整个生态而非逐个自建,叠加 MCP 07-28 规范的无状态化,大规模并行 rollout 的工具基建成本被双重压低;AGENTS.md 的标准化让 harness 行为更可移植,有助缓解评测与训练中的 harness 方差问题;中立治理也使自建栈押注这些协议的长期风险可控。",
+      "analysis": "Innovation:Linux 基金会 2025-12 成立 Agentic AI Foundation,锚定三个中立化资产——Anthropic 的 MCP、OpenAI 的 AGENTS.md、Block 的 goose,协议与基础设施从'各做各的'走向共享标准。Performance:MCP 于 2026-03 突破 9700 万安装,事实标准地位确立;基金会治理进一步降低单厂商控制风险。对 RL-on-NPU 意义:协议收敛对训练侧是重大利好——工具接口标准化(MCP)意味着训练环境的工具层可复用整个生态而非逐个自建,叠加 MCP 07-28 规范的无状态化,大规模并行 rollout 的工具基建成本被双重压低;AGENTS.md 的标准化让 harness 行为更可移植,有助缓解评测与训练中的 harness 方差问题;中立治理也使自建栈投入这些协议的长期风险可控。",
       "url": "https://modelcontextprotocol.io",
       "tags": [
         "industry",

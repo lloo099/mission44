@@ -47,17 +47,17 @@
     },
     {
       "title": "Agent KV 租约协议层:把\"我还会回来\"写成 agent 框架×推理引擎的标准握手(NPU 首发)",
-      "pitch": "D26 核实:工具等待期 KV 换出的单集群原型已被连续占坑(Autellix 程序级抢占、TokenCake 事件驱动 offload、Continuum 按预测工具时长设 TTL、CacheWise reuse-aware 驱逐),但全部停在单集群研究原型——\"agent 框架向 serving 声明我还会回来\"的协议层(跨实例租约语义、计费与多租户隔离、与主流引擎的 API 标准化)仍无人定义。做协议层设计 + 在 vLLM-Ascend或SGLang 上参考实现,NPU 侧此方向完全空白。",
+      "pitch": "D26 核实:工具等待期 KV 换出的单集群原型已有连续的公开工作(Autellix 程序级抢占、TokenCake 事件驱动 offload、Continuum 按预测工具时长设 TTL、CacheWise reuse-aware 驱逐),但全部停在单集群研究原型——\"agent 框架向 serving 声明我还会回来\"的协议层(跨实例租约语义、计费与多租户隔离、与主流引擎的 API 标准化)仍无人定义。做协议层设计 + 在 vLLM-Ascend或SGLang 上参考实现,NPU 侧此方向完全空白。",
       "impact": 5,
       "difficulty": 3,
       "novelty": 3,
       "why": "Dispatch 26 扫描裁定:此子项空白被证伪最彻底,但剩余的协议层空白反而更值钱——谁先把 KV 租约写成 agent 协议(MCP 一类)与推理引擎之间的标准握手,谁就占住 agent-serving 接口的定义权(D26 次选切入)。对 RL-on-NPU 双重相关:agentic RL rollout 正是这种负载(D02/D13),昇腾显存管理更紧(无 sleep-mode,D13 四坑)。与 D25 效率感知 RL 同一硬币:训练侧管 token 要不要存在,系统侧管存在的 token 要不要重复付费。",
       "steps": [
-        "精读占坑者:Autellix(2502.13965)/TokenCake(2510.18586)/Continuum(2511.02230)/CacheWise(2606.16824),提炼各自隐式假设的\"声明接口\"",
+        "精读已有公开工作:Autellix(2502.13965)/TokenCake(2510.18586)/Continuum(2511.02230)/CacheWise(2606.16824),提炼各自隐式假设的\"声明接口\"",
         "定义租约协议:预计返回时间/优先级/可丢弃标记/计费语义,写成 agent 协议扩展草案(MCP 风格)",
         "参考实现:SGLang 或 vLLM-Ascend 加租约感知的 KV 换出-恢复原语,单集群先行",
         "基准:D13 的 mini-swe-agent 负载(工具等待泊松分布),对比常驻/立即换出/租约感知三策略的并发容量与 P99 恢复时延",
-        "延伸:跨实例租约语义与多租户隔离——占坑者全部没做的部分"
+        "延伸:跨实例租约语义与多租户隔离——已有公开工作全部没做的部分"
       ],
       "tags": [
         "agent-serving",
@@ -230,7 +230,7 @@
       "impact": 3,
       "difficulty": 3,
       "novelty": 3,
-      "why": "Entropy collapse caps RL reasoning gains。生态进展:Dispatch 22 的 DeepSWE/GRPO++ 用 compact filtering + entropy-free 训练在生产级跑通了另一条防崩路线,Dispatch 23 更给出四种崩法的分类学与已收敛防御——『防熵崩』本身不再新,novelty 下调。仍然独有的部分是硬件问题:昇腾的精度差异(累加序、融合算子)如何与熵动力学交互,GPU 文献完全没有覆盖,是小而干净的可发表贡献。",
+      "why": "Entropy collapse caps RL reasoning gains。生态进展:Dispatch 22 的 DeepSWE/GRPO++ 用 compact filtering + entropy-free 训练在生产级跑通了另一条防崩路线,Dispatch 23 更给出四种失稳模式的分类学与已收敛防御——『防熵崩』本身不再新,novelty 下调。仍然独有的部分是硬件问题:昇腾的精度差异(累加序、融合算子)如何与熵动力学交互,GPU 文献完全没有覆盖,是小而干净的可发表贡献。",
       "steps": [
         "Reproduce entropy collapse on a GRPO reasoning run on Ascend",
         "Implement Clip-Cov/KL-Cov token-level interventions; compare against a GRPO++-style entropy-free baseline",
