@@ -1660,6 +1660,27 @@
         "monitoring"
       ],
       "confidence": "secondary"
+    },
+    {
+      "title": "DSec(DeepSeek Elastic Compute):把\"环境长期存在\"与\"资源长期独占\"拆开的生产沙箱平台",
+      "org": "DeepSeek-AI / 清华大学",
+      "year": "2026-09",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "一套统一入口、四种执行后端、独立分层环境与可抢占恢复的 agentic 训练沙箱平台;本站对照原文逐条核验",
+      "summary": "arXiv:2609.22978v1(2026-09-19)。生产工作负载的四个特征是设计起点:约 90% 的 container 与 microVM 沙箱平均 CPU 不超过申请额度的 5%;单个作业可突发申请约 32K 个沙箱;生命周期中位数 container 17.4 分钟、microVM 15.5 分钟(p99 为 231.5 与 213.9 分钟);一周内 container 11,266 个 base + 102,171 个 workspace,运行时只访问镜像数据的 4.2%–13.3%。一个 scale unit 约 160 个 CPU 节点、30K 核、约 250 TB DRAM,日服务约 300 万个沙箱、峰值并发约 38 万、创建超过每秒 5,000;单节点至少 3,200 个容器或 800 个 microVM。机制:四种后端(FnCall / 容器 / Firecracker microVM / 完整 VM)按需选择;Base、Workspace、Toolkit 独立发布,OverlayFS 组合、EROFS 存只读层、3FS 供给共享数据;virtio-pmem + DAX 去重文件缓存,DAMON + free-page reporting 回收冷页;SCHED_IDLE + core scheduling 隔离延迟敏感任务;worker 与 agent sandbox 移出可抢占 GPU 池。",
+      "analysis": "消融收益只对应各自实验:按需加载使 8,192 个容器的突发启动约 35 分钟完成、冷拉取 60 分钟以上(1.71×),累计写入降 57%;EROFS 挂载对 tar 解压完成时间 79 → 45 分钟(1.76×);pmem 使峰值内存降 40.2%、DAMON + FPR 使内存时间积分降 21.2%(两者口径不同,不能相加);两级 CPU QoS 在 50% 后台负载下把延迟膨胀从 45.2% 限到 17.3%。证据边界要读准:论文声明 RL 生命周期协同(§6)不在性能实验范围内,**没有量化暂停恢复时间、恢复成功率与最终模型收益**,也没有对任意主机故障给出通用恢复保证。对 RL-on-NPU:DSec 是 CPU 侧平台,不受 NPU 影响,但它的'状态解耦'思想——把 Agent 控制进度与环境副作用一起移出可抢占加速器作业——在昇腾训练集群上同样适用。以上数字本站经底稿内嵌的原文 PDF(哈希一致)逐条核对;详见 Dispatch 46。",
+      "url": "https://arxiv.org/abs/2609.22978",
+      "tags": [
+        "sandbox",
+        "agentic-RL",
+        "infrastructure",
+        "DeepSeek",
+        "EROFS",
+        "microVM",
+        "D46"
+      ],
+      "confidence": "self-reported"
     }
   ]
 }

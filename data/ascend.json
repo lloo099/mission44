@@ -1047,6 +1047,25 @@
         "RL-path"
       ],
       "confidence": "confirmed"
+    },
+    {
+      "title": "Agentic RL 基础设施的昇腾迁移:DSec 与 MiMo-V2.6 两篇一手报告全文零 NPU 命中,只能按能力逐项验收",
+      "org": "本站核验 · D46",
+      "year": "2026-10",
+      "category": "challenge",
+      "innovation": "对两篇 2026 年 9 月的 agentic RL 基础设施一手报告做全文检索,确认其机制均未在 NPU 上验证,并给出按能力而非按项目名的验收清单",
+      "summary": "本站对 DSec(arXiv:2609.22978,31 页)与 MiMo-V2.6 RL 技术报告(44 页)原文全文检索 \"Ascend\" 与 \"NPU\",**均为零命中**。DSec 的实验节点为 AMD EPYC 9655(2 路 × 96 核 × 2 SMT),GPU 隔离用 NVIDIA MIG;MiMo 沿用 SGLang 与 Megatron-LM 作为推理与训练引擎,缓存卸载跑在 CUDA side streams 上,专家权重依赖 MXFP4 kernel。底稿引用的 Uni-Agent NPU 示例(VeOmni + torch_npu + vllm_ascend,Qwen3-Coder-30B-A3B 配方)其 Results 一栏仍标为待补充(据底稿对其文档的阅读,本站未独立复核)。",
+      "analysis": "迁移只能按能力验收,底稿给出的 NPU 验收项是:固定模板生成可正确解析的工具调用;**冻结权重下比较多轮生成记录与 learner 侧计算的 token / 概率**;小 batch 的 forward / backward / update 与有限梯度;以 checkpoint 重载为基线再接热更新;按实际拓扑验收 HCCL 的权限、带宽与错误回退;实测长上下文的峰值 HBM 与缓存失效,不外推 GPU 数字。分层顺序为:单任务闭环 → 同一 Runner 的评测与 RL 出口 → 池化与大数据路径 → 混合任务调度 → 数值与硬件优化 → 更细的奖励。本站判断:冻结权重的多轮 token / 概率对齐测试应当作 RL-on-NPU 的第一道门来追踪,阈值须按 NPU 精度单独校准;MiMo 的专家 MXFP4 量化一层在昇腾侧只有原生支持 MXFP4 的 950 可承接,而 950 的推理软件支持近期在收窄。详见 Dispatch 46。",
+      "url": "https://arxiv.org/abs/2609.22978",
+      "tags": [
+        "Ascend",
+        "agentic-RL",
+        "RL-infra",
+        "validation",
+        "MXFP4",
+        "D46"
+      ],
+      "confidence": "confirmed"
     }
   ]
 }

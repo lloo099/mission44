@@ -1801,6 +1801,26 @@
         "framework"
       ],
       "confidence": "confirmed"
+    },
+    {
+      "title": "MiMo-V2.6 的 RL 基础设施:Harness Pool、Payload Porter、Sample Mixer 与三层训推对齐",
+      "org": "小米 LLM-Core",
+      "year": "2026-09",
+      "category": "framework",
+      "innovation": "把轨迹组织、运行承载、数据搬运与模型计算分开设计,并用权重量化 / 路由 / 采样候选集三层对齐保证梯度对应真实采样",
+      "summary": "MiMo-V2.6 技术报告 §6(本站对照原文核验)。**Harness Pool**:多个 harness 实例与 Agent Loop 作为 tenant 放进固定大小的持久 Host Actor 池,模型侧共享 endpoint、proxy 与 tokenizer,避免 Actor 数随 rollout 数同比增长压垮控制面。**Payload Porter**:完成的轨迹把 token、logprob、MoE 路由、Top-p 候选集与图像等重型 payload 写入分布式 KV 存储,driver 只处理 reward、Context 长度与 payload key;batch-yield hook 只按元数据规划,pack 时每个 TP 组按 CP 窗口读取未 padding 的数据。**Sample Mixer**:各数据源的平均生成长度与活跃 rollout 时长分别相差约 90 倍与 66 倍,期望派发量 m = B / r、稳态并发需求 ∝ t·B / r,配合有界在途预算、目标与缺口混合的加权轮转、按长度先验预估 KV 的派发与启动补样。**训推一致性**:rollout 专家用 MXFP4、每次更新后 QDQ;rollout 专家索引在训练端回放(R3);Top-k / Top-p 候选集在训练端重新归一化(典型 top-p = 0.97 时平均不足 5 个 token)。",
+      "analysis": "这张卡补的是本站已有 MiMo RL 报告卡没覆盖的系统部分。三个要点:① **参数更新后 KV 必须重建、行为 logprob 必须保留**——partial rollout 续接时 re-prefill,但不重算覆盖历史概率;② 三层对齐分别约束连续数值、离散路由与概率归一化,**不能替代对真实策略陈旧度的处理**(staleness = 4,版本门槛与同步细节未完整披露);③ 故障日志比平均指标更有信息量:KV 池 OOM 源于启动后短轨迹先完成、长度先验偏短;训练 OOM 源于一个 EP rank 收到超过平均 30 倍的 token;30 步运行含故障共 Pro 123.1 h / Flash 81.8 h。对 RL-on-NPU:系统沿用 SGLang 与 Megatron-LM,缓存卸载跑在 CUDA side streams,专家量化依赖 MXFP4 kernel,原文全文无 Ascend / NPU 相关内容——其中专家量化一层是迁移到昇腾成本最高、证据最少的一层(本站判断)。详见 Dispatch 46。",
+      "url": "https://mimo.xiaomi.com/mimo-v2-6",
+      "tags": [
+        "MiMo-V2.6",
+        "RL-infra",
+        "partial-rollout",
+        "training-inference-consistency",
+        "R3",
+        "MXFP4",
+        "D46"
+      ],
+      "confidence": "self-reported"
     }
   ]
 }

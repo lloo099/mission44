@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 46 精读版 · DSec 与 MiMo-V2.6 RL 基础设施</title>
+<meta name="description" content="DSec 沙箱平台与 MiMo-V2.6 RL 技术报告的工程精读：环境执行成本与经验可用性两端的机制，以及自建 agentic RL 基础设施的分阶段落地方案。66 处承重数字已对照原文核验。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-46-dsec-mimo-rl-infra.html">
+<meta property="og:title" content="Dispatch 46 精读版 · DSec 与 MiMo-V2.6 RL 基础设施">
+<meta property="og:description" content="DSec 守环境执行成本，MiMo-V2.6 守经验的可用性。先闭合一次学习循环再扩并发；更新后旧 KV 重建、旧 logprob 保留；两篇论文均未在昇腾上验证。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-46-dsec-mimo-rl-infra.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-46-dsec-mimo-rl-infra.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2310141c'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%236aa6ff'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="readbar">
+  <a class="brand" href="../index.html">RL on NPU · Research Dashboard</a>
+  <a href="../index.html#blog/dispatch-46-dsec-mimo-rl-infra">看板内阅读原文</a>
+  <a href="../docs/blog/dispatch-46-dsec-mimo-rl-infra.md">Markdown 源</a>
+  <span class="spacer"></span>
+  <button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button>
+</div>
+
+<header class="masthead">
+  <div class="kicker">NPU Frontier Dispatch 46 · 精读版 · 2026-10-22</div>
+  <h1>DSec 与 MiMo-V2.6：agentic RL 的两端，以及把它们接成一条可验证流水线的工程方法</h1>
+  <p class="standfirst">两篇 2026 年 9 月的一手报告分别守住 agentic RL 的两端：<strong>DSec 解决环境执行成本</strong>，<strong>MiMo-V2.6 解决经验的可用性</strong>。本页以站长提供的工程版报告为底稿，把两篇论文的机制逐点拆开，对照"不看论文的直觉实现"与"论文和底稿的做法"，再落到一套先求正确、后求吞吐的分阶段方案。全部承重数字已对照两篇原文核验。</p>
+  <div class="byline">
+    <span>RL-on-NPU Research Dashboard · D46</span>
+    <span>承接 D29 / D33 / D36 / D43 / D44 / D27</span>
+    <span>原图 0 张 · 本站图 4 张</span>
+    <span><span class="chip c-tp">第三方</span> <span class="chip c-vr">自报</span> <span class="chip c-inf">推断</span></span>
+  </div>
+</header>
+<nav class="toc">
+  <ol>
+    <li><a href="#s0"><span class="tnum">00</span>全景与读法：两个循环、四类状态</a></li>
+    <li><a href="#s1"><span class="tnum">01</span>先闭合一次学习循环</a></li>
+    <li><a href="#s2"><span class="tnum">02</span>谁运行在哪里：三条通路</a></li>
+    <li><a href="#s3"><span class="tnum">03</span>轨迹与接口契约</a></li>
+    <li><a href="#s4"><span class="tnum">04</span>池化、数据面与奖励</a></li>
+    <li><a href="#s5"><span class="tnum">05</span>发布、恢复与调度</a></li>
+    <li><a href="#s6"><span class="tnum">06</span>DSec：有状态环境平台</a></li>
+    <li><a href="#s7"><span class="tnum">07</span>MiMo：经验的生成与搬运</a></li>
+    <li><a href="#s8"><span class="tnum">08</span>MiMo：学习信号与训推对齐</a></li>
+    <li><a href="#s9"><span class="tnum">09</span>能力结果与证据边界</a></li>
+    <li><a href="#s10"><span class="tnum">10</span>集成与昇腾迁移</a></li>
+    <li><a href="#s11"><span class="tnum">11</span>总表、核验与下一步</a></li>
+  </ol>
+</nav>
+
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景与读法：两个循环、四类状态</h2>
+
+<p class="lede">一个 coding agent 在仓库里读代码、调工具、改文件、跑测试，再根据执行反馈继续决策；一条轨迹结束后由 verifier 或 grader 评分，训练器再用一批经验更新策略。<strong>多轮环境交互与模型参数更新是两个不同的循环</strong>，扩展这两个循环时撞上的约束也不同。<strong>DSec</strong>（DeepSeek-AI 与清华，arXiv:2609.22978，2026-09-19）面对的是大量长期存活、资源需求间歇变化的环境，重点降低状态保留与执行成本；<strong>MiMo-V2.6</strong>（小米 LLM-Core，技术报告，2026-09-21）面对的是大量异质轨迹及其学习信号，重点稳定样本供给、概率记录与参数更新。环境执行效率决定能拿到多少经验，经验是否有效则取决于训练系统如何记录、过滤和使用它们。</p>
+
+<div class="note">
+  <span class="ntitle">本文的读法</span>
+  <p>每节固定三段：<strong>朴素实现</strong>（左栏，灰）——不看论文时最自然的做法，也是最常见的错误；<strong>论文与底稿的做法</strong>（右栏，橙）——两篇论文的机制与底稿给出的工程方案；<strong>差在哪</strong>（下方色块）——差异的后果，以及对 RL-on-NPU 的含义。数字来源三分：<span class="chip c-tp">第三方</span> 本站对照原文核验过的论文报告值（本页的论文数字均已逐条核对原文）；<span class="chip c-vr">自报</span> 论文作者口径的生产与实验数字；<span class="chip c-inf">推断</span> 底稿或本站的设计建议与算例。<strong>两点限定</strong>：其一，底稿内嵌的 30 幅论文原图与两篇完整 PDF 本站未转载（许可无法核实，与 D44 / D45 同一规则），本页四幅图均为据底稿架构简图重绘的本站图；其二，底稿中标为"设计建议""实施方案""集成方案"的内容不是两篇论文的结论。</p>
+</div>
+
+<div class="formula">
+两个循环，一条边界：
+
+  执行循环   任务 / 环境观察 → 模型动作 → 工具执行 → 新的环境观察        （Agent Loop 与 Harness）
+  学习循环   一组轨迹 + 验证证据 → advantage / loss → 新策略 → 发布      （判分、Penalty、Packer、Learner）
+  系统循环   各源耗时 / 接受率 / KV 占用 → 下一次派单                    （Sample Mixer 与资源调度）
+
+四类状态，四个所有者：
+
+  环境状态   改过的文件、进程、依赖、服务       → 环境服务（DSec 一侧）
+  轨迹状态   对话分支、真实 token、工具结果      → Agent runtime
+  KV 状态    某参数版本下算出的 key / value      → 推理引擎（新参数后必须重建）
+  训练状态   权重、优化器、调度与版本            → 训练器
+</div>
+
+<div class="vs">
+  <div class="base">
+    <h4>朴素实现</h4>
+    <p>"DSec 是更快的沙箱，MiMo 是一套 RL 配方，把两者装在一起就是一套 agentic RL 系统。"或者把整条链路当成一个循环：工具执行完就算一步，一步就更新一次模型。</p>
+  </div>
+  <div class="real">
+    <h4>论文与底稿的做法</h4>
+    <p>两篇解决的是不同约束，<strong>互补但不能直接互换</strong>。DSec 的系统边界覆盖环境生命周期，不实现 GRPO loss 或 learner；MiMo 的系统优化直接参与学习过程——组过滤决定哪些经验进入训练，Sample Mixer 决定各任务的实际贡献，数据与概率记录决定梯度是否对应真实采样。两者的交集是<strong>执行状态与学习数据</strong>，而不是同一套容器、同一套 Actor 或同一种存储。</p>
+  </div>
+</div>
+<p class="delta"><span class="dl">差在哪</span>把两篇论文叠成一个系统，会在状态边界上出错：环境快照、Agent 轨迹、KV cache、权重与优化器状态<strong>互不等价，也不能互相推导</strong>。本页其余各节都在回答同一个问题——每类状态归谁、在什么事件后保留、在什么事件后重建。</p>
+
+<h2 id="s1"><span class="hnum">01</span>先闭合一次学习循环，再扩大规模（E01–E02）</h2>
+
+<p>底稿把"类似 MiMo 的 RL infra"定义为一条可验证的流水线：同一任务产生多次隔离尝试，保留实际采样记录，经可信验证组成训练组，交给 Learner 更新，再把新版本发布给生成服务。大规模并发、混合数据源与 partial rollout 是这条流水线的扩展，不是最初的前置条件。建议起点是外置的最小 coding harness、一个容器后端、verl 原生 AgentLoop 与一个已能运行的 NPU 推理服务<span class="chip c-inf">推断</span>。</p>
+
+<div class="vs">
+  <div class="base">
+    <h4>朴素实现</h4>
+    <p>从目标规模倒推：先上 32K 并发沙箱、四种执行后端、全异步训练与多 harness，再回头调正确性。计数时把"推理请求数"或"导出的训练记录行数"当成训练组数。</p>
+  </div>
+  <div class="real">
+    <h4>论文与底稿的做法</h4>
+    <p>第一版只要求：一个可复现的 Linux 环境、每次尝试独立可写、一个可控 harness、一种已验证的推理后端（真实 token IDs、概率口径、固定模型版本）、固定任务集上的小批次同步更新，以及"更新完成后才接纳新版本请求"。完成标准是能回答五个问题：<strong>这条训练记录来自哪次尝试？模型实际看到了什么？为什么得到这个奖励？谁更新了参数？下一次请求是否确实用了新权重？</strong></p>
+  </div>
+</div>
+
+<div class="tbl">
+<table>
+<caption>数量关系算例（底稿交互计算器的默认参数，本站改为静态表）<span class="chip c-inf">推断</span></caption>
+<thead><tr><th>输入</th><th>取值</th><th>输出</th><th>结果</th></tr></thead>
+<tbody>
+<tr><td>不同任务 / Prompt 数 B</td><td>8</td><td>逻辑 Episode / Rollout 数</td><td>32（8 组 × 每组 4 次）</td></tr>
+<tr><td>每题尝试数 G</td><td>4</td><td>模型请求数（按均值）</td><td>160（不是训练组，也不是卡数）</td></tr>
+<tr><td>同时活跃 Episode 上限 C</td><td>16</td><td>活跃环境上限（简化场景）</td><td>≤ 16</td></tr>
+<tr><td>每次尝试平均模型请求数</td><td>5</td><td>—</td><td>—</td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>Prompt、Episode、Context 与训练记录是<strong>不同的计数单位</strong>。一组四个 Episode，不能因为其中一个导出了三个 Context 就变成六个独立的 GRPO 候选——组级奖励先按 Episode 计算，Context 如何继承学习信号、重叠前缀如何避免重复计权，要由训练适配器显式处理。MiMo 的层级（Sample → Sequence → Context → Segment，Context 是导出单位）支持这一建模方向，但论文没有给出可直接照抄的多分支权重公式。</p>
+
+<h2 id="s2"><span class="hnum">02</span>谁运行在哪里：职责、位置与三条通路（E03–E05）</h2>
+
+<figure>
+  <img class="diagram" src="img/dispatch-46-dsec-mimo-rl-infra/fig-1.svg" alt="建议部署组件图：顶部 Job Controller 与 Scheduler；CPU 区包含 Runner/Harness Host、Model Gateway/Recorder、Sandbox 与 Trusted Verifier；NPU/GPU 区包含 Rollout Engine 与 Learner；数据面与持久产物位于底部">
+  <figcaption><span class="fnum">图 1</span>建议部署：控制、执行、计算分开，逻辑状态通过 ID 关联。<span class="chip c-inf">推断</span> 本站图，据底稿 E03 组件图重绘，由 Markdown 源中的 mermaid 预渲染；这是实施建议，不是任何一家的生产拓扑。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>先看<strong>两个分区</strong>：CPU 区承载会话与执行（Runner / Harness、Model Gateway、Sandbox 与可信 Verifier），NPU / GPU 区只承载模型计算（Rollout Engine 与 Learner）。Gateway 的职责被刻意写成"会话路由、token / probability / 版本记录、不执行 shell"——模型调用与工具执行在这张图上是两条不同的边。</p>
+    <p>再看 Rollout Engine 与 Learner 之间的<strong>一对反向箭头</strong>：向下是真实生成记录，经数据面进入 Learner；向上是"已提交的"新权重。"已提交"三个字是这张图的要点——第 05 节会展开，权重只传了一部分时不能接纳新请求。底稿另注明物理布局可选：先同步共卡建立基线，分池异步放在后续阶段。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base">
+    <h4>朴素实现</h4>
+    <p>"Harness 调用工具"就是一条调用：工具执行、模型调用和沙箱生命周期混在同一个接口里；或者默认 harness 的每一次本地文件编辑都要绕一圈沙箱的外部入口。</p>
+  </div>
+  <div class="real">
+    <h4>论文与底稿的做法</h4>
+    <p>DSec §3.3 描述的外部访问路径是 API Server → Edge → Aether → Chronus（命令、文件、HTTP 与流式 I/O），FnCall 走独立路径<span class="chip c-tp">第三方</span>；§6.2 又说明 V4.1 中 worker container 控制 rollout、agent sandbox 内运行 scaffold（如 DSH）与工具。底稿据此拆出<strong>三条必须分别设计的通路</strong>：生命周期控制（create / lease / status / stop）、模型调用（harness → 会话级 Gateway → Rollout Engine）、工具执行（外置 harness 走 exec API，内置 harness 走本地工具）。</p>
+  </div>
+</div>
+
+<div class="tbl">
+<table>
+<caption>两种部署方案的取舍（底稿 E04，交互时序已在 Markdown 源中改为两张 8 步静态表）<span class="chip c-inf">推断</span></caption>
+<thead><tr><th>方案</th><th>做法</th><th>适用</th><th>要额外处理的</th></tr></thead>
+<tbody>
+<tr><td>A · Harness 在沙箱外</td><td>Agent 循环在可信 CPU Runner 中，工具经 Sandbox Adapter 远程执行；模型调用走独立 Gateway</td><td>可修改 Agent Loop、自研最小 harness；便于把可信记录器与不可信工具代码分开</td><td>远程执行的往返延迟与命令幂等</td></tr>
+<tr><td>B · Harness 在沙箱内</td><td>Worker 负责外部 rollout 控制，harness 与工具运行在 Agent Sandbox；模型请求连向共享推理服务</td><td>现成 coding CLI 天然依赖本地文件系统、难以改造</td><td>会话凭据暴露、进程恢复、日志持久化</td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>两种方案都能实现稳定的 Agent 状态，<strong>物理位置本身不保证故障恢复</strong>。DSec 原文没有披露 DSH 内部所有工具的传输协议，也没有给出其模型 Gateway 的完整认证和恢复协议，因此"每次本地编辑都经过 Chronus"这类推断不成立。底稿的选择规则是：可改 Agent Loop 时先用 A，现成 harness 难改时用 B，两者藏在统一 Runner 接口后面，之后才有扩展多 harness 的基础。沙箱建立后发往推理侧的是任务、工具上下文与续接观察，<strong>不是镜像、仓库或沙箱内存</strong>。</p>
+
+<h2 id="s3"><span class="hnum">03</span>轨迹与接口契约：保存真实生成，而不是重放最终聊天文本（E06–E07）</h2>
+
+<p>一条轨迹的核心不只是"说过什么"，而是"在什么实际输入和采样条件下生成了哪些动作 token"。工具解析、字符串整理、上下文压缩都可能改变文本表现。MiMo 在每个 Context 同时保留字符串前缀与 token 序列，用前缀匹配定位续接的对话，只有模型生成的 Segment 进入策略损失（§6.1）<span class="chip c-tp">第三方</span>；verl 的 AgentLoop 文档也提醒，最终 messages 重新套模板得到的 token 可能不等于逐轮实际输入输出的拼接。</p>
+
+<div class="vs">
+  <div class="base">
+    <h4>朴素实现</h4>
+    <p>episode 结束后保存整理好的 messages，训练时重新编码；用新模型重算 logprob 覆盖旧值；只给整条长 episode 记一个版本号；失败统一记成 failed，靠退出码判断奖励。</p>
+  </div>
+  <div class="real">
+    <h4>论文与底稿的做法</h4>
+    <p>逐次生成保留 <code>input_ids</code> / <code>output_ids</code>、<code>behavior_logprobs</code>、生成时的 <code>policy_version</code>、采样配置、模板与量化摘要、上下文谱系、生成 token 的来源与偏移。工具观察参与上下文但 <strong>loss mask = 0</strong>——不等于从 attention 上下文里删除。失败至少分成 <code>task_failed</code>、<code>budget_exhausted</code>、<code>infra_error</code>、<code>cancelled</code>、<code>invalid_trajectory</code>，前两类在预定预算下是有效学习结果，后三类需要单独策略<span class="chip c-inf">推断</span>。</p>
+  </div>
+</div>
+
+<div class="tbl">
+<table>
+<caption>八个接口的最小不变量（底稿 E06 的内部契约建议）<span class="chip c-inf">推断</span></caption>
+<thead><tr><th>接口</th><th>输出</th><th>最小不变量</th></tr></thead>
+<tbody>
+<tr><td>Environment.create</td><td>SandboxHandle</td><td>ready 前不能执行；写层与其他 episode 隔离</td></tr>
+<tr><td>Environment.exec</td><td>ExecHandle / ExecResult</td><td>命令未确认完成不得标记成功；重试必须先查状态</td></tr>
+<tr><td>Model.generate</td><td>GenerationRecord</td><td>输出 token、logprob 与版本逐 token 对齐</td></tr>
+<tr><td>Runner.run</td><td>EpisodeResult</td><td>正常失败与 infra_error 分开</td></tr>
+<tr><td>Verifier.grade</td><td>RewardResult</td><td>无证据时不伪造 reward=0 或 reward=1</td></tr>
+<tr><td>Trajectory.finalize</td><td>Manifest</td><td>未写完所有依赖不能进入可消费状态</td></tr>
+<tr><td>Group.assemble</td><td>GroupManifest</td><td>不因一个 episode 有多个 context 而改变 G</td></tr>
+<tr><td>Publisher.publish</td><td>PublicationRecord</td><td>所有被接纳请求的 replica 必须已确认版本</td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>行为 logprob 是<strong>历史事实</strong>——它是重要性采样比值的分母，用新模型重算覆盖它，梯度就不再对应真实采样。底稿给出的检验办法是"冻结权重的一致性测试"：同一版本、同一输入、同一采样口径下，比较 rollout 记录与训练端算出的生成 token logprob，报告差异分位数、最大值与 IS ratio 分布，再逐项启用量化、路由重放与候选集归一化，定位差异来源。<strong>误差阈值要按精度与引擎先校准</strong>，不能凭一个统一常数宣布正确——<strong>本站判断</strong>：这条对昇腾尤其要紧，因为为新硬件重写的算子，其数值行为可能与参考实现有细微差异（参见本站 D03 与 D27）。</p>
+
+<h2 id="s4"><span class="hnum">04</span>池化、数据面与奖励：分开的并发上限，去中心化的提交（E08–E11）</h2>
+
+<p>MiMo 把许多 harness 实例与 Agent Loop 作为 tenant 放进<strong>固定大小的持久 Host Actor 池</strong>：模型侧共享 endpoint、proxy 与 tokenizer，环境侧共享导入的 harness codebase，每个 tenant 保留独立轨迹；直接动机是避免 Actor 数随 rollout 数同比增长压垮控制面（§6.2）<span class="chip c-tp">第三方</span>。数据面上，完成的轨迹把重型 payload（token、logprob、MoE 路由、Top-p 候选集、图像——多次截图可达 GB 级）写入分布式 KV 存储，driver 只处理 reward、Context 长度与 payload key。</p>
+
+<div class="vs">
+  <div class="base">
+    <h4>朴素实现</h4>
+    <p>一个 harness 实例一个 Ray Actor；加一个消息队列就算"数据面分离"，但 driver 最后仍把所有轨迹 get 回来做 padding；工具调用跑完就记一个奖励；节点死亡导致的失败和测试失败一样当负样本训练。</p>
+  </div>
+  <div class="real">
+    <h4>论文与底稿的做法</h4>
+    <p><strong>四道并发上限分别设置</strong>：创建速率、Host 活跃 session 数、同时模型请求数、同时工具执行数，各自看不同的指标。轨迹交接走一条状态链：WRITING → PAYLOAD_READY → REWARD_READY → GROUP_READY → IN_TRAINING → COMMITTED → GC，<strong>写一半的轨迹不能进入训练队列</strong>，GC 不能只按"文件足够旧"删除。MiMo 的 batch-yield hook 只按元数据规划 micro-batch 与 rank，pack 时再由每个 TP 组的 packer 按 CP 窗口读取未 padding 的数据<span class="chip c-tp">第三方</span>。</p>
+  </div>
+</div>
+
+<div class="tbl">
+<table>
+<caption>执行完成、任务通过、轨迹可训练是三个判断（底稿 E11 的记录与处理建议）<span class="chip c-inf">推断</span></caption>
+<thead><tr><th>结果</th><th>记录方式</th><th>训练处理</th></tr></thead>
+<tbody>
+<tr><td>代码真实未通过测试</td><td>completed + task_failed + reward=0</td><td>保留为正常失败候选</td></tr>
+<tr><td>代码通过可信验证</td><td>completed + task_passed + reward=1 / 质量奖励</td><td>按组计算学习信号</td></tr>
+<tr><td>正确执行但用尽预设预算</td><td>budget_exhausted + 预算证据</td><td>按预先固定的配方处理；不事后删掉困难题</td></tr>
+<tr><td>环境未就绪、节点死亡、服务故障</td><td>infra_error + 原因 + reward unknown</td><td>重试或显式剔除，不能默认为任务失败</td></tr>
+<tr><td>token / logprob 不对齐</td><td>invalid_trajectory</td><td>拒绝进入 learner，定位采集问题</td></tr>
+<tr><td>grader 超时或输出无效</td><td>grade_unavailable</td><td>预先约定的回退，并记录是否回退</td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>池化减少的是等待态的管理开销，<strong>不减少工具计算本身</strong>：100 个 agent 同时编译大项目，CPU 需求仍由环境资源池承担。数据面的收益则必须贯穿最终消费路径，否则分布式存储只是改变了瓶颈出现的位置。底稿还给出一个容易被低估的量级算例：若每 token 记录 60 个 MoE 层、每层 8 个专家索引、每索引 2 字节，单路由字段就是 960 B/token，10 万 token 约 96 MB<span class="chip c-inf">推断</span>——按 4 B/token 估算数据面会漏掉主要载荷。奖励一侧，MiMo 的 Penalty Module 把检测规则与 mask / advantage shaping / monitor 策略解耦，并明确<strong>不把基础设施故障当作模型错误</strong>。</p>
+
+<h2 id="s5"><span class="hnum">05</span>权重发布、恢复语义与调度目标（E12–E15）</h2>
+
+<p>一次训练更新改变模型参数，但不应抹掉环境副作用或生成记录。MiMo 明确在策略更新后为续接序列重新 prefill，且不重算覆盖 partial rollout 的历史推理概率（§4.1、§5.1、Context Caching）<span class="chip c-tp">第三方</span>。DSec 把 worker 与 agent sandbox 移出可抢占 GPU 作业，是为了避免"环境还在、控制进度丢失"（§6.2）。</p>
+
+<div class="tbl">
+<table>
+<caption>更新后，四类状态各怎么处理（底稿 E12）<span class="chip c-inf">推断</span></caption>
+<thead><tr><th>状态</th><th>所有者</th><th>更新后处理</th></tr></thead>
+<tbody>
+<tr><td>文件、数据库与工具进程</td><td>Sandbox</td><td>保留或明确暂停；不能无条件重做副作用</td></tr>
+<tr><td>对话、已返回结果、下一动作位置</td><td>Harness / Runner</td><td>继续执行；不重置成新题</td></tr>
+<tr><td>KV / 图像编码等计算缓存</td><td>Rollout Engine</td><td>按模型、模板、精度与上下文键验证；版本改变时重建</td></tr>
+<tr><td>原始 token / 行为 logprob / 生成版本</td><td>Recorder / Trajectory Store</td><td>不可变历史；训练读取而非"刷新"</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base">
+    <h4>朴素实现</h4>
+    <p>进程重启就算 rollout 恢复；有了 command_id 去重表就宣称 shell 命令严格只执行一次；混合数据源按"谁先完成就训练谁"；Actor:Rollout 固定成 4:1。</p>
+  </div>
+  <div class="real">
+    <h4>论文与底稿的做法</h4>
+    <p>第一版用<strong>同步发布</strong>：收齐固定版本下的完整组 → 停止新请求准入 → 排空在途生成 → 更新并产生 checkpoint → 各 replica 加载完整新权重 → 处理缓存失效 → smoke test 与 ACK → 原子切换可用版本指针。调度按 MiMo 式（6）–（7）的思路：期望派发量 m = B / r，固定目标吞吐下并发需求与 t × m 成正比<span class="chip c-tp">第三方</span>；分卡比例用 T_collect、T_learn、T_publish 的实测供需决定，而不是先验常数。</p>
+  </div>
+</div>
+
+<div class="formula">
+接受率与解题成功率是两回事（底稿算例，两源各需保留 10 组）：
+
+  源 A   B = 10   t = 2 分钟    r = 100%   →  m = 10   t·B/r =  20
+  源 B   B = 10   t = 20 分钟   r = 50%    →  m = 20   t·B/r = 400
+
+  相对并发需求 B / A = 20.00×   需求占比 4.8% / 95.2%（稳态比例示意，不是卡数比例）
+
+串行批次 ≈ T_collect + T_learn + T_publish
+异步稳态更新间隔 ≳ max(T_collect, T_learn) + 不可重叠开销
+</div>
+
+<p class="delta"><span class="dl">差在哪</span><strong>command_id 是必要条件，不是 exactly-once 的魔法</strong>：如果进程在"执行副作用"与"记录完成"之间崩溃，仍会出现不确定状态，需要事务、幂等目标或结果探测。第一版不追求任意故障下的透明续跑——能可靠分类、停止污染、保存证据并从初态重跑，比带着错误状态继续训练更重要。调度一侧，MiMo 的 staleness = 4 是论文给出的值，但正文没有完整披露版本门槛与同步细节，<strong>不能从这个数推导固定的硬件分池</strong>；"4:1"在同一工作负载下也只有实测采集与学习速度相当时才合适——推理队列长说明生成供给不足，推理空闲而工具排队说明瓶颈在 CPU 环境或验证器，加推理卡未必有效。</p>
+
+<h2 id="s6"><span class="hnum">06</span>DSec：让有状态任务持续存在，让资源按需使用（DSec 1.1–1.11）</h2>
+
+<figure>
+  <img class="diagram" src="img/dispatch-46-dsec-mimo-rl-infra/fig-2.svg" alt="DSec 分层职责图：调用方经 libdsec 到 IAM 与 API Server，经 Placement 与 Watcher 放置到节点侧 Edge；会话操作经 Aether 到 Chronus；FnCall 走独立路径；后端为 Container、MicroVM 与 Full VM；底层为共享只读环境与私有可写状态">
+  <figcaption><span class="fnum">图 2</span>DSec 分层职责与数据通路（对应原文 §2–3、§5–6）。<span class="chip c-inf">推断</span> 本站图，据底稿架构简图重绘；概括逻辑职责，不表示物理节点或设备数量。论文自己的平台架构图见原文 Figure 1（p.6），本站未转载。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>顺着实线看<strong>创建路径</strong>：调用方 → IAM + API Server（鉴权、配额、统一转发，同时把可信的训练侧与不可信的环境隔开）→ Placement + Watcher（健康与负载视图、随机少量候选的 power-of-k 选择）→ 节点侧 Edge。Edge 保留<strong>最终准入权</strong>——调度器用的是略旧的周期视图，两台调度器可能同时看到某节点有空位，Edge 负责拒绝越界请求。</p>
+    <p>再看从 API Server 分出的<strong>会话路径</strong>：后续的执行、文件与流式 I/O 经 Aether（定位终端会话）到 Chronus（执行命令并记录结果）。右上方那条从调用方出发的虚线指向 FnCall：预创建的 CPU / GPU 容器池走独立路径，<strong>不经过 Aether / Chronus 会话链</strong>，所以不能把会话语义硬套到 FnCall 上。最底部的存储层表达的是"共享只读环境 + 私有可写状态"，这是第 06 节表格里几项内存与 I/O 机制的共同前提。</p>
+  </div>
+</figure>
+
+<div class="tbl">
+<table>
+<caption>DSec 的设计起点：生产工作负载的四个特征（原文 §4，均已核对原文）<span class="chip c-vr">自报</span></caption>
+<thead><tr><th>生产现象</th><th>论文证据</th><th>系统后果</th></tr></thead>
+<tbody>
+<tr><td>CPU 间歇忙、内存长期占</td><td>约 90% 的 container 与 microVM 平均 CPU 不超过申请额度的 5%</td><td>超配可行，但并发测试与编译峰值可能相关，5% 不是无条件超配 20 倍的证明</td></tr>
+<tr><td>突发创建</td><td>单个作业最多可申请约 32K 个沙箱</td><td>调度、镜像与准入不能依赖单中心慢路径</td></tr>
+<tr><td>长寿命</td><td>生命周期中位数 container 17.4 分钟、microVM 15.5 分钟；p99 分别为 231.5 与 213.9 分钟</td><td>低 CPU 活跃度不意味着状态可以销毁</td></tr>
+<tr><td>庞大且少复用的环境集合</td><td>一周内 container 11,266 个 base + 102,171 个 workspace；microVM 2 个 base + 53,590 个 workspace；样本只访问镜像数据的 4.2%–13.3%</td><td>完整拉镜像会搬运大量无用数据，热点缓存难以覆盖工作集</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base">
+    <h4>朴素实现</h4>
+    <p>所有任务统一用 microVM 求安全；每个环境打成一个完整镜像，启动时整包拉取解压；每个存活沙箱独占若干 CPU 核；训练作业被抢占时连同 Agent Loop 一起丢掉，靠命令日志对齐重建。</p>
+  </div>
+  <div class="real">
+    <h4>论文的做法</h4>
+    <p><strong>四种后端按需选择</strong>（FnCall / 容器 / Firecracker microVM / 完整 VM）；<strong>Base、Workspace、Toolkit 独立发布</strong>，运行时由 OverlayFS 组合、EROFS 存只读层、3FS 供给共享数据，更新 k 个 Toolkit 的重建量从 O(kN) 降到 O(k)；<strong>内存两条路径</strong>：virtio-pmem + DAX 避免各 guest 重复缓存同一文件页，DAMON + free-page reporting 把冷页还给 host；<strong>CPU 两级 QoS</strong>：best-effort 任务用 SCHED_IDLE，再用 core scheduling 防止它与延迟敏感任务共享同一物理核的 SMT 兄弟线程；<strong>状态解耦</strong>：worker container 与 agent sandbox 都在可抢占 GPU 池之外，trainer 恢复后重新连接<span class="chip c-tp">第三方</span>。</p>
+  </div>
+</div>
+
+<div class="tbl">
+<table>
+<caption>DSec 的生产规模与消融实验（原文 §2.4、§3.4、§8，均已核对原文；每项收益只对应各自的实验设置）<span class="chip c-vr">自报</span></caption>
+<thead><tr><th>口径</th><th>原文报告</th><th>适用范围</th></tr></thead>
+<tbody>
+<tr><td>生产 scale unit</td><td>约 160 个 CPU 节点、30K 核、约 250 TB DRAM；日服务约 300 万个沙箱、峰值并发约 38 万、创建超过每秒 5,000</td><td>创建率不能换算成端到端解题吞吐；38 万并发 / 3 万核只是存活密度粗比，不是每核提供 13 份完整算力</td></tr>
+<tr><td>单节点稳定运行点</td><td>至少 3,200 个容器或 800 个 microVM</td><td>两者不是同时相加，也不是硬上限</td></tr>
+<tr><td>按需加载（Figure 10）</td><td>8,192 个容器在 10 节点上突发启动：按需加载约 35 分钟、冷拉取 60 分钟以上（1.71×）；累计写入降低 57%</td><td>是该环境负载的完成时间对照，不是完整 RL 训练成本降低</td></tr>
+<tr><td>EROFS 挂载 vs tar 解压（Figure 11）</td><td>完成时间 79 → 45 分钟（1.76×）；tar 的总写入与峰值写吞吐分别约为 5.5× 与 3.4×</td><td>用预录工具序列固定任务行为，不验证模型准确率；两个存储实验的加速比不能相乘</td></tr>
+<tr><td>内存（Figure 12）</td><td>pmem 使峰值内存下降 40.2%；DAMON + FPR 使内存时间积分下降 21.2%；pmem 的瞬时 CPU 峰值 26.5% → 41.4%</td><td>一个是峰值、一个是时间积分，不能相加</td></tr>
+<tr><td>CPU QoS（Figure 13）</td><td>50% 后台负载下，延迟敏感任务的单步延迟膨胀从 45.2% 限制到 17.3%</td><td>内存带宽、LLC 与频率干扰仍在，不是零干扰</td></tr>
+<tr><td>云端扩容</td><td>本地使用超过 80% 时分流；去重后 30 TB 的 EROFS 集合覆盖约 70% 容器任务访问的镜像文件；200 台云 VM 吸收约 30% 的峰值溢出</td><td>只有全部依赖都在同步集合内的任务才可上云</td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>DSec 的贡献不是"更快的 Docker"，而是把节点选择、会话、存储与资源回收统一起来，<strong>让环境的长期存在不再等于计算资源的长期独占</strong>。但它的证据边界要读准：生产数字说明能承载多大规模，消融实验只说明单个机制的收益；论文自己声明 RL 生命周期协同（§6）不在性能实验范围内，<strong>没有量化暂停恢复时间、恢复成功率与最终模型收益</strong>。另一处底稿特意提醒的细节：dockerd 中动态插入下层的 hook 约 30 行 Go，只是一个改动点，不是整套系统的代码规模。</p>
+
+<h2 id="s7"><span class="hnum">07</span>MiMo-V2.6：让经验的生成、评价、搬运与学习一起扩展（MiMo 2.1–2.11）</h2>
+
+<figure>
+  <img class="diagram" src="img/dispatch-46-dsec-mimo-rl-infra/fig-3.svg" alt="MiMo RL 基础设施职责图：任务进入 Sample Mixer，派发到 Harness Pool 与 Agent Loop，与 SGLang 推理往返；完成轨迹进入 Verifier、Grader 与 Penalty，生成记录写入分布式轨迹存储，再经 Packer 进入 Megatron Learner，权重更新回流推理侧">
+  <figcaption><span class="fnum">图 3</span>MiMo：从任务到参数更新的职责图（对应 MiMo-V2.6 Figure 14 与 §6）。<span class="chip c-inf">推断</span> 本站图，据底稿架构简图重绘；论文自己的 RL 基础设施总览见原文 Figure 14（p.28），本站未转载。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>六个编号节点自上而下排成一列，读法是<strong>分清实线与虚线</strong>。实线是重数据与控制动作：Sample Mixer 派发任务组；② Harness Pool 与最底部的 ③ SGLang 推理之间，左右两条长弧就是多轮往返（左弧送 tokens / 新图像下去，右弧把生成结果送回来）；完成的轨迹分两路——环境证据进 Verifier / Grader / Penalty，生成记录与 payload 进分布式轨迹存储；学习信号写回存储后，Packer 按 TP / CP 窗口读取并交给 Megatron Learner。</p>
+    <p>唯一的虚线从 ⑤ 轨迹存储向上连回 ① Sample Mixer，标签"轻量 metadata 反馈"属于这条虚线（渲染时它落在虚线与右弧之间，不要误读成右弧的标签）——调度器始终主要看元数据，而不是把大张量搬回中心。图的另一个要点在最下方 ⑥ → ③ 那条竖直边：权重更新与专家 QDQ 回流推理侧，而 ③ 的说明里写着"新版本后重新 prefill"。<strong>每条工具调用不等于一次参数更新</strong>，这张图把两种节奏画在了同一张图上。</p>
+  </div>
+</figure>
+
+<div class="tbl">
+<table>
+<caption>MiMo-V2.6 的 RL 规模与配置（原文 §1、§4.1、§5.1，均已核对原文）<span class="chip c-vr">自报</span></caption>
+<thead><tr><th>项目</th><th>原文值</th><th>读法</th></tr></thead>
+<tbody>
+<tr><td>模型</td><td>Pro 1.02T 总参 / 42B 激活；Flash 310B / 15B</td><td>原文 Table 1 把 Pro 激活写作"42T"，与引言 42B 冲突，按 42B 理解</td></tr>
+<tr><td>每步采样</td><td>1,568 个 prompt × 16 次；2.7–3.7B 训练 token，约每序列 110K–150K；最长上下文 1M</td><td>25,088 是名义轨迹位置，不等于唯一题数，也不等于实际发出的尝试数</td></tr>
+<tr><td>任务混合</td><td>代码 68%、通用工具 12%、美学设计 13%、上下文遵循 3%、网络安全 4%</td><td>派单比例不等于 learner 实际消费比例</td></tr>
+<tr><td>异步与优化器</td><td>异步 partial rollout，staleness = 4；Muown，学习率 3×10⁻⁶；RL 期间冻结 router</td><td>正文未完整披露版本门槛与同步细节</td></tr>
+<tr><td>成本</td><td>Pro 一轮 RL 260 万美元、Flash 90 万美元；Pro 的 rollout / 训练 / grader 为 43.8% / 43.5% / 12.7%</td><td>不是从预训练开始的总成本；三项都要计入效率比较</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base">
+    <h4>朴素实现</h4>
+    <p>公平派单（每个数据源同样的并发）；KV 缓存与 logprob 一样跨版本沿用；同一个参数版本下两个引擎的概率天然一致，重要性采样比值偏离 1 就是策略变了。</p>
+  </div>
+  <div class="real">
+    <h4>论文的做法</h4>
+    <p><strong>Sample Mixer</strong> 用四个子机制把调度与训练贡献挂钩：有界的自适应在途预算、目标与缺口混合的加权轮转、按总序列长度先验预估 KV 的派发、启动与恢复后的首轮补样。<strong>Partial rollout</strong> 在收齐批次时中断在途序列，下一阶段续接并重新 prefill。<strong>训推一致性分三层</strong>：rollout 专家用 MXFP4、每次参数更新后按 Humming GEMM 约束做 QDQ；保存 rollout 的专家索引在训练端回放（R3）；保存 Top-k / Top-p 候选集，训练 logprob 在同一集合内重新归一化——原文典型 top-p = 0.97 时平均候选集不足 5 个 token<span class="chip c-tp">第三方</span>。</p>
+  </div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span><strong>KV 与 logprob 在参数更新后的处理恰好相反</strong>：KV 是特定参数下的计算结果，新参数后必须重建；行为 logprob 是生成时的历史记录，必须保留。候选集归一化的必要性可以用底稿的例子说明：某 token 全词表概率 0.4，Top-p 候选总质量 0.8，实际采样概率是 0.5；训练端若仍用 0.4，比值就是 0.8——这是<strong>归一化口径制造的差异</strong>，不是策略改变。三层对齐减少的是实现层面的不一致，<strong>不能替代对真实策略陈旧度的处理</strong>，也不构成两个引擎逐位一致的保证。<strong>本站判断</strong>：三层里第一层依赖 MXFP4 kernel，而昇腾一侧原生支持 MXFP4 的是 950（见 D03），950 的推理软件支持近期又在收窄（见 ascend 标签下 vLLM-Ascend v0.30.0rc1 卡）——这一层是三者中迁移到昇腾成本最高、证据最少的一层。</p>
+
+<h2 id="s8"><span class="hnum">08</span>MiMo：学习信号——目标函数、质量奖励与 router 稳定性（MiMo 2.12–2.16）</h2>
+
+<div class="formula">
+式（1）的每 prompt 整理；外层再对 prompt 取平均：
+
+  L_q = − [1 / Σ_i |o_i|] · Σ_{i,t} r_{i,t} M_{i,t} A_i log π_θ(o_{i,t} | h_{i,t})
+  r_{i,t} = sg[ π_θ(o_{i,t} | h_{i,t}) / μ_生成时(o_{i,t} | h_{i,t}) ]
+
+  M = 1[(A ≥ 0 且 ε_l+ ≤ r ≤ ε_h+) 或 (A &lt; 0 且 ε_l− ≤ r ≤ ε_h−)]
+  正负区间初始均为 [0.2, 5.0]，运行时按策略熵独立调整
+</div>
+
+<div class="vs">
+  <div class="base">
+    <h4>朴素实现</h4>
+    <p>把它写成标准 PPO 的 min-clipped surrogate；测试全过的组没有学习信号，一律过滤；奖励只看测试是否通过；MoE 的 router 和其他参数一起训练；蒸馏就是让学生模仿示范的下一轮。</p>
+  </div>
+  <div class="real">
+    <h4>论文的做法</h4>
+    <p>比值<strong>停止梯度</strong>，区间外的 token 被 <strong>mask 掉而不是钳到端点</strong>，聚合是 prompt-mean。<strong>GRS</strong>（式 2）在部分高通过率代码任务上用测试门控的质量奖励 R = R_test · S_sol · S_beh，让"测试全过但质量不同"的组仍有信号；<strong>GAR</strong>（式 3）在其余代码任务的混合结果组里，由 agentic grader 排序成功解并重分配正优势，确证作弊的奖励先清零。<strong>冻结 router</strong>：不冻结时前 20 步第 9 层负载 CV 从 0.78 升到 2.0、峰值负载从平均的 6 倍升到 16 倍、冷专家比例从 0.5% 升到 22%<span class="chip c-tp">第三方</span>。<strong>MOPD2</strong> 用 teacher / SFT 前缀启动 student 的新单轮，由领域 teacher 监督。</p>
+  </div>
+</div>
+
+<div class="tbl">
+<table>
+<caption>GAR 参数算例：三条成功、一条失败（底稿交互计算器默认参数：f = 1 / 0.5 / 0.25，λ 上限 1.2）<span class="chip c-inf">推断</span></caption>
+<thead><tr><th>轨迹</th><th>原始优势</th><th>质量因子 f</th><th>未截断 GAR</th><th>截断 λ 并全组居中</th></tr></thead>
+<tbody>
+<tr><td>成功 A</td><td>+0.250</td><td>1</td><td>+0.429</td><td>0.356</td></tr>
+<tr><td>成功 B</td><td>+0.250</td><td>0.5</td><td>+0.214</td><td>0.206</td></tr>
+<tr><td>成功 C</td><td>+0.250</td><td>0.25</td><td>+0.107</td><td>0.131</td></tr>
+<tr><td>失败 D</td><td>−0.750</td><td>不适用</td><td>−0.750</td><td>−0.694</td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>三处容易读错。其一，<strong>clip 是 mask 而不是截断</strong>，复现时目标函数、停止梯度位置与归一化单位要一起核对；正文没有披露完整的熵目标与区间变化序列，四个初始边界不足以复原全部稳定性控制。其二，<strong>GAR 的守恒性有前提</strong>：未截断时成功轨迹的正优势总量不变（上表未截断列之和仍为 0.750）、失败优势不变；实际实现对 λ 加上限后再全组居中，失败轨迹的优势就变了（上表 −0.750 → −0.694），参数梯度也从不守恒。其三，<strong>冻结 router 与 R3 解决的是不同问题</strong>：冻结控制训练参数的漂移，R3 控制训练与 rollout 的执行路径差异——专家选择 = TopK(W_router · h_θ)，W 固定后上游 hidden state 与两引擎的数值差异仍可能让选择翻转。原文更有力的诊断是：只把第 20 步的 router 恢复成 RL 前的值、其余参数不动，负载回到接近初始而基准表现不变。</p>
+
+<h2 id="s9"><span class="hnum">09</span>能力结果与证据边界（MiMo 2.17–2.18）</h2>
+
+<div class="tbl">
+<table>
+<caption>MiMo-V2.6 的能力结果与运行可靠性（原文 §4.1、§5.5、Table 3、§7，均已核对原文）<span class="chip c-vr">自报</span></caption>
+<thead><tr><th>指标</th><th>Flash</th><th>Pro</th><th>读法</th></tr></thead>
+<tbody>
+<tr><td>本轮 RL 的 DeepSWE average@3</td><td>48.7 → 65.7</td><td>58.4 → 72.6</td><td>average@3 不是 pass@3</td></tr>
+<tr><td>最终 Table 3 · DeepSWE v1.1</td><td>67.9</td><td>71.9</td><td>MOPD2 之后呈现，与 RL 终点是不同阶段</td></tr>
+<tr><td>最终 · Terminal Bench 4.0</td><td>28.8</td><td>34.9</td><td>—</td></tr>
+<tr><td>最终 · ProgramBench</td><td>26.0</td><td>26.5</td><td>—</td></tr>
+<tr><td>30 步运行的总时长（含故障）</td><td>81.8 小时</td><td>123.1 小时</td><td>总时长 / 30 不是稳态单步耗时</td></tr>
+<tr><td>训练与 held-out harness 平均 Pass@1</td><td colspan="2">约 50% → 66%</td><td>跨 harness 迁移的证据，不是等预算因果消融</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="vs">
+  <div class="base">
+    <h4>朴素实现</h4>
+    <p>总分提高就说明每个组件都有效；"更高的 token 效率"理解为输出越来越短；论文说开源，就等于旗舰训练的全部机制都能复现。</p>
+  </div>
+  <div class="real">
+    <h4>论文的报告</h4>
+    <p>分数上升通常伴随更多 token（Figure 9）；GAR 消融里通过率持续改善到第 52 步，但总 token 长度仍在增长。故障日志揭示了平均指标掩盖的风险：KV 池 OOM 源于启动后短轨迹先完成、长度先验偏短；训练 OOM 源于某个 micro-batch 里一个 EP rank 收到超过平均 30 倍的 token<span class="chip c-tp">第三方</span>；driver / packing OOM 源于轨迹变长。开放的 9B 实验从 Qwen3.5-9B 在 MiMo 生成数据上 SFT（共 77.4B token，其中 27.2B 计入损失），再分领域做 GRPO。</p>
+  </div>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>整体 recipe 的有效性<strong>不等于每个组件都有独立、同成本的因果收益</strong>——论文没有逐组件的统一消融，也没有披露精确的生产卡型与并行拓扑，不能只由总成绩、成本和步数复原资源方案。开放资源与旗舰生产系统也要分别界定：§7 的开放声明没有逐项建立 Sample Mixer、TP / CP Packer、GAR、R3 与 MOPD2 和公开代码的对应关系，完整复现仍需确认提交版本、入口配置与运行结果。故障表里最可迁移的一条：<strong>局部峰值不能用全局均值掩盖</strong>，冷启动与分布漂移要保守估计。</p>
+
+<h2 id="s10"><span class="hnum">10</span>集成与昇腾迁移：先固定数据契约，再引入调度与低精度（3.1–3.4、E16–E18）</h2>
+
+<figure>
+  <img class="diagram" src="img/dispatch-46-dsec-mimo-rl-infra/fig-4.svg" alt="跨系统集成概念图：任务执行与轨迹编排、模型计算服务、环境执行平台三个分区，用跨层契约节点连接，契约说明环境快照、Agent 轨迹、KV cache 与权重优化器状态互不等价">
+  <figcaption><span class="fnum">图 4</span>跨系统集成的概念架构：两个控制闭环，用状态与数据契约衔接。<span class="chip c-inf">推断</span> 本站图，据底稿架构简图重绘；展示接口与状态所有权，不代表两家已部署的联合系统。</figcaption>
+  <div class="readout">
+    <h5>这张图怎么读</h5>
+    <p>三个分区就是三个状态所有者：左侧的任务执行与轨迹编排拥有执行进度与 token 记录，中上的模型计算服务拥有 KV（推理端）与权重和优化器（训练端），中下的环境执行平台拥有文件、进程、镜像与恢复。实线标出它们之间流动的东西——tokens 与生成结果、工具请求与真实观察、轨迹、模型版本。</p>
+    <p>最值得看的是最右侧、三个分区各用一条虚线连向的<strong>跨层契约</strong>节点：<strong>环境快照 ≠ Agent 轨迹 ≠ KV cache ≠ 权重 / 优化器状态</strong>，保留历史 token 与采样概率，更新模型后正确处理旧 KV。这张图把第 00 节的四类状态画成了接口——共享观测有助于协调，但不能以模糊控制权换取表面统一，不能让多个层各自判断"任务已完成"却互不对齐。</p>
+  </div>
+</figure>
+
+<div class="vs">
+  <div class="base">
+    <h4>昇腾上的直觉做法</h4>
+    <p>把论文里的组件逐个找到"昇腾版"打勾：有 vLLM-Ascend、有 torch_npu、有某个框架的 NPU 示例，就认为这条链路在 NPU 上已经成立；分卡比例与时延直接沿用 GPU 上的数字。</p>
+  </div>
+  <div class="real">
+    <h4>论文与底稿给出的现状</h4>
+    <p><strong>两篇原文全文检索 "Ascend" 与 "NPU" 均为零命中</strong><span class="chip c-tp">第三方</span>：DSec 的实验节点是 AMD EPYC 9655（2 路 × 96 核 × 2 SMT），GPU 隔离用 NVIDIA MIG；MiMo 沿用 SGLang 与 Megatron-LM，缓存卸载跑在 CUDA side streams 上，专家权重依赖 MXFP4 kernel。底稿引用的 Uni-Agent NPU 示例（VeOmni + torch_npu + vllm_ascend，Qwen3-Coder-30B-A3B 配方）其 Results 一栏仍标为待补充。底稿因此主张<strong>按能力验收，不按项目名打勾</strong>。</p>
+  </div>
+</div>
+
+<div class="tbl">
+<table>
+<caption>昇腾部署的分层实施与 NPU 验收项（底稿 3.4 与 E16）<span class="chip c-inf">推断</span></caption>
+<thead><tr><th>阶段</th><th>交付</th><th>验收焦点</th></tr></thead>
+<tbody>
+<tr><td>P0 · 单任务闭环</td><td>已能运行的模型 + 一种 harness + 容器环境 + 独立测试</td><td>真实 token 与观察、工具 mask、隔离写层、明确的 infra 错误</td></tr>
+<tr><td>P1 · 同一 Runner 的评测与 RL 出口</td><td>TaskSpec / RunResult 与训练适配器；固定模型、环境与验证器版本</td><td>RL 按完整组导出，不乱拼上下文</td></tr>
+<tr><td>P2 · 池化与大数据路径</td><td>有限并发 actor 池、payload 引用、消费端 packing</td><td>driver 与 host 内存不因长轨迹或截图无约束增长</td></tr>
+<tr><td>P3 · 混合任务调度</td><td>两个时长与接受率不同的数据源，比较静态、缺口与耗时校正</td><td>learner 实际消费分布、完整组吞吐、陈旧度与质量</td></tr>
+<tr><td>P4 · 数值与硬件优化</td><td>BF16 基线，逐项测试量化、路由、采样归一化与缓存</td><td>ratio、梯度、损失、任务质量与总成本同时达标</td></tr>
+<tr><td>P5 · 更细的奖励</td><td>固定数据与总预算下加入一种 grader 或优势调整</td><td>计入 grader 成本，控制错判，不用删难题换吞吐</td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="delta"><span class="dl">差在哪</span>可迁移性首先体现在<strong>接口与语义</strong>，而不是特定 kernel。对昇腾具体有三点：一，<strong>多轮 token 与概率的冻结权重对齐测试</strong>是 NPU 上的第一道门，阈值要按 NPU 精度单独校准，不能借用 GPU 的数；二，<strong>HCCL 与网络</strong>要按实际通信拓扑、权限、带宽与错误回退单独验收；三，<strong>长上下文与 KV 的峰值 HBM 必须实测</strong>，不外推 GPU 数字——MiMo 自己就报告过 HBM 与 host KV 池同时耗尽的故障。底稿给出的首个里程碑是 4 个任务 × 每题 4 次尝试的同步闭环：16 条是调试规模，不是最佳训练 batch，交付物是 16 个 episode 的运行证据、组级 manifest、一次真实 learner 更新的日志与新权重的推理校验。</p>
+
+<h2 id="s11"><span class="hnum">11</span>总表、核验与下一步</h2>
+
+<div class="tbl">
+<table>
+<caption>两套系统对照（底稿 3.1）</caption>
+<thead><tr><th>维度</th><th>DSec</th><th>MiMo RL Infra</th></tr></thead>
+<tbody>
+<tr><td>服务对象</td><td>训练、评测、环境构建的调用者</td><td>混合任务 RL / OPD 的采样与学习</td></tr>
+<tr><td>持久状态</td><td>文件、进程、终端会话、磁盘与运行快照</td><td>Agent 分支、token 历史、KV、采样与学习信号</td></tr>
+<tr><td>调度焦点</td><td>沙箱放置、节点准入、资源回收</td><td>每源有效组份额、预算、KV 与推理并发</td></tr>
+<tr><td>大数据</td><td>环境层、磁盘内容与快照</td><td>轨迹、路由、候选集、图像、advantage</td></tr>
+<tr><td>故障处理</td><td>GPU 抢占后环境与 Agent 控制状态持续</td><td>采样暂停与恢复、replay、无效数据排除</td></tr>
+<tr><td>输出</td><td>可交互环境、执行证据、可回收资源</td><td>可训练经验与更新后的模型</td></tr>
+</tbody>
+</table>
+</div>
+
+<ul>
+  <li><strong>本站核验</strong>：底稿内嵌的两份 PDF 经 SHA-256 校验与其声明一致（DSec 31 页，arXiv:2609.22978v1；MiMo-V2.6 44 页）。本站抽取原文后逐条检索底稿的承重数字，<strong>66 处全部在原文中找到对应表述</strong>，并确认底稿指出的 MiMo Table 1 "42T" 笔误存在。两处细节：DSec 摘要把按需加载的收益写作"1.7×"，正文为 1.71×（冷拉取相对按需）；tar 与 EROFS 的对照在原文是另一组实验，加速 1.76×——底稿已提醒两个存储实验的加速比不能相乘。核验范围限于数字与引文。</li>
+  <li><strong>原文没给的东西</strong>：DSec 没有量化暂停恢复时间、恢复成功率与最终模型收益，也没有对任意主机故障、外部连接恢复与跨云迁移给出通用保证；MiMo 没有披露完整的熵目标与 clip 区间变化序列、完整的 OPD 损失与混合权重、精确的生产卡型与并行拓扑，以及 staleness = 4 背后的版本门槛与同步细节。GRS、组过滤与 grader 的先后顺序，原文 §4.1、§4.3.1 与 §6.2 的表述不完全一致，复现时需按源码核对。</li>
+  <li><strong>本站未转载的内容</strong>：底稿内嵌的两篇论文完整 PDF 与 30 幅论文原图。两篇论文在本环境都查不到可核实的再发布许可，按本站 D44 / D45 的同一规则不转载；本页的图注与表格保留了底稿对这些原图的解读，原图请回原文查看。底稿提到的随附 contracts.py 与单元测试未随本篇发布。</li>
+  <li><strong>未经本站验证的</strong>：底稿中的协议、状态机、算例与验收标准是设计建议；四个交互计算器改为按其默认参数计算的静态算例，数值由本站按底稿脚本中的同一公式重算。</li>
+</ul>
+
+<div class="note">
+  <span class="ntitle">可搬走的三条判断</span>
+  <p><strong>一、先证明数据和状态正确，再证明吞吐更高。</strong> 第一个里程碑不追求规模，而要产生可核查的轨迹、一次真实更新与正确的新版本生成；任一阶段未通过故障注入与对齐测试，不进入下一阶段。</p>
+  <p><strong>二、四类状态按所有者管理。</strong> 参数更新后 KV 重建、logprob 保留；环境副作用不重做；训练进度与数据消费记录对齐。几乎所有"吞吐优化带来的训练退化"都出在这条边界上。</p>
+  <p><strong>三、昇腾迁移按能力验收。</strong> 两篇原文都没有在 NPU 上验证；MiMo 的三层训推对齐中至少专家量化一层依赖 MXFP4 kernel。本站此后应把"冻结权重的多轮 token / 概率对齐测试"当作 RL-on-NPU 的第一道门来追踪。</p>
+</div>
+
+<div class="note flag">
+  <span class="ntitle">下一步看什么</span>
+  <p><strong>1 · 公开代码与论文机制的对应关系。</strong> MiMo 开放的 RL 框架与约 7K 个环境中，Sample Mixer、Packer、GAR、R3 与 MOPD2 各有多少落在公开代码里；DSec §7 明确指向的部分存储组件是否开源。</p>
+  <p><strong>2 · 昇腾上的第一组对齐数据。</strong> 谁先在 NPU 上公布 agentic 多轮场景下冻结权重的 rollout / 训练 logprob 差异分布，谁就为 RL-on-NPU 定了第一条可信基线。</p>
+  <p><strong>3 · Uni-Agent NPU 配方的 Results。</strong> 目前标为待补充；一旦给出，就是第一份 agentic RL 在昇腾上的端到端数字。</p>
+  <p><strong>4 · DSec 式恢复的实测。</strong> 暂停恢复时间与恢复成功率是 DSec 论文明确没有量化的量，也是可抢占训练集群上最影响成本的量。</p>
+</div>
+
+</main>
+
+<footer>
+  <p><strong>来源与声明</strong>：本页底稿为站长提供的《DSec 与 MiMo-V2.6｜Agentic RL 系统原理与工程实施》工程版（2026-10-22），本站做了核验、结构重写与图片处理。一手来源：Huang et al.，<em>DeepSeek Elastic Compute (DSec): A Sandbox Infrastructure for Effective Agentic Training at Scale</em>，<a href="https://arxiv.org/abs/2609.22978">arXiv:2609.22978v1</a>（DeepSeek-AI / Tsinghua University，2026-09-19）；LLM-Core Xiaomi，<em>MiMo-V2.6: Scaling Reinforcement Learning Towards Self-Improvement</em>，技术报告（2026-09-21），<a href="https://mimo.xiaomi.com/mimo-v2-6">官方发布页</a>、<a href="https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL">MiMo-V2.6-Pro-RL 模型页</a>。实施参考：<a href="https://verl.readthedocs.io/en/latest/advance/agent_loop.html">verl · Agent Loop</a>、<a href="https://verl.readthedocs.io/en/latest/advance/v1_async_trainer.html">verl · V1 Async Trainer</a>、<a href="https://uni-agent.readthedocs.io/en/latest/concepts/gateway-and-trajectories.html">Uni-Agent · Gateway and Trajectories</a>、<a href="https://uni-agent.readthedocs.io/en/latest/concepts/sandbox.html">Uni-Agent · Sandbox</a>、<a href="https://uni-agent.readthedocs.io/en/latest/quickstart/npu-training.html">Uni-Agent · Run Training on NPU</a>、<a href="https://docs.ray.io/en/master/core/actors/async-api.html">Ray · Async Actors</a>、<a href="https://github.com/XiaomiMiMo/mimoagent">XiaomiMiMo · mimoagent</a>、<a href="https://docs.vllm.ai/en/stable/training/weight_transfer/">vLLM · Weight Transfer</a>。站内关联：D03（昇腾 950）、D27（低比特训练）、D29（DeepSeek Harness）、D33（verl）、D36（沙箱执行层）、D43 / D44（自进化）。<strong>性能数字均为两篇论文在各自任务、模型、硬件与统计口径下的报告值；工程内容是设计建议，不是两家已公开的生产实现；两篇论文的机制均未在昇腾上验证。</strong></p>
+</footer>
+</div>
+<script>
+(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-07",
+  "updated": "2026-10-22",
   "items": [
     {
       "title": "open-instruct / OlmoRL 的昇腾移植:全开放 RL 栈 × 国产硬件",
@@ -453,6 +453,31 @@
       ],
       "minimumExperiment": "Measure routing-decision flip rate and logprob MAE between vLLM-Ascend rollout and MindSpeed training forward on a small MoE for one GRPO batch.",
       "successMetric": "A public heterogeneous-consistency benchmark plus an NPU-side routing-replay prototype that measurably reduces flip rate toward zero."
+    },
+    {
+      "title": "昇腾上的 agentic RL 最小闭环:4 题 × 4 次尝试,先证明数据与状态正确",
+      "pitch": "按 D46 的工程主线,在昇腾上搭一条可验证的 agentic RL 最小流水线:外置的最小 coding harness + 一个容器后端 + verl 原生 AgentLoop + 已能运行的 vLLM-Ascend 推理服务,完成 4 个任务 × 每题 4 次隔离尝试的同步闭环——保留真实 token 与行为 logprob、可信验证组成训练组、一次真实 learner 更新、新权重发布后的推理校验。目标不是吞吐,而是为 RL-on-NPU 产出第一份可核查的轨迹与对齐数据。",
+      "impact": 5,
+      "difficulty": 3,
+      "novelty": 4,
+      "why": "DSec 与 MiMo-V2.6 两篇一手报告全文零 NPU 命中(D46),agentic 多轮场景下的 rollout / 训练 logprob 对齐在昇腾上尚无公开数据;最小闭环把 D46 的 18 项契约与故障测试变成可执行的验收,又能直接复用本站已追踪的 verl 昇腾路径(D33)与 vLLM-Ascend 的 RL 修复(权重回灌、睡眠模式 HCCL 生命周期)。",
+      "steps": [
+        "锁定版本清单:数据集、任务、环境、harness、verifier、checkpoint、tokenizer、模板、工具解析器、精度配方,以及 CANN / torch_npu / vLLM-Ascend / verl 的提交",
+        "实现外置 harness(方案 A):Sandbox Adapter 远程执行工具、会话级 Gateway 记录真实 token 与行为 logprob、command_id 可查询",
+        "冻结权重一致性测试:同版本、同输入、同采样口径下比较 rollout 记录与训练端 logprob,报告分位数、最大值与 IS ratio 分布,按 NPU 精度校准阈值",
+        "跑通 4 × 4 同步闭环:同题 4 次隔离尝试、可信 reward、完整组导出、一次 learner 更新、同步发布与 replica ACK、新权重推理校验",
+        "执行 D46 的关键故障测试(工作区污染、工具观察不进 loss、payload 写一半、权重发布中断、测试失败与节点死亡分类)并记录 CPU / NPU 资源"
+      ],
+      "tags": [
+        "agentic-RL",
+        "Ascend",
+        "verl",
+        "vLLM-Ascend",
+        "validation",
+        "D46"
+      ],
+      "minimumExperiment": "单机 8×910B:已适配的 MoE 或稠密模型、4 个 SWE 类任务 × 每题 4 次尝试、一次同步 GRPO 更新;交付 16 个 episode 的运行证据、组级 manifest、learner 日志与新权重推理校验",
+      "successMetric": "冻结权重下 rollout / 训练 token logprob 差异分布可复现且低于预先校准的阈值;16 个 episode 每一条都能回答'来自哪次尝试、模型看到了什么、为何得此奖励、谁更新了参数、下次请求是否用了新权重';关键故障测试全部按预期分类"
     }
   ]
 }
