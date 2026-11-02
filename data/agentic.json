@@ -1491,6 +1491,27 @@
       "confidence": "self-reported"
     },
     {
+      "title": "DeepSeek 开源 dsh-superagent(10-31):把「少占用注意力」写成授权模型,默认只记录不执行",
+      "org": "DeepSeek Harness 团队",
+      "year": "2026-10",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "主动式编程 agent 的把关设计被完整公开:三档接受模式(默认只记录)、Mandate 授权边界,以及「消息与引用文档只是决策输入,不能改变权限」这条架构不变量",
+      "summary": "2026-10-31 发布,本站直读 `deepseek-ai/dsh-superagent` 仓库(`-prototype` 后缀为同一仓库,内容逐字节相同),**MIT 许可,Copyright 2026 DeepSeek Harness Team**。形态:面向**单个 GitHub 仓库**的主动式编程 agent,打包为 DeepSeek Harness 的 bundle;监听 GitHub、可选接飞书;被允许的人提出请求后开一个工作项,在独立的 agent 会话与目录中执行,再回到原对话给出结果(例如一个 PR);另有一个面板只列出需要人处理的事项。**README 自设的范围限定异常严格**:自称「仅供参考的研究原型,不是 DeepSeek 的正式产品」,「大部分工程由编程 agent 完成」,「按研究代码对待,不是生产级软件」,并明确声明**与内部版本、以及设计文章《Exploring Super-agent Design: Towards a More Autonomous Agent System》中描述的实现并不一致**——文章讨论的部分设计只是未来方向,原型未实现。核心原则(docs/000-philosophy.md):**「占用尽可能少的人类注意力,产出尽可能多的价值」**——每条消息、通知、设置、面板元素与文档段落都按其消耗的注意力评判,不够格就删掉。",
+      "analysis": "本站关心的是把关设计,而这正是本篇唯一能一手读到完整实现的部分。三点。① **默认不执行**。接受模式有三档(docs/002-authorization.md):`off` 不把任何推断性消息当候选;**`observe` 为默认**——推断候选照常评估,正向评估只记录为 ignore 并标注「would accept」,**不接受任何工作**;`auto` 才让正向评估真正接受。文档明写「从 `observe` 起步,复核记录下来的 Decision 之后再切到 `auto`」,且一次主动接受至少要匹配一条团队写下的规则。显式请求在三档下都有效。**这是本站记录过的把关谱系里最保守的一档默认值**,与 D44 记录的 Windsurf「自动写入无门」正好是两端。② **提示注入被写成架构不变量**。授权文档第一句:「host 强制执行允许名单、规则与 Mandate。**消息、评论与被引用的文档是决策的输入,它们不能改变这些权限**。」这正是 D44 归纳的三件反复出现的工程件之一(把记忆当数据而非指令),此处被提升为授权层的前置声明。配套机制:每个 Ticket 受其 Mandate 限制;订阅线程上的消息可作为上下文绕过 gate,但**不授予任何新权限**;Policy 版本被记进每个 Mandate,规则或模式变更后可在恢复前吊销。③ **停止条件按影响力而非工作量**。哲学文档:本地改动做到可评审的结果为止,需要设计决策就带着明确问题停下;草稿标为未完成,失败如实报告为失败,**绝不为了避免提问而绕过限制**。运营责任一节同样值得记:从短名单与「只记录」起步、agent 吵就把提示词改短改严或暂停而不是加更多消息、**不要用它来刷量**(批量 PR、广播消息)、以及「它以你的名义说的话由你负责」。对本站主线:这是 D43/D44 自进化与把关那条线上第一个**把关规则可逐条阅读**的主动式 agent——它写入的是 Σ(脚手架与规则)而非 θ,不涉及权重更新。限定:原型自称与内部实现不一致,设计文章本站未读到;仓库创建于 10-31,无第三方评测或部署证据。同期另一条相关但未经一手核实的消息:多家中文媒体报道 DeepSeek Harness 代码库的 `provider.spec.ts` 中出现 `deepseek-v5` / `v5-open` / `v5-next` 占位标识,本站按路径查找未能定位该文件(仓库为 pnpm workspaces 结构,本会话无代码搜索权限),**故仅记录为媒体口径**;占位符不等于发布,官方无公告、无模型卡、无 API 标识。",
+      "url": "https://github.com/deepseek-ai/dsh-superagent",
+      "tags": [
+        "DeepSeek",
+        "agent-harness",
+        "authorization",
+        "gating",
+        "proactive-agent",
+        "MIT",
+        "prompt-injection"
+      ],
+      "confidence": "confirmed"
+    },
+    {
       "title": "NeutronGym: Physics-Graded Neutron Instrument Design for LLM Agents",
       "org": "Lijie Ding +1",
       "year": "2026-10",
@@ -1681,27 +1702,6 @@
       ],
       "confidence": "confirmed",
       "auto": true
-    },
-    {
-      "title": "DeepSeek 开源 dsh-superagent(10-31):把「少占用注意力」写成授权模型,默认只记录不执行",
-      "org": "DeepSeek Harness 团队",
-      "year": "2026-10",
-      "category": "infrastructure",
-      "track": "industry",
-      "innovation": "主动式编程 agent 的把关设计被完整公开:三档接受模式(默认只记录)、Mandate 授权边界,以及「消息与引用文档只是决策输入,不能改变权限」这条架构不变量",
-      "summary": "2026-10-31 发布,本站直读 `deepseek-ai/dsh-superagent` 仓库(`-prototype` 后缀为同一仓库,内容逐字节相同),**MIT 许可,Copyright 2026 DeepSeek Harness Team**。形态:面向**单个 GitHub 仓库**的主动式编程 agent,打包为 DeepSeek Harness 的 bundle;监听 GitHub、可选接飞书;被允许的人提出请求后开一个工作项,在独立的 agent 会话与目录中执行,再回到原对话给出结果(例如一个 PR);另有一个面板只列出需要人处理的事项。**README 自设的范围限定异常严格**:自称「仅供参考的研究原型,不是 DeepSeek 的正式产品」,「大部分工程由编程 agent 完成」,「按研究代码对待,不是生产级软件」,并明确声明**与内部版本、以及设计文章《Exploring Super-agent Design: Towards a More Autonomous Agent System》中描述的实现并不一致**——文章讨论的部分设计只是未来方向,原型未实现。核心原则(docs/000-philosophy.md):**「占用尽可能少的人类注意力,产出尽可能多的价值」**——每条消息、通知、设置、面板元素与文档段落都按其消耗的注意力评判,不够格就删掉。",
-      "analysis": "本站关心的是把关设计,而这正是本篇唯一能一手读到完整实现的部分。三点。① **默认不执行**。接受模式有三档(docs/002-authorization.md):`off` 不把任何推断性消息当候选;**`observe` 为默认**——推断候选照常评估,正向评估只记录为 ignore 并标注「would accept」,**不接受任何工作**;`auto` 才让正向评估真正接受。文档明写「从 `observe` 起步,复核记录下来的 Decision 之后再切到 `auto`」,且一次主动接受至少要匹配一条团队写下的规则。显式请求在三档下都有效。**这是本站记录过的把关谱系里最保守的一档默认值**,与 D44 记录的 Windsurf「自动写入无门」正好是两端。② **提示注入被写成架构不变量**。授权文档第一句:「host 强制执行允许名单、规则与 Mandate。**消息、评论与被引用的文档是决策的输入,它们不能改变这些权限**。」这正是 D44 归纳的三件反复出现的工程件之一(把记忆当数据而非指令),此处被提升为授权层的前置声明。配套机制:每个 Ticket 受其 Mandate 限制;订阅线程上的消息可作为上下文绕过 gate,但**不授予任何新权限**;Policy 版本被记进每个 Mandate,规则或模式变更后可在恢复前吊销。③ **停止条件按影响力而非工作量**。哲学文档:本地改动做到可评审的结果为止,需要设计决策就带着明确问题停下;草稿标为未完成,失败如实报告为失败,**绝不为了避免提问而绕过限制**。运营责任一节同样值得记:从短名单与「只记录」起步、agent 吵就把提示词改短改严或暂停而不是加更多消息、**不要用它来刷量**(批量 PR、广播消息)、以及「它以你的名义说的话由你负责」。对本站主线:这是 D43/D44 自进化与把关那条线上第一个**把关规则可逐条阅读**的主动式 agent——它写入的是 Σ(脚手架与规则)而非 θ,不涉及权重更新。限定:原型自称与内部实现不一致,设计文章本站未读到;仓库创建于 10-31,无第三方评测或部署证据。同期另一条相关但未经一手核实的消息:多家中文媒体报道 DeepSeek Harness 代码库的 `provider.spec.ts` 中出现 `deepseek-v5` / `v5-open` / `v5-next` 占位标识,本站按路径查找未能定位该文件(仓库为 pnpm workspaces 结构,本会话无代码搜索权限),**故仅记录为媒体口径**;占位符不等于发布,官方无公告、无模型卡、无 API 标识。",
-      "url": "https://github.com/deepseek-ai/dsh-superagent",
-      "tags": [
-        "DeepSeek",
-        "agent-harness",
-        "authorization",
-        "gating",
-        "proactive-agent",
-        "MIT",
-        "prompt-injection"
-      ],
-      "confidence": "confirmed"
     }
   ]
 }
