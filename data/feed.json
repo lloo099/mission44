@@ -1,11 +1,11 @@
 {
-  "updated": "2026-11-01T13:30:12Z",
-  "checked": "2026-11-01T13:30:12Z",
+  "updated": "2026-11-02T16:03:00Z",
+  "checked": "2026-11-02T16:03:00Z",
   "stale": false,
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 54,
+  "count": 50,
   "pinned": 25,
-  "live": 29,
+  "live": 25,
   "buckets_ok": [
     "rl-llm",
     "reasoning-rl",
@@ -345,106 +345,249 @@
       ]
     },
     {
+      "title": "What Should LLMs Forget: Reinforcement Unlearning of Knowledge Associations",
+      "org": "Wutong Xu +4",
+      "year": "2026-10-30",
+      "summary": "Large language models (LLMs) acquire extensive factual knowledge during pre-training, which may include sensitive, private, or copyrighted information, motivating the development of unlearning methods that selectively remove specific knowledge while preserving general capabilities. However, existing…",
+      "url": "http://arxiv.org/abs/2610.41616v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "From Representation to Readout: Mechanistic Analysis of Membership Signals in Language Models",
+      "org": "Wenxi Dai +3",
+      "year": "2026-10-30",
+      "summary": "Membership inference aims to determine whether a particular example was included in a model's training data. Such membership signals are often broadly described as memorization, while the underlying mechanisms can involve both how information is represented internally and how it is accessed by the m…",
+      "url": "http://arxiv.org/abs/2610.41445v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "RTL-Interact: Training EDA-Interactive Models for Multi-Task RTL Design",
+      "org": "Wenxuan Shi +15",
+      "year": "2026-10-30",
+      "summary": "Large language models offer a promising route to register-transfer-level (RTL) design, but reliable implementations require checking and revision based on electronic design automation (EDA) tools' feedback. Existing RTL-specialized models often lack learned interaction with such EDA tools or rely on…",
+      "url": "http://arxiv.org/abs/2610.41225v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "TalentRL: Strategy-Guided Reinforcement Learning for Hierarchical Skill Routing",
+      "org": "Huancheng Chen +4",
+      "year": "2026-10-30",
+      "summary": "Natural-language skills enable large language model (LLM) agents to reuse procedures across tasks, yet most systems retrieve individual skills from a flat SkillBank without explicitly modeling the high-level strategy that governs their selection and use. We introduce TalentRL, a strategy-guided rein…",
+      "url": "http://arxiv.org/abs/2610.41143v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "CRoS: Causality Reward on Scrambled CoTs Improves Accuracy and Reasoning Faithfulness",
+      "org": "Xiao Yu +4",
+      "year": "2026-10-30",
+      "summary": "Reinforcement learning with verifiable rewards (RLVR) has become the standard method for training language models to reason. However, RLVR typically relies solely on outcome correctness, which does not guarantee that the CoT causally contributes to the final answer. Without this connection, outcome …",
+      "url": "http://arxiv.org/abs/2610.42054v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "GRIT: Gradient Masking for Visually Misgrounded Tokens in Text-Rich Reasoning",
+      "org": "Chanseul Cho +3",
+      "year": "2026-10-30",
+      "summary": "Reinforcement learning with verifiable rewards (RLVR) has recently been extended to vision-language models (VLMs), yet its effectiveness remains limited for text-rich reasoning tasks. We highlight a key factor contributing to this limitation: models frequently arrive at correct final answers despite…",
+      "url": "http://arxiv.org/abs/2610.41629v1",
+      "category": "reasoning-rl",
+      "tags": [
+        "live",
+        "reasoning-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "KEEPER: Learning Control-Sufficient Textual Memory for Long-Horizon LLM Agents",
+      "org": "Jinkyeong Choi +3",
+      "year": "2026-10-30",
+      "summary": "Recursive textual memory can carry earlier errors into later updates, yet task performance alone does not establish memory reliability. We define self-consistency bias as the persistence of incorrect claims already present in the incoming memory. We present KEEPER, a comparative analysis of four aux…",
+      "url": "http://arxiv.org/abs/2610.41482v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "ART of PIV: Agentic Real-Time Particle Image Velocimetry for Active Flow Control",
+      "org": "Antonio Terpin +3",
+      "year": "2026-10-30",
+      "summary": "Particle image velocimetry (PIV) measures fluid motion from images of tracer particles, but its accuracy depends on choices throughout the estimation pipeline, including image preprocessing, flow estimation, and postprocessing. These choices are typically left to expert tuning, and a fixed configura…",
+      "url": "http://arxiv.org/abs/2610.41304v1",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ]
+    },
+    {
+      "title": "Subquadratic Attention with a Hierarchical Tree-Structured Indexer",
+      "org": "Leon Lufkin +5",
+      "year": "2026-10-30",
+      "summary": "The quadratic scaling of attention is a fundamental bottleneck limiting the long-context capabilities of large language models (LLMs). A variety of approaches have attempted to circumvent this, but they either fail to match attention's expressiveness (e.g., sliding-window or linear attention variant…",
+      "url": "http://arxiv.org/abs/2610.42112v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "Dynamical Memory Transformer: Selective Recurrent Memories with Constant Cost Attention",
+      "org": "Yannis Bendi-Ouis +1",
+      "year": "2026-10-30",
+      "summary": "Transformers retain an explicit history of the sequence, allowing attention to directly retrieve past representations. However, the size of the KV-Cache and the cost of a new token increase with the context length. State Space Models compress the past into a fixed-size recurrent state, at the cost o…",
+      "url": "http://arxiv.org/abs/2610.41850v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "GraphNIAH: A Benchmark for Long-Context Reasoning over Real-World Graphs",
+      "org": "Minh-Nam Tran +1",
+      "year": "2026-10-30",
+      "summary": "The needle-in-a-haystack (NIAH) benchmark was introduced as a test for measuring a model's ability to find small relevant facts within a very large body of input text. However, existing NIAH benchmarks each suffer from one or more of the following limitations: (1) reliance on synthetic data, so thei…",
+      "url": "http://arxiv.org/abs/2610.41704v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "When History Overrides Intent: Relational Schema Lock-In in Human-LLM Interaction",
+      "org": "Wei Yang",
+      "year": "2026-10-30",
+      "summary": "Long-context interaction and persistent memory allow LLM assistants to develop history-grounded understandings of users. When users change direction, however, an understanding built through earlier exchanges may conflict with their current instruction. We introduce relational schema lock-in to descr…",
+      "url": "http://arxiv.org/abs/2610.41367v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "ARK: Avoiding Routing Collisions for KV Cache Transfer in Disaggregated LLM Inference",
+      "org": "Hung-Chun Lin +3",
+      "year": "2026-10-30",
+      "summary": "Disaggregated LLM inference separates the prefill and decode phases across GPU pools, generating massive KV-cache transfers. Because these transfers last hundreds of milliseconds to seconds, they behave as mega elephant flows that dominate link bandwidth utilization. In this regime, stateless ECMP c…",
+      "url": "http://arxiv.org/abs/2610.41160v1",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ]
+    },
+    {
+      "title": "SACQ: Structure-Aware Codebook Quantization for Ultra-Low-Bit Vision-Language-Action Models",
+      "org": "Haesung Lee +1",
+      "year": "2026-10-30",
+      "summary": "Vision-Language-Action (VLA) models enable capable robot behavior, but their large memory footprint limits deployment on resource-constrained robotic platforms. Weight quantization is a natural remedy, yet post-training quantization (PTQ) recipes inherited from large language models degrade when app…",
+      "url": "http://arxiv.org/abs/2610.41408v1",
+      "category": "fp8-lowprec",
+      "tags": [
+        "live",
+        "fp8-lowprec",
+        "auto"
+      ]
+    },
+    {
+      "title": "Calibration of Large Model Quantization based on HiFloat4 Format",
+      "org": "Jing Huang +13",
+      "year": "2026-10-30",
+      "summary": "Quantization of Large Language Models (LLMs) has be- coming increasingly important for reducing the computa- tional costs and resource requirements for practical deploy- ment.Growinginterestinthisareahasmotivatedthecommu- nity to move beyond 8-bit quantization towards 4-bit preci- sion, leading to t…",
+      "url": "http://arxiv.org/abs/2610.41112v1",
+      "category": "fp8-lowprec",
+      "tags": [
+        "live",
+        "fp8-lowprec",
+        "auto"
+      ]
+    },
+    {
+      "title": "Trainable Vector Quantization for Large Language Models",
+      "org": "Anastasiia Prutianova +5",
+      "year": "2026-10-30",
+      "summary": "Vector Quantization (VQ) is a rapidly evolving technique for compressing Large Language Model (LLM) weights, reducing memory usage, and speeding up inference. However, extreme compression deteriorates model performance, which is challenging to recover due to the discrete nature of VQ parameters. Exi…",
+      "url": "http://arxiv.org/abs/2610.41822v1",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "Steering Vectors as a Training Signal in LLM Post-Training",
+      "org": "Tiejin Chen +3",
+      "year": "2026-10-29",
+      "summary": "Steering vectors (SVs) are residual-stream directions that shift the behavior of LLMs when added to hidden states at inference time. While prior work has mainly used SVs as post-hoc controls, we ask whether the same directions can also guide parameter updates during post-training. We study this ques…",
+      "url": "http://arxiv.org/abs/2610.40998v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
+      "title": "On the Origin and Evolution of Training-Inference Mismatch in LLM Reinforcement Learning",
+      "org": "Yu Li +2",
+      "year": "2026-10-29",
+      "summary": "On-policy reinforcement learning for large language models assumes that training responses are sampled from the current policy. In practice, an inference engine samples the responses and a separate trainer computes the gradients, and the \\textbf{training-inference mismatch} between the two makes the…",
+      "url": "http://arxiv.org/abs/2610.40945v1",
+      "category": "rl-llm",
+      "tags": [
+        "live",
+        "rl-llm",
+        "auto"
+      ]
+    },
+    {
       "title": "ShallowDefend: Harnessing Shallow Safety Alignment for Multi-Turn Defender",
       "org": "Qiyao Ma +11",
       "year": "2026-10-29",
       "summary": "Safety alignment has enabled large language models to reliably refuse harmful requests directly, yet the same request distributed across a multi-turn conversation still succeeds far too often. This brittleness has a mechanistic root: Alignment is shallow, with safety behavior concentrated in a model…",
       "url": "http://arxiv.org/abs/2610.40627v1",
-      "category": "rl-llm",
+      "category": "reasoning-rl",
       "tags": [
         "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "LLM-guided Planar Loco-Manipulation for Quadruped Robots",
-      "org": "Georges Jetti +4",
-      "year": "2026-10-29",
-      "summary": "Robotic navigation typically assumes a collision-free route to the goal exists; in cluttered environments with movable obstacles, however, reaching the goal may require physical interaction. Classical solutions encode these behaviors through geometric rules and task-specific logic, while learning-ba…",
-      "url": "http://arxiv.org/abs/2610.40248v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "EnvOS: Auditing Computer-Use Agents When the World Moves On : Phenomenon-Based Task Construction, Certification, and Evidence-Based Evaluation",
-      "org": "Ankush Kadu +4",
-      "year": "2026-10-29",
-      "summary": "Computer-use agents built on large language models (LLMs) work in software that can change while they act: an appointment moves, a policy is revised, a record is updated. Testing agents under such changes is harder than it looks. When an agent fails, the cause may be the agent, but it may also be a …",
-      "url": "http://arxiv.org/abs/2610.40246v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "H$^2$R: Hierarchical Hint-Based Reward for Mathematical Reasoning via Reinforcement Learning",
-      "org": "He Tu +2",
-      "year": "2026-10-29",
-      "summary": "Reinforcement Learning with Verifiable Rewards has shown great promise in enhancing mathematical reasoning in large language models. However, existing approaches provide limited intermediate supervision for complex, multi-step reasoning tasks. To bridge this gap, we propose \\textbf{Hierarchical Hint…",
-      "url": "http://arxiv.org/abs/2610.39934v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Incentivizing Self-Learning in Large Language Models via Reinforcement Learning",
-      "org": "Lingkai Kong +8",
-      "year": "2026-10-29",
-      "summary": "Large language models (LLMs) draw on parametric knowledge and retrieval-augmented generation (RAG) to solve knowledge-intensive tasks. Yet problem solving in unfamiliar domains calls for tightly coupled knowledge acquisition and reasoning, beyond factual retrieval and aggregation or learning solely …",
-      "url": "http://arxiv.org/abs/2610.39671v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Online Dense Reinforcement Learning with Planning-Grounding Agent for UI Navigation on Live IOS Apps",
-      "org": "Peitong Duan +4",
-      "year": "2026-10-29",
-      "summary": "While frontier vision-language models demonstrate strong capabilities in user interface (UI) navigation, their high inference costs prohibit everyday use. Conversely, smaller models trained via supervised fine-tuning (SFT) or offline reinforcement learning often memorize static trajectories, leading…",
-      "url": "http://arxiv.org/abs/2610.39264v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "A Sequential Decision Framework for Evaluating LLM-Guided Search",
-      "org": "Siqing Huo +4",
-      "year": "2026-10-29",
-      "summary": "Recent systems applying retrieval-augmented generation (RAG) and \"deep research\" iteratively generate queries, retrieve documents, and examine their contents, using the resulting information to guide subsequent search steps. When this process is carried out autonomously rather than by a human search…",
-      "url": "http://arxiv.org/abs/2610.39231v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Reasoning or Pattern Exploitation? Mechanistic Insights from RL-Trained Language Models",
-      "org": "Aishik Nagar +1",
-      "year": "2026-10-29",
-      "summary": "Large language models (LLMs) are increasingly described as acquiring \"reasoning\" skills after reinforcement learning with verifiable rewards. However, whether these gains reflect genuine reasoning or more superficial adaptations remains underexplored. In this work, we probe LLMs trained in a finite …",
-      "url": "http://arxiv.org/abs/2610.39182v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
+        "reasoning-rl",
         "auto"
       ]
     },
@@ -462,102 +605,11 @@
       ]
     },
     {
-      "title": "SCARL: Sequence Confidence-Aligned Reinforcement Learning",
-      "org": "Zhenghong Ke +2",
-      "year": "2026-10-29",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) improves language-model reasoning by scoring sampled responses with a rule-based verifier and reinforcing those that pass. Where a classifier's training couples predicted probability to labels, nothing ties an RLVR policy's confidence in a respon…",
-      "url": "http://arxiv.org/abs/2610.40407v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "Distributional Reward Calibration and Budget-Neutral Credit Assignment for Multimodal RLVR",
-      "org": "Lang Chen +4",
-      "year": "2026-10-29",
-      "summary": "We revisit advantage estimation in Group Relative Policy Optimization (GRPO) and observe that any token-level advantage admits a two-stage factorization: a \\emph{sample-level baselining} step that converts scalar verifier rewards into a comparable sequence-level signal, and a \\emph{token-level credi…",
-      "url": "http://arxiv.org/abs/2610.40250v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "Aligning Medical Vision Language Models at the Capability Boundary with Entropy Adaptive Rubric Grounding",
-      "org": "Hongyu Bai +2",
-      "year": "2026-10-29",
-      "summary": "Medical diagnostic reasoning requires verifiable links between visual evidence and clinical knowledge, yet current medical vision language models are aligned with objectives that reward the wrong behavior. Uniform supervised fine tuning lets easy cases dominate updates while clinically critical boun…",
-      "url": "http://arxiv.org/abs/2610.39835v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "Heterogeneous Co-Evolution Learning for Tool-Efficient Search Agents with Zero Labels",
-      "org": "Qin-Wen Luo +8",
-      "year": "2026-10-29",
-      "summary": "Deep search agents extend language models by interleaving reasoning with external retrieval. However, effective search-agent training requires addressing two challenges beyond final-answer optimization. First, the capability frontier of agents is largely determined by training questions, whereas fix…",
-      "url": "http://arxiv.org/abs/2610.39682v1",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "VeriCUA: Verification as Agentic Exploration for Computer-Using Agents",
-      "org": "Qiushi Sun +7",
-      "year": "2026-10-29",
-      "summary": "Building and scaling computer-using agents (CUAs) across desktop, mobile, and web environments requires reliable task-completion verification for data curation, evaluation, and reinforcement learning. Typical automated approaches prompt vision-language models (VLMs) to judge trajectories or generate…",
-      "url": "http://arxiv.org/abs/2610.40578v1",
-      "category": "agentic-rl",
-      "tags": [
-        "live",
-        "agentic-rl",
-        "auto"
-      ]
-    },
-    {
-      "title": "Training language models in simulation for psychiatric intake",
-      "org": "Samuel Schmidgall +55",
-      "year": "2026-10-29",
-      "summary": "In psychiatric practice, the clinical intake interview remains a primary diagnostic instrument, requiring the clinician to establish rapport while disentangling complex, overlapping presentations. Here, we show that multi-turn reinforcement learning (RL) in simulation environments improves language …",
-      "url": "http://arxiv.org/abs/2610.40476v1",
-      "category": "agentic-rl",
-      "tags": [
-        "live",
-        "agentic-rl",
-        "auto"
-      ]
-    },
-    {
       "title": "Attention, Dynamic Wave and Hybrid Sequence Mixers in Language Models",
       "org": "Dmytro Babarytskyi +1",
       "year": "2026-10-29",
       "summary": "Large Language Models (LLMs) rely on Multi-Head Attention (MHA) for sequence modeling, but scaling to long contexts is constrained by the quadratic cost of attention, motivating sub-quadratic recurrent alternatives. This paper formalizes a Dynamic Wave recurrent layer, based on input-dependent expon…",
       "url": "http://arxiv.org/abs/2610.39854v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "AB-Attention: Accurate Block Attention for Accelerating Video Diffusion Transformers",
-      "org": "Bin Xu +8",
-      "year": "2026-10-29",
-      "summary": "Video diffusion transformers generate high-quality videos, but the quadratic cost of 3D full attention dominates their inference. Dynamic block-sparse attention reduces this cost by computing exact attention only on key/value blocks selected from current activations. However, its fidelity degrades u…",
-      "url": "http://arxiv.org/abs/2610.39663v1",
       "category": "sparse-attention",
       "tags": [
         "live",
@@ -592,106 +644,15 @@
       ]
     },
     {
-      "title": "Turing LLM Post-Training: Calibrated Distillation and Efficient Dynamic-MoE Execution",
-      "org": "Yue He +21",
+      "title": "Characterizing Recoverable Expert-Utilization Signatures in Fine-Tuned Mixture-of-Experts LLMs",
+      "org": "Fei Wang +2",
       "year": "2026-10-29",
-      "summary": "We study post-training for dynamically routed mixture-of-experts (MoE) models, focusing on integrating independently optimized specialists while keeping consolidation efficient. Our approach combines calibrated multi-teacher on-policy distillation (C-MOPD), which matches each selected teacher on a l…",
-      "url": "http://arxiv.org/abs/2610.39876v1",
+      "summary": "As Mixture-of-Experts (MoE) large language models are increasingly deployed in distributed environments, from federated learning to edge-cloud systems, their architecture harbors an underexplored landscape of security vulnerabilities. Moving beyond textual analysis, we uncover structural memorizatio…",
+      "url": "http://arxiv.org/abs/2610.41039v1",
       "category": "efficient-llm",
       "tags": [
         "live",
         "efficient-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Learning to Reason from Reference Samples Alone: Reinforced Adversarial Learning for Modern LLM Post-Training",
-      "org": "Albert Bou +6",
-      "year": "2026-10-28",
-      "summary": "In many settings where LLM post-training is desirable, high-quality answers are recognizable but difficult to score with explicit rewards. Reinforcement learning with verifiable rewards (RLVR) is limited to tasks where an explicit correctness signal is available. Prior adversarial approaches to trai…",
-      "url": "http://arxiv.org/abs/2610.38851v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Latent Decision Flow Rewards for Clinical Guideline Reasoning",
-      "org": "Gaurav Bhatt +1",
-      "year": "2026-10-28",
-      "summary": "Clinical practice guidelines encode evidence-based recommendations as conditional decision flows, which makes them a natural source of process supervision for training reasoning models. Two properties of clinical reasoning make this supervision difficult to use. A decision flow consistent with a gui…",
-      "url": "http://arxiv.org/abs/2610.38709v1",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ]
-    },
-    {
-      "title": "Context Compaction for World Models",
-      "org": "Hayder Tirmazi",
-      "year": "2026-10-28",
-      "summary": "World models let observers explore and interact with generated worlds. Recent work shows that when observers revisit a region, current models often fail to regenerate it consistently. We view this as a context retrieval problem. LLM agents manage context retrieval at two layers of their stack. At th…",
-      "url": "http://arxiv.org/abs/2610.38980v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "FlatCake: A Flat KVCache Storage Architecture for LLM Serving",
-      "org": "Xin Huang +9",
-      "year": "2026-10-28",
-      "summary": "KV cache reuse accelerates LLM serving, but existing systems manage host DRAM and NVMe SSD as a tiered hierarchy where DRAM acts as an intermediate cache. Production LLM workloads break both premises of this hierarchy. First, bimodal reuse defeats DRAM temporal filtering, since workloads are dominat…",
-      "url": "http://arxiv.org/abs/2610.38355v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "GAAC: Lossless KV Compression for Bandwidth-Efficient LLM Inference on Personal Devices",
-      "org": "Yipin Guo +2",
-      "year": "2026-10-28",
-      "summary": "Weight-only, lossy quantization substantially reduces the storage and memory requirements for serving large language models (LLMs), but the growing key-value (KV) cache remains a bottleneck for long-context inference on personal devices. We present Group-Adaptive Additive Codec (GAAC), a lossless KV…",
-      "url": "http://arxiv.org/abs/2610.38210v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "Nemotron 3.5 Super and Lightning: Open, Efficient Mixture-of-Experts Hybrid Mamba-Transformer Models for Agentic AI",
-      "org": " NVIDIA +558",
-      "year": "2026-10-28",
-      "summary": "We introduce Nemotron 3.5 Super and Nemotron 3.5 Lightning, open and efficient Mixture-of-Experts Hybrid Mamba-Transformer models designed for reasoning, long-context understanding, and agentic workloads. Super is a 120B-parameter, 12B-active multimodal model, while Lightning is a smaller 30B-parame…",
-      "url": "http://arxiv.org/abs/2610.38095v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ]
-    },
-    {
-      "title": "Selective and Hybrid-State Communication for Latent Multi-Agent Systems",
-      "org": "Miles Liao +2",
-      "year": "2026-10-27",
-      "summary": "Efficient communication remains a major bottleneck in large language model multiagent systems. Latent communication reduces repeated natural-language exchange by transferring internal model states between agents, but these transfers remain costly and are typically designed around conventional KV-cac…",
-      "url": "http://arxiv.org/abs/2610.37779v1",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
         "auto"
       ]
     },
@@ -701,19 +662,6 @@
       "year": "2026-10-26",
       "summary": "Attention over tens of thousands of visual tokens dominates the inference of video diffusion transformers (DiTs). Existing methods reduce this cost through sparsity, low precision, or both, but use a single precision for all kept tiles. We observe that the output error introduced by approximation va…",
       "url": "http://arxiv.org/abs/2610.35706v1",
-      "category": "fp8-lowprec",
-      "tags": [
-        "live",
-        "fp8-lowprec",
-        "auto"
-      ]
-    },
-    {
-      "title": "End-to-End MXFP8 Reinforcement Learning on Blackwell: What Matching Buys, When It Pays Off, and How It Fails",
-      "org": "Wengee Zhang",
-      "year": "2026-10-26",
-      "summary": "Low-precision arithmetic can make reinforcement learning (RL) for large language models cheaper, but RL requires the sampler and the learner to agree. Several frameworks now run FP8 on both sides. We implement end-to-end MXFP8 RL in verl (Megatron/Transformer Engine training; vLLM and SGLang rollout…",
-      "url": "http://arxiv.org/abs/2610.34915v1",
       "category": "fp8-lowprec",
       "tags": [
         "live",
