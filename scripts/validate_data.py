@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate data/*.json for the dashboard. Run in CI to block broken commits.
 Only files that have an "items" list are item-validated (compare/curves skipped)."""
-import glob, hashlib, json, re, sys
+import glob, hashlib, json, os, re, sys
 
 # 可信度分级(与 js/app.js 的 confBadge 一一对应,改动时必须同步):
 #   confirmed    确证    多方独立证实
@@ -29,15 +29,64 @@ for f in sorted(glob.glob("data/*.json")):
             errs.append(f"{f}[{i}]: not an object"); continue
         if not it.get("title"):
             errs.append(f"{f}[{i}]: missing title")
-        u = it.get("url")
-        if u is not None and not (isinstance(u, str) and u.startswith(("http://", "https://", "docs/", "data/"))):
-            errs.append(f"{f}[{i}] ({it.get('title','?')[:30]}): bad url {u!r}")
+        # url: the card's source link. doc: a longer write-up the card links to
+        # (ideas cards render it as "Full proposal ↗", like compare.json's doc).
+        # A local path that does not exist renders as a dead link on the site,
+        # so it fails here rather than silently shipping.
+        for key in ("url", "doc"):
+            v = it.get(key)
+            if v is None:
+                continue
+            if not (isinstance(v, str) and v.startswith(("http://", "https://", "docs/", "data/"))):
+                errs.append(f"{f}[{i}] ({it.get('title','?')[:30]}): bad {key} {v!r}")
+            elif not v.startswith(("http://", "https://")) and not os.path.exists(v):
+                errs.append(f"{f}[{i}] ({it.get('title','?')[:30]}): {key} points at a missing file: {v}")
         if it.get("confidence") not in OK_CONF:
             errs.append(f"{f}[{i}] ({it.get('title','?')[:30]}): bad confidence {it.get('confidence')!r}")
 
+# ---- local paths referenced outside item lists must exist too ----
+# compare.json's deep-dive doc and each blog post's markdown / 精读版 page are
+# fetched at runtime; a moved or misspelled path 404s in the browser and used
+# to pass CI unnoticed.
+LOCAL_PREFIXES = ("docs/", "data/", "reads/", "p/", "assets/")
+
+def check_path(path, tag):
+    if path is None:
+        return
+    if not isinstance(path, str) or not path.startswith(("http://", "https://") + LOCAL_PREFIXES):
+        errs.append(f"{tag}: bad path {path!r}")
+    elif not path.startswith(("http://", "https://")) and not os.path.exists(path):
+        errs.append(f"{tag}: points at a missing file: {path}")
+
+def load_quiet(path):
+    """Re-read a file already validated as JSON above; stay silent on failure
+    so a parse error is reported once, not twice."""
+    try:
+        return json.load(open(path, encoding="utf-8"))
+    except Exception:
+        return None
+
+cmp_d = load_quiet("data/compare.json") if os.path.exists("data/compare.json") else None
+if isinstance(cmp_d, dict):
+    check_path(cmp_d.get("doc"), "data/compare.json: doc")
+
+blog_d = load_quiet("data/blog.json") if os.path.exists("data/blog.json") else None
+if isinstance(blog_d, dict):
+    posts = blog_d.get("posts")
+    if not isinstance(posts, list):
+        errs.append("data/blog.json: 'posts' missing or not a list")
+    else:
+        for i, p in enumerate(posts):
+            if not isinstance(p, dict):
+                errs.append(f"data/blog.json.posts[{i}]: not an object"); continue
+            tag = f"data/blog.json.posts[{i}] ({p.get('id','?')})"
+            if not p.get("file"):
+                errs.append(f"{tag}: missing file")
+            check_path(p.get("file"), f"{tag}: file")
+            check_path(p.get("read"), f"{tag}: read")
+
 # ---- curves.json: validate experiment metadata (provenance) ----
 CURVE_META_KEYS = ("model", "dataset", "hardware", "framework", "precision", "seed")
-import os
 if os.path.exists("data/curves.json"):
     try:
         cv = json.load(open("data/curves.json", encoding="utf-8"))

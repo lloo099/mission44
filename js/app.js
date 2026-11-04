@@ -838,6 +838,7 @@ function ideaHTML(e) {
     ${e.minimumExperiment ? `<div class="why"><strong>Minimum experiment:</strong> ${escapeHtml(e.minimumExperiment)}</div>` : ""}
     ${e.successMetric ? `<div class="why"><strong>Success metric:</strong> ${escapeHtml(e.successMetric)}</div>` : ""}
     ${steps ? `<div class="why"><strong>First steps:</strong><ul>${steps}</ul></div>` : ""}
+    ${e.doc ? `<div class="idea-doc"><a class="link" href="${escapeAttr(e.doc)}" target="_blank" rel="noopener">Full proposal ↗</a></div>` : ""}
     ${(e.tags || []).length ? `<div class="tags">${(e.tags || []).map((t) => `<span class="t">${escapeHtml(t)}</span>`).join("")}</div>` : ""}
   </article>`;
 }

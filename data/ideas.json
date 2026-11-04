@@ -4,6 +4,7 @@
     {
       "title": "Attention-Budgeted Orchestration:把人类注意力当受限服务器,联合优化 agent 的准入/调度/呈现",
       "pitch": "主动式 agent 系统里,人类注意力是被 N 条并发工作流争抢的有限资源,但准入(接不接这件事)、调度(占不占 worker 槽)、呈现(现在要不要送到人面前)目前全由手写规则与未经测量的常数决定,且没有任何指标能衡量写得对不对。本项目把三者形式化为一个联合资源分配问题:操作者建模为带切换成本与质量退化的单服务器队列,主结果是扫注意力预算得到的价值—注意力前沿而非单一数字,策略取只读可信状态的按流索引(可审计、可逐条吊销,且提示注入不变量在构造上成立),以真实 GitHub 事件流重放作 benchmark。",
+      "doc": "docs/proposals/attention-budgeted-orchestration.md",
       "impact": 4,
       "difficulty": 3,
       "novelty": 4,
