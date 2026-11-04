@@ -1,6 +1,31 @@
 {
-  "updated": "2026-10-22",
+  "updated": "2026-11-04",
   "items": [
+    {
+      "title": "Attention-Budgeted Orchestration:把人类注意力当受限服务器,联合优化 agent 的准入/调度/呈现",
+      "pitch": "主动式 agent 系统里,人类注意力是被 N 条并发工作流争抢的有限资源,但准入(接不接这件事)、调度(占不占 worker 槽)、呈现(现在要不要送到人面前)目前全由手写规则与未经测量的常数决定,且没有任何指标能衡量写得对不对。本项目把三者形式化为一个联合资源分配问题:操作者建模为带切换成本与质量退化的单服务器队列,主结果是扫注意力预算得到的价值—注意力前沿而非单一数字,策略取只读可信状态的按流索引(可审计、可逐条吊销,且提示注入不变量在构造上成立),以真实 GitHub 事件流重放作 benchmark。",
+      "impact": 4,
+      "difficulty": 3,
+      "novelty": 4,
+      "why": "dsh-superagent 以 MIT 把准入三档、Mandate 与 Policy 版本、槽位并发、Ticket 七档 stage、panel 注意力规则全部写成文档,病灶第一次可被机制性指认:默认档 observe 既不交付、也不产生结果标签(动作从未执行),槽位限的是 agent 并发而非人类负载(5 个 Ticket 完工即 5 个交接砸到一个人),panel 的 24 小时阈值无测量支撑;目标函数已被 philosophy 文档写下(占用最少注意力、产出最多价值),但按二手报道 DeepSeek 自评实验为合成负载、以消耗时间的工具模拟写代码,即杠杆有效却几乎未被开发;必须联合而非拆开优化,因为存在四个耦合——槽位争用、共享人类队列、疲劳反馈环(呈现更多不等于更安全)、以及准入决定另两个决策未来有什么证据的探索耦合,最后一条在按实例 defer 文献里没有对应物;可审计性(Mandate 绑 Policy 版本、可逐条吊销)使黑箱门控在该架构不可部署,反而把方法空间收窄成可读的索引策略,并让注入不变量可机械判定;不需要 NPU/GPU 集群,成本集中在 trace 工程与模拟。完整提案见 docs/proposals/attention-budgeted-orchestration.md。novelty 评分为条件性:最接近的前作 arXiv 2606.08919 目前只有搜索摘要,本会话网络策略拦住 arxiv,尚未读原文。",
+      "steps": [
+        "先读 arXiv 2606.08919 与 2606.03115 原文定 novelty:前者若已覆盖多流与学习策略,立即改以 benchmark 为主贡献;后者的排除切换成本是本提案最有力的动机引用,须核实",
+        "抓取单仓库一个月真实 GitHub 事件流,确认维护者响应延迟与动作可从 trace 复原;把注意力五项可数单位(待处理条目、通知数、review 量、上下文切换、占用墙钟)实现为可计算函数",
+        "建排队模拟器:单服务器 + 切换成本 + 可用窗口,服务率与延迟分布全部从 trace 标定,不用合成负载",
+        "训练按流索引策略,特征限于 host 从可信状态计算的量(命中规则、名单成员、Policy 版本、队列深度、槽位占用、规则历史统计),以拉格朗日对偶处理预算约束扫出前沿;用对抗注入套件验证索引值逐比特不变",
+        "跑全部 baseline(observe only / 全自动 / 固定阈值 / dsh 手写规则 + 24h 启发式 / GEPA-ADAS 式提示词优化 router)并对四个耦合各做一次消融,确认关掉任一即退化为已有工作"
+      ],
+      "tags": [
+        "agentic-RL",
+        "harness",
+        "human-attention",
+        "scheduling",
+        "benchmark",
+        "accessible"
+      ],
+      "minimumExperiment": "单仓库、一个月真实 GitHub 事件流、worker 槽 W∈{1,3,5};比 learned index / 手写阈值 / 全问 / 全自动四条策略的价值—注意力前沿",
+      "successMetric": "相同注意力预算下交付价值显著更高,或相同价值下注意力显著更低,且前沿在 W 变化时不交叉(结论对并发度稳健);若 learned 策略压不过手写阈值,则判定联合优化无收益,转向纯 benchmark 切法"
+    },
     {
       "title": "open-instruct / OlmoRL 的昇腾移植:全开放 RL 栈 × 国产硬件",
       "pitch": "OLMo 3 的 OlmoRL(active sampling、token 级损失归一化、截断 IS、异步 in-flight 更新)是当前最完整的公开 RLVR 实现,但仅有 NVIDIA 路径。将 open-instruct 的 GRPO 管线移植到昇腾(vLLM-Ascend rollout + MindSpeed/torch-npu 训练),以 OLMo-3-7B 与 RL Zero 数据复现官方曲线,建立首个全开放、可审计的 RL-on-NPU 参考实现。",
