@@ -15,6 +15,8 @@
 |---|---|
 | 〔一手〕 | 本会话直读原文。具体为 `raw.githubusercontent.com` 上 `deepseek-ai/dsh-superagent-prototype` 的 `README.md`、`docs/000-philosophy.md`、`docs/002-authorization.md`、`docs/003-execution.md`、`docs/007-architecture.md` |
 | 〔二手〕 | **仅来自搜索引擎返回的摘要,未读到原文**。本会话的网络策略拦住了 `arxiv.org`、`export.arxiv.org`、`alphaxiv.org`、`offloop.org`(均为 DNS 不解析),因此**所有论文结论、作者、编号、数字都属于此级** |
+| 〔站内〕 | 来自本站既有的阅读成果(dispatch 与 `data/*.json` 卡片),带其自身的站内可信度标签。强于本会话的搜索摘要(那些有页码引用),但**仍不是本会话直读原文** |
+| 〔设计〕 | 我们自己的建模选择,不是对任何系统的事实陈述 |
 | 〔待核〕 | 已识别出的、必须在投稿前读原文核实的具体问题,汇总见 §12 |
 
 **提案的 novelty 判定目前不是终局的**,因为最接近的两篇前作只有二手摘要(§6、§12)。本文件按"若二手摘要成立"的前提写,并标出哪些结论会因核实结果而改变。
@@ -113,6 +115,51 @@ $$\max\ \mathbb{E}\Big[\textstyle\sum_t \text{value}_t\Big] \quad \text{s.t.}\qu
 4. **探索耦合**〔一手〕。准入策略决定了哪些规则会产生结果数据(§2.1)。因此准入不只是当期取舍,还决定了**另外两个决策未来可用的证据**。
 
 第 4 条在已有文献里基本没有对应物,因为按实例的 defer 问题不存在"我的决策改变了未来数据集"这一层。
+
+### 4.5 槽位不是常数:把 DSec 的发现并进来
+
+〔站内〕以下 DSec 事实来自本站 dispatch 46 与 `data/agentic.json` 的卡片(带页码引用),**本会话未读 DSec 原文**(arxiv 被拦)。该卡片的站内可信度标为 **`self-reported`**——DeepSeek 自己的报告,实验平台是 AMD EPYC 9655 与 NVIDIA MIG,非昇腾。
+
+§4.1 把 worker 槽建成一个固定整数 $W$,那是照 dsh 的 `maxWorkers` 来的〔一手〕。但 dsh 这个参数**把两件事混成了一件**:
+
+- 有多少 Ticket 可以**持有可恢复状态**(存在于"工作中"的某一档);
+- 有多少 Ticket 可以**此刻正在跑一个回合**,独占算力。
+
+一手证据就在机制里:Ticket **从 launch(含 preparation)起、在每个活跃回合中持续占槽**;若回合结束时还有后台作业,Ticket **保留其槽并停在 Working**;后台工作每回合后给 **30 分钟**,到点杀掉 shell job 并把 Ticket 报为 waiting〔全部一手〕。那个 30 分钟超时,就是一个**粗糙的回收代用品**。
+
+DSec 的整篇论文正是针对这个现象,其卡片标题直接写着把**"环境长期存在"与"资源长期独占"拆开**〔站内〕。支撑它的观测与 ABO 高度相关:
+
+| DSec 观测〔站内·self-reported〕 | 对 ABO 的含义 |
+|---|---|
+| 约 90% 的沙箱平均 CPU 不超过申请额度的 5% | 长期存活但闲置是**主流情形**,不是边角 |
+| 生命周期中位数 container 17.4 分钟、microVM 15.5 分钟,**p99 为 231.5 / 213.9 分钟** | 重尾。一个"waiting for a Trigger"挂几天的 Ticket 正是 p99 那一端 |
+| 区分 latency-sensitive 与 best-effort,BE 走 SCHED_IDLE + core scheduling | 正好对应 ABO:**人正在等的交接是 LS,投机性后台工作是 BE** |
+| DAMON + free-page reporting 回收冷页;virtio-pmem + DAX 去重文件缓存 | 回收**不必摧毁状态**,这正是 30 分钟超时做不到的事 |
+
+**所以 §4.1 的 $W$ 应当拆成两个约束**〔设计〕:
+
+- $W_{\text{res}}$:**状态驻留容量**——多少 Ticket 能持有可恢复状态;
+- $W_{\text{exec}}$:**活跃执行容量**——多少 Ticket 能此刻跑一个回合。
+
+有回收时 $W_{\text{res}} \gg W_{\text{exec}}$;没有回收时(今天的 dsh)两者被迫相等。
+
+### 4.6 这件事对本提案是双向的,必须如实记
+
+**加强的一面**:若 $W_{\text{res}}$ 可以做得很大,agent 侧约束就松了,**人类注意力更加独占瓶颈地位**——正是 §1 的命题。
+
+**削弱的一面,而且必须写在前面**:§4.4 第 1 条耦合(槽位耦合:准入一个低价值候选会推迟一个高价值候选)**整个建立在槽位稀缺之上**。如果回收让驻留变便宜,这条耦合就变弱,而第 2/3/4 条(人类队列、疲劳反馈、探索)完全不受影响。
+
+即:**DSec 在加强本提案总命题的同时,削弱了四条耦合里最弱的那一条。** 这不是要回避的尴尬,它反而让 M4(§10)的消融变得有判定力——
+
+> **固定 $W$ vs 弹性 $(W_{\text{res}}, W_{\text{exec}})$ 的消融,直接回答"槽位耦合到底值不值一条"。** 若前沿在两种设定下几乎不动,就应当把 §4.4 砍成三条耦合并照实说明,而不是留着一条靠稀缺假设撑起来的论证。
+
+**三条不能越界的限定**〔站内,均为本站对 DSec 的既有告诫〕:
+
+1. **"90% 不超过 5%" 不是可以无条件超配 20 倍的证明**——并发测试与编译峰值可能相关;
+2. **"单作业可突发 32K 沙箱"是突发创建需求**,不是必须同时运行 32K 个;
+3. DSec 把 worker 与 agent sandbox **移出可抢占 GPU 池**,是为避免"环境还在、控制进度丢失",这**不自动覆盖**任意节点断电、网络分区或外部副作用。
+
+对 ABO 的实际做法:模拟器把 $W_{\text{res}}$ 与 $W_{\text{exec}}$ 作为两个独立参数扫,**不去实现 DSec 的任何机制**。本提案不做系统实现,只问"驻留容量放宽后,注意力前沿是否移动"。
 
 ---
 
@@ -221,7 +268,7 @@ $$\max\ \mathbb{E}\Big[\textstyle\sum_t \text{value}_t\Big] \quad \text{s.t.}\qu
 | M1 trace 与账本 | 2–3 | 事件流抓取与重放器;注意力账本五项可计算;单仓库低流量档跑通 |
 | M2 模拟器与人类模型 | 4–5 | 排队 + 切换成本 + 可用窗口;从 trace 标定 $\mu$ 与响应延迟分布 |
 | M3 策略与训练 | 6–8 | 索引策略 + trusted-only 特征;约束 RL 扫出前沿;对抗注入套件通过 |
-| M4 对照与消融 | 9–10 | 全部 baseline;四个耦合各做一次消融(关掉即退化为已有工作) |
+| M4 对照与消融 | 9–10 | 全部 baseline;四个耦合各做一次消融(关掉即退化为已有工作);**以及固定 $W$ vs 弹性 $(W_{\text{res}}, W_{\text{exec}})$ 的消融,判定槽位耦合是否值得保留(§4.6)** |
 | M5 成文 | 11–12 | benchmark 发布 + 论文草稿;可选:在 MIT 原型上做影子部署作为 future work |
 
 ---
@@ -229,6 +276,8 @@ $$\max\ \mathbb{E}\Big[\textstyle\sum_t \text{value}_t\Big] \quad \text{s.t.}\qu
 ## 11. 最小可行实验与成功判据
 
 **最小实验**:单仓库、一个月真实事件流、槽位 $W \in \{1,3,5\}$,比四条策略的价值—注意力前沿:learned index / 手写阈值 / 全问 / 全自动。
+
+**刻意不含**弹性槽位:$ (W_{\text{res}}, W_{\text{exec}}) $ 的拆分属于 M4 消融(§4.6),不进杀死测试。杀死测试要回答的是"有没有东西可优化",多加一个维度只会让它更慢、更难解读。
 
 **成功判据**:在**相同注意力预算下交付价值显著更高**,或**相同价值下注意力显著更低**;且前沿在 $W$ 变化时不交叉(即结论对并发度稳健)。
 
@@ -242,7 +291,7 @@ $$\max\ \mathbb{E}\Big[\textstyle\sum_t \text{value}_t\Big] \quad \text{s.t.}\qu
 
 | 编号 | 结果 |
 |---|---|
-| **2606.08919** | **✅ 已解决,A 存活。** 论文正文仍读不到,但一手读了其代码仓库 `turangenesis/headroom` 的 README,足以判定三条:并发未被规定、策略是扫出来的阈值而非学出来的、人类基线是 LLM persona 而非真人。v1 记录的"两种矛盾描述"核实为**各对一半**:125 条标注是实测,倒 U 与 flooding 是仿真。**A 的三条差异(多流共享队列、联合三决策、学习策略)全部不被占据**,且 A 的 trace 标定人类模型强于其仿真 + persona 代理 |
+| **2606.08919** | **✅ 已解决,本提案存活。** 论文正文仍读不到,但一手读了其代码仓库 `turangenesis/headroom` 的 README,足以判定三条:并发未被规定、策略是扫出来的阈值而非学出来的、人类基线是 LLM persona 而非真人。v1 记录的"两种矛盾描述"核实为**各对一半**:125 条标注是实测,倒 U 与 flooding 是仿真。**本提案的三条差异(多流共享队列、联合三决策、学习策略)全部不被占据**,且本提案的 trace 标定人类模型强于其仿真 + persona 代理 |
 | **2606.03115 (SPOQ)** | **❌ 引用撤回。** v1 的三点主张(Director Model、约 6 并发上限、明确排除切换成本)在两次独立搜索与可达的 PyPI 包页面上**均无踪迹**,极可能来自与从业者文章的混同。GitLab raw 403、arxiv 被拦,无法一手核实。**§6 该行已改为不承担论证**,动机锚点不再依赖它 |
 | **DeepSeek 设计文章** | **⏳ 仍未核实。** 3–5 并发会话、39.2%、3.8× cache 读,以及"实验为合成"这一自评,全部二手;英文译本自称近似。处置不变:数字不进论文正文,仅作"据二手报道"的动机陈述 |
 
@@ -280,7 +329,7 @@ $$\max\ \mathbb{E}\Big[\textstyle\sum_t \text{value}_t\Big] \quad \text{s.t.}\qu
 
 ## 14. 第一周 checklist
 
-- [x] **M0:给出 novelty 判定**(2026-11-05)。2606.08919 经其代码仓库一手核实,A 存活;SPOQ 引用撤回;见 §12.1
+- [x] **M0:给出 novelty 判定**(2026-11-05)。2606.08919 经其代码仓库一手核实,本提案存活;SPOQ 引用撤回;见 §12.1
 - [x] **Check 0 离线部分**(2026-11-05)。`abo-bench/trace/schema.py` 与 `abo-bench/spec/event-mapping.md`:14 个必需字段、5 项注意力单位、5 个人类模型参数,其中 `switching_cost` 判定为**任何事件流都不可复原**
 - [ ] 读 FALCON / DeCCaF(§12.2 新增,现在最该读的前作)
 - [ ] 照 headroom 的办法一手核实 HarnessMDP:读 `Hik289/Agentic-RL-harness`
@@ -296,6 +345,10 @@ $$\max\ \mathbb{E}\Big[\textstyle\sum_t \text{value}_t\Big] \quad \text{s.t.}\qu
 
 1. `deepseek-ai/dsh-superagent-prototype`,经 `raw.githubusercontent.com` 读取:`README.md`、`docs/000-philosophy.md`、`docs/002-authorization.md`、`docs/003-execution.md`、`docs/007-architecture.md`。许可 MIT;README 自称研究原型、非 DeepSeek 正式产品、且与内部版本及设计文章的实现均不一致。
 2. `turangenesis/headroom` 的 `README.md`(arXiv 2606.08919 的代码仓库),同样经 `raw.githubusercontent.com` 读取。**论文正文未读到**,故凡涉及论文正文的表述仍属二手;README 自身的表述为一手。
+
+### 站内(本站既有阅读成果,带其自身可信度标签)
+
+**DSec**(arXiv:2609.22978,DeepSeek-AI 与清华,2026-09-19):经本站 dispatch 46(底稿为站长提供的工程版报告,带页码引用)与 `data/agentic.json` 卡片。该卡片站内可信度为 **`self-reported`**,因其为 DeepSeek 自己的报告。另有 `data/ascend.json` 卡片记录本站对 DSec 与 MiMo-V2.6 原文全文检索 "Ascend"/"NPU" **均零命中**,该条标为 `confirmed`。**本会话未读 DSec 原文。**
 
 ### 二手(仅搜索摘要,未读原文)
 
