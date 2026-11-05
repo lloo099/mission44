@@ -5,3 +5,7 @@ _*.mjs
 .DS_Store
 __pycache__/
 *.pyc
+
+# abo-bench: pulled traces and generated artifacts stay out of the repo
+abo-bench/traces/
+abo-bench/out/

@@ -133,8 +133,8 @@ $$\max\ \mathbb{E}\Big[\textstyle\sum_t \text{value}_t\Big] \quad \text{s.t.}\qu
 | 工作 | 它做了什么 | 与 ABO 的差别 |
 |---|---|---|
 | **HarnessMDP**(arXiv 2607.05458) | 把 harness 当可学习控制层,形式化为有限时域 Harness MDP;轻量 controller 选择结构性执行动作,LLM executor 冻结;**从离线 rollout 以 advantage-weighted regression 训练**,只用终局 rubric 奖励 | **决策集完全不同**:它管的是**单任务内**的流程动作(何时 read / draft / verify / revise / retrieve / submit),模型里**没有人类、没有并发、没有准入**。对本提案是**方法先例**(证明 harness 控制可离线学),不是竞争 |
-| **SPOQ**(arXiv 2606.03115) | 多 agent 软件工程的排队编排;有"Director Model",一名工程师驱动多个 Claude Code 实例,称约 6 个并发是人类多任务的经验上限 | **明确把训练与上下文切换成本排除在其成本模型之外**。这正是 ABO 要建模的量——最接近的系统论文把它划出了范围 |
-| **Oversight Has a Capacity**(arXiv 2606.08919) | 把 escalation 当**预算问题**;审查者建模为随 escalation 负载疲劳;得到 realized safety 对 escalation rate 呈**倒 U**,安全最优护栏的 escalation 低于全量,且 load-aware 策略能抗 flooding | **最接近的前作,也是最大的 novelty 威胁。** 差别:它管**安全护栏该拦哪些动作**(分类 + 预算),不管**准入与跨流调度**;策略是校准出来的而非学出来的;且倒 U 与 flooding 按 arXiv 摘要是**建模结论,用于 motivate 未来的人类研究**〔待核,见 §12〕 |
+| **SPOQ**(arXiv 2606.03115) | 〔二手,已核实部分〕Royce Carbowitz 与 Dheeraj Kumar,2026-06-02。按依赖图把任务分成并行波次的 wave-based dispatch、执行前后的 validation gate、一个 "Human-as-an-Agent" 角色、三层 agent 分级(Opus worker / Sonnet reviewer / Haiku investigator)。代码在 GitLab,另有 PyPI 包 | **⚠ 本提案 v1 对此篇的引用已撤回。** v1 曾称它有 "Director Model"、约 6 个并发为人类上限、且**明确把上下文切换成本排除在成本模型外**,并以此作为最有力的动机锚点。M0 核实:两次独立搜索与 PyPI 包页面(可达)**均查不到这三点**,极可能是首次搜索把从业者文章(并行 agent 注意力上限、"编排税")与本篇混同。GitLab raw 返回 403、arxiv 被拦,**无法一手核实**,故本行不再承担任何论证 |
+| **Oversight Has a Capacity**(arXiv 2606.08919) | **〔一手〕** 论文正文仍读不到(arxiv 被拦),但其代码仓库 `turangenesis/headroom` 的 README 已直读。系统:在 worker agent 与其动作之间的 guard,把每个动作判为 safe / 需批准 / 阻断,需批准的用 LangGraph `interrupt()` 暂停到人类裁决;另作为 MCP server 供外部 agent 调用。审查者被建模为主观且会疲劳,escalation 消耗有限注意力池 | **最大的 novelty 威胁,核实后 A 的三条区别全部成立:**① **并发未被规定**——README 不说一个人是跨并发流还是一次一个动作;dashboard 上有待批准队列,但**不描述注意力如何在其间分配**。② **没有学习**——escalation 策略是 LLM 0–100 风险分上的**阈值**,靠扫阈值读取成本最小点与 Neyman-Pearson 工作点得到。③ **人类模型不是人**——Fleiss κ≈0.52 是**三个 LLM persona** 之间的一致性,README 自称 persona 是人类标注者的代理而非真实人类基线。另:125 条标注集属实测(校准曲线、AURC、混淆矩阵),而**倒 U 与 flooding 是仿真**,非真实审查者实测——v1 记录的两种矛盾描述,核实结果是**两者各对一半**。该 README 自述贡献是"开源 firewall 与测量研究",**不是新理论**,并指明真正的前作是 FALCON / DeCCaF |
 | **按实例 defer 一族**:HILA(2603.07972, ICLR 2026,GRPO + cost-aware reward 决定自做还是交专家)、ASK-L2D(2605.24350,按打断成本与误动作成本之比设阈值)、When2Ask(RLC 2024,计入 API 费用与延迟)、FALCON / To Ask or Not to Ask(2510.08314,把疲劳建成约束) | 学"这一道题要不要问人" | **单流、按实例、人是成本固定或疲劳的 oracle**。无法表达"问 A、把 B 与 C 并批、D 等人空了再说"——那需要把注意力当共享队列 |
 | **agent 系统优化一族**:ADAS(ICLR 2025,搜索空间是代码)、AFlow(MCTS over LLM 节点图)、GEPA(提示词优化)、EvoFlow、AgentFactory(2609.01045)、HarnessForge(2606.01779) | 搜索提示词与工作流结构 | **目标函数是任务准确率**,没有人类注意力项,没有并发资源约束。是本提案的 baseline 而非前作 |
 | **AI control**(Redwood 一族) | 有**人类审计预算**(低至约 1/10,000 动作),研究预算下的监控协议 | 预算花在**防模型故意颠覆**,不是花在产出价值。目标函数与威胁模型都不同 |
@@ -238,15 +238,25 @@ $$\max\ \mathbb{E}\Big[\textstyle\sum_t \text{value}_t\Big] \quad \text{s.t.}\qu
 
 ## 12. 风险、缓解与待核清单
 
-### 12.1 必须读原文才能定论的三项〔待核〕
+### 12.1 M0 核实结果(2026-11-05 执行)
 
-| 编号 | 问题 | 若成立则如何 |
-|---|---|---|
-| 2606.08919 | 两种描述互相矛盾:arXiv 摘要称倒 U 与 flooding 是**建模结论、用于 motivate 未来人类研究**;另一聚合页称有 **125 条人工标注、Fleiss κ=0.52**。且需确认它是否涉及多流与学习 | 若已覆盖多流 + 学习策略,本提案从"新问题"退为"新场景 + 真 trace + 联合呈现",**仍可发但掉一档**;此时改以 ABO-Bench 为主贡献 |
-| 2606.03115 (SPOQ) | "明确排除上下文切换成本"是本提案最有力的动机引用,目前只有搜索摘要 | 若该排除不存在,§6 的动机需换锚点(可改用从业者"编排税"观察,但强度下降) |
-| DeepSeek 设计文章 | 3–5 并发会话、39.2%、3.8× cache 读,以及"实验为合成"这一自评,全部二手;英文译本自称近似 | 数字一律不进论文正文,或仅作"据二手报道"的动机陈述 |
+| 编号 | 结果 |
+|---|---|
+| **2606.08919** | **✅ 已解决,A 存活。** 论文正文仍读不到,但一手读了其代码仓库 `turangenesis/headroom` 的 README,足以判定三条:并发未被规定、策略是扫出来的阈值而非学出来的、人类基线是 LLM persona 而非真人。v1 记录的"两种矛盾描述"核实为**各对一半**:125 条标注是实测,倒 U 与 flooding 是仿真。**A 的三条差异(多流共享队列、联合三决策、学习策略)全部不被占据**,且 A 的 trace 标定人类模型强于其仿真 + persona 代理 |
+| **2606.03115 (SPOQ)** | **❌ 引用撤回。** v1 的三点主张(Director Model、约 6 并发上限、明确排除切换成本)在两次独立搜索与可达的 PyPI 包页面上**均无踪迹**,极可能来自与从业者文章的混同。GitLab raw 403、arxiv 被拦,无法一手核实。**§6 该行已改为不承担论证**,动机锚点不再依赖它 |
+| **DeepSeek 设计文章** | **⏳ 仍未核实。** 3–5 并发会话、39.2%、3.8× cache 读,以及"实验为合成"这一自评,全部二手;英文译本自称近似。处置不变:数字不进论文正文,仅作"据二手报道"的动机陈述 |
 
-### 12.2 方法与工程风险
+### 12.2 M0 新增的待办
+
+| 项 | 为什么重要 |
+|---|---|
+| **FALCON / DeCCaF** | headroom 的 README 一手指明,"内生疲劳审查者 + 负载感知 deferral"的真正前作是这两篇,而非 2606.08919。**这是现在最该读的前作**,A 的疲劳反馈环(§4.4 第 3 条)与它们直接重叠,必须划清边界 |
+| **2607.05458 (HarnessMDP)** | 仍只有二手摘要,但其代码仓库 `Hik289/Agentic-RL-harness` 可达(`raw.githubusercontent.com` 在本会话通),应照 headroom 的办法一手核实其动作集是否真的限于单任务内 |
+| **ShieldAgent / SOC alert fatigue** | headroom 指明的另两条前作脉络,优先级低于 FALCON |
+
+> 方法论副产品:**arxiv 被拦时,读论文的开源仓库是有效替代**。headroom 这一例里,README 对"是否学习""是否多流""人类基线是什么"的回答比摘要更明确——这三点恰好是 novelty 判定的全部依据。
+
+### 12.3 方法与工程风险
 
 | 风险 | 缓解 |
 |---|---|
@@ -270,12 +280,13 @@ $$\max\ \mathbb{E}\Big[\textstyle\sum_t \text{value}_t\Big] \quad \text{s.t.}\qu
 
 ## 14. 第一周 checklist
 
-- [ ] 解除 `arxiv.org` 网络限制后,读 §12.1 三项原文,给出 novelty 终局判定
-- [ ] 抓取 1 个中等流量仓库一个月的事件流,确认响应延迟与动作可从 trace 复原
-- [ ] 把 §4.3 五项注意力单位在该 trace 上实现为可计算函数,检查是否有不可观测项
-- [ ] 以 `observe` only 与全自动两条极端策略跑出前沿的上下界,确认区间足够宽到值得优化
+- [x] **M0:给出 novelty 判定**(2026-11-05)。2606.08919 经其代码仓库一手核实,A 存活;SPOQ 引用撤回;见 §12.1
+- [x] **Check 0 离线部分**(2026-11-05)。`abo-bench/trace/schema.py` 与 `abo-bench/spec/event-mapping.md`:14 个必需字段、5 项注意力单位、5 个人类模型参数,其中 `switching_cost` 判定为**任何事件流都不可复原**
+- [ ] 读 FALCON / DeCCaF(§12.2 新增,现在最该读的前作)
+- [ ] 照 headroom 的办法一手核实 HarnessMDP:读 `Hik289/Agentic-RL-harness`
+- [ ] **Check 0 在线部分**:1 个仓库 1 周,证明人类响应时刻与动作可复原、四个派生字段不靠乞题式启发式
+- [ ] **Check 1**:以 `observe` only 与全自动两条极端策略跑出前沿上下界,确认带宽足够宽到值得优化
 - [ ] 起草对抗注入测试集的 10 条种子用例,确认 trusted-only 不变量可机械判定
-- [ ] 若 §12.1 第一项核实为"已被覆盖",立即按退路重写 §1 与 §6
 
 ---
 
@@ -283,7 +294,8 @@ $$\max\ \mathbb{E}\Big[\textstyle\sum_t \text{value}_t\Big] \quad \text{s.t.}\qu
 
 ### 一手(本会话直读原文)
 
-`deepseek-ai/dsh-superagent-prototype`,经 `raw.githubusercontent.com` 读取:`README.md`、`docs/000-philosophy.md`、`docs/002-authorization.md`、`docs/003-execution.md`、`docs/007-architecture.md`。许可 MIT;README 自称研究原型、非 DeepSeek 正式产品、且与内部版本及设计文章的实现均不一致。
+1. `deepseek-ai/dsh-superagent-prototype`,经 `raw.githubusercontent.com` 读取:`README.md`、`docs/000-philosophy.md`、`docs/002-authorization.md`、`docs/003-execution.md`、`docs/007-architecture.md`。许可 MIT;README 自称研究原型、非 DeepSeek 正式产品、且与内部版本及设计文章的实现均不一致。
+2. `turangenesis/headroom` 的 `README.md`(arXiv 2606.08919 的代码仓库),同样经 `raw.githubusercontent.com` 读取。**论文正文未读到**,故凡涉及论文正文的表述仍属二手;README 自身的表述为一手。
 
 ### 二手(仅搜索摘要,未读原文)
 
