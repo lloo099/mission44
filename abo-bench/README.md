@@ -76,19 +76,32 @@ ABO 的模型是**同一仓库内多条并发工作流争抢同一个人**。流
 
 仅 git 克隆可用,但不够:`probe_git_only.py` 在 verl 近七天上实测,14 个字段 **5 YES / 6 PARTIAL / 3 NO**,且回答 Q1 所需字段全在 PARTIAL/NO 里。更关键的是 **verl 用 squash-merge,GitHub 会把 committer 重写为 "GitHub" 并对齐两个日期**,于是 `authored→committed` 延迟中位数是 **0.0 小时**——我原本想用它当响应延迟代理,这条路被直接抹掉。还有幸存者偏差:只有被合入的工作才留下 commit,而**被忽略或未合即关的请求恰恰是注意力账本必须计入的**。
 
-### 要解 Q2,二选一
+### GitHub API 路线已确认走不通(2026-11-06,结构性而非权限性)
 
-1. **GitHub API**:对指定仓库授予 `add_repo` 的 `push` 级附加(仅用于读 issue/PR/评论);
-2. **完整的事件流归档**:当前这份是抽样且有缺口,需要全量镜像。
+用户明确授权后实测:`add_repo` 以 `push` 级申请 `volcengine/verl`,返回
+
+> `you need push access to volcengine/verl for Claude to make changes there`
+
+**`push` 级附加要求账号对该仓库真的有写权限。** 第三方开源项目没有人具备,所以这条路对**任何**第三方仓库都封死,与授权意愿无关。
+
+而账号自己可写的仓库(`list_repos` 列出 60 个)全为单作者研究/FPGA 项目,`lloo099/mission44` 本身 0 个 issue、1 个无互动 PR。**有权限的没流量,有流量的没权限。**
+
+### 因此 Q2 只剩一条路
+
+**GH Archive via BigQuery(`githubarchive` 公开数据集)** —— 这是**完整**归档,不是本会话实测到的抽样 dump,可取任意公开仓库的全量事件流,且**不需要仓库附加、不需要任何写权限**。
+
+阻塞点:`bq` 已安装并已配好代理,但**未配 GCP project id**(BigQuery 公开数据集免费,但查询计算需要一个启用计费的项目)。
+
+> 在拿到完整事件流之前**不要**用抽样数据凑 benchmark:抽样会把缺失的负载当作不存在,得出的注意力账本比没有结论更糟。
 
 ## 数据源:实测后的现状
 
 | 源 | 现状(2026-11-06 实测) |
 |---|---|
 | GH Archive 小时 dump | **已放通并实测**。Q1 可答;**Q2 不可**——重度抽样且有缺口,见上 |
-| GitHub API(`gh api` / `mcp__github__*`) | **403**,未附加仓库不可用;需 `add_repo` 的 `push` 级附加 |
+| GitHub API(`gh api` / `mcp__github__*`) | **走不通**。未附加仓库 403;`push` 级附加需对该仓库有真实写权限,第三方项目无人具备 |
 | git clone(匿名只读) | **可用但不够**:14 字段 5 YES / 6 PARTIAL / 3 NO,squash-merge 抹掉时间信号 |
-| GH Archive via BigQuery | `bq` 已装但**未配 project id**,未试 |
+| GH Archive via BigQuery | **仅剩的可行路**。完整归档、无需仓库附加;阻塞于**未配 GCP project id** |
 
 ## 来源标注
 
