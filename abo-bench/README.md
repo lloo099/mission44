@@ -37,15 +37,58 @@ python3 abo-bench/trace/schema.py --selftest # 只跑不变量检查
 2. **`switching_cost` 任何事件流都不可复原。** 历史只记录某人**何时发帖**,从不记录他发帖前花了多久重新装载上下文。只能取文献先验或做人类研究。**A 是排队模型,所以这是硬依赖,不是精细化选项。**
 3. **四个字段必须派生、不能直接读取**:`thread_id`、`addressed_to`、`actor_is_bot`、`resolution`。每一个都是 Check 0 在线部分可能**悄悄失败**的地方,其中 `resolution` 还带循环风险(它既是价值信号,又产生于历史那一套人类行为),详见 `spec/event-mapping.md` §3。
 
-## 数据源:三条路,都未验证
+## Check 0 结果(2026-11-06):一过一不过
 
-`schema.py` 里的 `SOURCE_PROFILES` 全部标 `verified: False`,这是故意的——它们是待证假设,不是事实。
+Check 0 在执行中**劈成了两问,而它们答案不同**:
 
-| 源 | 现状 |
+| | 问题 | 结果 |
+|---|---|---|
+| **Q1** | 字段可否复原——何时响应、谁、属哪个线程、怎么收尾 | **✅ 过** |
+| **Q2** | 单仓库事件流可否重建 | **❌ 不过(受限于可得数据源)** |
+
+### Q1:字段可复原(实测)
+
+在 GH Archive 四个有效小时(21,158 事件、16,875 仓库、2,864 条 `IssueCommentEvent`)上实测:
+
+| 字段 | 可复原率 | 依据 |
+|---|---|---|
+| 响应延迟 | **100%** | `comment.created_at - issue.created_at`;中位 1.3 h、p10 0.00 h、p90 415 h |
+| `thread_id` | **100%** | `issue.number` |
+| `resolution` | **100%** | `issue.state` |
+| `actor_is_bot` | 可判 | 按 login 后缀,**51.3% 的评论来自 bot**——这个比例本身说明该字段非判不可 |
+| `addressed_to` | **仅 21.1%** | 正文含 `@` 的比例。**如 `spec/event-mapping.md` §3 预判,这是最弱的一个** |
+
+复现:`python3 -I abo-bench/trace/probe_gharchive.py <hourly .json.gz 文件...>`
+
+### Q2:流不可重建(当前数据源)
+
+GH Archive 的公开转储在本会话所见是**重度抽样且有缺口**:
+
+- 一小时全 GitHub 仅 3,639–8,342 条事件,而**最活跃仓库一小时只有约 20 条**;
+- `volcengine/verl`、`vllm-project/vllm`、`huggingface/transformers` 在抽样的 6 个小时里**命中为 0**;
+- 部分小时返回 **127 字节的 XML 错误页**而非 gzip——是**缺失**,不是空。探测脚本会显式报出,不静默当 0。
+
+ABO 的模型是**同一仓库内多条并发工作流争抢同一个人**。流这么稀,队列语义根本无从表达——Q1 答得再好也不行。
+
+### 另一条被堵死的路:GitHub API
+
+`gh api` 与 `mcp__github__*` 对**未附加仓库**均返回 403,要求 `add_repo` 且 `access:"push"`;该申请被自动模式拦截(理由:把提权当手段——这个拦截是对的,我实际只需要读)。
+
+仅 git 克隆可用,但不够:`probe_git_only.py` 在 verl 近七天上实测,14 个字段 **5 YES / 6 PARTIAL / 3 NO**,且回答 Q1 所需字段全在 PARTIAL/NO 里。更关键的是 **verl 用 squash-merge,GitHub 会把 committer 重写为 "GitHub" 并对齐两个日期**,于是 `authored→committed` 延迟中位数是 **0.0 小时**——我原本想用它当响应延迟代理,这条路被直接抹掉。还有幸存者偏差:只有被合入的工作才留下 commit,而**被忽略或未合即关的请求恰恰是注意力账本必须计入的**。
+
+### 要解 Q2,二选一
+
+1. **GitHub API**:对指定仓库授予 `add_repo` 的 `push` 级附加(仅用于读 issue/PR/评论);
+2. **完整的事件流归档**:当前这份是抽样且有缺口,需要全量镜像。
+
+## 数据源:实测后的现状
+
+| 源 | 现状(2026-11-06 实测) |
 |---|---|
-| GH Archive via BigQuery | `bq` 已装但**未配 project id** |
-| GH Archive 小时 dump | `data.gharchive.org` 当前不在允许域名内 |
-| GitHub REST API | 现在就能用,但本会话的仓库授权只覆盖一个仓库 |
+| GH Archive 小时 dump | **已放通并实测**。Q1 可答;**Q2 不可**——重度抽样且有缺口,见上 |
+| GitHub API(`gh api` / `mcp__github__*`) | **403**,未附加仓库不可用;需 `add_repo` 的 `push` 级附加 |
+| git clone(匿名只读) | **可用但不够**:14 字段 5 YES / 6 PARTIAL / 3 NO,squash-merge 抹掉时间信号 |
+| GH Archive via BigQuery | `bq` 已装但**未配 project id**,未试 |
 
 ## 来源标注
 

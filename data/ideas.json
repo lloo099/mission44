@@ -10,7 +10,7 @@
       "novelty": 2,
       "why": "经两轮 M0 核实与两轮试证收敛到此〔全程见 docs/proposals/attention-budgeted-orchestration.md 与 abo-endogenous-capacity-note.md〕。原框架\"联合优化准入/调度/呈现\"已被 Lykouris & Weng(2402.12237)占据;转而主张的理论核心\"容量内生破坏其 Fluid 基准\"也已被**自己的计算否定**(命题 C:取可持续速率的基准与真实最优值只差 O(1),非 Ω(T));漏洞在于\"可行集无法精确表示 ⇒ 基准值无法逼近\"的第二步不成立。**故理论路线关闭,按预先承诺转 benchmark 优先。** 剩下站得住的两条:① 没有人做过 agentic/仓库场景的注意力账本 benchmark(前作用的是在线评论数据集);② 可审计 + 注入不变量的策略类约束是独有的。novelty 给 2:框架与理论均非首创,价值在可测量化与那条策略类约束。不需要 NPU/GPU 集群。",
       "steps": [
-        "Check 0 在线部分:单仓库一周事件流,证明维护者响应时刻与动作可从 trace 复原,且 thread_id/addressed_to/actor_is_bot/resolution 四个派生字段不靠乞题式启发式(规格见 abo-bench/spec/event-mapping.md)",
+        "【2026-11-06 部分完成】Check 0 劈成两问:**Q1 字段可复原=过**(GH Archive 实测 2,864 条评论事件:响应延迟/thread_id/resolution 均 100%,51.3% 评论来自 bot,addressed_to 仅 21.1% 为最弱项);**Q2 单仓库流可重建=不过**——公开归档为重度抽样且有缺口(最活跃仓库一小时约 20 条,目标仓库命中 0),GitHub API 对未附加仓库 403。解 Q2 需二选一:对指定仓库授予 add_repo 的 push 级附加(仅读),或拿到完整事件流归档",
         "Check 1 杀死测试:以 observe-only 与全自动两条极端策略跑出价值—注意力前沿的上下界,确认带宽足够宽到值得优化;带子窄则整个方向停止",
         "把五项注意力单位实现为可计算函数,注意它们由模拟产生而非从 trace 读取(abo-bench/trace/schema.py 已用 produced_by 字段强制区分),switching_cost 已判定任何事件流都不可复原,需文献先验或人类研究",
         "测量出厂默认值:dsh 的 observe 默认、panel 24 小时阈值、固定阈值策略各落在前沿何处——这是论文主结论",
