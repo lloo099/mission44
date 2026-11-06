@@ -2,31 +2,30 @@
   "updated": "2026-11-06",
   "items": [
     {
-      "title": "在人类既不完美也不外生的条件下学习 defer:agentic 把关的内生容量问题",
-      "pitch": "Lykouris & Weng(2402.12237)已在拥塞的人类复核队列上解决了准入+调度+学习并给出近最优保证,但其人类模型由三条全文明写的假设钉死:标签完美、\"复核过即零损失\"、以及**容量外生**(oblivious adversary)。98 页全文里 fatigue 出现 0 次。而 agent 把关恰恰是这三条都不成立的场景——人会错、错误率随负载上升、且策略自身的呈现量会改变人的有效容量。核心技术难点由此而来:其 regret 定义建立在以外生容量为前提构造的 Fluid 基准上,容量一旦内生,**基准随策略移动,对固定基准的 regret 不再良定义**,需要重建分析框架。配套:Ticket 是多次访问而非单次服务的作业;策略类受 dsh 的可审计要求约束,只能取可读索引且特征限于 host 可信状态,使提示注入不变量在构造上成立;以及真实 GitHub 事件流重放的 benchmark。",
+      "title": "ABO-Bench:给主动式 agent 的把关配置做第一个可测基准(出厂默认值未经校准)",
+      "pitch": "主动式 agent 每天反复判断\"现在做 / 问你 / 别出声\",而这个判断今天由手写规则与未经测量的常数决定——dsh-superagent 的 panel 用 24 小时阈值、默认档 observe 既不交付也不产生结果标签〔一手〕。**没有任何指标能衡量这些配置写得对不对。** 本项目做第一个能衡量它的 benchmark:真实 GitHub 事件流重放 + 五项可数的注意力账本(待处理条目、通知数、review 量、上下文切换、占用墙钟),主结论做成\"出厂 gating 默认值未经校准\"。另有一条独有的方法贡献:把把关策略限制为只读 host 可信状态的可读索引,使提示注入不变量**在构造上成立且可机械判定**——这来自 Mandate 绑 Policy 版本、可逐条吊销的真实架构要求,四篇最近前作都没有。",
       "doc": "docs/proposals/attention-budgeted-orchestration.md",
       "impact": 4,
       "difficulty": 3,
-      "novelty": 3,
-      "why": "M0 两轮核实的产物,原框架已被推翻一次并重写〔见提案 §6.1/§6.2/§12.1〕。第一轮(arxiv 被拦)靠读论文的代码仓库判断,结论后被摘要证实;第二轮读 2402.12237 全文,发现只读摘要时的悲观判断过头——真正剩下的不是\"组合式增量\",而是**其模型的构造性前提在本场景下失效**。三条假设均为原文引用,fatigue/switching cost/context switch/human error 四词全文命中均为 0,属可核验的否定性证据。独有部分还有可审计性+注入不变量作为策略类约束(四篇前作都没有,来自 Mandate 绑 Policy 版本、可逐条吊销的真实要求)。novelty 给 3 不给 4:框架句与在先工作共享,新的是被明确定位的技术缺口。不需要 NPU/GPU 集群。**注意:倒 U 目前只有 2606.08919 的仿真证据,其作者自述是 motivate human study 的建模结论,不可当既成事实引用。**",
+      "novelty": 2,
+      "why": "经两轮 M0 核实与两轮试证收敛到此〔全程见 docs/proposals/attention-budgeted-orchestration.md 与 abo-endogenous-capacity-note.md〕。原框架\"联合优化准入/调度/呈现\"已被 Lykouris & Weng(2402.12237)占据;转而主张的理论核心\"容量内生破坏其 Fluid 基准\"也已被**自己的计算否定**(命题 C:取可持续速率的基准与真实最优值只差 O(1),非 Ω(T));漏洞在于\"可行集无法精确表示 ⇒ 基准值无法逼近\"的第二步不成立。**故理论路线关闭,按预先承诺转 benchmark 优先。** 剩下站得住的两条:① 没有人做过 agentic/仓库场景的注意力账本 benchmark(前作用的是在线评论数据集);② 可审计 + 注入不变量的策略类约束是独有的。novelty 给 2:框架与理论均非首创,价值在可测量化与那条策略类约束。不需要 NPU/GPU 集群。",
       "steps": [
-        "【已部分完成 2026-11-06】定理 A 已证(朴素基准 ⇒ 任何策略 regret ≥ ℓδT/2,结构同原文 Proposition 2);命题 B 已证(存在每窗口质量相同但吞吐差 δ 的排布 ⇒ 任何外生容量序列都无法精确表示真实可行集)。二者均已机械核验。**剩下决定成败的一问:保守选取的外生容量能否给出渐近紧的基准**——能则路线塌缩为\"换个常数\",退到 benchmark 优先;不能则路线成立,这就是论文第一个定理",
-        "抓取单仓库一个月真实 GitHub 事件流,确认维护者响应延迟与动作可从 trace 复原;把注意力五项可数单位(待处理条目、通知数、review 量、上下文切换、占用墙钟)实现为可计算函数",
-        "建排队模拟器:单服务器 + 切换成本 + 可用窗口,服务率与延迟分布全部从 trace 标定,不用合成负载",
-        "训练按流索引策略,特征限于 host 从可信状态计算的量(命中规则、名单成员、Policy 版本、队列深度、槽位占用、规则历史统计),以拉格朗日对偶处理预算约束扫出前沿;用对抗注入套件验证索引值逐比特不变",
-        "跑全部 baseline(observe only / 全自动 / 固定阈值 / dsh 手写规则 + 24h 启发式 / GEPA-ADAS 式提示词优化 router)并对四个耦合各做一次消融,确认关掉任一即退化为已有工作;另做固定 W vs 弹性(驻留容量/执行容量)的消融,判定槽位耦合是否值得保留——DSec 的回收机制若成立,这条耦合会变弱,而人类队列、疲劳、探索三条不受影响"
+        "Check 0 在线部分:单仓库一周事件流,证明维护者响应时刻与动作可从 trace 复原,且 thread_id/addressed_to/actor_is_bot/resolution 四个派生字段不靠乞题式启发式(规格见 abo-bench/spec/event-mapping.md)",
+        "Check 1 杀死测试:以 observe-only 与全自动两条极端策略跑出价值—注意力前沿的上下界,确认带宽足够宽到值得优化;带子窄则整个方向停止",
+        "把五项注意力单位实现为可计算函数,注意它们由模拟产生而非从 trace 读取(abo-bench/trace/schema.py 已用 produced_by 字段强制区分),switching_cost 已判定任何事件流都不可复原,需文献先验或人类研究",
+        "测量出厂默认值:dsh 的 observe 默认、panel 24 小时阈值、固定阈值策略各落在前沿何处——这是论文主结论",
+        "对抗注入套件:验证限制在 host 可信状态上的索引策略,其取值在注入文本下逐比特不变"
       ],
       "tags": [
         "agentic-RL",
         "harness",
-        "learning-to-defer",
-        "queueing",
-        "human-attention",
         "benchmark",
+        "human-attention",
+        "prompt-injection",
         "accessible"
       ],
-      "minimumExperiment": "已完成最小理论步骤(见 docs/proposals/abo-endogenous-capacity-note.md 与 abo-bench/theory/verify_endogenous_capacity.py)。下一最小步骤仍是纯理论、不需数据:对任意保守外生容量序列 Ñ,判定最优策略的 regret 是否仍为 Ω(T)",
-      "successMetric": "相同注意力预算下交付价值显著更高,或相同价值下注意力显著更低,且前沿在 W 变化时不交叉(结论对并发度稳健);若 learned 策略压不过手写阈值,则判定联合优化无收益,转向纯 benchmark 切法"
+      "minimumExperiment": "单仓库一个月真实 GitHub 事件流,只比两条极端策略(observe-only vs 全自动立即呈现)的价值—注意力前沿上下界。不需要学习、不需要模拟器、不需要算力",
+      "successMetric": "两条极端策略之间的前沿带宽显著宽于测量噪声,且出厂默认值明显偏离前沿——即\"配置未经校准\"这一主结论成立;带宽窄则判定无可优化空间,方向终止"
     },
     {
       "title": "open-instruct / OlmoRL 的昇腾移植:全开放 RL 栈 × 国产硬件",
