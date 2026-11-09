@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-02",
+  "updated": "2026-11-09",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -1702,6 +1702,28 @@
       ],
       "confidence": "confirmed",
       "auto": true
+    },
+    {
+      "title": "Kimi Agent 的配额与监督结构:主 agent 只监督 15 步、上下文只开 128K(厂商文档一手)",
+      "org": "Moonshot AI",
+      "year": "2026-11",
+      "category": "product",
+      "track": "industry",
+      "innovation": "4,000 步子代理工作被压进主 agent 的 15 步监督(约 267:1),压缩比由 128K 上下文预算逼出;同时产品把 1M 能力的模型只开到 128K",
+      "summary": "2026-11-09 直读 Kimi 帮助中心三页(agent-overview / agent-features-and-limits / agent-swarm),补齐本站 [Kimi Work] 与 [PARL/Agent Swarm] 两条媒体口径卡片所缺的**配额与监督结构**。硬数字:Agent 上下文 **128K token**(约 8–10 万汉字);单任务通常 **5–20 分钟**,Swarm 更久;后台异步执行、可离开页面、完成后通知,文档明确警告「不要点 Stop output」;普通 Agent **一次通常只出一个文件**,要多文件须用 Swarm;建议把大任务拆成 **2–3 段**提交;产物落在 `/mnt/okcomputer/output/`,且「某些场景下沙箱环境需手动启动」;Kimi Code 另有 **5 小时/周**上限。Swarm 侧:最多 **300 个 subagent 同时**、单任务 **4,000+ 次工具调用**、**4.5×** 于串行、成本为普通任务数倍、Beta 且限三档会员。**文档未给每用户并发上限,也未给硬性任务超时**——这两个参数不存在于公开文档。",
+      "analysis": "本站关心的是两处比配额更值钱的东西。① **主 agent 只监督 15 步。** Swarm 页原文:主 agent「autonomously direct a group of up to 300 Subagent instances and execute parallel workflows of up to 4,000 steps, **while the main Agent oversees 15 steps**」。4,000 步压进 15 步,约 **267:1**;对上 128K 的上下文预算,这个压缩比不是设计美学而是**被预算逼出来的**,而 Moonshot 的解法是用 **PARL** 把监督者训练成能做这个压缩(PARL 本身见本站另一条,媒体口径)。这与本站 D43/D44 自进化那条线、以及注意力预算那条线是同一结构,**但稀缺的注意力不是人的、是主 agent 的上下文**——即「监督者注意力有限」这个问题正在被解决,解的是 AI 监督者那一版。② **128K 与 1M 对不上。** 概览页称 K3 有 100 万 token 上下文,Limits 页称 Agent 实际用 128K——**产品把 agent 跑在模型能力的八分之一上**,几乎必然是 KV 显存与服务成本所致;配套佐证是 Limits 页自认多轮中「可能遗忘早期细节」并把解法推回给用户(先列结构再定点调整),即**上下文不够、代价转嫁给人**。这条直接支持本站 KV 租约那条线的前提:KV 成本在 agent 负载下是真约束,不是理论担忧。③ **一处交叉验证:** Kimi 自述单任务 5–20 分钟,与 DSec 实测其机群容器**中位寿命 17.4 分钟**(本站 D46)落在同一量级——两个独立来源、不同性质(产品期望值 vs 生产实测),做 agent 负载刻画时可互为锚点,比任何单一厂商数字可靠。限定:全部为帮助中心自述,无方法学、无第三方复核;K2.6 的 300 子代理、4.5× 等数字与本站既有两条媒体口径卡片同源,未独立验证。",
+      "url": "https://www.kimi.com/en/help/agent/agent-features-and-limits",
+      "tags": [
+        "industry",
+        "Moonshot",
+        "Kimi",
+        "multi-agent",
+        "agent-swarm",
+        "context-budget",
+        "KV-cache",
+        "quotas"
+      ],
+      "confidence": "self-reported"
     }
   ]
 }
