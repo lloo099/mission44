@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-06",
+  "updated": "2026-11-09",
   "items": [
     {
       "title": "ABO-Bench:给主动式 agent 的把关配置做第一个可测基准(出厂默认值未经校准)",
@@ -165,26 +165,29 @@
       "successMetric": "Cross-platform reward-curve MAE quantified (<5%) with a reproducible throughput / MFU / peak-HBM table for ≥1 model."
     },
     {
-      "title": "Sleep-Mode / Colocated Hybrid Engine for RL on Ascend",
-      "pitch": "Implement (or emulate) vLLM 'sleep mode' on Ascend so the actor and rollout engine can share NPUs, unlocking the memory-efficient colocated hybrid engine that GPU RL relies on.",
-      "impact": 5,
-      "difficulty": 5,
-      "novelty": 5,
-      "why": "Dispatch 13 把『无 sleep-mode』列为昇腾四大坑之首,至今仍是 colocated 路线的最后一块短板:vLLM-Ascend v0.22.1rc1 已用 HCCL 权重传输后端打通了相邻的训推权重同步环节,权重能流动了,但显存仍不能让渡。补上 sleep-mode 等价物后,昇腾的 colocated hybrid engine 才算闭环——这是 verl / OpenRLHF / slime 整个开源生态都需要的系统贡献。",
+      "title": "昇腾 sleep mode 的 TP8/EP8 与 MoE 足迹测量(原「无 sleep-mode」前提已失效)",
+      "pitch": "⚠ 原前提「昇腾无 sleep-mode,是 colocated 路线最后一块短板」已于 2026-11-09 被证伪。vLLM-Ascend **sleep mode 已发布**(v0.23.0 官方功能文档):Level 1 释放权重、Level 2 释放权重+KV cache。更关键的是 **RL Roadmap Q4 2026(issue #19613,2026-10-23 开)** 已把 RL 列为 vLLM-Ascend 的 first-class workload,列出 sleep(level)/wake_up(tags)、pause/resume_generation、HCCL/NPU IPC 权重重载、routed-expert capture & replay、batch-invariant execution 全套生命周期接口,并已贴出**实测基线**(Qwen3-0.6B,单张 910B,10-24):awake 9.277 GiB → level-1 asleep **0.529 GiB**,sleep 2.31s / wake 0.32s。本卡原 minimumExperiment(profile 一个 colocated GRPO step 的显存)**已被这份基线做掉**,原 successMetric(峰值 HBM 降 ≥30%)也已被远超。真正剩下的残值:该 RFC 自列「MoE、投机解码、权重传输、**TP8/EP8 的足迹尚未测量**」,而已公布基线是 **TP=1 单die**——8×910B 恰好是没人测过的那个配置。",
+      "impact": 3,
+      "difficulty": 2,
+      "novelty": 2,
+      "why": "M0 证伪(2026-11-09,一手读 issue #19613 与官方 sleep mode 文档)。这是本会话第六个被核实推翻的框架类主张。剩下的不是研究缺口而是**上游路线图上的空格**:RFC 明写 weights 池无法归还空闲块(pluggable pool 缺 empty_cache)、ACL graph 池句柄从不释放、workspace/runtime/cudagraph 池在昇腾侧未打 tag、无 owner registry;且 **issue 无 assignee**,明确请 reviewer 在 triage 时认领。有 8×910B 的话,TP8/EP8 与 MoE 的 sleep 足迹是能拿出、别人拿不出的数据。novelty 降为 2(数据未被测过),impact 降为 3,difficulty 降为 2(照已有基线方法扩配置即可)。**这是上游贡献,不是论文。** 若目标是发文章,不要选这条。",
       "steps": [
-        "Profile NPU memory during a colocated GRPO step; quantify what sleep mode would free",
-        "Study vLLM's CUDA sleep-mode implementation and map it to CANN/torch_npu memory APIs",
-        "Prototype KV/weight offload-reload between rollout and training phases on Ascend",
-        "Upstream to vLLM-Ascend and validate a 7B→32B colocated GRPO run on one node"
+        "读 issue #19613 全文与其 10-24 的实测评论,照搬其测量方法以保证可比",
+        "在 8×910B 上按同口径测 TP8/EP8 的 sleep/wake 足迹与延迟,补上 RFC 自列的空格",
+        "加测 MoE 模型(RFC 另一项未测)与权重传输路径的足迹",
+        "带着数据进 issue #19613;该 issue 无 assignee 且公开征集 owner,这是最可能被接收的切入",
+        "若上游已有人补上同一组数据,立即停止——这条的全部价值就是那组数据"
       ],
       "tags": [
-        "systems",
-        "hard",
-        "high-impact",
-        "infrastructure"
+        "Ascend",
+        "vLLM-Ascend",
+        "sleep-mode",
+        "upstream-RFC",
+        "measurement",
+        "not-a-paper"
       ],
-      "minimumExperiment": "Profile NPU memory across one colocated GRPO step on a 7B model and prototype KV/weight offload-reload between rollout and train phases.",
-      "successMetric": "Colocated 7B GRPO runs on a single node with ≥30% lower peak HBM vs no offload, at no accuracy loss."
+      "minimumExperiment": "照 issue #19613 的口径,在 8×910B 上测 TP8 的 level-1/level-2 sleep 残留显存与 sleep/wake 延迟,与其 TP=1 基线并列",
+      "successMetric": "产出 TP8/EP8 与 MoE 的 sleep 足迹数据并被 issue #19613 采纳;若上游先行补齐则判定无剩余价值"
     },
     {
       "title": "Asynchronous Off-Policy RL Tuned for NPU Constraints",
@@ -458,29 +461,26 @@
       "successMetric": "A published failure-frontier map (turns × context × HBM) plus one stable long-horizon RL run exceeding 200 turns on Ascend."
     },
     {
-      "title": "异构训推一致性基准:NPU 侧 R3 / 统一 FP8 等价物",
-      "pitch": "首创 Dispatch 23 圈定的空白:GPU 侧训推一致已有三层解法(监控 / 算法补偿 / 根治,根治层如 Miles 的 Rollout Routing Replay 逐比特对齐与统一 FP8),但全部假设同构硬件。做第一个『异构训推一致性』基准 + NPU 侧根治层原型:定义 MoE 路由回放与统一低精度在 CANN/HCCL 语义下的等价物,量化『NPU 训练 × NPU 推理』与『NPU 训练 × GPU 推理』两种组合的一致性上限。",
-      "impact": 5,
-      "difficulty": 4,
-      "novelty": 5,
-      "why": "Dispatch 23 的结论原文:训推一致的根治层在昇腾缺位,异构一致性是明确的开放战场;Dispatch 09 拆解过 R3 的逐比特对齐机制并点出其对昇腾 MoE RL 的启发,Dispatch 20 提示 openPangu 的 FP8 一致/路由回放仍待验——三条线索都指向同一个无人区。这是列表里唯一同时具备『定义新问题(基准)』和『给出新机制(NPU 等价物)』的 idea,学术与工程价值都拉满;依赖 align-probe 级别的数值基础设施,适合作为其后继。",
+      "title": "异构训推一致性:RL-Kernel 已覆盖该方向且昇腾为 Partial(原「全部假设同构硬件」已失效)",
+      "pitch": "⚠ 原主张「GPU 侧三层解法全部假设同构硬件,异构一致性是无人区」已于 2026-11-09 被证伪。一手读 `RL-Align/RL-Kernel` 的 README:该项目自述即为「**bitwise operator-level train-inference consistency across heterogeneous engines**」,Apache-2.0、458 star、1,254 commits、126 open issues、82 open PRs;vime 编排 vLLM rollout + Megatron 训练,RL-Kernel 向两侧提供确定性算子。**硬件表里已列华为昇腾 dav_c220 / CANN 9.1.0 / Ascend C,状态 Partial**,NVIDIA SM90 与 AMD gfx942 为 Supported。已公布结果:H100 上 Qwen3-8B **200 步 exact LogP agreement**;MI300X 上**零 raw-bit logprob 失配**,步时 +1.55%。另有 vLLM RFC #48305、TensorRT-LLM RFC #19501、TBIK(arXiv 2511.17826,自称跨异构硬件零概率散度)、FP8-RL(2601.18150)等多条并行工作。",
+      "impact": 3,
+      "difficulty": 3,
+      "novelty": 1,
+      "why": "M0 证伪(2026-11-09,一手读 RL-Kernel README)。原卡的 novelty 5 来自 Dispatch 23,已明显过期:不仅异构一致性有专门项目,**昇腾也已在其支持矩阵内**。残值是「把 RL-Kernel 的昇腾算子覆盖从 Partial 补到 Supported」——那是向既有项目贡献代码,不是定义新问题。novelty 降为 1。**这条不该再作为论文候选。** 保留卡片只为记录证伪过程,避免他人重走。",
       "steps": [
-        "Formalize the consistency metrics (per-token logprob MAE, MoE routing-decision flip rate, reward drift) into a runnable benchmark harness",
-        "Baseline the two heterogeneous combos (NPU-train×NPU-infer, NPU-train×GPU-infer) on a small MoE with GRPO",
-        "Prototype an R3 equivalent on Ascend: record routing decisions at rollout, replay them exactly in the MindSpeed training forward",
-        "Prototype unified low-precision (FP8-path parity between vLLM-Ascend rollout and training GEMMs) on 950-class hardware",
-        "Release the benchmark + both prototypes; report how far each closes the heterogeneous consistency gap"
+        "若仍要做,正确形态是向 RL-Kernel 贡献昇腾算子,把 dav_c220 从 Partial 推到 Supported",
+        "先读其 issue #563(NPU + verl + RL-Kernel + Qwen3.6 MoE)确认已有进度,避免重复",
+        "不要以「首个异构一致性基准」立项——该主张已不成立"
       ],
       "tags": [
+        "Ascend",
         "train-infer-consistency",
-        "MoE",
-        "benchmark",
-        "R3",
-        "research",
-        "high-impact"
+        "RL-Kernel",
+        "refuted",
+        "upstream-contribution"
       ],
-      "minimumExperiment": "Measure routing-decision flip rate and logprob MAE between vLLM-Ascend rollout and MindSpeed training forward on a small MoE for one GRPO batch.",
-      "successMetric": "A public heterogeneous-consistency benchmark plus an NPU-side routing-replay prototype that measurably reduces flip rate toward zero."
+      "minimumExperiment": "无(作为论文候选已否决)。如作上游贡献:在昇腾上复现其 ROCm 的零 bit 失配验收流程",
+      "successMetric": "不再作为论文候选。贡献形态的判据是 RL-Kernel 昇腾状态从 Partial 变为 Supported"
     },
     {
       "title": "昇腾上的 agentic RL 最小闭环:4 题 × 4 次尝试,先证明数据与状态正确",
