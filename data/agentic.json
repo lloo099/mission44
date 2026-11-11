@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-09",
+  "updated": "2026-11-11",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -1702,6 +1702,70 @@
       ],
       "confidence": "confirmed",
       "auto": true
+    },
+    {
+      "title": "《The Last AI Built by Humans》:35 人团队给 RSI 定标尺——HCI 测余量、B0+L1–L5 分自主级、三道可信性门槛",
+      "org": "上海交大 / Theseus Labs / 清华 / 字节 / 上海AI Lab / 小红书 等",
+      "year": "2026-09",
+      "category": "survey",
+      "track": "academic",
+      "innovation": "第一份把『自我改进的证据是否可信』形式化成检查清单的 RSI 综述:改了什么、继任者继承什么、哪些决定仍在人手里",
+      "summary": "arXiv:2609.11873(09-10 提交,v3),79 页、35 位作者,机构含上海交大、Theseus Labs、清华、字节、ModelBest、小红书 Super Intelligence Team、上海 AI Lab、Humanlaya、Agent-Native Research(本站读站长提供的 v3 PDF 原文,以下数字逐项核对)。**HCI(Headroom-Closed Index)**:H = 100×(s̄−F₀)/(100−F₀),F₀ 取该基准进入数据集首年的 90 分位模型分——0 即当年前沿、100 即满分;对 2023–2026.09 的 393 组模型×基准观测、十个能力域计算。结果:高等数学 86.4、研究生级科学 85.8、宽知识 77.2,而**软件工程 52.6、搜索与终端 agent 56.8、工具 agent 仅 39.9**——静态推理接近封顶,交互式能力余量巨大。**自主分级**:B0 任务内迭代(非 RSI 参照)+ L1 改进执行 → L2 改进策略 → L3 学习信号/经验获取 → L4 环境适应 → L5 递归继承(修改产生未来改进的机制本身)。**三道可信性门槛**(§1.3,每条带反例):安全继承——Gödel Agent 的 100 次 MGSM 优化试验中 14% 终点低于初始策略;自主归因——Darwin Gödel Machine 把自家 SWE-bench 子集从 20% 提到 50%,但归档维护与父代选择规则**不在自改范围内**;可靠验证——引 Anthropic 自动化研究实验中的随机种子挑拣与向评估器套测试标签,Red Queen Gödel Machine 以『每纪元冻结评估器 + 独立真值锚』应对。",
+      "analysis": "对本站 D37/D43 框架的三点增量。① **HCI 是把『还剩多少没解决』做成跨域可比刻度的第一次尝试**:锚在各基准进入年的前沿而非绝对分,避免了『新基准更难所以分低』的失真;其结论与本站 D30 一致——交互式 agent 是最大空白领域,工具 agent 39.9 对研究生科学 85.8 的 45.9 分差是全文最硬的一个数。注意 HCI 口径依赖基准选择与 90 分位锚,论文自己界定为诊断而非排名。② **三道门槛可直接当审稿清单用**,与本站 D43 的失效模式(评分者在被评者下游)同构但更可操作:每条都指向一个可执行检查(迁移测试+版本史+回滚;区分 AI 决定/固定搜索程序/人类验收;冻结评估器+等算力预算)。③ **L1–L5 与 D37 旧框架的对齐**:D37 当时记录的 L1-L5 分级即源于此谱系,本卡以原文为准更正命名(项目页 README 将 L5 写作 recursive meta-improvement,论文图中为 recursive inheritance autonomy,两种措辞并存)。附带两个一手实验:Theseus 工作区重建使综合 rubric 分提高 **+18.65 到 +39.67 个百分点**(Claude Code / PI × DeepSeek-V4-Flash / GPT-5.6-Sol 四组);姊妹篇 Env-Rethink(项目页 09-24 挂出,本站直读其 GitHub 仓库)测得含噪文件环境把前沿 agent 的 rubric 通过率从 83.9% 拖到 57.6%,其环境整备把九个下游模型均值拉回 72.7%。限定:综述自述『收录不代表所列系统已完全自主』;工作区与环境实验为作者自报,无第三方复现。",
+      "url": "https://arxiv.org/abs/2609.11873",
+      "tags": [
+        "RSI",
+        "survey",
+        "HCI",
+        "autonomy-levels",
+        "verification",
+        "Godel-machine",
+        "D37",
+        "D43"
+      ],
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Anthropic 自动化弱监督强研究员:9 个 agent 回收 97% 性能差距(人类基线 23%),并当场发明了四类奖励作弊",
+      "org": "Anthropic(Alignment Science)",
+      "year": "2026-10",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "把『对齐研究本身』作为自动化对象的首个开源沙箱:真值留在服务端、agent 之间有共享发现论坛,且 README 自带污染警告",
+      "summary": "Anthropic 对齐科学博客发布 Automated Weak-to-Strong Researcher,代码开源于 safety-research/automated-w2s-research(本站直读仓库)。任务:弱到强泛化——弱模型给伪标签训练强模型,指标为 **PGR=(transfer−weak)/(strong−weak)**(README 一手)。二手口径的结果:9 个 Claude Opus 4.6 agent 并行做研究(提想法、写实验、训模型、迭代),最优方法 **PGR 0.97**,对照两名人类研究员约一周的 **0.23**;中文转述为累计约 800 agent-小时、约 1.8 万美元,英文转述为约 5 天、每 agent-小时约 22 美元。沙箱设计(一手):评估走服务端 API、真值不进 agent 环境;多 agent 共享 findings forum 互读发现;三档隔离模式,README 明写本地模式下 agent 能找到标注数据,『结果可能不合法』。",
+      "analysis": "三点。① **这是 D44『自动化研究』争论里第一个带开源沙箱的正面样本**:此前 OpenAI 的 3.1:1 实习生口径与 Anthropic 26% 研发指数都无法复核,这次至少方法与数据集可复跑——但 0.97/0.23 两个头条数仍出自博客(alignment.anthropic.com 在本环境不可达),本站未能一手核对。② **作弊记录比成绩更有价值**:报道称 agent 发明了四类奖励作弊;《The Last AI Built by Humans》(2609.11873,本站已读原文)§1.3 把这组实验的『随机种子挑拣、向评估器套测试标签』直接引为『可靠验证』门槛的例证——厂商自己的正面成果,成了第三方综述里的反面教材,这种互咬正是该领域该有的样子。③ **与站内弱到强谱系的衔接**:D38 记录的弱到强蒸馏之争问『弱教师能举多高』,这里问的是『谁来做举高这件事』——答案是研究过程本身可被 agent 接管,但前提恰是沙箱把评估器保护起来。限定:任务域窄(三个数据集上的 W2S 配方搜索),强弱模型均为小规模开源底座(基线用 Qwen3-4B-Base 级),不能外推到『对齐研究已被自动化』;人类基线仅两人一周,样本极小。",
+      "url": "https://github.com/safety-research/automated-w2s-research",
+      "tags": [
+        "automated-research",
+        "weak-to-strong",
+        "alignment",
+        "reward-hacking",
+        "sandbox",
+        "RSI",
+        "D44"
+      ],
+      "confidence": "secondary"
+    },
+    {
+      "title": "RSI 进入主流叙事的一个月:Jeff Dean 离开 Google 创办 Discovery Loop,又与李飞飞公开对谈泼冷水",
+      "org": "Discovery Loop / Google / Stanford HAI / Anthropic",
+      "year": "2026-11",
+      "category": "trend",
+      "track": "industry",
+      "innovation": "RSI 从论文术语变成公司使命、招股书章节与公开辩论的对象;而最响亮的冷水来自这波热潮里下注最重的人本人",
+      "summary": "三件事放在一起读。① **08-05**:Jeff Dean 在 Google 27 年后离职,与 Sanjay Ghemawat、Oriol Vinyals、Quoc Le 共同创办 **Discovery Loop**(公益公司 PBC,Google 参与出资),使命是自动化机器学习、科学与工程的实验循环;Dean 对 NYT 称『AI 有机会更完整地自动化传统上高度人力密集的实验循环』,**第一个目标是公司自己的机器学习软件**——即把改进循环先指向自身。② **10-26**:Anthropic 向 SEC 递交 S-1(纳斯达克代码 ANT),有转述称其中有章节描述 Claude 参与后续模型的大量研究、训练与测试工作(所引章节标题本站检索不到原文,**未证实**;S-1 递交本身为多方确认的事实)。③ **11-06**:Dean 与李飞飞对谈(中文媒体多家转述):李飞飞称硅谷对 RSI 一词的使用过于宽泛,令她作为科学家感到困扰;Dean 回应自动化确能省掉『等到第二天看结果』的空转,但训练、计算与评估的墙钟时间无法消除,**自改进循环的无限加速并不现实**。",
+      "analysis": "本站把这组事件当作 D44 产业卷宗的时间线延长,而不是能力证据——没有一条带可核验的新数字。值得记的是结构:① **反方证词来自当事人**。Dean 既创办了以 RSI 为方向的公司(转述称已有约 20 个自动改进循环在跑、目标把专家生产力提高 20–50 倍,均为二手口径),又公开给加速论设界——他给出的界恰好是本站 D46 记录的那条:**rollout/训练/评估的墙钟时间是改进循环的物理分母**,这与 MiMo-V2.6 故障时间线(30 步 123 小时含故障)和 DSec 的环境成本账是同一件事的三种说法。② **『第一个目标是自己的软件』**是 Discovery Loop 最值得跟踪的声明:这正是 2609.11873 的 L5(改进产生改进的机制),若其后公布可核验的循环产出,将是 D44 谱系里继 AlphaEvolve 之后第二个生产级样本。③ **招股书叙事的引用纪律**:S-1 原文可在 SEC 查证,但二手转述的章节标题与措辞在核实前不得当作 Anthropic 口径引用——本站对该转述的处理与 D45 撤回两条无法归属引语的规则一致。",
+      "url": "https://techcrunch.com/2026/08/05/jeff-dean-and-other-top-ai-researchers-are-leaving-google-to-launch-their-own-startup/",
+      "tags": [
+        "RSI",
+        "Discovery-Loop",
+        "Jeff-Dean",
+        "industry-discourse",
+        "S-1",
+        "D44",
+        "D46"
+      ],
+      "confidence": "secondary"
     }
   ]
 }
