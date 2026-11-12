@@ -2,6 +2,34 @@
   "updated": "2026-11-12",
   "items": [
     {
+      "title": "昇腾 colocated RL 的显存账本与数值一致性上限(吞吐已有人发,这两样没有)",
+      "pitch": "选题逻辑不是「找空白」而是「做别人跳过的难活」——**两个互不相干的上游项目各自标注同一处未完成**:vLLM-Ascend 的 RL Roadmap(issue #19613)自列 MoE、权重传输、**TP8/EP8 的 sleep 足迹尚未测量**,其已公布基线是 TP=1 单 die 的 Qwen3-0.6B;RL-Kernel 的硬件表里 NVIDIA SM90 与 AMD gfx942 是 Supported、**昇腾 dav_c220 是 Partial**,它在 H100 上做到 200 步 exact LogP、MI300X 上零 raw-bit 失配,**昇腾无对应结果**。两个交付物:**① 显存账本**——colocated 循环各阶段真实持有量、sleep 在 TP8/EP8 + MoE 下实际归还多少、并独立复核厂商那个无方法学的「在线 EP 转 TP,时延劣化<5% 下卡数降 30%、利用率升 40%」;**② 一致性上限**——CANN 上逐 bit 或近 bit 的训推一致是否可达,对照 RL-Kernel 在 CUDA/ROCm 的既有结果。",
+      "impact": 4,
+      "difficulty": 4,
+      "novelty": 3,
+      "why": "**吞吐不要再测,已有多篇**:ASP(2611.08864)、Periodic Asynchrony(2511.18871)、MindSpeed-RL(2507.19017)、AsyncFlow(2507.01663)。本卡刻意只做它们都没做的两轴。最近邻 **ASP 已一手读过并逐项核实不覆盖**:全文 HBM/GB/peak/footprint/OOM 命中均为 0(仅有的 3 次 memory 是动机段的 memory-bandwidth bound),`TP=`/`EP=`/`TP8`/`EP8` 命中均为 0,`colocat` 0 次(它走异步分离路线,与 colocated 相反),`bitwise` 0 次。**而 colocated 恰是需要 sleep mode、也是 vLLM-Ascend 路线图在建的那条路**——生态往那边走,却无公开显存实测;中文检索同样确认「没有找到可靠的、针对 910B 上 RL 训推一体的显存实测」。ASP 还顺带给了可直接对齐的基线配置(MindSpeed-RL + GRPO + vLLM v0.9.1 + Qwen3-30B-A3B MoE + 8×910B3),沿用同一套可避免「数字不可比」这个最常见的失败模式。novelty 给 3:这是测量/系统类贡献,不是新机制;价值在于别人付不起这个代价,不在于别人没想到。",
+      "steps": [
+        "沿用 ASP 的配置(MindSpeed-RL + GRPO + vLLM v0.9.1 + Qwen3-30B-A3B + 8×910B3),先把 colocated 循环跑通并复现其吞吐量级,确认环境可比",
+        "按 vLLM-Ascend issue #19613 的口径测 sleep:TP8/EP8 下 level-1/level-2 的残留显存与 sleep/wake 延迟,并拆出 weights 池、ACL graph 池、default 池各自占比(其 TP=1 基线显示残留 725MiB 中 419MiB 在 weights 池)",
+        "加测 MoE 与权重传输路径的足迹——这两项同样在该 issue 的未测清单上",
+        "独立复核厂商的「卡数降 30%、利用率升 40%」:给出方法、模型、规模,这个数字目前无任何方法学支撑",
+        "第二轴:在 CANN 上测训推 logprob 失配分布,判定零失配是否可达;对照 RL-Kernel 在 H100/MI300X 的验收口径",
+        "把 sleep 数据带进 issue #19613(无 assignee、公开征集 owner);一致性数据带进 RL-Kernel"
+      ],
+      "minimumExperiment": "单节点 8×910B3,Qwen3-30B-A3B,沿用 ASP 配置跑通 colocated GRPO 一步,按 issue #19613 口径测 TP8 的 level-1 sleep 残留显存与 sleep/wake 延迟,与其 TP=1 基线并列",
+      "successMetric": "产出 TP8/EP8 + MoE 的 sleep 足迹表并被 issue #19613 采纳;厂商 30%/40% 的数字被证实或证伪(两者皆为结论);CANN 上的 logprob 失配分布给出零失配可达性判定。**止损条件**:若开工前发现上游已补齐同一组数据,或 colocated 在当前 vLLM-Ascend 版本上根本跑不通且短期无解,立即停止",
+      "tags": [
+        "Ascend",
+        "vLLM-Ascend",
+        "MindSpeed-RL",
+        "sleep-mode",
+        "train-infer-consistency",
+        "memory",
+        "measurement",
+        "hard-work-not-gap"
+      ]
+    },
+    {
       "title": "ABO-Bench:给主动式 agent 的把关配置做第一个可测基准(出厂默认值未经校准)",
       "pitch": "主动式 agent 每天反复判断\"现在做 / 问你 / 别出声\",而这个判断今天由手写规则与未经测量的常数决定——dsh-superagent 的 panel 用 24 小时阈值、默认档 observe 既不交付也不产生结果标签〔一手〕。**没有任何指标能衡量这些配置写得对不对。** 本项目做第一个能衡量它的 benchmark:真实 GitHub 事件流重放 + 五项可数的注意力账本(待处理条目、通知数、review 量、上下文切换、占用墙钟),主结论做成\"出厂 gating 默认值未经校准\"。另有一条独有的方法贡献:把把关策略限制为只读 host 可信状态的可读索引,使提示注入不变量**在构造上成立且可机械判定**——这来自 Mandate 绑 Policy 版本、可逐条吊销的真实架构要求,四篇最近前作都没有。",
       "doc": "docs/proposals/attention-budgeted-orchestration.md",
