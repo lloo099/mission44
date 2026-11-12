@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch 47 精读版 · 910B 异步 RL</title>
+<meta name="description" content="910B 异步 RL 的资源配比、策略滞后与训推一致性：公开案例与实验记录方案。">
+<link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-47-910b-async-rl.html">
+<meta property="og:title" content="Dispatch 47 · 910B 异步 RL">
+<meta property="og:description" content="公开 910B 调优案例、训推一致性与可复现实验记录。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-47-910b-async-rl.html">
+<meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-47-910b-async-rl.png">
+<meta name="twitter:card" content="summary_large_image">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="stylesheet" href="read.css">
+</head>
+<body><div class="wrap">
+<div class="readbar"><a class="brand" href="../index.html">RL on NPU · Research Dashboard</a><a href="../index.html#blog/dispatch-47-910b-async-rl">看板内阅读原文</a><a href="../docs/blog/dispatch-47-910b-async-rl.md">Markdown 源</a><span class="spacer"></span><button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button></div>
+<header class="masthead"><div class="kicker">NPU Frontier Dispatch 47 · 精读版 · 2026-11-12</div><h1>910B 异步 RL：吞吐、策略滞后与训推一致性</h1><p class="standfirst">基于 verl 的 910B 公开案例与 vLLM-Ascend 官方文档，连接设备调度、训练质量和权重生命周期。所有案例均来自公开来源，本站未运行 NPU 实验。</p><div class="byline"><span>承接 D33 / D46</span><span>本站图 3 张</span><span><span class="chip c-vr">作者报告</span> <span class="chip c-inf">本站判断</span></span></div></header>
+<nav class="toc"><ol><li><a href="#s0">00 全景</a></li><li><a href="#s1">01 910B 案例</a></li><li><a href="#s2">02 训推一致性</a></li><li><a href="#s3">03 新研究</a></li><li><a href="#s4">04 实验记录</a></li></ol></nav>
+<main>
+<h2 id="s0"><span class="hnum">00</span>全景：吞吐和质量一起观察</h2>
+<p class="lede">异步训练重叠 rollout 与参数更新，但旧策略采样会带来策略滞后。设备利用率、有效 token 吞吐、任务成功率、reward 与策略版本差应同时记录。</p>
+<figure><img class="diagram" src="img/dispatch-47-910b-async-rl/fig-1.svg" alt="从任务、采样、奖励到训练和权重同步的循环"><figcaption>图 1 · 训练闭环，本站按公开系统概念绘制。</figcaption><div class="readout"><h5>这张图怎么读</h5><p>重点是轨迹上的版本与行为 logprob：它们连接生成时的策略和更新时的策略，不能仅凭设备时间线判断训练质量。</p></div></figure>
+<div class="vs"><div class="base"><h5>叙事怎么说</h5><p>设备越忙，训练越快。</p></div><div class="real"><h5>证据是什么</h5><p>异步同时改变资源利用率与采样策略的新鲜度，必须测量两者。</p></div></div><p class="delta"><span class="dl">本站判断</span>比较应以固定任务质量下的时间与成本为目标。</p>
+<h2 id="s1"><span class="hnum">01</span>910B 案例：找到等待的那一侧</h2>
+<p><span class="chip c-vr">作者报告</span> <a href="https://verl-project.github.io/posts/2026-10-23-async-rl-training-tuning/">verl 指南</a>的 Qwen3-30B 案例中，减少 rollout 资源后端到端吞吐约提升 25%；Qwen3.5-35B 的 staleness 增大后，等待改善趋缓而 reward 波动增大；Qwen3-Omni 在显存允许时提高 PPO token 预算，吞吐约提升 10%。指南未披露完整配置，因此这些数字是案例而不是可直接复现的承诺。</p>
+<figure><img class="diagram" src="img/dispatch-47-910b-async-rl/fig-2.svg" alt="通过时间线定位等待，再逐项调整并比较质量与吞吐"><figcaption>图 2 · 单变量调优流程，本站图。</figcaption><div class="readout"><h5>这张图怎么读</h5><p>先判断 trainer 还是 rollout 在等待，再选择调整项；不要同时改变资源、数据和算法。</p></div></figure>
+<div class="vs"><div class="base"><h5>叙事怎么说</h5><p>增加 rollout 设备就会提高吞吐。</p></div><div class="real"><h5>证据是什么</h5><p>当 rollout 已在等待 trainer，更多生成资源可能增加空闲；比例取决于工作负载。</p></div></div><p class="delta"><span class="dl">本站判断</span>保留同预算基线及评测，检查长尾、校验阶段与设备利用。</p>
+<h2 id="s2"><span class="hnum">02</span>同卡、分卡与轨迹契约</h2>
+<p><a href="https://docs.vllm.ai/projects/ascend/en/latest/user_guide/feature_guide/rl.html">vLLM-Ascend RL 文档</a>描述：同卡可用 sleep mode 释放显存并用 IPC 传权重，分卡可暂停生成并用 HCCL 更新。sleep level 2 丢弃权重和 KV；恢复时先恢复权重分配、加载权重，再恢复 KV。额外清理可能需要重建通信组和重捕获图。</p>
+<figure><img class="diagram" src="img/dispatch-47-910b-async-rl/fig-3.svg" alt="暂停请求、同步权重、恢复缓存与保存轨迹的顺序"><figcaption>图 3 · 权重更新与轨迹记录，本站图。</figcaption><div class="readout"><h5>这张图怎么读</h5><p>权重切换前后应能辨认轨迹版本。文档提示 keep 暂停模式可能让请求跨越权重版本，严格版本边界需选择合适策略并验证。</p></div></figure>
+<p>轨迹至少保留 token ID、行为 logprob、采样参数、模型版本、任务和奖励版本。支持的 MoE 工作流还可记录专家路由；Sampling Mask 可保存采样支持集。生成端记录并不自动保证训练端消费正确。</p>
+<div class="tbl"><table><caption>两种部署模式</caption><thead><tr><th>维度</th><th>同卡</th><th>分卡</th></tr></thead><tbody><tr><td>显存</td><td>sleep mode 释放与恢复</td><td>分别规划训练和采样资源</td></tr><tr><td>权重传输</td><td>IPC</td><td>HCCL</td></tr><tr><td>核验重点</td><td>恢复顺序、缓存与图</td><td>在途请求、同步边界与版本</td></tr></tbody></table></div>
+<h2 id="s3"><span class="hnum">03</span>两条研究线索</h2><p><a href="https://arxiv.org/abs/2610.01896">GMC-GRPO</a> 研究异步轨迹的偏差与方差，作者报告较大延迟下的稳健性改善；<a href="https://arxiv.org/abs/2611.12799">Agentic-OPD</a> 利用同次 RL 训练中不同 checkpoint 的互补能力，选择教师恢复学生遗漏能力。两者均是预印本，不是本站的昇腾实测。</p>
+<h2 id="s4"><span class="hnum">04</span>最小实验记录</h2><p>先固定模型、数据和评测，运行同步基线，再单独改变异步配置。记录芯片与卡数、固件及软件版本、模型数据修订、种子、并行策略、长度分布、训练步数、显存、时间线、有效吞吐、reward 和任务成功率；保留原始日志、失败运行及成本。没有真实数据时，不应将模拟曲线标作实验。</p>
+<div class="note flag"><span class="ntitle">未能核实</span><p>verl 指南未提供完整运行配置；各软件能力和支持矩阵随版本变化。本站未独立复现所引实验，也没有新增 910B 实验曲线。</p></div>
+</main><footer>来源：<a href="https://verl-project.github.io/posts/2026-10-23-async-rl-training-tuning/">verl 调优指南</a>、<a href="https://docs.vllm.ai/projects/ascend/en/latest/user_guide/feature_guide/rl.html">vLLM-Ascend RL 文档</a>、<a href="https://arxiv.org/abs/2610.01896">GMC-GRPO</a>、<a href="https://arxiv.org/abs/2611.12799">Agentic-OPD</a>。公开来源截至 2026-11-12。</footer></div>
+<script>(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();</script>
+</body></html>

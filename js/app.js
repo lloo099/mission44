@@ -183,6 +183,12 @@ async function wireBlog() {
 
   // expose posts + matcher so the global search (updateTabCounts) can count blog hits
   window.__blogPosts = posts;
+  const overviewCount = document.getElementById("overview-dispatch-count");
+  if (overviewCount) {
+    const dispatches = posts.filter((p) => /^dispatch-\d+/.test(p.id || "")).length;
+    const surveys = posts.length - dispatches;
+    overviewCount.textContent = `${dispatches} dispatches and ${surveys} ${surveys === 1 ? "survey" : "surveys"}`;
+  }
   function blogMatches(p) {
     return !searchTerm || (p.title + " " + (p.subtitle || "") + " " + (p.tags || []).join(" ")).toLowerCase().includes(searchTerm);
   }
@@ -196,7 +202,7 @@ async function wireBlog() {
     ["模型与架构", ["dispatch-01-seed-2-1", "dispatch-04-minimax-msa", "dispatch-05-deepseek-v4", "dispatch-42-deepseek-v41-flash", "dispatch-06-glm-5-2", "dispatch-07-mimo-v2-5", "dispatch-15-dspark", "dispatch-16-deepseek-v4-agent", "dispatch-21-longcat-2", "dispatch-24-kimi-k3", "dispatch-28-native-multimodal", "dispatch-34-glm-5-3"]],
     ["SWE 与训练数据", ["dispatch-12-swe-agents", "dispatch-14-scaleswe", "dispatch-17-denovoswe", "dispatch-30-agent-eval"]],
     ["RL 框架", ["dispatch-09-radixark-miles", "dispatch-18-prime-rl-vs-skyrl", "dispatch-19-slime", "dispatch-22-deepswe-rllm", "dispatch-29-deepseek-harness", "dispatch-31-olmo3", "dispatch-32-mindspeed-rl", "dispatch-33-verl", "dispatch-41-prime-agent", "dispatch-46-dsec-mimo-rl-infra"]],
-    ["昇腾落地", ["dispatch-03-ascend-950", "dispatch-13-swe-rl-on-ascend", "dispatch-20-openpangu"]],
+    ["昇腾落地", ["dispatch-03-ascend-950", "dispatch-13-swe-rl-on-ascend", "dispatch-20-openpangu", "dispatch-47-910b-async-rl"]],
   ];
   const mapEl = document.createElement("details");
   mapEl.className = "blog-map";

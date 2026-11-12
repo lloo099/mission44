@@ -946,7 +946,7 @@
         "offline",
         "preference-optimization"
       ],
-      "analysis": "Innovation: reparameterizes the RLHF reward in terms of the policy itself, collapsing alignment into one logistic loss on preference pairs against a frozen reference — no reward model, no sampling, no RL loop. Performance: matches or beats PPO-RLHF on summarization/dialogue/sentiment while being far simpler and more stable. Fit for RL-on-NPU: with no online rollouts it sidesteps the biggest NPU pain point (the missing vLLM sleep-mode) entirely — the easiest alignment method to stand up first on Ascend.",
+      "analysis": "Innovation: reparameterizes the RLHF reward in terms of the policy itself, collapsing alignment into one logistic loss on preference pairs against a frozen reference — no reward model, no sampling, no RL loop. Performance: matches or beats PPO-RLHF on summarization/dialogue/sentiment while being far simpler and more stable. Fit for RL-on-NPU: offline preference optimization avoids online rollout and its associated resource-management overhead.",
       "confidence": "confirmed"
     },
     {
@@ -1403,7 +1403,7 @@
         "async-rl",
         "efficiency"
       ],
-      "analysis": "Innovation: a fully asynchronous RL system that decouples generation from training so rollout workers never block on the trainer, attacking the idle/bubble problem of synchronous colocated RL. Performance: large throughput gains over synchronous baselines, at the cost of off-policy staleness that needs correction. Fit for RL-on-NPU: async decoupling is especially valuable on Ascend, where the missing vLLM sleep-mode makes colocated rollout/train memory-contended; AReaL has a dedicated Ascend branch.",
+      "analysis": "Innovation: a fully asynchronous RL system that decouples generation from training, attacking the idle/bubble problem of synchronous colocated RL. Performance: throughput gains over synchronous baselines come with off-policy staleness that needs correction. Fit for RL-on-NPU: async decoupling offers an alternative resource layout; current vLLM-Ascend documentation also describes colocated sleep mode. Check framework and version support.",
       "confidence": "confirmed"
     },
     {

@@ -149,7 +149,7 @@
       "org": "vLLM + Huawei",
       "year": "2026-02",
       "category": "ascend-npu",
-      "summary": "Latest Ascend rollout backend — broader model coverage and performance; the rollout engine RL stacks target on NPU.",
+      "summary": "Historical February 2026 release of the Ascend rollout backend; consult the project release notes for current versions and support.",
       "url": "https://github.com/vllm-project/vllm-ascend",
       "tags": [
         "live",
@@ -200,7 +200,7 @@
       "org": "research",
       "year": "2025-07",
       "category": "ascend-npu",
-      "summary": "An async streaming RL framework targeting the throughput limits of synchronous/colocated RL — directly relevant to NPU constraints like the missing vLLM sleep mode.",
+      "summary": "An async streaming RL framework targeting synchronous and colocated RL throughput limits. Current vLLM-Ascend documentation describes sleep mode; support depends on version and configuration.",
       "url": "https://arxiv.org/abs/2507.01663",
       "tags": [
         "live",

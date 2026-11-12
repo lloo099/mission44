@@ -1,7 +1,16 @@
 {
-  "updated": "2026-10-22",
+  "updated": "2026-11-12",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-47-910b-async-rl",
+      "title": "Dispatch 47 · 910B 异步 RL：吞吐、策略滞后与训推一致性",
+      "subtitle": "基于 verl 团队 910B 异步调优指南与 vLLM-Ascend 官方文档，梳理资源配比、策略滞后、同卡显存管理及权重同步；附 GMC-GRPO 和 Agentic-OPD 研究线索与可复现实验记录清单。公开案例来自作者报告，不是本站实测。",
+      "date": "2026-11-12",
+      "tags": ["Ascend", "910B", "async-RL", "verl", "vLLM-Ascend", "training-inference-consistency"],
+      "file": "docs/blog/dispatch-47-910b-async-rl.md",
+      "read": "reads/dispatch-47-910b-async-rl.html"
+    },
     {
       "id": "dispatch-46-dsec-mimo-rl-infra",
       "title": "Dispatch 46 · DSec 与 MiMo-V2.6:Agentic RL 系统原理与工程实施",

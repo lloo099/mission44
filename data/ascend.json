@@ -398,7 +398,7 @@
       "year": "2026",
       "category": "inference",
       "innovation": "KV-compression sparse attention with custom NPU kernels",
-      "analysis": "Innovation: brings KV-compression sparse attention to vLLM-Ascend with custom NPU kernels (hamming_dist_top_k for top-k indices, reshape_and_cache_BNSD for cache layout). Status: community RFC/Issue #5507, on the 2026 roadmap. Fit for RL-on-NPU: sparse-attention rollout cuts decode memory/latency on memory-bound 910B — the practical NPU counterpart to DSA/MSA and a lever against the missing vLLM sleep-mode.",
+      "analysis": "Innovation: brings KV-compression sparse attention to vLLM-Ascend with custom NPU kernels (hamming_dist_top_k for top-k indices, reshape_and_cache_BNSD for cache layout). Status: community RFC/Issue #5507, on the 2026 roadmap. Fit for RL-on-NPU: sparse-attention rollout may reduce decode memory/latency on memory-bound 910B; validate support and performance for the exact stack.",
       "summary": "RFC (Issue #5507) bringing KV-compression sparse attention to vLLM-Ascend via custom kernels (hamming_dist_top_k, reshape_and_cache_BNSD) — fills the long-context inference gap on the 2026 Ascend roadmap.",
       "url": "https://github.com/vllm-project/vllm-ascend/issues/5507",
       "tags": [
@@ -459,13 +459,13 @@
       "confidence": "secondary"
     },
     {
-      "title": "vLLM-Ascend v0.18.0 (latest stable)",
+      "title": "vLLM-Ascend v0.18.0 (May 2026 release)",
       "org": "vLLM + Huawei (Ascend)",
       "year": "2026-05",
       "category": "software-stack",
-      "innovation": "Latest Ascend rollout backend — broader model coverage + perf",
-      "analysis": "What it is: 2026 年 5 月发布的 vLLM-Ascend 最新稳定版、官方推荐生产使用——延续 v0.9.1 大规模专家并行之后的主线,将 attention/采样算子迁移至 CANN、适配昇腾内存池并优化 HCCS 通信,模型覆盖与性能持续扩大。Why it matters: 它是 verl/MindSpeed-RL 等 RL 栈在 NPU 上默认的 rollout 引擎,稳定版的成熟度直接决定 RL-on-Ascend 的地基质量。对 RL-on-NPU 的意义: NPU 上 RL 实验的 rollout 引擎版本应锚定此稳定版;但 sleep/offload 相对 CUDA vLLM 的缺口仍在,colocate 式 RL 依旧受限,需要配合异步/训推分离架构,或跟进后续 rc 版(v0.23+)引入的 KV offload 与 context-parallel 能力。",
-      "summary": "vLLM-Ascend reached v0.18.0 (May 2026), the production-recommended stable release — broader model coverage and performance after large-scale Expert Parallelism (v0.9.1, Sep 2025). It migrates attention/sampling ops to CANN, adapts Ascend's memory pool, and optimizes HCCS comms. The rollout engine RL stacks (verl / MindSpeed-RL) target on NPU; the sleep/offload gap vs CUDA vLLM remains the key constraint.",
+      "innovation": "Historical release of the Ascend rollout backend",
+      "analysis": "What it is: v0.18.0 is a historical 2026 release in the vLLM-Ascend rollout stack. Updated 2026-11-12: current documentation describes sleep mode for colocated RL and IPC/HCCL weight transfer. Check the release notes and compatibility matrix for the exact model, hardware and software versions; feature support and overhead are configuration dependent.",
+      "summary": "vLLM-Ascend v0.18.0 is a historical May 2026 release. The project's current RL documentation describes sleep mode and weight transfer; consult the version-specific support matrix before deployment.",
       "url": "https://github.com/vllm-project/vllm-ascend",
       "tags": [
         "vllm-ascend",
@@ -960,19 +960,19 @@
       "confidence": "confirmed"
     },
     {
-      "title": "Missing vLLM sleep mode / hybrid engine",
+      "title": "Colocated rollout memory management / hybrid engine",
       "org": "—",
       "year": "2025–2026",
       "category": "challenge",
-      "innovation": "The single biggest RL-specific blocker on Ascend",
-      "summary": "Without vLLM sleep mode, you can't memory-efficiently colocate the actor and rollout engine on the same NPUs, capping per-node model size and forcing disaggregated or smaller-model setups. Fixing this (or maturing async frameworks) is the highest-leverage improvement.",
-      "url": "https://github.com/volcengine/verl/issues/842",
+      "innovation": "Sleep mode, weight transfer and memory lifecycle",
+      "summary": "Current vLLM-Ascend RL documentation describes sleep mode and IPC weight transfer for colocated workloads. Verify release support, memory recovery and wake-up order in the target stack.",
+      "url": "https://docs.vllm.ai/projects/ascend/en/latest/user_guide/feature_guide/rl.html",
       "tags": [
         "rl-blocker",
         "memory",
         "hybrid-engine"
       ],
-      "analysis": "What it is: on CUDA vLLM, 'sleep mode' frees rollout-engine memory between phases so the trainer can reuse it (colocated hybrid engine); vLLM-Ascend lacks this. Why it matters: it's the single biggest RL-specific blocker on Ascend — without it you must offload or time-slice rollout vs train, costing throughput and memory headroom. Implication: it's why async/disaggregated RL (AReaL, AsyncFlow) and aggressive offloading are the pragmatic paths on 910B today; closing this gap is a concrete high-impact systems project.",
+      "analysis": "Updated 2026-11-12: vLLM-Ascend documents sleep mode for colocated training, including level-2 wake-up ordering and IPC weight transfer. Extra cleanup can require HCCL group restoration and graph recapture. Availability and overhead remain version- and workload-dependent; validate on the target hardware rather than treating sleep mode as universally absent.",
       "confidence": "confirmed"
     },
     {
