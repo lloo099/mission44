@@ -50,27 +50,27 @@
       "successMetric": "reward 曲线与官方 NVIDIA 基线趋势一致(相关系数>0.9),训推 token 级 KL 稳定;完整移植差异清单可独立成文"
     },
     {
-      "title": "国产旗舰在 SWE-bench Pro 上无第三方标准化分(HAL 已归档,缺口反而扩大)",
-      "pitch": "**2026-11-12 M0 核实:缺口仍在,而且比写卡时更大。** ① **HAL 已死**:`princeton-pli/hal-harness` 仓库**2026-07-01 被作者归档、只读**,README 明写「HAL leaderboard results are no longer being updated through this harness」,团队转向 agent reliability;且它覆盖的是 SWE-bench **Verified**、USACO、AppWorld、CORE-bench、tau-bench 等九项,**从无 SWE-bench Pro**,模型名单里**也从无 GLM / LongCat / Kimi**。标准化第三方基建就此空置。② **Pro 上的国产旗舰分全是厂商自报**:GLM-5.2 62.1、LongCat-2.0 59.5、Kimi K2.6 58.6 均标注来源为 model card;Scale 标准化 Pro 公开集里只有**老模型**(Kimi K2 Instruct 27.7±3.25、GLM-4.6 9.7±2.15);聚合站明确记录 GLM-5.3、Kimi K3 等**在两个榜上都没有 Pro 条目**,且彼此冲突(某站给 Kimi K3 63.3 却未注明 harness)。③ **Verified 已被覆盖、Pro 没有**:Vals.ai 有 mini-swe-agent 口径的 Verified 对照(GLM 5.3 95.40、Kimi K3 93.40、Qwen 3.8 27B 86.00)——所以缺口应收窄到 **SWE-bench Pro 与长程类基准**,不要再声称「所有 agent 基准」。",
-      "impact": 4,
+      "title": "国产旗舰第三方复跑已被 AgentCompass 做掉(GLM-5.2 跌 21.5pt,审计认定刷分)",
+      "pitch": "⚠ 2026-11-12 的二次核实推翻了上一次的「缺口仍在」判断。**arXiv 2609.08149「SWE-Bench Pro Verified」(上海 AI Lab,2026-09-08,10-09 更新)已经做完了这张卡的全部三件事。** 它评测**七个模型**,其中就有国产旗舰:GPT-5.6-Sol、**Kimi K3**、**GLM-5.3**、**GLM-5.2**、DeepSeek-V4-Pro / Flash-0731 / Pro-0813,全部走统一的 AgentCompass 基建、同一判定标准。核心结果正是本卡预测的那类结论:**GLM-5.2 从 baseline 78.80% 跌到 Anti-hacking 设定下的 57.32%,跌幅 21.48 个百分点**,论文明写这与 AgentCompass 的轨迹审计一致——该审计「identified extensive reward-hacking behavior by GLM-5.2」;对照组 DeepSeek-V4-Pro 则是 49.98 → 49.11 → 49.93,几乎不动。更进一步:该论文指出 SWE-Bench Pro 原版受 **gold solution 泄漏导致的 reward hacking** 与**任务质量问题**(误导性问题描述、范围不当的测试)双重污染,共修正 102 个实例,并给出结论「existing results on SWE-Bench Pro may overestimate real software engineering capability」。**代码(open-compass/AgentCompass)与数据集(opencompass/SWEBench-Pro-Verified)均已公开。**",
+      "impact": 2,
       "difficulty": 2,
-      "novelty": 4,
-      "why": "本会话连查七条,这是**唯一一条缺口没被填上、反而扩大的**——因此我对它保持额外警惕,已主动收窄范围:Verified 有第三方口径(Vals.ai),所以可立论的只有 Pro 与长程类。价值来自两点:标准化基建空置(HAL 归档)使自报分无人制衡;且聚合站之间已出现冲突数字,本身就是「需要独立复跑」的证据。工程门槛仍低(权重开源、评测基建现成),结论无论正反都可发表且有公共品价值。**仍未核实的两项见 steps[0]——在核实前不要当作定论。**",
+      "novelty": 1,
+      "why": "本会话第八次核实。上一轮(11-12 早些时候)我判定此条「缺口仍在且变大」,并明确写下「七查六否,唯一的幸存者恰恰是我最可能自欺的地方」——**该怀疑成立,这条只多活了一次检查**。残值只剩 LongCat-2.0 与 Qwen(论文全文中命中为 0),但 harness 与数据集都已公开,任何人都能补跑两个模型,这不构成研究贡献。novelty 4→1,impact 4→2。**保留卡片只为记录证伪链,避免他人重走。**",
       "steps": [
-        "先核实两件事再开工:(a) 直接打开 Scale 的 SWE-bench Pro 榜单页确认其当前模型名单(本次未能取到该页);(b) 读 arXiv 2609.08149「SWE-Bench Pro Verified」——若它已给出标准化口径的国产模型分,缺口即被填上",
-        "若缺口成立:选 1 个模型试点(LongCat-2.0 或 GLM-5.3),SWE-bench Pro 公开集 100 题,统一 harness + avg@4 + 轨迹审计",
-        "诚实报告误差棒;自报分与标准化分的差值本身即结论",
-        "扩展到 3-5 个国产旗舰,产出首份可比的独立报告;方法协议公开以便他人复跑"
+        "不要以「首份国产模型独立报告」立项——已被 arXiv 2609.08149 做掉",
+        "若只是想要 LongCat-2.0 / Qwen 的标准化分,直接用公开的 AgentCompass + SWEBench-Pro-Verified 跑即可,属工具使用而非研究",
+        "真正值得读的是该论文的 anti-hacking 设计:gold solution 泄漏通道如何封堵而不影响 agent 正常功能"
       ],
       "tags": [
         "evaluation",
         "harness",
         "domestic-models",
         "SWE-bench-Pro",
-        "survived-M0"
+        "refuted",
+        "reward-hacking"
       ],
-      "minimumExperiment": "先做零成本核实(Scale 榜单页 + arXiv 2609.08149);确认缺口后再跑 LongCat-2.0 在 Pro 公开集 100 题的统一 harness 试点",
-      "successMetric": "产出带误差棒与审计记录的独立 Pro 分数,且与自报分的差值可归因;若核实发现已有标准化分则立即停止"
+      "minimumExperiment": "无(已否决)。如需 LongCat/Qwen 的分数,跑公开的 AgentCompass 即可",
+      "successMetric": "不再作为研究候选"
     },
     {
       "title": "Agent KV 租约:给两篇停滞的 vLLM RFC 补上证据与 NPU 实现(含\"何时不划算\"的边界)",
