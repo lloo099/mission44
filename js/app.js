@@ -198,7 +198,7 @@ async function wireBlog() {
   // Diagram source lives in data/blog-map.mmd and renders through the shared mermaid pipeline
   // (placeholder / fallback / theme re-render all come for free). Rendered lazily on first open.
   const MAP_CLUSTERS = [
-    ["系统与综述", ["survey-2026-h1-architecture", "dispatch-02-rollout-bottleneck", "dispatch-08-agentic-rl", "dispatch-10-radixattention", "dispatch-11-vllm-vs-sglang", "dispatch-23-agentic-rl-problem-map", "dispatch-25-efficiency-aware-agent-rl", "dispatch-26-inference-efficiency-map", "dispatch-27-low-bit-training", "dispatch-35-frontier-scan", "dispatch-36-frontier-mechanisms", "dispatch-37-rsi-continual-learning", "dispatch-38-distillation-vs-rl", "dispatch-39-gpt6-fable51", "dispatch-40-gpt6-benchmarks", "dispatch-43-self-evolving-agents", "dispatch-44-industry-self-evolution", "dispatch-45-ad-vla-l4", "dispatch-48-november-brief"]],
+    ["系统与综述", ["survey-2026-h1-architecture", "dispatch-02-rollout-bottleneck", "dispatch-08-agentic-rl", "dispatch-10-radixattention", "dispatch-11-vllm-vs-sglang", "dispatch-23-agentic-rl-problem-map", "dispatch-25-efficiency-aware-agent-rl", "dispatch-26-inference-efficiency-map", "dispatch-27-low-bit-training", "dispatch-35-frontier-scan", "dispatch-36-frontier-mechanisms", "dispatch-37-rsi-continual-learning", "dispatch-38-distillation-vs-rl", "dispatch-39-gpt6-fable51", "dispatch-40-gpt6-benchmarks", "dispatch-43-self-evolving-agents", "dispatch-44-industry-self-evolution", "dispatch-45-ad-vla-l4"]],
     ["模型与架构", ["dispatch-01-seed-2-1", "dispatch-04-minimax-msa", "dispatch-05-deepseek-v4", "dispatch-42-deepseek-v41-flash", "dispatch-06-glm-5-2", "dispatch-07-mimo-v2-5", "dispatch-15-dspark", "dispatch-16-deepseek-v4-agent", "dispatch-21-longcat-2", "dispatch-24-kimi-k3", "dispatch-28-native-multimodal", "dispatch-34-glm-5-3"]],
     ["SWE 与训练数据", ["dispatch-12-swe-agents", "dispatch-14-scaleswe", "dispatch-17-denovoswe", "dispatch-30-agent-eval"]],
     ["RL 框架", ["dispatch-09-radixark-miles", "dispatch-18-prime-rl-vs-skyrl", "dispatch-19-slime", "dispatch-22-deepswe-rllm", "dispatch-29-deepseek-harness", "dispatch-31-olmo3", "dispatch-32-mindspeed-rl", "dispatch-33-verl", "dispatch-41-prime-agent", "dispatch-46-dsec-mimo-rl-infra"]],
@@ -416,39 +416,52 @@ function wireMermaidLightbox() {
   });
 }
 
+/* A year or month without a more precise date sorts after dated entries in that period. */
+function groupByEntryDate(items) {
+  const rows = items.map((entry) => {
+    const parts = String(entry.year || "").match(/\b(\d{4})(?:[-/](0[1-9]|1[0-2])(?:[-/](0[1-9]|[12]\d|3[01]))?)?\b/);
+    return { entry, date: parts ? parts.slice(1).filter(Boolean).join("-") : "" };
+  });
+  rows.sort((a, b) => b.date.localeCompare(a.date));
+
+  const groups = new Map();
+  for (const row of rows) {
+    const period = row.date.slice(0, 7);
+    if (!groups.has(period)) groups.set(period, []);
+    groups.get(period).push(row);
+  }
+  return groups;
+}
+
 /* ---------- timeline (aggregated from curated data) ---------- */
 function wireTimeline() {
   const el = document.getElementById("timeline-body");
   if (!el) return;
-  const DOMAINS = { rl: "RL", agentic: "Agentic", ascend: "Ascend", modeling: "Modeling" };
-  const rows = [];
-  Object.keys(DOMAINS).forEach((key) => {
-    (store[key] || []).forEach((e) => {
-      const m = String(e.year || "").match(/(\d{4})(?:[-/](\d{2}))?/);
-      if (!m) return;
-      const y = +m[1], mo = m[2] ? +m[2] : 0;
-      rows.push({ y, mo, key, label: DOMAINS[key], e });
-    });
-  });
-  rows.sort((a, b) => (b.y - a.y) || (b.mo - a.mo) || a.label.localeCompare(b.label));
-  if (!rows.length) { el.innerHTML = `<div class="empty">No dated entries.</div>`; return; }
+  const domains = { rl: "RL", agentic: "Agentic RL", ascend: "Ascend", modeling: "Modeling" };
+  const groups = groupByEntryDate(Object.keys(domains).flatMap((domain) =>
+    (store[domain] || []).map((entry) => ({ ...entry, domain }))
+  ));
 
-  let html = "", lastKeyLabel = "";
-  rows.forEach((r) => {
-    const gl = r.mo ? `${r.y}-${String(r.mo).padStart(2, "0")}` : `${r.y}`;
-    if (gl !== lastKeyLabel) { html += `<div class="tl-month">${gl}</div>`; lastKeyLabel = gl; }
-    const e = r.e;
-    const title = e.url
-      ? `<a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${hl(e.title || "")}</a>`
-      : hl(e.title || "");
-    html += `<div class="tl-item">
-      <span class="tl-dom dom-${r.key}">${escapeHtml(r.label)}</span>
-      <span class="tl-title">${title}</span>
-      ${e.category ? `<span class="tl-cat">${escapeHtml(e.category)}</span>` : ""}
-      ${confBadge(e)}${ascendBadge(e)}
-    </div>`;
-  });
-  el.innerHTML = `<div class="tl-count">${rows.length} dated entries</div>${html}`;
+  let html = "", count = 0;
+  for (const [period, rows] of groups) {
+    if (!period) continue;
+    count += rows.length;
+    html += `<h3 class="tl-month">${period}</h3>`;
+    html += rows.map(({ entry: e, date }) => {
+      const title = e.url
+        ? `<a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${hl(e.title || "")}</a>`
+        : hl(e.title || "");
+      return `<div class="tl-item">
+        ${date.length === 10 ? `<time class="tl-date" datetime="${date}">${date.slice(5)}</time>` : ""}
+        <span class="tl-dom dom-${e.domain}">${domains[e.domain]}</span>
+        <span class="tl-title">${title}</span>
+        ${e.category ? `<span class="tl-cat">${escapeHtml(e.category)}</span>` : ""}
+        ${confBadge(e)}${ascendBadge(e)}
+        ${e.timelineSummary && e.summary ? `<p class="tl-summary">${escapeHtml(plainText(e.summary))}</p>` : ""}
+      </div>`;
+    }).join("");
+  }
+  el.innerHTML = count ? `<div class="tl-count">${count} 条有日期的记录</div>${html}` : `<div class="empty">暂无有日期的记录。</div>`;
 }
 
 /* ---------- markdown renderer (no deps; used by the blog) ---------- */
@@ -642,9 +655,9 @@ function buildLedger() {
 function renderAgenticTrends() {
   const el = document.getElementById("agentic-trends");
   if (!el) return;
-  if (!agenticTrends.length) { el.innerHTML = ""; return; }
-  el.innerHTML = `<div class="trend-head"><h3>本期趋势 · Trends</h3>
-      <span class="dim">工业界为主,兼顾学术 · ${storeUpdated.agentic || ""}</span></div>
+  el.hidden = !agenticTrends.length;
+  if (!agenticTrends.length) return;
+  el.innerHTML = `<summary>趋势综述</summary>
     <div class="trend-grid">${agenticTrends.map((t, i) => `<div class="trend-card">
       <div class="trend-num">${String(i + 1).padStart(2, "0")}</div>
       <h4>${escapeHtml(t.title)}</h4>
@@ -726,7 +739,14 @@ function renderPanel(key) {
     return;
   }
   const count = `<div class="result-count">${items.length} of ${store[key].length} shown${searchTerm ? ` · “${escapeHtml(searchTerm)}”` : ""}</div>`;
-  container.innerHTML = count + items.map((e) => cardHTML(e, key)).join("");
+  if (key === "live") {
+    container.innerHTML = count + items.map((e) => cardHTML(e, key)).join("");
+    return;
+  }
+  container.innerHTML = count + [...groupByEntryDate(items)].map(([period, rows]) =>
+    `<h3 class="card-period">${period || "日期未注明"}</h3>`
+    + rows.map(({ entry }) => cardHTML(entry, key)).join("")
+  ).join("");
 }
 
 /* derive a human source label from an explicit field or the URL host */
@@ -891,7 +911,11 @@ function wireTabs() {
     });
   }
   // deep-link: open the tab named in the URL hash, and react to back/forward
-  const fromHash = () => { const h = location.hash.slice(1).split("/")[0]; if (h && document.getElementById(h)) activateTab(h, false); };
+  const fromHash = () => {
+    if (location.hash === "#blog/dispatch-48-november-brief") history.replaceState(null, "", "#timeline");
+    const name = location.hash.slice(1).split("/")[0];
+    if (name && document.getElementById(name)) activateTab(name, false);
+  };
   window.addEventListener("hashchange", fromHash);
   fromHash();
   // number keys 1..9 jump to tabs (when not typing in a field)

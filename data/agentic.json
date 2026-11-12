@@ -44,6 +44,7 @@
       "innovation": "按学生当前的能力缺口选取同次 RL 训练的历史 checkpoint 作为教师。",
       "summary": "作者发现不同 checkpoint 能解出不同任务，并在学生失败、教师表现更好的任务上做在策略蒸馏。",
       "url": "https://arxiv.org/abs/2611.12799",
+      "timelineSummary": true,
       "tags": ["agentic-RL", "on-policy-distillation", "checkpoint"],
       "confidence": "self-reported"
     },
@@ -56,6 +57,7 @@
       "innovation": "将按标准计算的 RL 奖励与失败回合的文本反馈结合，后者通过在策略自蒸馏训练。",
       "summary": "作者在多轮软件工程环境中测试了何时给反馈，以及如何减少训练中的熵和行为波动。",
       "url": "https://arxiv.org/abs/2611.05266",
+      "timelineSummary": true,
       "tags": ["agentic-RL", "self-distillation", "textual-feedback"],
       "confidence": "self-reported"
     },
@@ -68,6 +70,7 @@
       "innovation": "把已发现的成功动作移到匹配的决策状态并生成分支，比较分支结果以分配信用。",
       "summary": "针对长程任务成功样本稀少的难题，作者从同提示、分支节点和历史任务三个层面补充训练信号。",
       "url": "https://arxiv.org/abs/2611.02706",
+      "timelineSummary": true,
       "tags": ["agentic-RL", "credit-assignment", "rollout"],
       "confidence": "self-reported"
     },

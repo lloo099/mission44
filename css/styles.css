@@ -213,8 +213,8 @@ main { padding: 28px; max-width: 1280px; margin: 0 auto; }
 
 /* Agentic RL — trends block + track badge */
 .agentic-trends { margin-bottom: 18px; }
-.trend-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
-.trend-head h3 { margin: 0; font-size: 15px; color: var(--accent); }
+.agentic-trends > summary { width: fit-content; cursor: pointer; font-size: 13px; color: var(--accent); }
+.agentic-trends[open] > .trend-grid { margin-top: 12px; }
 .trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .trend-card { position: relative; background: var(--surface); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 14px 16px; }
 .trend-card .trend-num { font-size: 11px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: .08em; }
@@ -236,6 +236,7 @@ main { padding: 28px; max-width: 1280px; margin: 0 auto; }
 /* Cards */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 16px; }
 .result-count { grid-column: 1 / -1; font-size: 11.5px; color: var(--dim); margin: -4px 0 2px; }
+.card-period { grid-column: 1 / -1; margin: 0; padding-bottom: 6px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--accent); }
 .card {
   background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 8px; transition: border-color .15s, transform .15s;
@@ -493,6 +494,8 @@ table.cmp td.cmp-none { color: var(--bad-fg); }
 .tl-title { color: var(--text); }
 .tl-title a { color: var(--text); }
 .tl-title a:hover { color: var(--accent-2, #6aa6ff); }
+.tl-date { font-variant-numeric: tabular-nums; color: var(--dim); }
+.tl-summary { flex-basis: 100%; margin: 0; color: var(--dim); overflow-wrap: anywhere; }
 .tl-cat { font-size: 10px; color: var(--dim); background: var(--bg-3); border-radius: 5px; padding: 1px 6px; }
 
 /* Blog / Dispatch — unipat-style research-post index + reader */
