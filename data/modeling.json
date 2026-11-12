@@ -9,6 +9,7 @@
       "innovation": "旗舰多模态预览支持图像、视频理解和工具调用。",
       "summary": "阿里云文档注明仅通过 Token Plan 提供，预览至北京时间 11 月 25 日 24:00，随后下线。",
       "url": "https://help.aliyun.com/en/model-studio/qwen4-max-preview",
+      "timelineSummary": true,
       "tags": ["Qwen4", "preview", "multimodal", "tool-use"],
       "confidence": "confirmed"
     },
@@ -20,6 +21,7 @@
       "innovation": "1.6T 总参数、约 48B 激活的原生多模态 MoE，面向长程编码和工具任务。",
       "summary": "官方模型卡提供 MIT 权重，披露使用长序列训练、大规模 RL 和多教师学习。国产加速器经验来自厂商披露，具体昇腾适配需单独验证。",
       "url": "https://huggingface.co/meituan-longcat/LongCat-2.5",
+      "timelineSummary": true,
       "tags": ["LongCat", "open-weights", "multimodal", "agentic-RL"],
       "confidence": "confirmed"
     },
@@ -31,6 +33,7 @@
       "innovation": "Anthropic 更新 Fable 和 Mythos，面向复杂编码、推理和科研任务。",
       "summary": "Fable 5.2 已向用户开放。Mythos 5.2 的直接访问面向通过网络安全或生命科学验证项目的组织。",
       "url": "https://www.anthropic.com/claude-fable-and-mythos-5-2",
+      "timelineSummary": true,
       "tags": ["Claude", "Fable", "Mythos", "API"],
       "confidence": "confirmed"
     },
@@ -1350,6 +1353,7 @@
       "summary": "官方仓库已提供权重，采用 Kimi K3.1 Pro 专用许可。模型卡列出 2.8T 总参数、104B 激活、1M 上下文，以及 MXFP4 权重与 MXFP8 激活。",
       "analysis": "模型卡的架构变更会影响部署适配。评估昇腾支持时，应单独核验 Gated DSA、量化和所用推理引擎的模型版本。公开模型卡中的评测表包含厂商自测。",
       "url": "https://huggingface.co/moonshotai/Kimi-K3.1-Pro",
+      "timelineSummary": true,
       "tags": [
         "Kimi",
         "K3.1",
