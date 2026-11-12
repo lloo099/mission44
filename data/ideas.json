@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-09",
+  "updated": "2026-11-12",
   "items": [
     {
       "title": "ABO-Bench:给主动式 agent 的把关配置做第一个可测基准(出厂默认值未经校准)",
@@ -50,26 +50,27 @@
       "successMetric": "reward 曲线与官方 NVIDIA 基线趋势一致(相关系数>0.9),训推 token 级 KL 稳定;完整移植差异清单可独立成文"
     },
     {
-      "title": "国产模型自报分的第三方统一 harness 复跑",
-      "pitch": "LongCat-2.0(SWE Pro 59.5)、Qwen3.8-Max(OSWorld-Verified 86.1)、openPangu 等国产旗舰的 agent 基准分至今全部为厂商自报,无任何第三方统一 harness 复跑(D30 确认空白);GLM-5.3 权重 08-29 前后上 HF 后,其自报跳变(Terminal-Bench 3.0 4.6→28.3、CyberGym 84.5)成为最新可复跑对象(D34)。用 HAL 式统一 harness + 轨迹审计(Cursor 式作弊检查)复跑 3-5 个国产开源旗舰,产出首份可比的国产模型 agent 能力独立报告。2026-09 新增两条紧迫性依据:GPT-6 Astra 在 ARC-AGI-3 上因 harness 不同出现 62.7% 与 99.9% 两个数字(跨 harness 分差公开上限);AA 指数 v4.2 换版使历史分数失去纵向可比性——统一 harness 复跑的价值随之上升。",
+      "title": "国产旗舰在 SWE-bench Pro 上无第三方标准化分(HAL 已归档,缺口反而扩大)",
+      "pitch": "**2026-11-12 M0 核实:缺口仍在,而且比写卡时更大。** ① **HAL 已死**:`princeton-pli/hal-harness` 仓库**2026-07-01 被作者归档、只读**,README 明写「HAL leaderboard results are no longer being updated through this harness」,团队转向 agent reliability;且它覆盖的是 SWE-bench **Verified**、USACO、AppWorld、CORE-bench、tau-bench 等九项,**从无 SWE-bench Pro**,模型名单里**也从无 GLM / LongCat / Kimi**。标准化第三方基建就此空置。② **Pro 上的国产旗舰分全是厂商自报**:GLM-5.2 62.1、LongCat-2.0 59.5、Kimi K2.6 58.6 均标注来源为 model card;Scale 标准化 Pro 公开集里只有**老模型**(Kimi K2 Instruct 27.7±3.25、GLM-4.6 9.7±2.15);聚合站明确记录 GLM-5.3、Kimi K3 等**在两个榜上都没有 Pro 条目**,且彼此冲突(某站给 Kimi K3 63.3 却未注明 harness)。③ **Verified 已被覆盖、Pro 没有**:Vals.ai 有 mini-swe-agent 口径的 Verified 对照(GLM 5.3 95.40、Kimi K3 93.40、Qwen 3.8 27B 86.00)——所以缺口应收窄到 **SWE-bench Pro 与长程类基准**,不要再声称「所有 agent 基准」。",
       "impact": 4,
       "difficulty": 2,
       "novelty": 4,
-      "why": "同模型跨 harness 分差 9.5-15pt 甚至 36pt(D29/D30),自报分与标准化分的差值本身即研究结论(Opus 4.8 厂商 scaffold 比 SEAL 标准化高 17.3pt 的国产版测量);工程门槛低(权重均开源、评测基建现成),结论无论正反皆可发表且对社区有公共品价值。",
+      "why": "本会话连查七条,这是**唯一一条缺口没被填上、反而扩大的**——因此我对它保持额外警惕,已主动收窄范围:Verified 有第三方口径(Vals.ai),所以可立论的只有 Pro 与长程类。价值来自两点:标准化基建空置(HAL 归档)使自报分无人制衡;且聚合站之间已出现冲突数字,本身就是「需要独立复跑」的证据。工程门槛仍低(权重开源、评测基建现成),结论无论正反都可发表且有公共品价值。**仍未核实的两项见 steps[0]——在核实前不要当作定论。**",
       "steps": [
-        "选定基准与 harness:SWE-bench Pro 公开集 + mini-swe-agent(或 HAL harness),固定温度与预算并全程披露",
-        "复跑 LongCat-2.0 / Kimi K3 / GLM / openPangu-Pro / Qwen(权重可得者),每模型 avg@4 并报告置信区间",
-        "轨迹审计:git 历史挖掘与外网检索类作弊逐条检查(Cursor 协议)",
-        "与厂商自报分对比,分解 harness 差/审计差/统计差三个来源"
+        "先核实两件事再开工:(a) 直接打开 Scale 的 SWE-bench Pro 榜单页确认其当前模型名单(本次未能取到该页);(b) 读 arXiv 2609.08149「SWE-Bench Pro Verified」——若它已给出标准化口径的国产模型分,缺口即被填上",
+        "若缺口成立:选 1 个模型试点(LongCat-2.0 或 GLM-5.3),SWE-bench Pro 公开集 100 题,统一 harness + avg@4 + 轨迹审计",
+        "诚实报告误差棒;自报分与标准化分的差值本身即结论",
+        "扩展到 3-5 个国产旗舰,产出首份可比的独立报告;方法协议公开以便他人复跑"
       ],
       "tags": [
         "evaluation",
         "harness",
         "domestic-models",
-        "SWE-bench"
+        "SWE-bench-Pro",
+        "survived-M0"
       ],
-      "minimumExperiment": "单模型试点:LongCat-2.0 在 SWE-bench Pro 公开集 100 题,统一 harness + avg@4 + 轨迹审计",
-      "successMetric": "产出带误差棒与审计记录的独立分数;与自报分差值可归因;方法协议可扩展到其余模型"
+      "minimumExperiment": "先做零成本核实(Scale 榜单页 + arXiv 2609.08149);确认缺口后再跑 LongCat-2.0 在 Pro 公开集 100 题的统一 harness 试点",
+      "successMetric": "产出带误差棒与审计记录的独立 Pro 分数,且与自报分的差值可归因;若核实发现已有标准化分则立即停止"
     },
     {
       "title": "Agent KV 租约:给两篇停滞的 vLLM RFC 补上证据与 NPU 实现(含\"何时不划算\"的边界)",
@@ -97,26 +98,25 @@
       "successMetric": "产出收益随等待时长变化的完整曲线并标出交叉点,且 NPU 侧有同口径数据;同显存下并发轨迹数提升 2× 以上、租约恢复 P99 低于平均等待的 10% 即为正面结果。**若曲线显示绝大多数真实等待时长落在不划算区间,则这是个有价值的负面结论,应据此停止而非继续**"
     },
     {
-      "title": "级联+验证器仲裁的端到端账本:裁定\"3-5× 降本近无损\"这个无人验证的数字",
-      "pitch": "Agent 轨迹 80% 步骤小模型可承接的方向已有 NVIDIA 实测背书(MetaGPT/Open Operator/Cradle 三框架 40-70% 调用可下沉,SLM 每 token 成本低 10-30×,arXiv 2506.02153),但\"端到端 3-5× 近无损\"无人实证——公开数字要么不含质量损失与重试成本,要么只有单查询路由的 31%(UCCI)。做一套 agent 基准 + 验证器仲裁策略 + 诚实核算失败重试的端到端成本-质量曲线,直接裁定这个被广泛引用却无人验证的数字。",
-      "impact": 4,
+      "title": "级联验证器的失明问题已被回答(负面结论已发表);残值仅剩 agent 轨迹级重试核算",
+      "pitch": "⚠ 原主张「端到端 3-5× 近无损无人实证」已于 2026-11-12 被证伪。**arXiv 2609.01345v2「Cheap Verifiers, Large Blind Spots: Measuring the Reliability Cost of Cost-Saving Cascades」(2026-09)正是在做这件裁定,而且结论是负面的**:① 验证器失明率 β(接受了学生错答的比例)**随学生能力增长**,0.5B→32B 时 β 从 0.12 升到 0.55,且随验证器能力下降——即**恰在级联赖以存在的「便宜学生+便宜验证器」区间最糟**;② 用前沿验证器把 β 压到约 0.05,它却对 hard-MATH 的 **46%** 查询升级(真实错误率 39%),**近半流量付前沿价,省下的钱又还回去了**;③ 在被拒尾部做纠错微调会让小学生退化直至崩溃;④ **级联自己的看板永远读到 3% 错误率,而真实交付错误率摆动到 32%——按构造对自身退化失明**。另有 arXiv 2607.13918 给出部分相关验证器级联的理论(blind-spot ceiling;按独立性外推会在 k=5 低估失败 20×、k=10 约 3000×,真正的杠杆是去相关而非加门)。剩余残值很窄:上述为**查询级**(hard-MATH),本卡原设想的 **agent 多步轨迹级 + 失败重试核算**尚未见,但考虑到机制结论通用,大概率只是复现同一结论。",
+      "impact": 3,
       "difficulty": 2,
-      "novelty": 5,
-      "why": "Dispatch 26 六层地图核实后的唯一干净实证空白,且被明确裁定为最适合研究切入的子项:不需要改任何框架主线,只需要基准+仲裁策略+账本;失败重试吃掉多少级联收益也无人量化。工程门槛低(API 级实验即可起步),结论无论正反都可发表。与效率感知 RL(D25)正交互补:那边压单模型轨迹长度,这边在模型间分配步骤。",
+      "novelty": 2,
+      "why": "M0 证伪(2026-11-12,一手读 arXiv 摘要原文)。本会话第七次核实、第六次推翻。这一条的特殊之处在于:**不是「有人也在做」,而是「问题已有答案,且答案是否定的」**——3-5× 近无损在便宜验证器下不成立,机制是失明率随能力反向变化,且级联的自测指标在构造上看不见这件事。继续做轨迹级版本只能是确认性工作。novelty 5→2,impact 4→3。若仍要做,唯一值得的角度是 ④ 那条「自测看板失明」在 agent 轨迹上的表现——多步场景里错误会累积,失明可能更严重。",
       "steps": [
-        "复现基线:选 2-3 个 agent 基准(tau-bench/SWE 类),全大模型跑通,记录每步成本与端到端成功率",
-        "级联:按步骤类型路由到小模型(读文件/格式化→SLM,关键决策→LLM),验证器仲裁(轻量 verifier 或自一致性)决定是否升级重试",
-        "账本:端到端成本-质量帕累托,显式核算重试与质量损失——这是所有已有工作都跳过的部分",
-        "消融:仲裁阈值/验证器强度/升级策略,找出 3-5× 判断在什么条件下成立或不成立"
+        "先读 2609.01345 全文,确认其实验是否已覆盖多步/agent 设定——若已覆盖则本条彻底无残值",
+        "若未覆盖,唯一值得做的是把「自测看板失明」搬到 agent 轨迹:多步累积下真实交付质量与级联自测指标的背离幅度",
+        "仍须诚实核算失败重试;但预期结论与查询级一致,属确认性工作,不宜作为主线"
       ],
       "tags": [
         "model-cascade",
-        "agent-serving",
-        "test-time-compute",
+        "verifier-blind-spot",
+        "refuted",
         "cost-efficiency"
       ],
-      "minimumExperiment": "API 级即可:tau-bench 子集,GPT/Claude 大模型 vs 强 SLM 按步骤类型级联+自一致性仲裁,画成本-成功率曲线对比全大模型基线",
-      "successMetric": "给出带重试核算的端到端成本-质量曲线;明确裁定\"3-5× 近无损\"成立条件(或证伪);任一结论均可成文"
+      "minimumExperiment": "读 2609.01345 全文判定残值;在确认其未覆盖多步前,不要开实验",
+      "successMetric": "若轨迹级背离幅度显著大于查询级,则有独立价值;否则判定为确认性工作并停止"
     },
     {
       "title": "效率感知的在线 Agent RL:长度奖励设计与成功率-长度帕累托",
