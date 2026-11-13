@@ -1,1463 +1,344 @@
 {
-  "updated": "2026-10-26",
-  "doc": "docs/2026-frontier-models.md",
-  "note": "历史对比快照，分数与价格截至 2026-10-26，来源、评测版本、推理预算与 harness 不统一，不代表当前排名。11 月新增模型见大模型栏目与时间线，本轮没有追加不可比的分数。Kimi K3.1 Pro 的开放权重状态于 2026-11-13 依据官方 Hugging Face 权重目录核验并更正，历史分数保持不变。开放权重不等于宽松开源许可、完整训练代码公开或已适配昇腾。",
-  "models": {
-    "columns": [
-      "",
-      "DeepSeek-V4",
-      "MiniMax-M3",
-      "GLM-5.2",
-      "LongCat-2.0",
-      "Kimi K3",
-      "Qwen3.8-Max",
-      "DeepSeek-V3.2 (ref)"
-    ],
-    "rows": [
-      [
-        "Released",
-        "2026-04",
-        "2026-06",
-        "2026-06",
-        "2026-07",
-        "2026-07",
-        "2026-08(权重 08-12)",
-        "2025-12"
-      ],
-      [
-        "Scale",
-        "V4-Pro ~1.6T / 49B act",
-        "109B (multimodal)",
-        "open weights",
-        "1.6T / ~48B act",
-        "2.78T 总参 / 104.2B 激活(16-896 极稀疏)",
-        "约 2.4T 总参 / 95B 激活",
-        "671B MoE"
-      ],
-      [
-        "Context",
-        "1M",
-        "1M",
-        "1M*",
-        "1M (native)",
-        "1M(原生)",
-        "开源版非 1M(完全体 1M 为 API 专属)",
-        "128K"
-      ],
-      [
-        "Attention",
-        "CSA + HCA (hybrid)",
-        "MSA (block-sparse on GQA)",
-        "GLM-5 lineage",
-        "LSA(细节待报告)",
-        "KDA 线性 3:1 Gated MLA + AttnRes,NoPE",
-        "未详(报告未拆解)",
-        "DSA (token top-k on MLA)"
-      ],
-      [
-        "License",
-        "open weights",
-        "open weights",
-        "MIT",
-        "open weights",
-        "权重已开源(报告 2607.24653)",
-        "专有 qwen3.8-max 许可(商用分成条款)",
-        "open weights"
-      ],
-      [
-        "~Output $/1M",
-        "~$3.48 (Pro)",
-        "~$1.20 (promo)",
-        "—",
-        "—",
-        "$15",
-        "—",
-        "—"
-      ],
-      [
-        "Ascend",
-        "ready",
-        "partial",
-        "partial",
-        "训练即国产芯片(HCCL,疑似 910C 未官宣,推测)",
-        "未适配(权重已放;线性注意力算子 CANN 缺口,推测)",
-        "未适配(推测)",
-        "ready"
+  "schemaVersion": 2,
+  "updated": "2026-11-13",
+  "default": "aa-5-0-1",
+  "note": "收录截至 2026-11-13 核验的代表模型与明确配置，不是全量市场排名。相同评测套件不代表相同 token、费用或时长预算；分数接近也不表示差异具有统计显著性。",
+  "archive": {
+    "url": "data/archive/compare-2026-10-26.json",
+    "date": "2026-10-26",
+    "doc": "docs/2026-frontier-models.md",
+    "note": "历史记录未逐项重新核验，来源和评测设置不完整。旧版指数、厂商分数、价格与架构规格仅供回溯，不参与当前排名。"
+  },
+  "metrics": [
+    {
+      "capturedAt": "2026-11-13",
+      "evaluationDate": null,
+      "publishedAt": null,
+      "id": "aa-5-0-1",
+      "label": "综合能力 · AA v5.0.1",
+      "evidence": "independent",
+      "benchmark": "Artificial Analysis Intelligence Index",
+      "version": "5.0.1",
+      "evaluator": "Artificial Analysis",
+      "unit": "index",
+      "comparable": true,
+      "harness": "AA 各子任务的官方实现",
+      "protocol": "9 项评测，知识工作、编码、科学与通用能力各占 25%。原榜整数精度保留；这不是正确率百分比。",
+      "budget": "推理档位逐行注明；模型之间未统一算力或费用。未注明档位不等于默认或 max。",
+      "note": "v5.0.1 对 CritPt 重新评分，不与 v5.0、v4.3 混排或计算涨跌。以英语文本为主，不代表完整多语或多模态能力。",
+      "sourceUrl": "https://artificialanalysis.ai/leaderboards/models",
+      "methodologyUrl": "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
+      "items": [
+        {
+          "model": "Claude Fable 5.2",
+          "setting": "max · Default Fallback",
+          "score": 65,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "Claude Fable 5.2",
+          "setting": "xhigh · Default Fallback",
+          "score": 62,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "Gemini 4 Carbon",
+          "setting": "high",
+          "score": 60,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "Claude Opus 5.5",
+          "setting": "max",
+          "score": 59,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "Gemini 4 Carbon",
+          "setting": "medium",
+          "score": 58,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "GPT-6 Astra",
+          "setting": "max",
+          "score": 57,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "GPT-6.1 Sol",
+          "setting": "max",
+          "score": 55,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "Claude Sonnet 5.5",
+          "setting": "max",
+          "score": 55,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "Gemini 4 Hydrogen",
+          "setting": "xhigh",
+          "score": 54,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "Kimi K3.1 Pro",
+          "setting": "来源未注明",
+          "score": 46,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "Muse Ember",
+          "setting": "max",
+          "score": 36,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "Qwen3.8 Max (0902)",
+          "setting": "来源未注明",
+          "score": 34,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "DeepSeek V4.1 Flash 1017",
+          "setting": "max",
+          "score": 33,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "GLM-5.3",
+          "setting": "max",
+          "score": 32,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "Inkling 2 Small",
+          "setting": "来源未注明",
+          "score": 31,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "MiMo-V2.6-Pro",
+          "setting": "来源未注明",
+          "score": 30,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "MiniMax-M3.1-Flash",
+          "setting": "来源未注明",
+          "score": 29,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        },
+        {
+          "model": "Mistral Large 4",
+          "setting": "high",
+          "score": 26,
+          "sourceUrl": "https://artificialanalysis.ai/leaderboards/models"
+        }
       ]
-    ]
-  },
-  "metrics": {
-    "default": "swe",
-    "list": [
-      {
-        "id": "swe",
-        "label": "SWE-bench Verified",
-        "unit": "%",
-        "note": "open frontier (80% band) ~ties closed-prev-tier; Claude Fable/Mythos 5 still ahead. MiMo-V2.5-Pro 82 is vendor/harness-reported (MiMo Code) — provisional.",
-        "items": [
-          {
-            "model": "Claude Mythos 5",
-            "score": 95.5,
-            "open": false
-          },
-          {
-            "model": "Claude Fable 5",
-            "score": 95,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 4.8",
-            "score": 88.6,
-            "open": false
-          },
-          {
-            "model": "MiMo-V2.5-Pro",
-            "score": 82,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V4-Pro",
-            "score": 80.6,
-            "open": true
-          },
-          {
-            "model": "MiniMax-M3",
-            "score": 80.5,
-            "open": true
-          },
-          {
-            "model": "Qwen3.7 Max",
-            "score": 80.4,
-            "open": true
-          },
-          {
-            "model": "Kimi K2.6",
-            "score": 80.2,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V4-Flash",
-            "score": 79,
-            "open": true
-          },
-          {
-            "model": "GLM-5",
-            "score": 77.8,
-            "open": true
-          },
-          {
-            "model": "Seed 2.0 Pro (closed)",
-            "score": 76.5,
-            "open": false
-          },
-          {
-            "model": "Qwen3.5 397B",
-            "score": 76.2,
-            "open": true
-          },
-          {
-            "model": "Llama3-SWE-RL-70B",
-            "score": 41,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "swepro",
-        "label": "SWE-bench Pro",
-        "unit": "%",
-        "note": "更难的 agentic 编码变体(不同于 Verified)。**GPT-6 Astra 未公布本项任何数字**,OpenAI 改用 DeepSWE v1.1 替代,导致跨厂商编码对比无法进行。口径警告:Claude 系的 79 至 81 分为厂商脚手架下所得,而 Scale 的标准化 harness 把前沿模型压到约 59 分,两者不是同一次测量。",
-        "items": [
-          {
-            "model": "Claude Fable 5.1",
-            "score": 81.2,
-            "open": false
-          },
-          {
-            "model": "Claude Fable 5",
-            "score": 80.0,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 5",
-            "score": 79.2,
-            "open": false
-          },
-          {
-            "model": "Kimi K3",
-            "score": 68.5,
-            "open": true
-          },
-          {
-            "model": "Qwen3.8-Max",
-            "score": 67.7,
-            "open": true
-          },
-          {
-            "model": "Grok 4.5",
-            "score": 64.7,
-            "open": false
-          },
-          {
-            "model": "GPT-5.6 Sol",
-            "score": 64.6,
-            "open": false
-          },
-          {
-            "model": "Qwen3.8-Flash-Next",
-            "score": 62.5,
-            "open": true
-          },
-          {
-            "model": "GLM-5.2",
-            "score": 62.1,
-            "open": true
-          },
-          {
-            "model": "Muse Spark 1.3",
-            "score": 61.5,
-            "open": false
-          },
-          {
-            "model": "MiniMax M3",
-            "score": 59.0,
-            "open": true
-          },
-          {
-            "model": "Step 3.7 Flash",
-            "score": 56.3,
-            "open": true
-          },
-          {
-            "model": "DeepSeek V4-Pro",
-            "score": 55.4,
-            "open": true
-          },
-          {
-            "model": "Muse Glimmer",
-            "score": 51.2,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "aa",
-        "label": "Artificial Analysis 指数 (v4.1 口径)",
-        "unit": "pts",
-        "note": "第三方独立评分。**两套标度同时在流通**:AA 于 2026-09-04 换版 v4.2(10 项评测、私有留出集权重由 20% 升至 40%、新增 AA-Briefcase 与 GDP.pdf、移除已饱和的 GPQA Diamond)。本表为覆盖最全的 **v4.1 口径**;同一批模型在 v4.2 下整体低 8 到 11 分(Fable 5.1 记 57、GPT-6 Astra 55、Opus 5 54、Muse Spark 1.3 与 Fable 5 各 53、GPT-5.6 Sol 与 Grok 4.6 各 51、Kimi K3 50)。**排序在两套标度下基本一致,绝对值不可跨版本比较**;部分二级来源混用两者,引用时须标注版本。另注:Epoch 的 ECI 指数(覆盖 50+ 基准)给出不同结论——GPT-6 Astra 在 ECI 上是 267 个模型的历史最高(169),在此表仅与自家前代持平。详见 D40。 注意:AA 已于 09-06 前后再升 v4.3(见 aa43 榜),本榜为 v4.1 口径的历史快照,勿与 v4.2/v4.3 数字相减。",
-        "items": [
-          {
-            "model": "Claude Fable 5.1",
-            "score": 66.0,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 5",
-            "score": 63.0,
-            "open": false
-          },
-          {
-            "model": "Claude Fable 5",
-            "score": 62.0,
-            "open": false
-          },
-          {
-            "model": "GPT-6 Astra",
-            "score": 61.0,
-            "open": false
-          },
-          {
-            "model": "GPT-5.6 Sol",
-            "score": 61.0,
-            "open": false
-          },
-          {
-            "model": "Grok 4.6",
-            "score": 61.0,
-            "open": false
-          },
-          {
-            "model": "Muse Spark 1.3",
-            "score": 61.0,
-            "open": false
-          },
-          {
-            "model": "Kimi K3",
-            "score": 59.7,
-            "open": true
-          },
-          {
-            "model": "GLM-5.3",
-            "score": 59.5,
-            "open": true
-          },
-          {
-            "model": "Gemini 3.8 Flash",
-            "score": 59.0,
-            "open": false
-          },
-          {
-            "model": "GLM-5.3-Flash",
-            "score": 57.0,
-            "open": true
-          },
-          {
-            "model": "DeepSeek V4-Flash",
-            "score": 50.0,
-            "open": true
-          },
-          {
-            "model": "MiniMax M3",
-            "score": 44.0,
-            "open": true
-          },
-          {
-            "model": "Step 3.7 Flash",
-            "score": 43.0,
-            "open": true
-          },
-          {
-            "model": "DeepSeek V4-Pro",
-            "score": 42.0,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "lcb",
-        "label": "LiveCodeBench",
-        "unit": "%",
-        "note": "Competitive programming. DeepSeek-V4 / Kimi lead; partial coverage.",
-        "items": [
-          {
-            "model": "DeepSeek-V4-Pro (Max)",
-            "score": 93.5,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V4-Flash (Max)",
-            "score": 91.6,
-            "open": true
-          },
-          {
-            "model": "Kimi K2.6",
-            "score": 89.6,
-            "open": true
-          },
-          {
-            "model": "GLM-4.7",
-            "score": 84.9,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "aime",
-        "label": "AIME (math)",
-        "unit": "%",
-        "note": "Math. GLM line tops it; mixed 2025/2026 AIME, partial coverage. GLM-5.2 number is AIME 2026 (media/vendor).",
-        "items": [
-          {
-            "model": "GLM-5.2 (AIME'26)",
-            "score": 99.2,
-            "open": true
-          },
-          {
-            "model": "Seed 2.0 Pro (closed)",
-            "score": 98.3,
-            "open": false
-          },
-          {
-            "model": "GLM-5 (Reasoning)",
-            "score": 98,
-            "open": true
-          },
-          {
-            "model": "GLM-4.7",
-            "score": 95.7,
-            "open": true
-          },
-          {
-            "model": "GLM-5.1 (Reasoning)",
-            "score": 95.3,
-            "open": true
-          },
-          {
-            "model": "AM-Thinking-v1 (32B)",
-            "score": 74.4,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "gpqa",
-        "label": "GPQA Diamond",
-        "unit": "%",
-        "note": "已被 AA v4.2 因饱和移除,现为覆盖最广的厂商自报项之一。16 个模型有公开数字,开源侧 Kimi K3 的 93.5 高于多数闭源旗舰。",
-        "items": [
-          {
-            "model": "GPT-6 Astra",
-            "score": 96.0,
-            "open": false
-          },
-          {
-            "model": "Gemini 3.8 Flash",
-            "score": 94.4,
-            "open": false
-          },
-          {
-            "model": "GPT-5.6 Sol",
-            "score": 94.1,
-            "open": false
-          },
-          {
-            "model": "Kimi K3",
-            "score": 93.5,
-            "open": true
-          },
-          {
-            "model": "Claude Opus 5",
-            "score": 93.4,
-            "open": false
-          },
-          {
-            "model": "Claude Fable 5.1",
-            "score": 92.6,
-            "open": false
-          },
-          {
-            "model": "Qwen3.8-Max",
-            "score": 92.6,
-            "open": true
-          },
-          {
-            "model": "GLM-5.3",
-            "score": 91.7,
-            "open": true
-          },
-          {
-            "model": "Qwen3.8-Flash-Next",
-            "score": 91.7,
-            "open": true
-          },
-          {
-            "model": "GLM-5.3-Flash",
-            "score": 91.2,
-            "open": true
-          },
-          {
-            "model": "DeepSeek V4.1-Flash",
-            "score": 90.9,
-            "open": true
-          },
-          {
-            "model": "DeepSeek V4-Pro",
-            "score": 90.1,
-            "open": true
-          },
-          {
-            "model": "Muse Spark 1.3",
-            "score": 89.5,
-            "open": false
-          },
-          {
-            "model": "DeepSeek V4-Flash",
-            "score": 88.1,
-            "open": true
-          },
-          {
-            "model": "Grok 4.6",
-            "score": 87.5,
-            "open": false
-          },
-          {
-            "model": "Muse Glimmer",
-            "score": 83.5,
-            "open": true
-          },
-          {
-            "model": "Step 3.7 Flash",
-            "score": 80.9,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "mmlu",
-        "label": "MMLU-Pro",
-        "unit": "%",
-        "note": "Broad knowledge/reasoning. Qwen3.5 leads the reported open set.",
-        "items": [
-          {
-            "model": "Qwen3.5",
-            "score": 87.8,
-            "open": true
-          },
-          {
-            "model": "MiniMax-M3",
-            "score": 84.2,
-            "open": true
-          },
-          {
-            "model": "GLM-5.1",
-            "score": 83,
-            "open": true
-          },
-          {
-            "model": "Kimi K2.6",
-            "score": 81,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "ctx",
-        "label": "Context window",
-        "unit": "tok",
-        "neutral": true,
-        "note": "Max context (tokens). GLM-5.2 1M is vendor-stated; one source says 200K+.",
-        "items": [
-          {
-            "model": "DeepSeek-V4",
-            "score": 1000000,
-            "open": true
-          },
-          {
-            "model": "MiniMax-M3",
-            "score": 1000000,
-            "open": true
-          },
-          {
-            "model": "GLM-5.2",
-            "score": 1000000,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V4.1-Flash",
-            "score": 1000000,
-            "open": true
-          },
-          {
-            "model": "Kimi K2.6",
-            "score": 256000,
-            "open": true
-          },
-          {
-            "model": "Qwen3.5",
-            "score": 256000,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V3.2",
-            "score": 128000,
-            "open": true
-          },
-          {
-            "model": "GPT-6 Astra",
-            "score": 1.05,
-            "open": false
-          },
-          {
-            "model": "Claude Fable 5.1",
-            "score": 1.0,
-            "open": false
-          }
-        ]
-      },
-      {
-        "id": "price",
-        "label": "Output price",
-        "unit": "$",
-        "lowerBetter": true,
-        "note": "$/1M output tokens — lower is better. M3 promo pricing; sparse coverage. Seed is closed-API pricing. DeepSeek-V4.1-Flash 为 2026-09 非高峰输出价,高峰翻倍;缓存命中输入价 0.003。 【09-22 更新】**闭源前沿厂商首次把一档模型压到本榜最底部**:GPT-6 Luna 的 $0.50/M 输出已低于 DeepSeek-V4.1-Flash 的非高峰 $0.60。同日 GPT-6 Sol $10(GPT-5.6 Sol 的一半)、Claude Opus 5.5 $20(Opus 5 的 $25 降 20%)。开源侧小米 MiMo-V2.6 Flash $0.28 / Pro $0.87。对自建推理服务(含昇腾)的盈亏门槛,这一轮降价是直接挤压。 【09-28/09-29 更新】Claude Sonnet 5.5 与 GPT-6.1 Sol 落在**完全相同的 $2/$10**,中档位成为前沿战场。但本榜只记输出价会错过这一轮真实的成本变化:**厂商现在拨的杠杆是缓存经济学**——GPT-6.1 Sol 的缓存输入降到 $0.10/M(未缓存输入价的 5%,较 GPT-6 Sol 腰斩),Anthropic 侧缓存读占基础输入价的比例为 Sonnet 5.5 10%、Opus 5.5 5%、Fable 5.1 2.5%——**缓存重的 agentic 负载会把 Sonnet 的价格优势吃掉大半**。 【10-22 更新】Gemini 4 Argon 的 $10 是**引入价,12-01 起翻倍为 $20**;Claude Haiku 5.5 的 $0.50 只适用于 100K token 以内,超过后为 $2.50;Meta Muse Wonder $20,而更强的 Wonder Full 不提供 API。DeepSeek-V4.1-Flash-1017 价格不变。 【10-26 更新】Kimi K3.1 Pro 海外 $2 / $10,较 K3 的 $3 / $15 低三分之一;国内为每百万 token 输入 ¥13、输出 ¥68;Highspeed 版价格翻倍。",
-        "items": [
-          {
-            "model": "DeepSeek-V4.1-Flash (off-peak)",
-            "score": 0.6,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V4-Flash",
-            "score": 0.87,
-            "open": true
-          },
-          {
-            "model": "MiniMax-M3 (promo)",
-            "score": 1.2,
-            "open": true
-          },
-          {
-            "model": "Seed 2.0 Pro (closed)",
-            "score": 2.37,
-            "open": false
-          },
-          {
-            "model": "DeepSeek-V4-Pro",
-            "score": 3.48,
-            "open": true
-          },
-          {
-            "model": "GLM-5.2 (API)",
-            "score": 4.4,
-            "open": true
-          },
-          {
-            "model": "GPT-6 Astra",
-            "score": 50,
-            "open": false
-          },
-          {
-            "model": "Claude Fable 5.1",
-            "score": 50,
-            "open": false
-          },
-          {
-            "model": "GPT-6 Luna",
-            "score": 0.5,
-            "open": false
-          },
-          {
-            "model": "MiMo-V2.6-Flash",
-            "score": 0.28,
-            "open": true
-          },
-          {
-            "model": "MiMo-V2.6-Pro",
-            "score": 0.87,
-            "open": true
-          },
-          {
-            "model": "GPT-6 Sol",
-            "score": 10.0,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 5.5",
-            "score": 20.0,
-            "open": false
-          },
-          {
-            "model": "Claude Sonnet 5.5",
-            "score": 10.0,
-            "open": false
-          },
-          {
-            "model": "GPT-6.1 Sol",
-            "score": 10.0,
-            "open": false
-          },
-          {
-            "model": "Muse Wonder",
-            "score": 20.0,
-            "open": false
-          },
-          {
-            "model": "Gemini 4 Argon(引入价)",
-            "score": 10.0,
-            "open": false
-          },
-          {
-            "model": "Claude Haiku 5.5",
-            "score": 0.5,
-            "open": false
-          },
-          {
-            "model": "Kimi K3.1 Pro",
-            "score": 10.0,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "codearena",
-        "label": "Code Arena · Frontend (Elo)",
-        "unit": "Elo",
-        "neutral": true,
-        "note": "LMArena Code-Arena Frontend Elo. Seed 2.1 Pro Preview (Jun 19 2026) entered at 1539 — 8th globally, ~tied with Claude Opus 4.6; full Seed-2.1 benchmarks pending. Only a few public Elos here.",
-        "items": [
-          {
-            "model": "Seed 2.1 Pro (preview)",
-            "score": 1539,
-            "open": false
-          }
-        ]
-      },
-      {
-        "id": "tb4",
-        "label": "Terminal-Bench 4.0",
-        "unit": "%",
-        "note": "2026 年秋取代 SWE-bench 成为两家旗舰共同头条的终端 agent 基准。**注意 harness**:GPT-6 Astra 的成绩在 OpenAI 与模型同期发布的 Codex harness 下测得,Claude 系在 Claude Code 下测得,差距的一部分属于脚手架而非模型(AA 就编码 agent 指数明确声明过这一点)。两家均未公布 SWE-bench Verified。 【09-22 更新】Anthropic 自测 Opus 5.5 为 66.4%(xhigh,SE ±2.6);**注意同表对照的 Opus 5 为 52.3% 但取 max 档,两者设置不同**。第三方 Artificial Analysis 以自家 harness 独立测得 Opus 5.5 **59.6%**,与 GPT-6 Astra(xhigh)持平——厂商口径与 AA 口径相差约 7 个百分点,是本榜 harness 敏感性的又一例,两套数字不可混在同一序列里读。 【09-28 补充 + 口径警告】Sonnet 5.5 的 70.6% 为厂商自测,按本榜既有惯例收录,但本站核验发现**该数字无法在 Anthropic 官方文档页上找到**——直读模型页与 what's-new 页全文,两页均无任何基准表,它只见于聚合站转述,连\"这是 Anthropic 公布的\"这一归属都未能证实,引用时须比其它厂商自报数字更保守。另有第三方 Vals AI 在 Mini-SWE-agent harness 下的快照(2026-10-01:Opus 5.5 65.15、Sonnet 5.5 64.14、GPT-6 Astra 59.60),但同一来源 09-27 的另一份快照给出不同且重排的三元组(61.62 / 57.07 / 53.03,Sonnet 5.5 四天内 +11.11 分),两份快照都未读到方法学,故本站**不入榜**,仅在此记录以提示该榜单跨来源不可比。 【10-22 更新】新增两条厂商自测:Gemini 4 Argon 57.4(Google)、Muse Wonder Full 57.1(Meta 模型卡)。Gemini 4 Argon 的 Google 自测 57.4 与 AA 实测 57.1 基本一致;AA 同期实测 Sonnet 5.5 63.6、Opus 5.5 59.6、GPT-6 Astra 59.1——AA 口径的数字只记在此处、不与厂商自测混成一列。 【10-26 更新】Kimi K3.1 Pro 厂商自测 65.7(max 档,同表 Opus 5.5 66.4、GPT-6 Astra 58.2);AA 实测 67.2,少见地高于厂商口径。",
-        "items": [
-          {
-            "model": "GPT-6 Astra",
-            "score": 57.7,
-            "open": false
-          },
-          {
-            "model": "Claude Fable 5.1",
-            "score": 55.8,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 5",
-            "score": 52.3,
-            "open": false
-          },
-          {
-            "model": "Claude Fable 5",
-            "score": 42.0,
-            "open": false
-          },
-          {
-            "model": "GPT-5.6 Sol",
-            "score": 37.3,
-            "open": false
-          },
-          {
-            "model": "Gemini 3.8 Flash",
-            "score": 19.1,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 5.5(自测)",
-            "score": 66.4,
-            "open": false
-          },
-          {
-            "model": "Claude Sonnet 5.5(自测)",
-            "score": 70.6,
-            "open": false
-          },
-          {
-            "model": "Gemini 4 Argon(自测)",
-            "score": 57.4,
-            "open": false
-          },
-          {
-            "model": "Muse Wonder Full(自测)",
-            "score": 57.1,
-            "open": false
-          },
-          {
-            "model": "Kimi K3.1 Pro(自测)",
-            "score": 65.7,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "arc2",
-        "label": "ARC-AGI-2 (抽象推理)",
-        "unit": "%",
-        "note": "ARC Prize 半私有集验证成绩。同系的 ARC-AGI-3 上 GPT-6 Astra 存在 62.7%(中立 harness)与 99.9%(OpenAI provider adapter,跨动作保留推理状态)两个官方数字,适配器内关闭推理仍得 96.7%——做功的是记忆连续性而非思考预算;Claude Fable 5.1 的 ARC-AGI-3 未能完成,其 API 调用被反蒸馏防护判定为逆向工程尝试。详见 D39 与 D40。 【09-22 更新】ARC Prize 验证 Claude Opus 5.5 在 High effort、半私有集上 ARC-AGI-2 得 93.3%($0.41/任务)、ARC-AGI-1 得 98.5%($0.16/任务),较 Opus 5 分别 +2.9 / +1.0 分且'评测成本约低 80%'。**ARC-AGI-3 仍未能测**:ARC Prize 称其 API 请求'频繁被误判为逆向工程尝试',未能在发布前完成测试——这与 Fable 5.1 遇到的是同一道反蒸馏防护,现已连续发生两次。",
-        "items": [
-          {
-            "model": "GPT-6 Astra",
-            "score": 95.0,
-            "open": false
-          },
-          {
-            "model": "GPT-5.6 Sol",
-            "score": 92.5,
-            "open": false
-          },
-          {
-            "model": "Claude Fable 5.1",
-            "score": 90.0,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 5",
-            "score": 90.4,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 5.5",
-            "score": 93.3,
-            "open": false
-          }
-        ]
-      },
-      {
-        "id": "tb21",
-        "label": "Terminal-Bench 2.1",
-        "unit": "%",
-        "note": "AA v4.2 实际采用的终端 agent 版本,覆盖最广的 agent 基准(14 个模型)。**GPT-6 Astra 与 Claude Fable 5.1 均无本版数字**——两者只报 Terminal-Bench 4.0(见另一榜),而 4.0 重新校准了资源与任务集,与 2.1 不可比。Kimi K3 的数字在 Kimi Code harness 下测得,厂商表混用四种 harness、摆幅 10 至 26 分。 DeepSeek V4.1-Flash 的 90.6 为厂商在 DeepSeek Harness Minimal 模式 + 1M 上下文、Max 档下自报(D42),同一模型在 Codex 下为 84.1。 【09-22 更新】小米 MiMo-V2.6 报告表 3 自测:Pro 89.9、Flash 87.6,为**首个在本榜自报达到/超过闭源前沿档的开源权重模型**(同表对照 Claude Opus 5 89.1、GPT-5.6 Sol 88.8、Claude Fable 5 84.3)。但同表 Terminal Bench 4.0 上 Pro 仅 34.9 对 Opus 5 的 49.0,差距明显——两榜结论相反,引用时必须指明版本。报告只说明'所有可配置推理档的基线模型均取最高档(max)',未说明其他模型的分数由谁、用何 harness 测得。 【10-22 更新】Reflection AI 的 Beam(501B-A23B,Apache 2.0)自测 80.1,低于本榜开源前列约 10 分;尚无第三方复测。",
-        "items": [
-          {
-            "model": "DeepSeek V4.1-Flash",
-            "score": 90.6,
-            "open": true
-          },
-          {
-            "model": "GPT-5.6 Sol",
-            "score": 89.5,
-            "open": false
-          },
-          {
-            "model": "Gemini 3.8 Flash",
-            "score": 89.4,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 5",
-            "score": 89.1,
-            "open": false
-          },
-          {
-            "model": "Muse Spark 1.3",
-            "score": 88.8,
-            "open": false
-          },
-          {
-            "model": "Grok 4.6",
-            "score": 88.4,
-            "open": false
-          },
-          {
-            "model": "Kimi K3",
-            "score": 88.3,
-            "open": true
-          },
-          {
-            "model": "GLM-5.3",
-            "score": 88.2,
-            "open": true
-          },
-          {
-            "model": "DeepSeek V4-Pro",
-            "score": 87.9,
-            "open": true
-          },
-          {
-            "model": "Qwen3.8-Max",
-            "score": 86.6,
-            "open": true
-          },
-          {
-            "model": "Gemini 3.7 Flash",
-            "score": 85.8,
-            "open": false
-          },
-          {
-            "model": "GLM-5.3-Flash",
-            "score": 84.3,
-            "open": true
-          },
-          {
-            "model": "MiniMax M3",
-            "score": 66.0,
-            "open": true
-          },
-          {
-            "model": "Step 3.7 Flash",
-            "score": 59.5,
-            "open": true
-          },
-          {
-            "model": "Muse Glimmer",
-            "score": 51.7,
-            "open": true
-          },
-          {
-            "model": "MiMo-V2.6-Pro (小米自测)",
-            "score": 89.9,
-            "open": true
-          },
-          {
-            "model": "MiMo-V2.6-Flash (小米自测)",
-            "score": 87.6,
-            "open": true
-          },
-          {
-            "model": "Reflection Beam(厂商自测)",
-            "score": 80.1,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "costtask",
-        "label": "每任务成本(AA,美元)",
-        "unit": "$",
-        "note": "Artificial Analysis 按其智能指数任务加权的实测单任务成本,越低越好。**成本前沿与能力前沿由不同厂商把持**:GLM-5.3-Flash 的 0.09 美元约为 Claude Fable 5.1(3.69 美元)的四十分之一,而指数只低约 9 分。GPT-6 Astra 随 effort 档在 0.46(low)到 1.67(max)之间摆动 3.6 倍,且 xhigh 升 max 多花约 40% 成本、指数零提升;另有来源给出 0.63 至 2.57 的区间。 【09-22 更新】AA 实测跑完整个指数的每任务成本:GPT-6 Sol(max)$1.06,对 GPT-5.6 Sol(max)的 $1.99 近乎腰斩;GPT-6 Luna(max)$0.07 对 GPT-5.6 Luna 的 $0.18。StepFun Step 5 Preview 约 $0.72,AA 称其较 Kimi K3(max,约 $2.00)与 GLM-5.3(max,约 $2.01)'低约 2.8 倍'。",
-        "items": [
-          {
-            "model": "Claude Fable 5.1",
-            "score": 3.69,
-            "open": false
-          },
-          {
-            "model": "GPT-6 Astra (max)",
-            "score": 1.67,
-            "open": false
-          },
-          {
-            "model": "GPT-5.6 Sol",
-            "score": 0.95,
-            "open": false
-          },
-          {
-            "model": "Kimi K3",
-            "score": 0.84,
-            "open": true
-          },
-          {
-            "model": "Grok 4.6",
-            "score": 0.84,
-            "open": false
-          },
-          {
-            "model": "Muse Spark 1.3",
-            "score": 0.84,
-            "open": false
-          },
-          {
-            "model": "GLM-5.3",
-            "score": 0.68,
-            "open": true
-          },
-          {
-            "model": "Gemini 3.8 Flash",
-            "score": 0.58,
-            "open": false
-          },
-          {
-            "model": "GLM-5.3-Flash",
-            "score": 0.09,
-            "open": true
-          },
-          {
-            "model": "GPT-6 Sol (max)",
-            "score": 1.06,
-            "open": false
-          },
-          {
-            "model": "GPT-6 Luna (max)",
-            "score": 0.07,
-            "open": false
-          },
-          {
-            "model": "Step 5 Preview",
-            "score": 0.72,
-            "open": false
-          }
-        ]
-      },
-      {
-        "id": "arc3",
-        "label": "ARC-AGI-3(RHAE,标注 harness)",
-        "unit": "%",
-        "note": "本榜的自变量是 harness 而非模型——同一模型换 harness 的分差可达 65 分。Opus 5 加 Prime Agent 为三次运行的中位 95.24(另两次 94.99 与 95.5,183/183 全关卡出自 94.99 那次),成本 944 至 1288 美元;Astra 的 provider adapter 口径约 1.9 万美元、中立口径约 2.6 万美元。人类专家基线 95.4。跨行不可视为受控对比:模型与动作协议均不同。详见 D41、D39、D40。",
-        "items": [
-          {
-            "model": "GPT-6 Astra · OpenAI provider adapter",
-            "score": 99.9,
-            "open": false
-          },
-          {
-            "model": "GPT-6 Astra · adapter 内关闭推理",
-            "score": 96.7,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 5 · Prime Agent(开源,中位)",
-            "score": 95.24,
-            "open": true
-          },
-          {
-            "model": "GPT-6 Astra · ARC 中立 harness",
-            "score": 62.7,
-            "open": false
-          },
-          {
-            "model": "GPT-5.6 Sol · 开启两个 API 设置",
-            "score": 38.3,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 5 · ARC 官方中立 harness",
-            "score": 30.2,
-            "open": false
-          },
-          {
-            "model": "GPT-5.6 Sol · ARC 中立 harness",
-            "score": 7.8,
-            "open": false
-          }
-        ]
-      },
-      {
-        "id": "kvbytes",
-        "label": "每 token KV cache 字节数(越低越好)",
-        "unit": "B",
-        "note": "D42 复核。V1 至 V3.2 为全层 KV(按公开维度重建),V4-Flash 与 V4.1-Flash 为不随长度增长的全局 KV 口径(不含每层 128 位置的 SWA KV),两种口径只可比量级。V4.1 的 890 = (288 FP4 main KV + 68 MXFP4 indexer K) × (3 × 1/2 + 1),本站按 FlashMLA 与 SGLang 字节布局重建、与官方数字精确吻合;V4-Flash 3,514 为 SGLang 团队口径。",
-        "items": [
-          {
-            "model": "DeepSeek-V4.1-Flash(全局 KV)",
-            "score": 890,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V4-Flash(全局 KV)",
-            "score": 3514,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V3.2(FP8,61 层)",
-            "score": 40016,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V2 / V3(MLA BF16,约)",
-            "score": 70000,
-            "open": true
-          },
-          {
-            "model": "DeepSeek LLM 67B(GQA-8 BF16)",
-            "score": 389120,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "aa43",
-        "label": "Artificial Analysis 智能指数(v4.3 口径,2026-09-06 起)",
-        "unit": "分",
-        "note": "D42。AA 于 09-04 发 v4.2(加 AA-Briefcase 与 GDP.pdf、去 GPQA Diamond、留出集权重 40%),约 09-06 又发 v4.3(Terminal-Bench 2.1 换 4.0,τ³-Banking 换 AutomationBench-AA)。**三套标度并行流通**:Fable 5.1 在 v4.1 / v4.2 / v4.3 分别为 66 / 57 / 53;Flash 档模型跨版本掉 15 至 18 分(GLM-5.3-Flash 57 → 42、Gemini 3.8 Flash 59 → 41、DeepSeek V4 Flash 50 → 35)。本榜只收 v4.3 数字。DeepSeek V4.1-Flash 的 40 比自家 V4-Flash 高 5、比 V4-Pro 高 4,但低于 GLM-5.3-Flash 与 Gemini 3.8 Flash;AA 评语'notably fast, however very verbose'(跑指数生成 250M token,中位 130M,成本 476.89 美元对 GLM-5.3-Flash 的 280.28)。 【09-22 更新】Claude Opus 5.5 以 58 分**单独登顶**,领先并列第二的 GPT-6 Astra 与 Fable 5.1(均 53)5 分——这是 Astra 发布以来首次由单一模型独占榜首;AA 称其在 10 项成分里领先 6 项(HLE 61.4%、SciCode 66.9%、GDPval-AA v2.1、AA-Briefcase v1.1 Elo 1822、AA-Omniscience、AutomationBench-AA),并与 Astra 在 Terminal-Bench 4.0 上接近持平。同日发布的 GPT-6 Sol(max 48,较 GPT-5.6 Sol 的 47 仅 +1)与 Luna(max 37,与 GPT-5.6 Luna 持平)印证 AA 的判断:**GPT-6 的大众档兑现的是降价而非提能力**。StepFun Step 5 Preview 44 分与 Kimi K3(max)并列,低于 GLM-5.3 与 Qwen3.8-Max 的 45。AA 页面在本环境不可达,以上经搜索摘要读取。 【10-22 更新】截至 10-17 榜首仍是 Claude Opus 5.5(58);Meta Muse Wonder Full 56 与 Claude Sonnet 5.5 56 并列第二(Wonder 52),Gemini 4 Argon(high)53 与 GPT-6 Astra 持平。Meta 模型卡另有一说给 Wonder Full 59.0,与 AA 公布值不符,本板按 AA。开放权重侧本窗口无新入榜分数。AA 页面在本环境不可达,经搜索摘要与第三方镜像读取。 【10-26 更新】Kimi K3.1 Pro 55,排第四(Opus 5.5 58、Muse Wonder Full 与 Sonnet 5.5 各 56 之后),较同底座的 Kimi K3(44)约 +11,全部来自后训练;该段保留 10-26 的历史评测口径。11-13 核验时官方权重已可下载，着色已更新，不能将这里的历史分差解读为当前排名。经搜索摘要读取。",
-        "items": [
-          {
-            "model": "Claude Fable 5.1 (max)",
-            "score": 53,
-            "open": false
-          },
-          {
-            "model": "GPT-6 Astra (max)",
-            "score": 53,
-            "open": false
-          },
-          {
-            "model": "Claude Opus 5 (max)",
-            "score": 51,
-            "open": false
-          },
-          {
-            "model": "Claude Fable 5",
-            "score": 50,
-            "open": false
-          },
-          {
-            "model": "GLM-5.3 (max)",
-            "score": 45,
-            "open": true
-          },
-          {
-            "model": "Kimi K3",
-            "score": 44,
-            "open": true
-          },
-          {
-            "model": "GLM-5.3-Flash",
-            "score": 42,
-            "open": true
-          },
-          {
-            "model": "Gemini 3.8 Flash (high)",
-            "score": 41,
-            "open": false
-          },
-          {
-            "model": "DeepSeek V4.1-Flash (max)",
-            "score": 40,
-            "open": true
-          },
-          {
-            "model": "Qwen3.8 2.4T-A95B",
-            "score": 40,
-            "open": true
-          },
-          {
-            "model": "Qwen3.8-Flash-Next",
-            "score": 40,
-            "open": true
-          },
-          {
-            "model": "DeepSeek V4-Pro 0813 (max)",
-            "score": 36,
-            "open": true
-          },
-          {
-            "model": "DeepSeek V4-Flash 0731 (max)",
-            "score": 35,
-            "open": true
-          },
-          {
-            "model": "Claude Opus 5.5 (max)",
-            "score": 58,
-            "open": false
-          },
-          {
-            "model": "GPT-6 Sol (max)",
-            "score": 48,
-            "open": false
-          },
-          {
-            "model": "GPT-6 Sol (medium)",
-            "score": 40,
-            "open": false
-          },
-          {
-            "model": "GPT-6 Luna (max)",
-            "score": 37,
-            "open": false
-          },
-          {
-            "model": "Step 5 Preview",
-            "score": 44,
-            "open": false
-          },
-          {
-            "model": "Muse Wonder Full",
-            "score": 56,
-            "open": false
-          },
-          {
-            "model": "Claude Sonnet 5.5 (max)",
-            "score": 56,
-            "open": false
-          },
-          {
-            "model": "Gemini 4 Argon (high)",
-            "score": 53,
-            "open": false
-          },
-          {
-            "model": "Muse Wonder",
-            "score": 52,
-            "open": false
-          },
-          {
-            "model": "Kimi K3.1 Pro(权重已放)",
-            "score": 55,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "evobudget",
-        "label": "等 rollout 预算对照：harness 演化 vs 并行采样",
-        "unit": "%",
-        "neutral": true,
-        "note": "越高越好。本榜的自变量是“同一份 rollout 预算花在哪里”——花在任务本身的推理时搜索，还是花在 harness 搜索。设置：89 个 Terminal-Bench 2.1 任务，每题 5 次 rollout，pass@1。后两行是作者划出真正的 45/10/34 训练-验证-测试划分后的结果，68.3 对 67.7 在误差内。同类对照：HARNESSEVO 在 ALFWorld 上 0.657 对 0.642，无显著增益。演化一侧的辩护是摊销：演化后的 harness 是可复用的固定成本，因此诚实的比较需要一个生命周期分母，且 rollout 对齐不等于 token、美元或延迟对齐。详见 D43。",
-        "items": [
-          {
-            "model": "朴素并行采样 · 有测试可用",
-            "score": 86.0
-          },
-          {
-            "model": "harness 演化 · 有测试可用",
-            "score": 75.8
-          },
-          {
-            "model": "朴素并行采样 · 无测试",
-            "score": 72.3
-          },
-          {
-            "model": "harness 演化 · 无测试",
-            "score": 67.4
-          },
-          {
-            "model": "演化后 harness · 真划分测试集",
-            "score": 68.3
-          },
-          {
-            "model": "初始 harness · 真划分测试集",
-            "score": 67.7
-          }
-        ]
-      },
-      {
-        "id": "npuquant",
-        "label": "昇腾量化部署精度(vLLM-Ascend 官方验收)",
-        "unit": "分",
-        "neutral": true,
-        "note": "越高越好。来源:vLLM-Ascend v0.26.0rc1(2026-09-03)社区测试结论报告的 Accuracy 表,本站直读。这是本榜第一组**国产 NPU 上量化部署后的精度**数字,价值在于它们来自厂商/社区在多机 1P1D 大 EP/大 DP 真实部署下的实测,且明确标注了量化格式与部署形态:GLM-5.2 w8a8c8(A3 4 机,大 EP 1P1D)、Kimi K3 w4a8(A3 8 机 / 昇腾 950 4 机,大 EP 1P1D)、DeepSeek-V4-Pro w8a8c8(A3 2 机,大 EP 1P1D)、DeepSeek-V4-Flash w8a8c8(A3 4 机,大 DP 1P1D)。**重要限定**:报告未说明是 GPQA-Diamond 还是完整 GPQA,也未给 shot 数、温度与评测脚本,因此只能作为'昇腾上量化后未见明显掉点'的证据,**不可与本站 gpqa 榜或任何其他榜单直接对齐**。作为对照,SGLang 昇腾侧同期 PR(#39947,将 DeepSeek-V4 DSpark 投机解码移植到昇腾 950 arch35,截至 09-17 仍未合并)自测 DeepSeek-V4-Flash 的 GPQA-Diamond 为 89.9%、平均吞吐 67 tok/s,但未给并发与输入输出长度等设置。",
-        "items": [
-          {
-            "model": "Kimi K3 · w4a8",
-            "score": 92.42,
-            "open": true
-          },
-          {
-            "model": "GLM-5.2 · w8a8c8",
-            "score": 92.165,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V4-Pro · w8a8c8",
-            "score": 91.92,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V4-Flash · w8a8c8",
-            "score": 91.67,
-            "open": true
-          },
-          {
-            "model": "DeepSeek-V4-Flash · SGLang PR",
-            "score": 89.9,
-            "open": true
-          }
-        ]
-      },
-      {
-        "id": "npu950fp8",
-        "label": "单卡 FP8 稠密算力:昇腾 950 vs 英伟达",
-        "unit": "PFLOPS",
-        "neutral": true,
-        "note": "训练与 prefill 受算力约束,看这一项。950DT 约为 H100/H200 的一半、H20 的约 3.4 倍、B200 的约 1/4.5。950 两个数为华为自报(950PR 为路线图值,实卡只公布了 FP4 1.56 PFLOPS)。950 数字为华为自报(950DT 为路线图,950PR 取 2026-03 发布的 Atlas 350 实卡),华为未注明稠密/稀疏,按惯例当作稠密;截至 2026-05 无华为以外的规模化实测。英伟达数字为官方数据表的稠密口径,因 nvidia.com 在本环境不可达,经多家第三方规格站交叉核对。 稀疏口径(H200 3.96、B200 9)不可与本板混读。",
-        "items": [
-          {
-            "model": "B200",
-            "score": 4.5,
-            "open": false
-          },
-          {
-            "model": "H100 SXM",
-            "score": 1.98,
-            "open": false
-          },
-          {
-            "model": "H200",
-            "score": 1.98,
-            "open": false
-          },
-          {
-            "model": "昇腾 950DT(路线图)",
-            "score": 1.0,
-            "open": false
-          },
-          {
-            "model": "昇腾 950PR(路线图)",
-            "score": 1.0,
-            "open": false
-          },
-          {
-            "model": "H20",
-            "score": 0.296,
-            "open": false
-          }
-        ]
-      },
-      {
-        "id": "npu950bw",
-        "label": "单卡显存带宽:昇腾 950 vs 英伟达",
-        "unit": "TB/s",
-        "neutral": true,
-        "note": "decode(推理生成、RL 的 rollout)受显存带宽约束,看这一项。950DT 的 4.0 高于 H100 的 3.35、约为 H200 的 83%;950PR 实卡 Atlas 350 只有 1.4,约为 H20 的 35%——它是为 prefill 设计的卡,「2.87 倍 H20」说的是算力,不是 decode。950 数字为华为自报(950DT 为路线图,950PR 取 2026-03 发布的 Atlas 350 实卡),华为未注明稠密/稀疏,按惯例当作稠密;截至 2026-05 无华为以外的规模化实测。英伟达数字为官方数据表的稠密口径,因 nvidia.com 在本环境不可达,经多家第三方规格站交叉核对。",
-        "items": [
-          {
-            "model": "B200",
-            "score": 8.0,
-            "open": false
-          },
-          {
-            "model": "H200",
-            "score": 4.8,
-            "open": false
-          },
-          {
-            "model": "昇腾 950DT(路线图)",
-            "score": 4.0,
-            "open": false
-          },
-          {
-            "model": "H20",
-            "score": 4.0,
-            "open": false
-          },
-          {
-            "model": "H100 SXM",
-            "score": 3.35,
-            "open": false
-          },
-          {
-            "model": "Atlas 350(950PR 实卡)",
-            "score": 1.4,
-            "open": false
-          }
-        ]
-      },
-      {
-        "id": "npu950mem",
-        "label": "单卡显存容量:昇腾 950 vs 英伟达",
-        "unit": "GB",
-        "neutral": true,
-        "note": "容量决定单卡能放下多大的权重与多长的 KV cache;对 RL 而言,它决定 rollout 与训练两套状态多早需要时间分片(见 D03)。950DT 的 144 GB 与 H200 的 141 GB 基本持平。H20 另有 141 GB HBM3e 版本;B200 按出货系统的 180 GB 计(规格上限 192 GB)。950 数字为华为自报(950DT 为路线图,950PR 取 2026-03 发布的 Atlas 350 实卡),华为未注明稠密/稀疏,按惯例当作稠密;截至 2026-05 无华为以外的规模化实测。英伟达数字为官方数据表的稠密口径,因 nvidia.com 在本环境不可达,经多家第三方规格站交叉核对。",
-        "items": [
-          {
-            "model": "B200",
-            "score": 180,
-            "open": false
-          },
-          {
-            "model": "昇腾 950DT(路线图)",
-            "score": 144,
-            "open": false
-          },
-          {
-            "model": "H200",
-            "score": 141,
-            "open": false
-          },
-          {
-            "model": "Atlas 350(950PR 实卡)",
-            "score": 112,
-            "open": false
-          },
-          {
-            "model": "H20",
-            "score": 96,
-            "open": false
-          },
-          {
-            "model": "H100 SXM",
-            "score": 80,
-            "open": false
-          }
-        ]
-      }
-    ]
-  },
-  "attention": {
-    "columns": [
-      "Scheme",
-      "Base",
-      "Mechanism",
-      "Trade-off"
-    ],
-    "rows": [
-      [
-        "DSA (V3.2)",
-        "MLA",
-        "lightning indexer → token-level top-k",
-        "stable quality; heavy kernels"
-      ],
-      [
-        "NSA (early)",
-        "GQA",
-        "3 branches (compress/select/slide) + gating",
-        "highest ceiling; most complex"
-      ],
-      [
-        "CSA + HCA (V4)",
-        "—",
-        "compress every m tokens' KV → top-k; layers alternate",
-        "best long-ctx memory; costly port"
-      ],
-      [
-        "MSA (M3)",
-        "GQA",
-        "block selection but attention on REAL KV",
-        "pragmatic — reuses existing kernels, fast"
+    },
+    {
+      "capturedAt": "2026-11-13",
+      "evaluationDate": null,
+      "publishedAt": null,
+      "id": "aa-terminal-4",
+      "label": "终端任务 · Terminal-Bench 4.0 / AA",
+      "evidence": "independent",
+      "benchmark": "Terminal-Bench",
+      "version": "4.0",
+      "evaluator": "Artificial Analysis",
+      "unit": "%",
+      "comparable": true,
+      "harness": "mini-swe-agent（AA 实现）",
+      "protocol": "完整 66 个任务；每题 3 次重复的 pass@1 均值。",
+      "budget": "沿用 AA 方法页约束；推理档位分行记录，不是等成本比较。",
+      "note": "这里只收录已核验的四种配置，不是 Terminal-Bench 官方总榜。不会把不同档位的最高分拼成一个模型成绩。",
+      "sourceUrl": "https://artificialanalysis.ai/models/comparisons/gemini-4-carbon-vs-claude-fable-5-2",
+      "methodologyUrl": "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
+      "items": [
+        {
+          "model": "Claude Fable 5.2",
+          "setting": "max · Default Fallback",
+          "score": 59.6,
+          "sourceUrl": "https://artificialanalysis.ai/models/comparisons/gemini-4-carbon-vs-claude-fable-5-2"
+        },
+        {
+          "model": "Gemini 4 Carbon",
+          "setting": "high",
+          "score": 65.2,
+          "sourceUrl": "https://artificialanalysis.ai/models/comparisons/gemini-4-carbon-vs-claude-fable-5-2"
+        },
+        {
+          "model": "Claude Fable 5.2",
+          "setting": "xhigh · Default Fallback",
+          "score": 61.6,
+          "sourceUrl": "https://artificialanalysis.ai/models/comparisons/claude-fable-5-2-xhigh-vs-gemini-4-carbon-medium"
+        },
+        {
+          "model": "Gemini 4 Carbon",
+          "setting": "medium",
+          "score": 60.6,
+          "sourceUrl": "https://artificialanalysis.ai/models/comparisons/claude-fable-5-2-xhigh-vs-gemini-4-carbon-medium"
+        }
       ]
-    ]
-  },
-  "takeaways": [
-    "Best Ascend port targets: MiniMax-M3 (plain GQA → easiest on NPU, fast decode) + GLM-5.2 (MIT base for RL post-training); DeepSeek-V4 as the already-supported large rollout/eval baseline.",
-    "Decode-side sparse attention directly eases Ascend's no-sleep-mode rollout/train memory contention — quantify it in the benchmark.",
-    "Custom attention (CSA/HCA/DSA/MSA) re-implemented on NPU raises numeric-drift risk — exactly what align-probe should diagnose.",
-    "V4's validated FP8 training + Ascend 950 native FP8 make FP8 RL on Ascend a viable, high-novelty topic.",
-    "Seed 2.1 Pro (preview, Jun 19) is a strong closed coding/agent model (Code-Arena Frontend ~Opus 4.6) but it's API-only and not Ascend-portable — it sets the bar to chase, not a model to host on NPU. The Ascend story stays with the open-weight wave (DeepSeek-V4 / MiniMax-M3 / GLM-5.2).",
-    "LongCat-2.0 把\"国产芯片全周期训练(含后训练/RL)\"从零实证变成方向可信——1.6T MoE 全程跑在 HCCL 国产超节点(疑似 910C,未官宣),细节待技术报告核验;与 openPangu 的开源训练代码互补(见 Dispatch 20/21)。",
-    "Kimi K3 把线性注意力(KDA)第一次推上旗舰规模开源主张——与 MSA/DSA/LSA 的稀疏化全注意力路线正式分岔;全部数字自报、权重与技术报告未落地(provisional,见 Dispatch 24)。",
-    "Agent 基准分数已是模型×harness 联合产物:V4 系公榜在 dsh minimal 模式下测得且官方明示换 harness 分数会变;跨列比较须先核对 harness 口径(Dispatch 29/30)。"
+    },
+    {
+      "capturedAt": "2026-11-13",
+      "evaluationDate": null,
+      "publishedAt": "2026-11-05",
+      "id": "tml-deepswe-1-1",
+      "label": "DeepSWE 1.1 · Thinking Machines",
+      "evidence": "vendor",
+      "benchmark": "DeepSWE",
+      "version": "1.1",
+      "evaluator": "Thinking Machines Lab",
+      "unit": "%",
+      "comparable": false,
+      "harness": "mini-swe-agent v2.4.6",
+      "protocol": "同一厂商报告中的同版本、同评测工具结果；非独立复测。保留报告顺序。",
+      "budget": "本次摘录未逐模型核实推理档位、采样次数及预算，均记为未核实。",
+      "note": "比较模型的成绩也来自 Thinking Machines 的报告。Kimi K3 与 K3.1 Pro 是不同版本；FrontierCode 不与 FrontierCode-AA 合并。",
+      "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/",
+      "methodologyUrl": "https://thinkingmachines.ai/news/inkling-2-small/",
+      "items": [
+        {
+          "model": "Inkling 2 Small",
+          "setting": "未逐模型核实",
+          "score": 72.1,
+          "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/"
+        },
+        {
+          "model": "GLM-5.3-Flash",
+          "setting": "未逐模型核实",
+          "score": 63.4,
+          "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/"
+        },
+        {
+          "model": "DeepSeek-V4.1-Flash-1017",
+          "setting": "未逐模型核实",
+          "score": 77,
+          "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/"
+        },
+        {
+          "model": "Muse Spark Open",
+          "setting": "未逐模型核实",
+          "score": 60,
+          "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/"
+        },
+        {
+          "model": "Kimi K3",
+          "setting": "未逐模型核实",
+          "score": 68.5,
+          "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/"
+        }
+      ]
+    },
+    {
+      "capturedAt": "2026-11-13",
+      "evaluationDate": null,
+      "publishedAt": "2026-11-05",
+      "id": "tml-frontiercode-2",
+      "label": "FrontierCode 2.0 · Thinking Machines",
+      "evidence": "vendor",
+      "benchmark": "FrontierCode",
+      "version": "2.0",
+      "evaluator": "Thinking Machines Lab",
+      "unit": "%",
+      "comparable": false,
+      "harness": "stirrup v0.2.1",
+      "protocol": "同一厂商报告中的同版本、同评测工具结果；非独立复测。保留报告顺序。",
+      "budget": "本次摘录未逐模型核实推理档位、采样次数及预算，均记为未核实。",
+      "note": "比较模型的成绩也来自 Thinking Machines 的报告。Kimi K3 与 K3.1 Pro 是不同版本；FrontierCode 不与 FrontierCode-AA 合并。",
+      "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/",
+      "methodologyUrl": "https://thinkingmachines.ai/news/inkling-2-small/",
+      "items": [
+        {
+          "model": "Inkling 2 Small",
+          "setting": "未逐模型核实",
+          "score": 25.4,
+          "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/"
+        },
+        {
+          "model": "GLM-5.3-Flash",
+          "setting": "未逐模型核实",
+          "score": 17.6,
+          "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/"
+        },
+        {
+          "model": "DeepSeek-V4.1-Flash-1017",
+          "setting": "未逐模型核实",
+          "score": 28.5,
+          "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/"
+        },
+        {
+          "model": "Muse Spark Open",
+          "setting": "未逐模型核实",
+          "score": 7.6,
+          "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/"
+        },
+        {
+          "model": "Kimi K3",
+          "setting": "未逐模型核实",
+          "score": 17.3,
+          "sourceUrl": "https://thinkingmachines.ai/news/inkling-2-small/"
+        }
+      ]
+    },
+    {
+      "capturedAt": "2026-11-13",
+      "evaluationDate": null,
+      "publishedAt": "2026-11-09",
+      "id": "meta-terminal-4",
+      "label": "Terminal-Bench 4.0 · Meta 报告",
+      "evidence": "vendor",
+      "benchmark": "Terminal-Bench",
+      "version": "4.0",
+      "evaluator": "Meta",
+      "unit": "%",
+      "comparable": false,
+      "harness": "mixed",
+      "protocol": "Meta 汇总的各模型最佳已发布工具配置，按报告顺序列示，不作统一排名。",
+      "budget": "均标为 max，但评测工具不同，预算与重复次数未统一。",
+      "note": "Muse Ember 用 mini-swe-agent，Haiku 用 Claude Code，Luna 用 Codex；这是模型与工具组合成绩，不能归因为纯模型能力差异。",
+      "sourceUrl": "https://research.meta.ai/blog/muse-ember",
+      "methodologyUrl": "https://research.meta.ai/blog/muse-ember",
+      "items": [
+        {
+          "model": "Muse Ember",
+          "setting": "max",
+          "score": 40.9,
+          "sourceUrl": "https://research.meta.ai/blog/muse-ember",
+          "harness": "mini-swe-agent"
+        },
+        {
+          "model": "Claude Haiku 5.5",
+          "setting": "max",
+          "score": 39.2,
+          "sourceUrl": "https://research.meta.ai/blog/muse-ember",
+          "harness": "Claude Code"
+        },
+        {
+          "model": "GPT-6 Luna",
+          "setting": "max",
+          "score": 16.4,
+          "sourceUrl": "https://research.meta.ai/blog/muse-ember",
+          "harness": "Codex"
+        }
+      ]
+    }
   ],
-  "accelerators": {
-    "title": "昇腾 950 vs 英伟达 · 单卡规格对照(稠密口径)",
-    "columns": [
-      "指标",
-      "昇腾 950DT",
-      "昇腾 950PR(Atlas 350)",
-      "H20",
-      "H100 SXM",
-      "H200",
-      "B200"
-    ],
-    "rows": [
-      [
-        "状态",
-        "路线图(Q4 2026)",
-        "已出货(2026-03)",
-        "已出货",
-        "已出货",
-        "已出货",
-        "已出货"
-      ],
-      [
-        "FP8 算力(PFLOPS)",
-        "~1*",
-        "~1*(路线图)",
-        "0.30",
-        "1.98",
-        "1.98",
-        "~4.5"
-      ],
-      [
-        "FP4 算力(PFLOPS)",
-        "~2*",
-        "1.56*",
-        "不支持",
-        "不支持",
-        "不支持",
-        "~9"
-      ],
-      [
-        "显存容量",
-        "144 GB*",
-        "112 GB*",
-        "96 GB",
-        "80 GB",
-        "141 GB",
-        "180 GB"
-      ],
-      [
-        "显存带宽",
-        "4.0 TB/s*",
-        "1.4 TB/s*",
-        "4.0 TB/s",
-        "3.35 TB/s",
-        "4.8 TB/s",
-        "8 TB/s"
-      ],
-      [
-        "单卡互联",
-        "~2 TB/s*",
-        "—",
-        "0.9 TB/s",
-        "0.9 TB/s",
-        "0.9 TB/s",
-        "1.8 TB/s"
-      ],
-      [
-        "功耗",
-        "未公布",
-        "600 W*",
-        "400 W",
-        "700 W",
-        "700 W",
-        "~1000 W"
-      ],
-      [
-        "本站读法",
-        "decode 介于 H100 与 H200;算力约半张 H100",
-        "prefill 卡;带宽约为 H20 的 35%",
-        "—",
-        "—",
-        "—",
-        "—"
-      ]
-    ],
-    "note": "* 为华为自报:950DT 为路线图值,华为云上线已改期;950PR 取 2026-03 发布的 Atlas 350 实卡,内存为 HiBL 1.0(950DT 为 HiZQ 2.0)。华为未注明稠密/稀疏,按惯例当作稠密;截至 2026-05 无华为以外的规模化实测。H20 另有 141 GB HBM3e 版本。英伟达数字为官方数据表的稠密口径,因 nvidia.com 在本环境不可达,经多家第三方规格站交叉核对。本站读法:decode(推理生成、RL rollout)受带宽约束,950DT 的 4.0 TB/s 高于 H100、约为 H200 的 83%;训练与 prefill 受算力约束,950DT 约为半张 H100。 引用时注意三点:① 稠密与稀疏口径——不少对比表把 H200 的 FP8 写成 3.96、B200 写成 9 PFLOPS,那是 2:4 稀疏口径,稠密值为 1.98 与约 4.5,混用会把 950 的差距夸大一倍;② 华为「Atlas 350 为 H20 的 2.87 倍」是跨精度比较——用的是 FP4 1.56 PFLOPS,而 H20 所在的 Hopper 架构不原生支持 FP4;③ Atlas 350 实卡低于路线图——1.56 PFLOPS FP4 / 112 GB / 1.4 TB/s 对路线图 2 PFLOPS / 128 GB / 1.6 TB/s,约为 78% / 88% / 88%。华为的整体策略不在单卡对标,而在 Atlas 950 超节点(最多 8,192 卡、约 8 EFLOPS FP8)以规模补单卡差距;实际吞吐还取决于 CANN 与 vLLM-Ascend 的成熟度。"
-  }
+  "pending": [
+    {
+      "model": "LongCat-2.5",
+      "reason": "本轮未收录可核验的同口径 AA v5.0.1 成绩，不以旧版 LongCat 分数代填。",
+      "sourceUrl": "https://huggingface.co/meituan-longcat/LongCat-2.5"
+    },
+    {
+      "model": "Qwen4-Max-Preview",
+      "reason": "本轮未收录可核验的同口径 AA v5.0.1 成绩，不以 Qwen3.8 代填。",
+      "sourceUrl": "https://help.aliyun.com/en/model-studio/qwen4-max-preview"
+    }
+  ]
 }

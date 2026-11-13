@@ -9,11 +9,13 @@ jobs:
         with: { node-version: "20" }
       - name: JS syntax check
         run: for f in js/*.js; do echo "checking $f"; node --check "$f"; done
+      - name: Model comparison regression tests
+        run: node --test scripts/test-compare.mjs
       - uses: actions/setup-python@v5
         with: { python-version: "3.x" }
       - name: Python compile
         run: python -m py_compile scripts/*.py
       - name: Validate data JSON
         run: python scripts/validate_data.py
-      - name: Research feed regression tests
+      - name: Research feed and comparison schema tests
         run: python -m unittest discover -s scripts -p 'test_*.py'

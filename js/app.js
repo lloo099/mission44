@@ -1086,78 +1086,156 @@ async function tryArxivLive() {
 }
 const text = (el, sel) => { const n = el.querySelector(sel); return n ? n.textContent : ""; };
 
-/* ---------- 2026 model comparison (Overview) ---------- */
+/* ---------- model comparison: evidence groups never share a ranking ---------- */
 async function wireCompare() {
   const wrap = document.getElementById("compare-wrap");
   if (!wrap) return;
   const d = await loadJSON("data/compare.json");
-  if (!d) return;
-
-  const table = (t, opts = {}) => {
-    const head = `<tr>${t.columns.map((c, i) => `<th${i === 0 && opts.firstCol ? ' class="rowhead"' : ""}>${escapeHtml(c)}</th>`).join("")}</tr>`;
-    const body = t.rows.map((r) => `<tr>${r.map((cell, i) => {
-      const tag = i === 0 ? "th" : "td";
-      const cls = i === 0 ? ' class="rowhead"' : (opts.badge && i > 0 && /^(ready|partial|none)$/.test(cell) ? ` class="cmp-${cell}"` : "");
-      const txt = (opts.badge && /^(ready|partial|none)$/.test(cell))
-        ? ({ ready: "✅ ready", partial: "⚠️ partial", none: "❌ none" }[cell]) : cell;
-      return `<${tag}${cls}>${escapeHtml(txt)}</${tag}>`;
-    }).join("")}</tr>`).join("");
-    return `<div class="cmp-scroll"><table class="cmp">${head}${body}</table></div>`;
-  };
-
-  const takeaways = (d.takeaways || []).map((t) => `<li>${escapeHtml(t)}</li>`).join("");
-  const M = d.metrics;
-  const sel = M ? `<select id="cmp-metric" class="ghost-btn">${M.list.map((m) =>
-    `<option value="${escapeAttr(m.id)}"${m.id === M.default ? " selected" : ""}>${escapeHtml(m.label)}</option>`).join("")}</select>` : "";
-  wrap.innerHTML = `
-    <div class="cmp-head">
-      <h3>2026 frontier models · quick compare</h3>
-      <a class="link" href="${escapeAttr(d.doc || "#")}" target="_blank" rel="noopener">Full deep-dive ↗</a>
-    </div>
-    ${table(d.models, { badge: true })}
-    ${M ? `<div class="cmp-metricbar"><h4 class="cmp-sub" style="margin:0">Benchmarks</h4>${sel}</div>
-    <div class="swe-legend"><span><i class="sw open"></i>open-weight</span><span><i class="sw closed"></i>closed (ref)</span></div>
-    <div id="metric-chart"></div>` : ""}
-    ${d.accelerators ? `<h4 class="cmp-sub">${escapeHtml(d.accelerators.title)}</h4>
-    ${table(d.accelerators)}
-    <div class="cmp-note">${escapeHtml(d.accelerators.note || "")}</div>` : ""}
-    <h4 class="cmp-sub">Sparse-attention designs (the 2026 dividing line)</h4>
-    ${table(d.attention)}
-    ${takeaways ? `<div class="cmp-take"><strong>For RL-on-NPU:</strong><ul>${takeaways}</ul></div>` : ""}
-    <div class="cmp-note">${escapeHtml(d.note || "")} <span class="dim">* provisional</span></div>`;
-
-  if (M) {
-    const byId = Object.fromEntries(M.list.map((m) => [m.id, m]));
-    const draw = (id) => { document.getElementById("metric-chart").innerHTML = metricBars(byId[id]); };
-    document.getElementById("cmp-metric").addEventListener("change", (e) => draw(e.target.value));
-    draw(M.default);
+  if (!d || d.schemaVersion !== 2) {
+    wrap.textContent = "模型对比数据暂不可用，请稍后刷新。";
+    return;
   }
+  wrap.innerHTML = `
+    <div class="cmp-head"><h3>模型对比</h3><span class="cmp-date">核验于 ${escapeHtml(d.updated)}</span></div>
+    <p class="cmp-context">${escapeHtml(d.note)}</p>
+    <fieldset class="cmp-evidence"><legend>成绩来源</legend>
+      <label><input type="radio" name="cmp-evidence" value="independent" checked> 独立评测</label>
+      <label><input type="radio" name="cmp-evidence" value="vendor"> 厂商报告</label>
+    </fieldset>
+    <div class="cmp-metricbar"><label for="cmp-metric">评测集</label><select id="cmp-metric"></select></div>
+    <p id="cmp-status" class="sr-only" role="status"></p>
+    <div id="metric-chart"></div>
+    <details class="cmp-details"><summary>待补充同口径成绩 · ${d.pending.length} 个模型</summary>
+      <ul class="cmp-pending">${d.pending.map((p) => `<li><strong>${escapeHtml(p.model)}</strong>
+        <span>${escapeHtml(p.reason)}</span> ${comparisonLink(p.sourceUrl, "模型来源")}</li>`).join("")}</ul>
+    </details>
+    <details class="cmp-details" id="cmp-history"><summary>历史快照 · ${escapeHtml(d.archive.date)}</summary>
+      <p class="cmp-caution">${escapeHtml(d.archive.note)}</p>
+      <div id="cmp-history-content"></div>
+    </details>`;
+
+  const select = wrap.querySelector("#cmp-metric");
+  const draw = () => {
+    const metric = d.metrics.find((m) => m.id === select.value);
+    wrap.querySelector("#metric-chart").innerHTML = renderComparisonMetric(metric);
+    wrap.querySelector("#cmp-status").textContent = `${metric.label}，${metric.items.length} 条记录，${metric.comparable ? "同组分数降序" : "报告原顺序，不排名"}。`;
+  };
+  const setEvidence = (evidence) => {
+    const metrics = d.metrics.filter((m) => m.evidence === evidence);
+    select.innerHTML = metrics.map((m) => `<option value="${escapeAttr(m.id)}">${escapeHtml(m.label)}</option>`).join("");
+    select.value = metrics.some((m) => m.id === d.default) ? d.default : metrics[0].id;
+    draw();
+  };
+  wrap.querySelectorAll('input[name="cmp-evidence"]').forEach((radio) => {
+    radio.addEventListener("change", () => setEvidence(radio.value));
+  });
+  select.addEventListener("change", draw);
+  setEvidence("independent");
+
+  let archiveLoading = false;
+  let archiveLoaded = false;
+  wrap.querySelector("#cmp-history").addEventListener("toggle", async (event) => {
+    if (!event.target.open || archiveLoaded || archiveLoading) return;
+    archiveLoading = true;
+    const content = wrap.querySelector("#cmp-history-content");
+    content.textContent = "历史记录加载中…";
+    const archive = await loadJSON(d.archive.url);
+    archiveLoading = false;
+    if (!archive) {
+      content.textContent = "历史记录暂不可用。重新展开可重试。";
+      return;
+    }
+    archiveLoaded = true;
+    content.innerHTML = `
+      <div class="cmp-metricbar"><label for="cmp-history-metric">旧评测集</label>
+        <select id="cmp-history-metric">${archive.metrics.list.map((m) => `<option value="${escapeAttr(m.id)}">${escapeHtml(m.label)}</option>`).join("")}</select></div>
+      <div id="cmp-history-scores"></div>
+      <details class="cmp-details"><summary>旧模型规格、注意力与硬件记录</summary>
+        ${comparisonLegacyTable(archive.models)}
+        <h4 class="cmp-sub">历史注意力设计</h4>${comparisonLegacyTable(archive.attention)}
+        ${archive.accelerators ? `<h4 class="cmp-sub">${escapeHtml(archive.accelerators.title)}</h4>${comparisonLegacyTable(archive.accelerators)}
+        <p class="cmp-context">${escapeHtml(archive.accelerators.note || "")}</p>` : ""}
+        <p class="cmp-context">${escapeHtml(archive.note)}</p>
+        <a href="${escapeAttr(d.archive.doc)}" class="link">历史深读文档</a>
+      </details>`;
+    const historySelect = content.querySelector("#cmp-history-metric");
+    const drawHistory = () => {
+      const metric = archive.metrics.list.find((m) => m.id === historySelect.value);
+      content.querySelector("#cmp-history-scores").innerHTML = renderHistoricalMetric(metric);
+    };
+    historySelect.addEventListener("change", drawHistory);
+    drawHistory();
+  });
+}
+
+function comparisonLink(url, label) {
+  if (!/^https:\/\//.test(url || "")) return "来源未记录";
+  return `<a class="link" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
 }
 
 function fmtScore(m, v) {
+  if (!Number.isFinite(v)) return "未收录";
   if (m.unit === "tok") return v >= 1e6 ? (v / 1e6) + "M" : (v / 1e3) + "K";
   if (m.unit === "$") return "$" + v;
   if (m.unit === "%") return v + "%";
   return "" + v;
 }
 
-function metricBars(m) {
+function comparisonItems(m) {
+  const items = m.items.slice();
+  // Different harnesses and vendor reports retain source order, never a shared rank.
+  if (m.evidence !== "independent" || !m.comparable) return items;
+  return items.sort((a, b) => {
+    if (!Number.isFinite(a.score)) return Number.isFinite(b.score) ? 1 : 0;
+    if (!Number.isFinite(b.score)) return -1;
+    return b.score - a.score;
+  });
+}
+
+function renderComparisonMetric(m) {
   if (!m) return "";
-  const items = m.items.slice().sort((a, b) => m.lowerBetter ? a.score - b.score : b.score - a.score);
-  const max = m.unit === "%" ? Math.max(100, ...items.map((i) => i.score)) : Math.max(...items.map((i) => i.score));
-  const fillClass = m.lowerBetter ? "price" : (m.neutral ? "neutral" : null);
+  const items = comparisonItems(m);
+  const ranked = m.evidence === "independent" && m.comparable;
+  const max = m.unit === "%" ? 100 : Math.max(1, ...items.map((i) => Number.isFinite(i.score) ? i.score : 0));
   const rows = items.map((i) => {
-    const w = max ? (i.score / max) * 100 : 0;
-    const cls = fillClass || (i.open ? "open" : "closed");
-    return `<div class="bar-row">
-      <span class="bar-label">${escapeHtml(i.model)}</span>
-      <span class="bar-track"><span class="bar-fill ${cls}" style="width:${w.toFixed(1)}%"></span></span>
-      <span class="bar-val">${escapeHtml(fmtScore(m, i.score))}</span>
-    </div>`;
+    const bar = ranked && Number.isFinite(i.score) ? `<span class="cmp-score-track" aria-hidden="true"><span style="width:${Math.max(0, Math.min(100, i.score / max * 100)).toFixed(1)}%"></span></span>` : "";
+    return `<tr><th scope="row">${escapeHtml(i.model)}</th>
+      <td>${escapeHtml(i.setting)}${i.harness ? `<small>${escapeHtml(i.harness)}</small>` : ""}</td>
+      <td class="cmp-score"><span>${escapeHtml(fmtScore(m, i.score))}</span>${bar}${i.missingReason ? `<small>${escapeHtml(i.missingReason)}</small>` : ""}</td>
+      <td>${comparisonLink(i.sourceUrl, "原始记录")}</td></tr>`;
   }).join("");
-  const tag = m.lowerBetter ? " · lower is better" : (m.neutral ? "" : " · higher is better");
-  return `<div class="swe-bars">${rows}</div>
-    <div class="cmp-note">${escapeHtml(m.label + " (" + m.unit + ")" + tag)} — ${escapeHtml(m.note || "")}</div>`;
+  return `
+    <div class="cmp-result-head"><h4>${escapeHtml(m.benchmark)} <span>v${escapeHtml(m.version)}</span></h4>
+      <span class="cmp-provenance ${m.evidence === "vendor" ? "vendor" : ""}">${m.evidence === "vendor" ? "厂商报告 · 非独立复测" : "独立评测"}</span></div>
+    <dl class="cmp-meta">
+      <div><dt>评测 / 报告方</dt><dd>${escapeHtml(m.evaluator)}</dd></div>
+      <div><dt>工具配置</dt><dd>${escapeHtml(m.harness === "mixed" ? "不统一，逐行注明" : m.harness)}</dd></div>
+      <div><dt>来源发布日期</dt><dd>${escapeHtml(m.publishedAt || "持续更新，未列单次发布日期")}</dd></div>
+      <div><dt>采集 / 实测日期</dt><dd>${escapeHtml(m.capturedAt)} / ${escapeHtml(m.evaluationDate || "来源未披露逐模型实测日期")}</dd></div>
+    </dl>
+    <p class="cmp-context">${escapeHtml(m.protocol)} ${escapeHtml(m.budget)}</p>
+    <p class="cmp-caution">${escapeHtml(m.note)}</p>
+    <div class="cmp-scroll" tabindex="0" role="region" aria-label="${escapeAttr(m.label)}成绩表">
+      <table class="cmp cmp-current"><caption>${ranked ? "同组成绩 · 不等于同预算排名" : "报告原顺序 · 不作统一排名"}</caption>
+        <thead><tr><th scope="col">模型 / 版本</th><th scope="col">推理档位${m.harness === "mixed" ? " / 工具" : ""}</th>
+          <th scope="col">成绩${m.unit === "index" ? "（指数）" : "（%）"}</th><th scope="col">证据</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+    <p class="cmp-sources">${comparisonLink(m.sourceUrl, "成绩来源")} · ${comparisonLink(m.methodologyUrl, "评测方法")}</p>`;
+}
+
+function renderHistoricalMetric(m) {
+  return `<p class="cmp-context">旧记录原顺序，未经统一口径复核。${escapeHtml(m.note || "")}</p>
+    <div class="cmp-scroll" tabindex="0" role="region" aria-label="历史成绩表"><table class="cmp cmp-current">
+      <caption>历史记录 · 不参与当前排名</caption>
+      <thead><tr><th scope="col">旧模型 / 配置标签</th><th scope="col">旧值 (${escapeHtml(m.unit)})</th><th scope="col">证据状态</th></tr></thead>
+      <tbody>${m.items.map((i) => `<tr><th scope="row">${escapeHtml(i.model)}</th><td>${escapeHtml(fmtScore(m, i.score))}</td><td>逐项来源与设置未复核</td></tr>`).join("")}</tbody>
+    </table></div>`;
+}
+
+function comparisonLegacyTable(t) {
+  return `<div class="cmp-scroll" tabindex="0" role="region" aria-label="历史规格表"><table class="cmp"><thead><tr>
+    ${t.columns.map((c) => `<th scope="col">${escapeHtml(c)}</th>`).join("")}</tr></thead>
+    <tbody>${t.rows.map((r) => `<tr>${r.map((c, i) => i ? `<td>${escapeHtml(c)}</td>` : `<th scope="row">${escapeHtml(c)}</th>`).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
 
 /* ---------- training curves (SVG, no deps) ---------- */

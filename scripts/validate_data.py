@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Validate data/*.json for the dashboard. Run in CI to block broken commits.
-Only files that have an "items" list are item-validated (compare/curves skipped)."""
+Research cards, comparison provenance and experiment metadata are validated."""
 import glob, hashlib, json, re, sys
+from compare_schema import validate_compare
 
 # 可信度分级(与 js/app.js 的 confBadge 一一对应,改动时必须同步):
 #   confirmed    确证    多方独立证实
@@ -19,6 +20,15 @@ for f in sorted(glob.glob("data/*.json")):
         d = json.load(open(f, encoding="utf-8"))
     except Exception as e:
         errs.append(f"{f}: invalid JSON: {e}"); continue
+    if f == "data/compare.json":
+        errs.extend(f"{f}: {error}" for error in validate_compare(d))
+        archive_path = d.get("archive", {}).get("url", "")
+        try:
+            archive = json.load(open(archive_path, encoding="utf-8"))
+            if not archive.get("metrics", {}).get("list"):
+                errs.append(f"{archive_path}: missing historical metrics")
+        except (OSError, ValueError) as e:
+            errs.append(f"{archive_path}: archive unavailable: {e}")
     items = d.get("items") if isinstance(d, dict) else d
     if items is None:
         continue  # compare.json / curves.json etc. — not item lists
