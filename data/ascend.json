@@ -1,6 +1,62 @@
 {
-  "updated": "2026-11-11",
+  "updated": "2026-11-13",
   "items": [
+    {
+      "title": "vLLM-Ascend 0.32.0rc1 · 新模型适配与 950DT 支持边界",
+      "org": "vLLM-Ascend 社区",
+      "year": "2026-11-10",
+      "category": "inference",
+      "innovation": "候选版对齐上游 0.32.0，新增 MiniMax-M3.1-Flash、Qwen3.8-Flash-Next 支持。",
+      "summary": "MiniMax-M3.1-Flash 的发布范围为 A3/950DT，Qwen3.8-Flash-Next 和 DeepSeek-V4.1-Flash 包含 A2/A3/950DT。版本仍是 RC，GLM-5.3-Flash 的 P/D 压测有已知稳定性与吞吐问题，不能据此推断所有模型已在 910B 上验证。",
+      "url": "https://github.com/vllm-project/vllm-ascend/releases/tag/v0.32.0rc1",
+      "tags": ["vllm-ascend", "release-candidate", "Ascend-950", "inference"],
+      "confidence": "self-reported",
+      "source": "GitHub · 官方版本说明",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
+    {
+      "title": "verl 昇腾 RL 模式默认开启 · 睡眠与权重回灌修复",
+      "org": "verl 社区",
+      "year": "2026-11-09",
+      "category": "rl-stack",
+      "innovation": "PR #8585 在昇腾 vLLM 参数中默认启用 rl_config.enabled，同时保留显式覆盖。",
+      "summary": "修复通过关闭 NZ 权重布局来兼容 sleep/wake 和权重更新，覆盖 actor 与 reward-model rollout。已合入主分支，不等于所有已发布版本或模型组合都通过端到端训练验证。",
+      "url": "https://github.com/verl-project/verl/pull/8585",
+      "tags": ["verl", "sleep-mode", "weight-update", "RL-path"],
+      "confidence": "confirmed",
+      "source": "GitHub · 已合并 PR",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
+    {
+      "title": "ASP · 910B3 上的多实例异步 rollout 调度",
+      "org": "Salah Chikhi 等 / Huawei GTS",
+      "year": "2026-11-06",
+      "category": "rl-stack",
+      "innovation": "离线预测输出长度，构造近等长小批次并平衡派发顺序，减少生成与训练队列波动。",
+      "summary": "11 月 9 日修订稿在 910B3 上报告，同一异步架构中开启调度使平均迭代时间下降 10.9%。整套系统对 MindSpeed-RL 的最高 3.22 倍吞吐是另一组比较，不能全部归因于调度，也不是本站实测。",
+      "url": "https://arxiv.org/abs/2611.08864",
+      "tags": ["async-rl", "rollout", "scheduling", "910B", "policy-lag"],
+      "confidence": "self-reported",
+      "source": "arXiv · 2611.08864v2",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
+    {
+      "title": "verl 昇腾安装栈 · 11 月依赖组合更新",
+      "org": "verl 社区",
+      "year": "2026-11-03",
+      "category": "rl-stack",
+      "innovation": "官方安装指南将 vLLM / vLLM-Ascend 目标版本更新为 0.30.0。",
+      "summary": "配套 torch_npu 2.10.0.post7、Triton Ascend 3.6.0.post2 与 transformers 5.14.1，Megatron-LM 使用 core_v0.18.0。这里记录的是指南中的组合，不应直接替换成更新的 0.32 RC 并假定训练兼容。",
+      "url": "https://github.com/verl-project/verl/blob/main/docs/ascend_tutorial/en/get_start/install_guidance.rst",
+      "tags": ["verl", "torch-npu", "dependency", "reproducibility"],
+      "confidence": "self-reported",
+      "source": "GitHub · 官方安装指南",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
     {
       "title": "华为开源 openPangu-2.0 的预训练/SFT/后训练 RL 代码,其中 openPangu-2.0-RL 是基于 verl 生态的昇腾原生 RL 框架",
       "org": "华为 / Ascend Tribe(openPangu)",

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-12",
+  "updated": "2026-11-13",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -18,8 +18,8 @@
       "body": "《Demystifying RL for Long-Horizon Tool-Using Agents》把设计空间拆成 5 轴(奖励塑形 / 模型规模 / 数据配比 / 算法 / 环境稳定性),并给出可复用结论:奖励与算法是 scale-dependent——小模型靠分阶段奖励 + 强探索,大模型用简单稠密奖励即可收敛;约 1K 条平衡难度样本是性价比甜点。Agentic RL 正在从玄学变成菜谱。"
     },
     {
-      "title": "信用分配走向 step / group 级",
-      "body": "跨 10–100+ 回合,episode 级奖励几乎没信息——信用分配(CA)是长程 agentic RL 的核心瓶颈。新算法把功过分配做细:G2PO(组-图策略优化)、GiGPO(分层、步级 CA)、turn 级方法层出。CA 的粒度选择正成为 agentic RL 的关键设计旋钮。"
+      "title": "11 月观察：动作表示也成为训练变量",
+      "body": "RLiD 直接学习可执行动作菜单的概率，再将动作轨迹蒸馏回生成模型。与 TriGRPO 在 rollout 分支上分配信用相比，它改变的是策略动作的表示方式。适用边界是可枚举动作空间，开放工具参数与真实环境中的收益仍需验证。"
     },
     {
       "title": "垂直定制 > 通用模型",
@@ -35,6 +35,36 @@
     }
   ],
   "items": [
+    {
+      "title": "WebHarbor · 可重置网站环境用于 GUI Agent RL",
+      "org": "Zhaoyang Wang、Qianhui Wu 等",
+      "year": "2026-11-02",
+      "category": "infrastructure",
+      "track": "academic",
+      "innovation": "以人机协作构建 153 个可执行网站镜像，覆盖 3,518 个多步骤与登录后任务。",
+      "summary": "网站状态可重置，代码与数据已公开，可用于训练和评测 GUI 智能体。作者报告 4B 级模型训练后的跨任务迁移，但受控镜像不能覆盖真实网站中的全部权限、内容变化和访问限制。",
+      "url": "https://arxiv.org/abs/2611.03634",
+      "tags": ["academic", "agentic-RL", "GUI", "environment", "evaluation"],
+      "confidence": "self-reported",
+      "source": "arXiv · 2611.03634v1",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
+    {
+      "title": "RLiD · 在动作菜单上训练，再蒸馏回生成模型",
+      "org": "Ziyi Chen 等",
+      "year": "2026-11-02",
+      "category": "algorithm",
+      "track": "academic",
+      "innovation": "直接优化可执行动作概率，以一次前向选择动作，避免无效动作文本和解析开销。",
+      "summary": "作者在 ALFWorld 报告训练加蒸馏用 12.7 H100 GPU 小时达到 99.3% 成功率，同模型 token RL 为 17.3 小时、86.6%。方法依赖可枚举动作菜单，不能直接外推到任意工具参数或昇腾性能。",
+      "url": "https://arxiv.org/abs/2611.02455",
+      "tags": ["academic", "agentic-RL", "action-space", "distillation"],
+      "confidence": "self-reported",
+      "source": "arXiv · 2611.02455v1",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
     {
       "title": "Agentic-OPD · 从历史 checkpoint 找回遗漏能力",
       "org": "Tingcheng Bian 等",
