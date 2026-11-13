@@ -13,6 +13,8 @@ const store = {}; // key -> array of entries
 const storeUpdated = {}; // key -> ISO date string (from each file's "updated")
 const storeMeta = {};    // key -> that file's top-level payload (for stale/checked flags)
 const activeFilters = {}; // key -> Set of active tags
+const dataStatus = {};
+const DATA_LABELS = { rl: "RL", ascend: "Ascend / NPU", modeling: "LLM Modeling", agentic: "Agentic RL", ideas: "Project Ideas", live: "Live Papers" };
 let searchTerm = "";
 let agenticTrends = []; // {title, body} blurbs for the Agentic RL section
 
@@ -22,47 +24,100 @@ const metaDesc = document.querySelector('meta[name="description"]');
 const DEFAULT_DESC = metaDesc ? metaDesc.content : "";
 
 /* ---------- data loading ---------- */
-async function loadJSON(url) {
-  try {
-    const res = await fetch(url, { cache: "no-cache" });
-    if (!res.ok) throw new Error(res.status);
-    return await res.json();
-  } catch (e) {
-    console.warn("Failed to load", url, e);
-    return null;
+async function loadJSON(url, { timeoutMs = 10000, attempts = 2 } = {}) {
+  const versioned = url + (url.includes("?") ? "&" : "?") + "v=20261113-loadfix";
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const controller = new AbortController();
+    let timer;
+    try {
+      // Bound both the request and body parsing; one stalled file must not block the dashboard.
+      return await Promise.race([
+        fetch(versioned, { cache: "no-cache", signal: controller.signal }).then((res) => {
+          if (!res.ok) throw new Error(res.status);
+          return res.json();
+        }),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => { controller.abort(); reject(new Error("Data request timed out")); }, timeoutMs);
+        }),
+      ]);
+    } catch (e) {
+      if (attempt === attempts - 1) console.warn("Failed to load", url, e);
+    } finally {
+      clearTimeout(timer);
+    }
   }
+  return null;
 }
 
 async function init() {
+  window.__dashboardStarted = true;
   const keys = Object.keys(DATA_SOURCES);
-  const results = await Promise.all(keys.map((k) => loadJSON(DATA_SOURCES[k])));
-  keys.forEach((k, i) => {
-    const payload = results[i];
-    store[k] = (payload && payload.items) ? payload.items : (Array.isArray(payload) ? payload : []);
-    storeUpdated[k] = (payload && payload.updated) ? String(payload.updated).slice(0, 10) : "";
-    storeMeta[k] = payload || null;
-    if (k === "agentic" && payload) agenticTrends = payload.trends || [];
+  keys.forEach((k) => {
+    store[k] = [];
+    storeUpdated[k] = "";
+    storeMeta[k] = null;
+    dataStatus[k] = "loading";
     activeFilters[k] = new Set();
   });
-
+  // Navigation and independent panels are usable before any dataset completes.
   wireTheme();
-  buildStats();
-  buildLedger();
-  renderAgenticTrends();
-  ["rl", "ascend", "modeling", "agentic", "ideas", "live"].forEach(renderPanel);
-  buildFilterbars();
   wireTabs();
   wireSearch();
   wireLive();
   wireCurves();
   wireCompare();
-  wireTimeline();
   wireBlog();
   wireMermaidLightbox();
   wireTabsScrollHint();
   wireShareButtons();
-  if (window.wireArch) wireArch();
+  refreshDataViews();
+  document.getElementById("data-retry").addEventListener("click", () => {
+    keys.filter((key) => dataStatus[key] === "error").forEach((key) => loadDomainData(key));
+  });
+  await Promise.all(keys.map((key) => loadDomainData(key)));
+}
+
+async function loadDomainData(key) {
+  dataStatus[key] = "loading";
+  renderPanel(key);
+  renderDataStatus();
+  const payload = await loadJSON(DATA_SOURCES[key]);
+  const items = Array.isArray(payload) ? payload : payload && payload.items;
+  if (Array.isArray(items)) {
+    store[key] = items;
+    storeUpdated[key] = payload.updated ? String(payload.updated).slice(0, 10) : "";
+    storeMeta[key] = payload;
+    if (key === "agentic") agenticTrends = payload.trends || [];
+    dataStatus[key] = "ready";
+  } else {
+    dataStatus[key] = "error";
+  }
+  refreshDataViews();
+}
+
+function renderDataStatus() {
+  const keys = Object.keys(DATA_SOURCES);
+  const failed = keys.filter((k) => dataStatus[k] === "error");
+  const pending = keys.filter((k) => dataStatus[k] === "loading");
+  const banner = document.getElementById("data-load-status");
+  banner.hidden = !failed.length && !pending.length;
+  document.getElementById("data-retry").hidden = !failed.length;
+  document.getElementById("data-load-message").textContent = failed.length
+    ? `部分数据未加载：${failed.map((k) => DATA_LABELS[k]).join("、")}。已加载内容仍可浏览。${pending.length ? "其他栏目仍在加载。" : ""}`
+    : `正在加载数据：${keys.length - pending.length} / ${keys.length} 个栏目已就绪。`;
+}
+
+function refreshDataViews() {
+  buildStats();
+  buildLedger();
+  renderAgenticTrends();
+  Object.keys(DATA_SOURCES).forEach(renderPanel);
+  buildFilterbars();
+  wireTimeline();
+  renderFeedStatus(document.getElementById("live-status"));
+  updateTabCounts();
   setLastUpdated();
+  renderDataStatus();
 }
 
 /* copy a per-post share link (static snapshot page in /p/ with its own og card).
@@ -173,9 +228,9 @@ async function wireBlog() {
   const head = document.querySelector("#blog .panel-head"); // section intro — hidden while reading a post
   let posts = [];
   try {
-    const res = await fetch("data/blog.json", { cache: "no-cache" });
-    if (!res.ok) throw new Error(res.status);
-    posts = (await res.json()).posts || [];
+    const payload = await loadJSON("data/blog.json");
+    if (!payload || !Array.isArray(payload.posts)) throw new Error("数据请求失败，请重新加载页面");
+    posts = payload.posts;
   } catch (e) {
     idx.innerHTML = `<div class="empty">Couldn't load blog index (${escapeHtml(String(e.message || e))}).</div>`;
     return;
@@ -461,7 +516,10 @@ function wireTimeline() {
       </div>`;
     }).join("");
   }
-  el.innerHTML = count ? `<div class="tl-count">${count} 条有日期的记录</div>${html}` : `<div class="empty">暂无有日期的记录。</div>`;
+  const pending = Object.keys(domains).some((key) => dataStatus[key] === "loading");
+  const failed = Object.keys(domains).some((key) => dataStatus[key] === "error");
+  el.innerHTML = count ? `<div class="tl-count">${count} 条有日期的记录</div>${html}`
+    : `<div class="empty">${pending ? "时间线数据加载中..." : failed ? "研究数据未加载，重试后将恢复时间线。" : "暂无有日期的记录。"}</div>`;
 }
 
 /* ---------- markdown renderer (no deps; used by the blog) ---------- */
@@ -583,14 +641,14 @@ function renderMarkdown(md) {
 function buildStats() {
   const grid = document.getElementById("stat-grid");
   const stats = [
-    { num: store.rl.length, lbl: "RL papers & frameworks" },
-    { num: store.ascend.length, lbl: "Ascend / NPU entries" },
-    { num: store.modeling.length, lbl: "Modeling advances" },
-    { num: store.agentic.length, lbl: "Agentic RL entries" },
-    { num: store.ideas.length, lbl: "Project ideas" },
+    { key: "rl", lbl: "RL papers & frameworks" },
+    { key: "ascend", lbl: "Ascend / NPU entries" },
+    { key: "modeling", lbl: "Modeling advances" },
+    { key: "agentic", lbl: "Agentic RL entries" },
+    { key: "ideas", lbl: "Project ideas" },
   ];
   grid.innerHTML = stats
-    .map((s) => `<div class="stat"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`)
+    .map((s) => `<div class="stat"><div class="num">${dataStatus[s.key] === "ready" ? store[s.key].length : "..."}</div><div class="lbl">${s.lbl}${dataStatus[s.key] === "error" ? " · 加载失败" : ""}</div></div>`)
     .join("");
 }
 
@@ -607,6 +665,10 @@ function buildLedger() {
   const el = document.getElementById("data-ledger");
   if (!el) return;
   const KEYS = ["rl", "ascend", "modeling"];
+  if (KEYS.some((key) => dataStatus[key] !== "ready")) {
+    el.innerHTML = '<p class="dim">数据质量统计：等待研究数据加载完成。</p>';
+    return;
+  }
   const all = KEYS.flatMap((k) => (store[k] || []));
   const n = all.length || 1;
   const cnt = (f) => all.filter(f).length;
@@ -730,9 +792,18 @@ function matchesFilter(key, entry) {
 }
 
 function renderPanel(key) {
-  if (key === "ideas") return renderIdeas();
   const container = document.querySelector(`[data-cards="${key}"]`);
   if (!container) return;
+  if (dataStatus[key] === "loading") {
+    container.innerHTML = '<div class="empty" role="status">数据加载中...</div>';
+    return;
+  }
+  if (dataStatus[key] === "error") {
+    container.innerHTML = '<div class="empty">数据加载失败，内容未删除。<button class="ghost-btn" data-retry-domain>重试加载</button></div>';
+    container.querySelector("[data-retry-domain]").addEventListener("click", () => loadDomainData(key));
+    return;
+  }
+  if (key === "ideas") return renderIdeas();
   const items = (store[key] || []).filter((e) => matchesFilter(key, e));
   if (items.length === 0) {
     container.innerHTML = `<div class="empty">No entries match. ${store[key] && store[key].length ? "Adjust filters/search." : "Data not loaded yet."}</div>`;
@@ -1041,9 +1112,11 @@ function wireLive() {
       if (items) {
         store.live = items;
         storeMeta.live = payload;
+        dataStatus.live = "ready";
         renderPanel("live");
         buildFilterbars();
         renderFeedStatus(status, payload);
+        renderDataStatus();
       } else {
         status.textContent = "Couldn't load data/feed.json.";
       }
@@ -1054,8 +1127,10 @@ function wireLive() {
     const fresh = await tryArxivLive();
     if (fresh && fresh.length) {
       store.live = fresh;
+      dataStatus.live = "ready";
       renderPanel("live");
       buildFilterbars();
+      renderDataStatus();
       status.textContent = `Fetched ${fresh.length} live entries.`;
     } else {
       status.textContent = "Live in-browser fetch blocked (CORS). Use scripts/fetch_arxiv.py to refresh data/feed.json instead.";
@@ -1092,7 +1167,8 @@ async function wireCompare() {
   if (!wrap) return;
   const d = await loadJSON("data/compare.json");
   if (!d || d.schemaVersion !== 2) {
-    wrap.textContent = "模型对比数据暂不可用，请稍后刷新。";
+    wrap.innerHTML = '<p>模型对比数据暂不可用。<button class="ghost-btn" id="compare-retry">重试加载</button></p>';
+    wrap.querySelector("#compare-retry").addEventListener("click", () => wireCompare());
     return;
   }
   wrap.innerHTML = `
@@ -1429,4 +1505,4 @@ function escapeAttr(s) { return escapeHtml(s); }
 // re-render all card panels (used by analyst.js after saving an analysis)
 window.refreshDashboard = () => ["rl", "ascend", "modeling", "live"].forEach(renderPanel);
 
-init();
+init().catch((error) => window.__dashboardLoadError(error));

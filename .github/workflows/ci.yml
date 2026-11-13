@@ -9,8 +9,8 @@ jobs:
         with: { node-version: "20" }
       - name: JS syntax check
         run: for f in js/*.js; do echo "checking $f"; node --check "$f"; done
-      - name: Model comparison regression tests
-        run: node --test scripts/test-compare.mjs
+      - name: Dashboard loading and model comparison tests
+        run: node --test scripts/test-*.mjs
       - uses: actions/setup-python@v5
         with: { python-version: "3.x" }
       - name: Python compile

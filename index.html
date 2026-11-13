@@ -15,6 +15,16 @@
   <meta name="twitter:image" content="https://lloo099.github.io/mission44/assets/og.png" />
   <script>
     try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}
+    window.__dashboardLoadError = function (error) {
+      var status = document.getElementById('data-load-status');
+      var message = document.getElementById('data-load-message');
+      if (status) status.hidden = false;
+      if (message) message.textContent = '页面程序未能完成加载，数据未删除。请重新加载页面。';
+      if (error) console.warn('Dashboard startup failed', error);
+    };
+    setTimeout(function () {
+      if (!window.__dashboardStarted) window.__dashboardLoadError();
+    }, 15000);
     // Local mermaid (UMD sets window.mermaid). Re-callable so app.js can re-init on theme toggle.
     // Defined here — BEFORE any external stylesheet — so a slow/blocked fonts CDN can never
     // stall the parser on this script (classic inline scripts must wait for pending CSS).
@@ -34,7 +44,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap"
     media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap" /></noscript>
-  <link rel="stylesheet" href="css/styles.css?v=20261113-benchmarks" />
+  <link rel="stylesheet" href="css/styles.css?v=20261113-loadfix" />
   <script defer src="js/vendor/mermaid.min.js?v=20260907e"
     onload="window.__initMermaid && window.__initMermaid(); document.dispatchEvent(new CustomEvent('mermaid-ready'));"
     onerror="window.__mermaidFailed = true; document.dispatchEvent(new CustomEvent('mermaid-failed'));"></script>
@@ -72,6 +82,12 @@
   </nav>
 
   <main id="main">
+    <aside id="data-load-status" class="data-load-status" aria-label="数据加载状态">
+      <span id="data-load-message" role="status">正在加载研究数据...</span>
+      <button id="data-retry" class="ghost-btn" hidden>重试加载</button>
+      <a class="link" href="?v=20261113-loadfix#overview">重新加载页面</a>
+    </aside>
+    <noscript><p>浏览研究数据需要启用 JavaScript。<a href="https://github.com/lloo099/mission44/tree/main/data">查看数据文件</a></p></noscript>
     <!-- Overview -->
     <section class="panel active" id="overview" role="tabpanel" aria-labelledby="tab-overview" tabindex="0">
       <div class="hero">
@@ -106,7 +122,7 @@
           </p>
         </div>
       </div>
-      <div class="compare-wrap" id="compare-wrap"><!-- filled by JS from data/compare.json --></div>
+      <div class="compare-wrap" id="compare-wrap"><p role="status">模型对比数据加载中...</p></div>
     </section>
 
     <!-- Domain panels: populated from data/*.json -->
@@ -234,9 +250,9 @@
     <span class="dim">Built as a research aid · data is hand-curated + script-refreshable · verify primary sources before citing.</span>
   </footer>
 
-  <script src="js/bg.js?v=20260907e"></script>
-  <script src="js/app.js?v=20261113-benchmarks"></script>
-  <script src="js/analyst.js?v=20260907e"></script>
-  <script src="js/arch-demo.js?v=20260907e"></script>
+  <script async src="js/app.js?v=20261113-loadfix" onerror="window.__dashboardLoadError()"></script>
+  <script async src="js/bg.js?v=20260907e"></script>
+  <script async src="js/analyst.js?v=20260907e"></script>
+  <script async src="js/arch-demo.js?v=20260907e" onload="window.wireArch && window.wireArch()"></script>
 </body>
 </html>

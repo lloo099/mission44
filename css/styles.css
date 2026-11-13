@@ -702,6 +702,10 @@ table.cmp-current small { display: block; margin-top: 4px; font-size: 11px; colo
 .footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 20px 28px; border-top: 1px solid var(--line); font-size: 12px; }
 
 .empty { color: var(--dim); padding: 40px 0; text-align: center; grid-column: 1 / -1; }
+.data-load-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 12px 0; margin-bottom: 14px; border-bottom: 1px solid var(--line); color: var(--text-soft); font-size: 13px; overflow-wrap: anywhere; }
+.data-load-status[hidden] { display: none; }
+.data-load-status .ghost-btn, .empty .ghost-btn { min-height: 40px; }
+.empty .ghost-btn { margin-left: 10px; }
 
 @media (max-width: 820px) {
   .overview-cols { grid-template-columns: 1fr; }
