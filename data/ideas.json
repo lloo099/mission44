@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-22",
+  "updated": "2026-11-13",
   "items": [
     {
       "title": "open-instruct / OlmoRL 的昇腾移植:全开放 RL 栈 × 国产硬件",
@@ -160,16 +160,16 @@
     },
     {
       "title": "Asynchronous Off-Policy RL Tuned for NPU Constraints",
-      "pitch": "Adapt an async/off-policy recipe (AReaL-style decoupling + ExGRPO experience replay) specifically to Ascend, where the missing hybrid engine makes synchronous colocated RL inefficient. 地基已现:vLLM-Ascend v0.22.1rc1 的 HCCL 权重传输后端解决了『权重怎么送』,这条 idea 升级为在其上做『算法配方怎么调』——staleness 容忍度、优先回放与 NPU 内存约束的联合调优。",
+      "pitch": "11 月更新后的选题建议：以 ASP 已公开的 910B3 异步调度结果为参照，研究固定硬件预算下调度方式、policy lag 和最终任务质量之间的关系。先复现，再检验收益能否迁移到多轮工具任务。",
       "impact": 4,
       "difficulty": 4,
       "novelty": 3,
-      "why": "Async RL sidesteps the exact bottleneck Ascend suffers from。生态进展显著:Dispatch 18(prime-rl / SkyRL-Agent)、Dispatch 19(slime fully_async)和 Dispatch 23 的结论都表明异步解耦已收敛为行业标准答案,AReaL 2.0 还把权重更新拆成了独立微服务——novelty 相应下调。但『在 NPU 约束下的 off-policy 算法配方』(staleness × 优先回放 × 固定 HBM 的 Pareto 前沿)仍无人给出,且 HCCL 后端打通后此事第一次真正可做。",
+      "why": "ASP 已覆盖昇腾异步流水线与调度，不能再将 NPU 异步 RL 本身视为未探索方向。这里提出的是本站实验建议，是否具有新颖性仍需进一步检索与复现。",
       "steps": [
-        "Stand up AReaL 2.0's decoupled pipeline on Ascend, swapping its CUDA-IPC weight path for the vLLM-Ascend HCCL transfer backend",
-        "Add prioritized experience replay (ExGRPO-style) keyed on rollout correctness/entropy",
-        "Measure staleness tolerance and speedup vs synchronous verl-Ascend",
-        "Characterize the accuracy/throughput Pareto frontier under fixed NPU memory"
+        "固定模型、数据、总 NPU 数与依赖版本，先跑通同步基线及权重回灌验收",
+        "比较原序、长度排序和平衡派发，分别记录生成吞吐、整机吞吐、队列深度与 policy lag",
+        "在相同训练预算下比较最终任务质量，多随机种子报告波动",
+        "再迁移到包含工具等待的多轮任务，检查排序收益是否仍存在"
       ],
       "tags": [
         "async-rl",
@@ -177,8 +177,11 @@
         "efficiency",
         "AReaL"
       ],
-      "minimumExperiment": "Run AReaL's async pipeline on Ascend with the HCCL weight-transfer backend for a 1.5–7B GRPO run.",
-      "successMetric": "Throughput speedup vs synchronous verl-Ascend at equal final accuracy, with a documented staleness tolerance."
+      "minimumExperiment": "本站建议，尚未执行：同一组 910B 上用小模型比较两种派发顺序，先确认权重版本和样本时间戳可追溯。",
+      "successMetric": "相同卡数与训练预算下，报告成功率、端到端耗时与 lag 分布，明确收益来自调度还是额外资源。",
+      "url": "https://arxiv.org/abs/2611.08864",
+      "source": "研究选题建议 · 参照 ASP",
+      "verified": "2026-11-13"
     },
     {
       "title": "FP8 RL Training on Ascend",

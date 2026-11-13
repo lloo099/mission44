@@ -1,6 +1,62 @@
 {
-  "updated": "2026-11-12",
+  "updated": "2026-11-13",
   "items": [
+    {
+      "title": "Inkling 2 Small · 11 月 12 日开放权重",
+      "org": "Thinking Machines Lab",
+      "year": "2026-11-12",
+      "category": "model-report",
+      "innovation": "594B 总参数、17B 激活的多模态 MoE，使用局部与全局混合注意力。",
+      "summary": "11 月 5 日首发后，官方于 12 日确认 Apache-2.0 权重可下载，提供 NVFP4 与 MXFP8。激活参数少不代表整模型能单卡部署，完整训练代码与昇腾兼容性仍需分别核验。",
+      "url": "https://thinkingmachines.ai/news/inkling-2-small/",
+      "tags": ["open-weights", "MoE", "multimodal", "NVFP4"],
+      "confidence": "self-reported",
+      "source": "Thinking Machines Lab · 官方公告与模型卡",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
+    {
+      "title": "Gemini 4 Carbon · 扩大付费开发者访问",
+      "org": "Google DeepMind",
+      "year": "2026-11-10",
+      "category": "model-report",
+      "innovation": "从受限试用扩展至付费 Gemini API、企业和部分消费者产品。",
+      "summary": "此次记录的是可用性变化，面向长程编码、科研推理和多模态工作。它是托管服务更新，不是开放权重公告，厂商能力对比不直接并入本站历史评测榜。",
+      "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-carbon-now-available/",
+      "tags": ["Gemini", "API", "release-update", "multimodal"],
+      "confidence": "self-reported",
+      "source": "Google · 官方公告",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
+    {
+      "title": "Muse Ember · 面向高频 Agent 子任务",
+      "org": "Meta Superintelligence Labs",
+      "year": "2026-11-09",
+      "category": "model-report",
+      "innovation": "Meta 披露利用 Muse Wonder Full 训练高效模型，服务工具调用、编码子任务和文档处理。",
+      "summary": "muse-ember-1.0 已上线 API，提供 1M 上下文及最高 512K 输出。官方终端评测混用不同 harness，不能据此直接排名，公开权重与具体训练配方尚未核实。",
+      "url": "https://research.meta.ai/blog/muse-ember",
+      "tags": ["Meta", "efficient-model", "multimodal", "API", "agentic"],
+      "confidence": "self-reported",
+      "source": "Meta · 官方公告",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
+    {
+      "title": "Mistral Large 4 · 多模态 MoE 进入 GA",
+      "org": "Mistral AI",
+      "year": "2026-11-05",
+      "category": "model-report",
+      "innovation": "官方文档标注 GA，约 1.05T 总参数、52B 激活，支持图文输入与 1M 上下文。",
+      "summary": "本条日期按官方 GA 文档记录，不代表权重首次上传日。权重采用 Mistral Ecosystem Open Weight License v26.10，不能标成 MIT 或据开放权重推断已适配昇腾。",
+      "url": "https://docs.mistral.ai/models/mistral-large-4-0",
+      "tags": ["Mistral", "open-weights", "MoE", "multimodal"],
+      "confidence": "self-reported",
+      "source": "Mistral · 官方 GA 文档",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
     {
       "title": "Qwen4-Max-Preview · 限时多模态预览",
       "org": "阿里云 / Qwen",

@@ -1,6 +1,48 @@
 {
-  "updated": "2026-10-22",
+  "updated": "2026-11-13",
   "items": [
+    {
+      "title": "Coverage Collapse · 奖励上升也可能丢失最优回答",
+      "org": "Audrey Huang 等",
+      "year": "2026-11-10",
+      "category": "paper",
+      "innovation": "APMD 通过反复重置 KL 参考策略，研究后训练中的覆盖保持与收敛。",
+      "summary": "论文展示奖励提高时最优回答概率仍可能趋近于零，并分析参考重置如何缓解这一现象。理论保证限于预训练特征上的 softmax 线性策略，不能直接视为完整大模型已获同样保证。",
+      "url": "https://arxiv.org/abs/2611.14467",
+      "tags": ["RLVR", "coverage", "reference-reset", "theory"],
+      "confidence": "self-reported",
+      "source": "arXiv · 2611.14467v1",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
+    {
+      "title": "MCPO · 用 token 概率间隔分配信用",
+      "org": "Chi Liu 等 / PayPal.AI",
+      "year": "2026-11-10",
+      "category": "algorithm",
+      "innovation": "读取现有前向计算的 top-2 概率差，重分配 token 优势，保持每条回答的平均优势。",
+      "summary": "MiniCPM5-2B 的五个数据种子实验中，作者报告数学 macro avg@32 平均提升 6.55 个百分点。但回答也变长至 2–3 倍，实验尚未分离信用分配和额外生成长度的贡献。",
+      "url": "https://arxiv.org/abs/2611.14015",
+      "tags": ["RLVR", "GRPO", "credit-assignment", "token-level"],
+      "confidence": "self-reported",
+      "source": "arXiv · 2611.14015v1",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
+    {
+      "title": "NgramRL · 用近期 rollout 构造投机解码草稿",
+      "org": "Nilesh Prasad Pandey 等",
+      "year": "2026-10-23",
+      "category": "paper",
+      "innovation": "为同一提示维护 CPU 侧 n-gram 历史缓存，通过目标模型验证生成新的 rollout。",
+      "summary": "不需要额外草稿模型，作者在 Spider 上测得预取版 rollout 吞吐为同步 NgramRL 的 1.38 倍。收益依赖缓存预热与重复结构，不是端到端训练提速 1.38 倍，也未证明昇腾上有相同收益。",
+      "url": "https://arxiv.org/abs/2610.32881",
+      "tags": ["rollout", "speculative-decoding", "efficiency", "structured-generation"],
+      "confidence": "self-reported",
+      "source": "arXiv · 2610.32881v1",
+      "verified": "2026-11-13",
+      "timelineSummary": true
+    },
     {
       "title": "训推失配修正跨框架落地:verl 合入 Score Centering,与 slime、SkyRL 的 support replay 形成同一答案",
       "org": "verl / THUDM slime / NovaSky-AI SkyRL",
@@ -213,7 +255,7 @@
       "year": "2026",
       "category": "paper",
       "innovation": "Yue et al.(arXiv 2504.13837,NeurIPS 2025):RLVR 提升 pass@1 但 pass@256 低于基座,RL 模型的正确路径已在基座分布中,蒸馏则能注入新推理模式扩展边界;Invisible Leash 将 RLVR 形式化为支撑集受限优化;Kim et al.(2505.14216)给出条件——蒸馏扩展能力当且仅当引入新知识,只蒸推理模式则与 RLVR 无异",
-      "analysis": "Innovation:反证同样具体——ProRL(1.5B,2k+ 步 + 参考策略重置)在基座全采样也失败的任务上得到解,但数学域 pass@128 常下降;竞赛编程上 RL 在 pass@256 仍领先,归因于组合式解空间与执行奖励提供更强探索信号(2604.01302)。判断:**域的解空间结构决定谁扩展边界**——数学域 RL 受限、蒸馏占优;代码与 agent 域 RL 可扩张。这修正了'RL 创造、蒸馏复制'的通行直觉。对 RL-on-NPU 意义:昇腾上做 RL 的选题应优先富解空间域(代码、agent、kernel 优化),数学域投入产出比低;pass@k 应作为探索诊断指标纳入训练监控(D30 四轴之一)。",
+      "analysis": "11 月补充：不宜仅按数学、代码或 agent 领域断言 RL 的能力边界。Coverage Collapse and Reference Resets（arXiv:2611.14467）表明，在受限理论模型中，覆盖下降也可能来自优化过程，参考策略重置可缓解这一问题。实验应同时报告 pass@1、pass@k、生成预算与参考策略设置，尚不能由该理论证明完整 LLM 的能力边界扩张。",
       "url": "https://arxiv.org/abs/2504.13837",
       "tags": [
         "RLVR",

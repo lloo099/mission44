@@ -1,334 +1,163 @@
 {
-  "updated": "2026-06-16",
-  "source": "seeded (run scripts/fetch_arxiv.py to refresh from the arXiv API)",
-  "count": 23,
+  "updated": "2026-11-13",
+  "source": "人工精选 · 论文原文与官方发布 · 2026-11-13 核验",
+  "count": 8,
   "items": [
     {
-      "title": "Xiaomi 开源 MiMo-V2.5-Pro (1.02T MoE, 强 Agent 编码)",
-      "org": "Xiaomi",
-      "year": "2026-04",
+      "title": "Inkling 2 Small · 11 月 12 日开放权重",
+      "org": "Thinking Machines Lab",
+      "year": "2026-11-12",
       "category": "modeling",
-      "summary": "4 月 28 日小米开源 MiMo-V2.5 系列(MIT)。Pro 版 1.02T/42B 激活,混合注意力(128-token 滑窗 : 全局 = 6:1,KV cache ~7×↓),1M 上下文。配 MiMo Code agent harness,厂商基准在 SWE-bench Verified(82 vs 79)/Pro(62 vs 55)/Terminal-Bench 2(73 vs 69)超 Claude Code+Sonnet 4.6。尚无 Ascend 移植。数字均厂商口径,provisional。",
-      "url": "https://mimo.mi.com/docs/en-US/news/v2.5-open-sourced",
+      "innovation": "594B 总参数、17B 激活的多模态 MoE，使用局部与全局混合注意力。",
+      "summary": "11 月 5 日首发后，官方于 12 日确认 Apache-2.0 权重可下载，提供 NVFP4 与 MXFP8。激活参数少不代表整模型能单卡部署，完整训练代码与昇腾兼容性仍需分别核验。",
+      "url": "https://thinkingmachines.ai/news/inkling-2-small/",
       "tags": [
         "live",
-        "modeling",
-        "2026"
+        "open-weights",
+        "MoE",
+        "multimodal",
+        "NVFP4"
       ],
-      "confidence": "secondary"
+      "confidence": "self-reported",
+      "source": "Thinking Machines Lab · 官方公告与模型卡",
+      "verified": "2026-11-13"
     },
     {
-      "title": "Seed 2.1 Pro 抢先版上线 LMArena (闭源, 编码/Agent)",
-      "org": "ByteDance Seed",
-      "year": "2026-06",
+      "title": "Gemini 4 Carbon · 扩大付费开发者访问",
+      "org": "Google DeepMind",
+      "year": "2026-11-10",
       "category": "modeling",
-      "summary": "6 月 19 日 ByteDance 把 Seed-2.1-Pro-Preview 放上 Code Arena 试用:前端编码子榜 1539 Elo、全球第 8,约等于 Claude Opus 4.6。闭源 API、无 Ascend 移植——是标杆而非 NPU 载荷。完整基准随正式版未来几周公布。分析见 Blog → Dispatch 01。",
-      "url": "https://seed.bytedance.com/en/blog/seed-2-1-preview-model-release-on-arena",
+      "innovation": "从受限试用扩展至付费 Gemini API、企业和部分消费者产品。",
+      "summary": "此次记录的是可用性变化，面向长程编码、科研推理和多模态工作。它是托管服务更新，不是开放权重公告，厂商能力对比不直接并入本站历史评测榜。",
+      "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-carbon-now-available/",
       "tags": [
         "live",
-        "modeling",
-        "2026"
+        "Gemini",
+        "API",
+        "release-update",
+        "multimodal"
       ],
-      "confidence": "secondary"
+      "confidence": "self-reported",
+      "source": "Google · 官方公告",
+      "verified": "2026-11-13"
     },
     {
-      "title": "新一批开源模型 (6月中): Qwen3 Coder Next · MiniMax M2.7 · Nemotron 3 Ultra",
-      "org": "various",
-      "year": "2026-06",
+      "title": "Coverage Collapse · 奖励上升也可能丢失最优回答",
+      "org": "Audrey Huang 等",
+      "year": "2026-11-10",
       "category": "rl-llm",
-      "summary": "6 月中又一波开放权重发布:Qwen3 Coder Next、MiniMax M2.5/M2.7 Highspeed、NVIDIA Nemotron 3 Ultra 等(新闻聚合,基准/细节待官方)。",
-      "url": "https://llm-stats.com/ai-news",
+      "innovation": "APMD 通过反复重置 KL 参考策略，研究后训练中的覆盖保持与收敛。",
+      "summary": "论文展示奖励提高时最优回答概率仍可能趋近于零，并分析参考重置如何缓解这一现象。理论保证限于预训练特征上的 softmax 线性策略，不能直接视为完整大模型已获同样保证。",
+      "url": "https://arxiv.org/abs/2611.14467",
       "tags": [
         "live",
-        "rl-llm",
-        "2026"
+        "RLVR",
+        "coverage",
+        "reference-reset",
+        "theory"
       ],
-      "confidence": "secondary"
+      "confidence": "self-reported",
+      "source": "arXiv · 2611.14467v1",
+      "verified": "2026-11-13"
     },
     {
-      "title": "DeepSeek-V4 & GLM-5 run on Ascend 910B (vLLM-Ascend)",
-      "org": "vLLM + Huawei",
-      "year": "2026",
+      "title": "MCPO · 用 token 概率间隔分配信用",
+      "org": "Chi Liu 等 / PayPal.AI",
+      "year": "2026-11-10",
+      "category": "rl-llm",
+      "innovation": "读取现有前向计算的 top-2 概率差，重分配 token 优势，保持每条回答的平均优势。",
+      "summary": "MiniCPM5-2B 的五个数据种子实验中，作者报告数学 macro avg@32 平均提升 6.55 个百分点。但回答也变长至 2–3 倍，实验尚未分离信用分配和额外生成长度的贡献。",
+      "url": "https://arxiv.org/abs/2611.14015",
+      "tags": [
+        "live",
+        "RLVR",
+        "GRPO",
+        "credit-assignment",
+        "token-level"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 2611.14015v1",
+      "verified": "2026-11-13"
+    },
+    {
+      "title": "vLLM-Ascend 0.32.0rc1 · 新模型适配与 950DT 支持边界",
+      "org": "vLLM-Ascend 社区",
+      "year": "2026-11-10",
       "category": "ascend-npu",
-      "summary": "vLLM-Ascend's 2026 support matrix adds DeepSeek-V4 (custom 910B ops, MTP KV-cache sharding for spec decoding) and GLM-5 (W8A8C8 quant); Qwen3.5 + W8A8 across Qwen3/DeepSeek/MiniMax. MiniMax-M3 not yet listed.",
-      "url": "https://docs.vllm.ai/projects/ascend/en/main/user_guide/support_matrix/supported_models.html",
+      "innovation": "候选版对齐上游 0.32.0，新增 MiniMax-M3.1-Flash、Qwen3.8-Flash-Next 支持。",
+      "summary": "MiniMax-M3.1-Flash 的发布范围为 A3/950DT，Qwen3.8-Flash-Next 和 DeepSeek-V4.1-Flash 包含 A2/A3/950DT。版本仍是 RC，GLM-5.3-Flash 的 P/D 压测有已知稳定性与吞吐问题，不能据此推断所有模型已在 910B 上验证。",
+      "url": "https://github.com/vllm-project/vllm-ascend/releases/tag/v0.32.0rc1",
       "tags": [
         "live",
-        "ascend-npu",
-        "2026"
-      ]
+        "vllm-ascend",
+        "release-candidate",
+        "Ascend-950",
+        "inference"
+      ],
+      "confidence": "self-reported",
+      "source": "GitHub · 官方版本说明",
+      "verified": "2026-11-13"
     },
     {
-      "title": "GLM-5.2 open-sourced (MIT, 1M context)",
-      "org": "Zhipu AI",
-      "year": "2026-06",
-      "category": "rl-llm",
-      "summary": "Launched Jun 13 2026; MIT open weights now live on Hugging Face (zai-org/GLM-5.2). 753B params (GLM-5.1-class 744B MoE / 40B active), context 200K→1M, max output 131K, coding-first. No official benchmarks at launch; media cites it edging GPT-5.5 on long-horizon coding (FrontierSWE/SWE-Marathon) at ~1/6 cost — treat as provisional.",
-      "ascend": "partial",
-      "ascendNote": "GLM-5 is supported on vLLM-Ascend (W8A8C8 quant); GLM-5.2 not yet listed by name.",
-      "url": "https://huggingface.co/zai-org/GLM-5.2",
+      "title": "ASP · 910B3 上的多实例异步 rollout 调度",
+      "org": "Salah Chikhi 等 / Huawei GTS",
+      "year": "2026-11-06",
+      "category": "ascend-npu",
+      "innovation": "离线预测输出长度，构造近等长小批次并平衡派发顺序，减少生成与训练队列波动。",
+      "summary": "11 月 9 日修订稿在 910B3 上报告，同一异步架构中开启调度使平均迭代时间下降 10.9%。整套系统对 MindSpeed-RL 的最高 3.22 倍吞吐是另一组比较，不能全部归因于调度，也不是本站实测。",
+      "url": "https://arxiv.org/abs/2611.08864",
       "tags": [
         "live",
-        "rl-llm",
-        "2026"
-      ]
-    },
-    {
-      "title": "MiniMax-M3 with MSA sparse attention",
-      "org": "MiniMax",
-      "year": "2026-06",
-      "category": "rl-llm",
-      "summary": "Open-weight 1M-context model, native multimodal + agentic coding. MSA (blockwise sparse on GQA) cuts attention compute ~28.4x at 1M context. Official report on arXiv.",
-      "ascend": "partial",
-      "ascendNote": "MiniMax family has W8A8/QuaRot on vLLM-Ascend (M2.x); M3 not yet listed by name.",
-      "url": "https://arxiv.org/abs/2606.13392",
-      "tags": [
-        "live",
-        "rl-llm",
-        "2026"
-      ]
-    },
-    {
-      "title": "DeepSeek-V4 (1.6T MoE, 1M context)",
-      "org": "DeepSeek-AI",
-      "year": "2026-04",
-      "category": "rl-llm",
-      "summary": "V4-Pro/Flash with hybrid sparse attention (CSA+HCA), Multi-Token Prediction, and a multi-teacher distillation pipeline over 32T+ tokens. Official tech report PDF on Hugging Face.",
-      "ascend": "ready",
-      "ascendNote": "Supported on Ascend 910B via vLLM-Ascend (custom ops, MTP KV-cache sharding for speculative decoding).",
-      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/DeepSeek_V4.pdf",
-      "tags": [
-        "live",
-        "rl-llm",
-        "2026"
-      ]
-    },
-    {
-      "title": "Agentic RL: a distinct paradigm (survey)",
-      "org": "research",
-      "year": "2026-04",
-      "category": "reasoning-rl",
-      "summary": "Survey reframing agentic RL vs single-turn RLVR — multi-turn credit assignment, tool/environment interaction, long-horizon planning.",
-      "url": "https://arxiv.org/abs/2604.27859",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "agentic-rl",
-        "2026"
-      ]
-    },
-    {
-      "title": "Stable Asynchrony: variance-controlled off-policy RL",
-      "org": "research",
-      "year": "2026-02",
-      "category": "reasoning-rl",
-      "summary": "Controls heavy-tailed importance weights from stale rollouts to keep async/off-policy GRPO stable at high asynchrony.",
-      "url": "https://arxiv.org/abs/2602.17616",
-      "tags": [
-        "live",
-        "reasoning-rl",
         "async-rl",
-        "2026"
-      ]
+        "rollout",
+        "scheduling",
+        "910B",
+        "policy-lag"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 2611.08864v2",
+      "verified": "2026-11-13"
     },
     {
-      "title": "Ascend 950PR / 950DT announced (FP8, self-built HBM)",
-      "org": "Huawei",
-      "year": "2026",
-      "category": "ascend-npu",
-      "summary": "Next-gen Ascend with native FP8/MXFP4 and Huawei's own HBM — 950PR (inference) ~Q1 2026, 950DT (training) ~Q4 2026. Opens the door to FP8 RL on Ascend.",
-      "url": "https://www.techpowerup.com/341123/huawei-unveils-homegrown-hbm-and-ascend-950-bets-on-massive-superclusters",
+      "title": "WebHarbor · 可重置网站环境用于 GUI Agent RL",
+      "org": "Zhaoyang Wang、Qianhui Wu 等",
+      "year": "2026-11-02",
+      "category": "agentic-rl",
+      "track": "academic",
+      "innovation": "以人机协作构建 153 个可执行网站镜像，覆盖 3,518 个多步骤与登录后任务。",
+      "summary": "网站状态可重置，代码与数据已公开，可用于训练和评测 GUI 智能体。作者报告 4B 级模型训练后的跨任务迁移，但受控镜像不能覆盖真实网站中的全部权限、内容变化和访问限制。",
+      "url": "https://arxiv.org/abs/2611.03634",
       "tags": [
         "live",
-        "ascend-npu",
-        "2026"
-      ]
+        "academic",
+        "agentic-RL",
+        "GUI",
+        "environment",
+        "evaluation"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 2611.03634v1",
+      "verified": "2026-11-13"
     },
     {
-      "title": "vLLM-Ascend v0.13.0 released",
-      "org": "vLLM + Huawei",
-      "year": "2026-02",
-      "category": "ascend-npu",
-      "summary": "Historical February 2026 release of the Ascend rollout backend; consult the project release notes for current versions and support.",
-      "url": "https://github.com/vllm-project/vllm-ascend",
+      "title": "RLiD · 在动作菜单上训练，再蒸馏回生成模型",
+      "org": "Ziyi Chen 等",
+      "year": "2026-11-02",
+      "category": "agentic-rl",
+      "track": "academic",
+      "innovation": "直接优化可执行动作概率，以一次前向选择动作，避免无效动作文本和解析开销。",
+      "summary": "作者在 ALFWorld 报告训练加蒸馏用 12.7 H100 GPU 小时达到 99.3% 成功率，同模型 token RL 为 17.3 小时、86.6%。方法依赖可枚举动作菜单，不能直接外推到任意工具参数或昇腾性能。",
+      "url": "https://arxiv.org/abs/2611.02455",
       "tags": [
         "live",
-        "ascend-npu",
-        "2026"
-      ]
-    },
-    {
-      "title": "DeepSeek-V3.2 + Sparse Attention (DSA)",
-      "org": "DeepSeek-AI",
-      "year": "2025-12",
-      "category": "rl-llm",
-      "summary": "Open-weight frontier model with trainable sparse attention for cheaper long-context; RL post-training continues the R1 lineage.",
-      "url": "https://arxiv.org/abs/2512.02556",
-      "tags": [
-        "live",
-        "rl-llm",
-        "2026"
-      ]
-    },
-    {
-      "title": "GDRO-RL: distributionally robust GRPO",
-      "org": "research",
-      "year": "2026-01",
-      "category": "reasoning-rl",
-      "summary": "Rollout-/Prompt-GDRO reweight toward worst-case prompt distributions on top of GRPO for more robust reasoning RL.",
-      "url": "https://arxiv.org/abs/2601.19280",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "2026"
-      ]
-    },
-    {
-      "title": "MindSpeed-RL: Distributed RL Post-Training on Ascend NPU",
-      "org": "Huawei (Ascend)",
-      "year": "2025-07",
-      "category": "ascend-npu",
-      "summary": "Native distributed GRPO-family RL on Ascend, with experiments up to DeepSeek-R1-MoE-671B on a 384-NPU superpod — the strongest large-scale RL-on-Ascend evidence to date.",
-      "url": "https://arxiv.org/abs/2507.19017",
-      "tags": [
-        "live",
-        "ascend-npu"
-      ]
-    },
-    {
-      "title": "AsyncFlow: Asynchronous Streaming RL Post-Training",
-      "org": "research",
-      "year": "2025-07",
-      "category": "ascend-npu",
-      "summary": "An async streaming RL framework targeting synchronous and colocated RL throughput limits. Current vLLM-Ascend documentation describes sleep mode; support depends on version and configuration.",
-      "url": "https://arxiv.org/abs/2507.01663",
-      "tags": [
-        "live",
-        "ascend-npu",
-        "async-rl"
-      ]
-    },
-    {
-      "title": "DeepSeek-R1: Incentivizing Reasoning via Reinforcement Learning",
-      "org": "DeepSeek-AI",
-      "year": "2025-01",
-      "category": "reasoning-rl",
-      "summary": "Pure large-scale RL (GRPO + verifiable rewards) elicits emergent reasoning with no SFT (R1-Zero); catalyzed the 2025 RLVR wave.",
-      "url": "https://arxiv.org/abs/2501.12948",
-      "tags": [
-        "live",
-        "reasoning-rl"
-      ]
-    },
-    {
-      "title": "GSPO: Group Sequence Policy Optimization",
-      "org": "Qwen Team, Alibaba",
-      "year": "2025-07",
-      "category": "rl-llm",
-      "summary": "Sequence-level importance ratios and clipping fix GRPO instability and notably stabilize MoE RL; contributed to Qwen3.",
-      "url": "https://arxiv.org/abs/2507.18071",
-      "tags": [
-        "live",
-        "rl-llm"
-      ]
-    },
-    {
-      "title": "DAPO: An Open-Source LLM RL System at Scale",
-      "org": "ByteDance Seed / Tsinghua AIR",
-      "year": "2025-03",
-      "category": "rl-llm",
-      "summary": "GRPO + Clip-Higher, dynamic sampling, token-level loss, and overlong reward shaping; 50 on AIME 2024 with Qwen2.5-32B at half the steps.",
-      "url": "https://arxiv.org/abs/2503.14476",
-      "tags": [
-        "live",
-        "rl-llm"
-      ]
-    },
-    {
-      "title": "ProRL: Prolonged RL Expands Reasoning Boundaries",
-      "org": "NVIDIA",
-      "year": "2025-05",
-      "category": "reasoning-rl",
-      "summary": "Stabilizes very long RL runs (KL control, reference resetting) and shows prolonged RL uncovers genuinely new reasoning strategies.",
-      "url": "https://arxiv.org/abs/2505.24864",
-      "tags": [
-        "live",
-        "reasoning-rl"
-      ]
-    },
-    {
-      "title": "MiniMax-M1: Test-Time Compute with Lightning Attention (CISPO)",
-      "org": "MiniMax",
-      "year": "2025-06",
-      "category": "reasoning-rl",
-      "summary": "Open hybrid-attention reasoner trained with CISPO (clips IS-weights, not tokens); full RL on 512 H800s in ~3 weeks.",
-      "url": "https://arxiv.org/abs/2506.13585",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "efficient-llm"
-      ]
-    },
-    {
-      "title": "AReaL: Large-Scale Asynchronous RL for Language Reasoning",
-      "org": "Ant Group / Tsinghua",
-      "year": "2025-05",
-      "category": "rl-llm",
-      "summary": "Fully decouples rollout from training with staleness-enhanced PPO for ~2.77x speedup; now ships a stable Ascend branch.",
-      "url": "https://arxiv.org/abs/2505.24298",
-      "tags": [
-        "live",
-        "rl-llm",
-        "async-rl"
-      ]
-    },
-    {
-      "title": "Native Sparse Attention (NSA)",
-      "org": "DeepSeek-AI / Peking U. / UW",
-      "year": "2025-02",
-      "category": "efficient-llm",
-      "summary": "Trainable, hardware-aligned hierarchical sparse attention matching full attention with large speedups at 64K length.",
-      "url": "https://arxiv.org/abs/2502.11089",
-      "tags": [
-        "live",
-        "efficient-llm"
-      ]
-    },
-    {
-      "title": "The Entropy Mechanism of RL for Reasoning LLMs",
-      "org": "Shanghai AI Lab / Tsinghua",
-      "year": "2025-05",
-      "category": "rl-llm",
-      "summary": "Explains policy-entropy collapse via log-prob/advantage covariance and proposes Clip-Cov / KL-Cov to sustain exploration.",
-      "url": "https://arxiv.org/abs/2505.22617",
-      "tags": [
-        "live",
-        "rl-llm"
-      ]
-    },
-    {
-      "title": "Pretraining LLMs with NVFP4",
-      "org": "NVIDIA",
-      "year": "2025-09",
-      "category": "efficient-llm",
-      "summary": "Large-scale 4-bit (NVFP4) pretraining of a 12B model on 10T tokens matching FP8 — the most ambitious FP4 training run reported.",
-      "url": "https://arxiv.org/abs/2509.25149",
-      "tags": [
-        "live",
-        "efficient-llm"
-      ]
-    },
-    {
-      "title": "GLM-4.5: Agentic, Reasoning, and Coding Foundation Models",
-      "org": "Z.ai (Zhipu)",
-      "year": "2025-08",
-      "category": "reasoning-rl",
-      "summary": "Hybrid thinking/direct MoE (355B/32B) trained with a difficulty-based RL curriculum on the open-source 'slime' framework.",
-      "url": "https://arxiv.org/abs/2508.06471",
-      "tags": [
-        "live",
-        "reasoning-rl"
-      ]
+        "academic",
+        "agentic-RL",
+        "action-space",
+        "distillation"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 2611.02455v1",
+      "verified": "2026-11-13"
     }
   ]
 }
