@@ -20,6 +20,8 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 
+from fetch_arxiv import canonical_url
+
 ARXIV_API = "http://export.arxiv.org/api/query"
 NS = {"a": "http://www.w3.org/2005/Atom"}
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -61,8 +63,8 @@ def parse(xml_bytes, bucket):
     for e in root.findall("a:entry", NS):
         title = (e.findtext("a:title", default="", namespaces=NS) or "").strip().replace("\n", " ")
         summary = (e.findtext("a:summary", default="", namespaces=NS) or "").strip().replace("\n", " ")
-        published = (e.findtext("a:published", default="", namespaces=NS) or "")[:7]
-        link = e.findtext("a:id", default="", namespaces=NS) or ""
+        published = (e.findtext("a:published", default="", namespaces=NS) or "")[:10]
+        link = canonical_url(e.findtext("a:id", default="", namespaces=NS))
         authors = [a.findtext("a:name", default="", namespaces=NS) for a in e.findall("a:author", NS)]
         org = authors[0] if authors else "research"
         if len(authors) > 1:
@@ -78,7 +80,8 @@ def parse(xml_bytes, bucket):
             "summary": (summary[:280] + "…") if len(summary) > 280 else summary,
             "url": link,
             "tags": ["academic", "agentic-rl", bucket],
-            "confidence": "confirmed",
+            "confidence": "self-reported",
+            "source": "arXiv · 自动抓取",
             "auto": True,
         })
     return out
@@ -91,7 +94,7 @@ def other_curated_urls():
             with open(os.path.join(HERE, "..", "data", fn), encoding="utf-8") as f:
                 for it in (json.load(f).get("items") or []):
                     if it.get("url"):
-                        s.add(it["url"])
+                        s.add(canonical_url(it["url"]))
         except (OSError, json.JSONDecodeError):
             pass
     return s
@@ -102,25 +105,25 @@ def main():
         data = json.load(f)
     items = data.get("items", [])
     manual = [it for it in items if not it.get("auto")]
-    manual_urls = {it.get("url") for it in manual}
+    manual_urls = {canonical_url(it.get("url")) for it in manual}
     skip = manual_urls | other_curated_urls()
 
     # gather candidates: keep existing auto items + newly fetched, dedup by url
-    pool, seen = [], set()
+    pool = {}
     for it in items:
+        key = canonical_url(it.get("url"))
         if (it.get("auto") and it.get("url") and relevant(it.get("title", ""), it.get("summary", ""))
-                and it["url"] not in seen and it["url"] not in skip):
-            pool.append(it); seen.add(it["url"])
+                and key not in pool and key not in skip):
+            pool[key] = {**it, "url": key, "confidence": "self-reported"}
     for bucket, q in QUERIES.items():
         try:
             for it in parse(fetch(q, MAX_PER_QUERY), bucket):
-                if it["url"] not in seen and it["url"] not in skip:
-                    pool.append(it); seen.add(it["url"])
+                if it["url"] not in skip:
+                    pool[it["url"]] = it
         except Exception as e:  # network/parse — don't fail the run
             print(f"[agentic] {bucket} failed: {e}")
 
-    pool.sort(key=lambda it: it.get("year", ""), reverse=True)
-    pool = pool[:MAX_AUTO]
+    pool = sorted(pool.values(), key=lambda it: it.get("year", ""), reverse=True)[:MAX_AUTO]
 
     data["items"] = manual + pool
     data["updated"] = dt.date.today().isoformat()

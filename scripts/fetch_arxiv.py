@@ -39,6 +39,19 @@ OUT = os.path.join(HERE, "..", "data", "feed.json")
 PINNED = os.path.join(HERE, "..", "data", "feed_pinned.json")
 NS = {"a": "http://www.w3.org/2005/Atom"}
 
+
+def canonical_url(url):
+    """Use one identity for arXiv abstract/PDF links and revision suffixes."""
+    url = url or ""
+    parsed = urllib.parse.urlsplit(url)
+    if parsed.hostname in ("arxiv.org", "www.arxiv.org", "export.arxiv.org"):
+        match = re.fullmatch(r"/(?:abs|pdf)/(.+?)(?:\.pdf)?/?", parsed.path)
+        if match:
+            paper = re.sub(r"v\d+$", "", match.group(1))
+            return f"https://arxiv.org/abs/{paper}"
+    return url
+
+
 BUCKET_TERMS = {
     "rl-llm": ("language model", "rlhf", "rlvr", "llm", "post-training", "reasoning model"),
     "reasoning-rl": ("language model", "rlvr", "verifiable reward", "reasoning model", "post-training"),
@@ -86,12 +99,12 @@ def curated_urls():
     """URLs already shown as curated cards in the domain tabs — skip them in the
     auto feed so the same paper doesn't appear twice."""
     s = set()
-    for fn in ("rl.json", "ascend.json", "modeling.json"):
+    for fn in ("rl.json", "ascend.json", "modeling.json", "agentic.json"):
         try:
             with open(os.path.join(HERE, "..", "data", fn), encoding="utf-8") as f:
                 for it in (json.load(f).get("items") or []):
                     if it.get("url"):
-                        s.add(it["url"])
+                        s.add(canonical_url(it["url"]))
         except (OSError, json.JSONDecodeError):
             pass
     return s
@@ -117,7 +130,7 @@ def parse(xml_bytes: bytes, bucket: str):
         title = (e.findtext("a:title", default="", namespaces=NS) or "").strip().replace("\n", " ")
         summary = (e.findtext("a:summary", default="", namespaces=NS) or "").strip().replace("\n", " ")
         published = (e.findtext("a:published", default="", namespaces=NS) or "")[:10]
-        link = e.findtext("a:id", default="", namespaces=NS) or ""
+        link = canonical_url(e.findtext("a:id", default="", namespaces=NS))
         authors = [a.findtext("a:name", default="", namespaces=NS) for a in e.findall("a:author", NS)]
         if not relevant(bucket, title, summary):
             continue
@@ -132,6 +145,8 @@ def parse(xml_bytes: bytes, bucket: str):
             "url": link,
             "category": bucket,
             "tags": ["live", bucket],
+            "confidence": "self-reported",
+            "source": "arXiv · 自动抓取",
         })
     return items
 
@@ -155,7 +170,7 @@ def main():
     prev = load_previous()
     prev_auto = [it for it in (prev or {}).get("items", [])
                  if isinstance(it, dict) and "auto" in (it.get("tags") or [])]
-    pinned_urls = {it.get("url") for it in pinned if it.get("url")}
+    pinned_urls = {canonical_url(it.get("url")) for it in pinned if it.get("url")}
     skip_urls = pinned_urls | curated_urls()  # avoid duplicating curated cards
 
     live, seen = [], set()
@@ -179,8 +194,12 @@ def main():
     # good auto items and mark the payload stale instead of publishing a hole.
     reused = 0
     if not live and prev_auto:
-        live = prev_auto
-        reused = len(prev_auto)
+        for it in prev_auto:
+            key = canonical_url(it.get("url"))
+            if key and key not in seen and key not in skip_urls:
+                live.append({**it, "url": key})
+                seen.add(key)
+        reused = len(live)
         print(f"[warn] no live results — keeping {reused} auto item(s) from the last successful run",
               file=sys.stderr)
 
