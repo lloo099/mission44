@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-13",
+  "updated": "2026-11-16",
   "items": [
     {
       "title": "vLLM-Ascend 0.32.0rc1 · 新模型适配与 950DT 支持边界",
@@ -35,13 +35,14 @@
       "year": "2026-11-06",
       "category": "rl-stack",
       "innovation": "离线预测输出长度，构造近等长小批次并平衡派发顺序，减少生成与训练队列波动。",
-      "summary": "11 月 9 日修订稿在 910B3 上报告，同一异步架构中开启调度使平均迭代时间下降 10.9%。整套系统对 MindSpeed-RL 的最高 3.22 倍吞吐是另一组比较，不能全部归因于调度，也不是本站实测。",
-      "url": "https://arxiv.org/abs/2611.08864",
+      "summary": "11 月 9 日修订稿在 910B3 上报告，同一异步架构中启用调度使平均迭代时间从 238 秒降到 212 秒（10.9%）。最高 3.22× 吞吐来自完整系统对混合式 MindSpeed-RL 的比较。公开主实验采用数学与迷宫任务，DeepSWE 多轮轨迹上的收益待验证。",
+      "url": "https://arxiv.org/abs/2611.08864v2",
       "tags": ["async-rl", "rollout", "scheduling", "910B", "policy-lag"],
       "confidence": "self-reported",
       "source": "arXiv · 2611.08864v2",
-      "verified": "2026-11-13",
-      "timelineSummary": true
+      "verified": "2026-11-16",
+      "timelineSummary": true,
+      "analysis": "ASP 在 rollout 前预测输出长度，用动态规划构造批内近等长的生成小批次，再平衡相邻批组的预计负载，减少长尾和训练队列波动。生成和训练分离，控制单元通过队列背压和周期性权重更新管理 policy lag。迁移到 DeepSWE 前，分别记录各轮模型生成、工具执行与最终验收耗时，再验证哪种信号可预测完整轨迹时长。"
     },
     {
       "title": "verl 昇腾安装栈 · 11 月依赖组合更新",

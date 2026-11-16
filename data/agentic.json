@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-13",
+  "updated": "2026-11-16",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -35,6 +35,88 @@
     }
   ],
   "items": [
+    {
+      "title": "昇腾 Agentic RL 项目进展 · DeepSWE 沙箱、异步训推与算子验收",
+      "org": "本站项目记录",
+      "year": "2026-11-16",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "把环境存活、重工具执行和 NPU 生成分开计量，按瓶颈决定下一轮优化。",
+      "summary": "项目观察：DeepSWE 实验开启 512 个沙箱，部分环境的采样 CPU 用量低于 0.01 核。节点总用量、采样窗口与峰值仍待复核。下一轮计划在 512 并发下对照每节点最终验收限并发，记录有效 rollout 吞吐、排队与执行耗时。同步 GRPO、ASP 异步调度、多镜像算子验收仍是独立验证项。",
+      "analysis": "架构：CPU Harness Pool 推进 Agent Loop 并调用 Sandbox，昇腾 rollout 引擎生成动作，验收后的轨迹进入 learner。先核对同一序列的训推 logprob、loss mask、policy_version 和权重刷新，再评估 ASP 式异步派发。DeepSWE 对照固定任务集、模型与超时，观察节点 CPU、内存、磁盘 I/O 和工具 P99，再决定是否继续到 768、1,000 环境。有效轨迹包括正常完成验收但模型未解出任务的样本。算子方向用独立可写的多镜像开发工作区，候选代码按需提交 NPU Runner，Gate 固定测试、参考实现和计时协议，记录正确性、单算子和端到端性能。保留失败归因和版本，后续才能对比环境改进、参数训练和 Harness 修改的各自收益。",
+      "tags": [
+        "Agentic RL",
+        "DeepSWE",
+        "sandbox",
+        "Ascend",
+        "project-update"
+      ],
+      "confidence": "self-reported",
+      "source": "项目观察与待验证方案",
+      "verified": "2026-11-16",
+      "timelineSummary": true
+    },
+    {
+      "title": "ForgeKernel · 真机反馈驱动算子开发",
+      "org": "面壁智能 / 清华大学",
+      "year": "2026-11-03",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "架构 Agent 决定分块与数据流，Coding Agent 实现，Harness 在目标设备上先验正确性再计时。",
+      "summary": "作者报告昇腾 910C 上 CANN-Bench 第一季 8 个 Level 4 算子的公开用例，相对各算子公开最佳提交取得 25.1% 几何平均性能优势。成绩限于指定用例和评测口径。",
+      "analysis": "通过 Gate 的算子可成为下一轮参考，独立硬件实验验证过的机制进入知识库。公开启动文档支持独立运行目录及本机或 SSH 接入 NVIDIA GPU，昇腾论文实验使用 CANN-Bench 托管评测。项目方案是在 CPU Sandbox 管工具链与工作区，NPU Runner 按镜像、卡型、驱动和固件配套调度，再用同一环境比较参考与候选。",
+      "url": "https://arxiv.org/abs/2611.04998",
+      "tags": [
+        "Forge Engineering",
+        "kernel",
+        "CANN-Bench",
+        "Ascend"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · ForgeKernel §3–4",
+      "verified": "2026-11-16",
+      "timelineSummary": true
+    },
+    {
+      "title": "ForgeTrain · 从参考实现开发专用训练引擎",
+      "org": "面壁智能 / 清华大学",
+      "year": "2026-09-12",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "按模型、硬件和并行策略构建引擎。先逐位对齐参考检查点，再用长程训练检验性能改动。",
+      "summary": "作者在昇腾 910 的 MiniCPM5-1B、DP=2 场景报告 MFU 从 40.2% 升到 46.4%。这是该场景的训练引擎结果。ForgeTrain 的 Gate 将验收条件与 Agent 可修改的候选代码分开管理。",
+      "url": "https://arxiv.org/abs/2609.13645",
+      "tags": [
+        "Forge Engineering",
+        "training-engine",
+        "MindSpeed",
+        "Ascend"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · ForgeTrain §3 与表 2",
+      "verified": "2026-11-16",
+      "timelineSummary": true
+    },
+    {
+      "title": "ForgeStencil · 从算子性能走到应用端到端验收",
+      "org": "面壁智能",
+      "year": "2026-09-06",
+      "category": "infrastructure",
+      "track": "industry",
+      "innovation": "App Agent 定位热点与数据搬运开销，Kernel Agent 按应用编写专用算子，再用原应用检查正确性和耗时。",
+      "summary": "作者在 100 个通过验证的科学计算应用上报告端到端加速中位数 1.41×。对本项目的参考是同时量测单算子和真实训练步，判断局部收益能否传导到整条路径。",
+      "url": "https://arxiv.org/abs/2609.06694",
+      "tags": [
+        "Forge Engineering",
+        "stencil",
+        "kernel",
+        "end-to-end"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · ForgeStencil §5、§7.3",
+      "verified": "2026-11-16",
+      "timelineSummary": true
+    },
     {
       "title": "WebHarbor · 可重置网站环境用于 GUI Agent RL",
       "org": "Zhaoyang Wang、Qianhui Wu 等",
@@ -1611,7 +1693,7 @@
       "track": "academic",
       "innovation": "第一份把『自我改进的证据是否可信』形式化成检查清单的 RSI 综述:改了什么、继任者继承什么、哪些决定仍在人手里",
       "summary": "arXiv:2609.11873(09-10 提交,v3),79 页、35 位作者,机构含上海交大、Theseus Labs、清华、字节、ModelBest、小红书 Super Intelligence Team、上海 AI Lab、Humanlaya、Agent-Native Research(本站读站长提供的 v3 PDF 原文,以下数字逐项核对)。**HCI(Headroom-Closed Index)**:H = 100×(s̄−F₀)/(100−F₀),F₀ 取该基准进入数据集首年的 90 分位模型分——0 即当年前沿、100 即满分;对 2023–2026.09 的 393 组模型×基准观测、十个能力域计算。结果:高等数学 86.4、研究生级科学 85.8、宽知识 77.2,而**软件工程 52.6、搜索与终端 agent 56.8、工具 agent 仅 39.9**——静态推理接近封顶,交互式能力余量巨大。**自主分级**:B0 任务内迭代(非 RSI 参照)+ L1 改进执行 → L2 改进策略 → L3 学习信号/经验获取 → L4 环境适应 → L5 递归继承(修改产生未来改进的机制本身)。**三道可信性门槛**(§1.3,每条带反例):安全继承——Gödel Agent 的 100 次 MGSM 优化试验中 14% 终点低于初始策略;自主归因——Darwin Gödel Machine 把自家 SWE-bench 子集从 20% 提到 50%,但归档维护与父代选择规则**不在自改范围内**;可靠验证——引 Anthropic 自动化研究实验中的随机种子挑拣与向评估器套测试标签,Red Queen Gödel Machine 以『每纪元冻结评估器 + 独立真值锚』应对。",
-      "analysis": "对本站 D37/D43 框架的三点增量。① **HCI 是把『还剩多少没解决』做成跨域可比刻度的第一次尝试**:锚在各基准进入年的前沿而非绝对分,避免了『新基准更难所以分低』的失真;其结论与本站 D30 一致——交互式 agent 是最大空白领域,工具 agent 39.9 对研究生科学 85.8 的 45.9 分差是全文最硬的一个数。注意 HCI 口径依赖基准选择与 90 分位锚,论文自己界定为诊断而非排名。② **三道门槛可直接当审稿清单用**,与本站 D43 的失效模式(评分者在被评者下游)同构但更可操作:每条都指向一个可执行检查(迁移测试+版本史+回滚;区分 AI 决定/固定搜索程序/人类验收;冻结评估器+等算力预算)。③ **L1–L5 与 D37 旧框架的对齐**:D37 当时记录的 L1-L5 分级即源于此谱系,本卡以原文为准更正命名(项目页 README 将 L5 写作 recursive meta-improvement,论文图中为 recursive inheritance autonomy,两种措辞并存)。附带两个一手实验:Theseus 工作区重建使综合 rubric 分提高 **+18.65 到 +39.67 个百分点**(Claude Code / PI × DeepSeek-V4-Flash / GPT-5.6-Sol 四组);姊妹篇 Env-Rethink(项目页 09-24 挂出,本站直读其 GitHub 仓库)测得含噪文件环境把前沿 agent 的 rubric 通过率从 83.9% 拖到 57.6%,其环境整备把九个下游模型均值拉回 72.7%。限定:综述自述『收录不代表所列系统已完全自主』;工作区与环境实验为作者自报,无第三方复现。",
+      "analysis": "对本站 D37/D43 框架的三点增量。① **HCI 是把『还剩多少没解决』做成跨域可比刻度的第一次尝试**:锚在各基准进入年的前沿而非绝对分,避免了『新基准更难所以分低』的失真;其结论与本站 D30 一致——交互式 agent 是最大空白领域,工具 agent 39.9 对研究生科学 85.8 的 45.9 分差是全文最硬的一个数。注意 HCI 口径依赖基准选择与 90 分位锚,论文自己界定为诊断而非排名。② **三道门槛可直接当审稿清单用**,与本站 D43 的失效模式(评分者在被评者下游)同构但更可操作:每条都指向一个可执行检查(迁移测试+版本史+回滚;区分 AI 决定/固定搜索程序/人类验收;冻结评估器+等算力预算)。③ **L1–L5 与 D37 旧框架的对齐**:D37 当时记录的 L1-L5 分级即源于此谱系,本卡以原文为准更正命名(项目页 README 将 L5 写作 recursive meta-improvement,论文图中为 recursive inheritance autonomy,两种措辞并存)。附带两个一手实验:Theseus 工作区重建使综合 rubric 分提高 **+18.65 到 +39.67 个百分点**(五组固定模型与 Harness 配对);姊妹篇 Env-Rethink(项目页 09-24 挂出,本站直读其 GitHub 仓库)测得含噪文件环境把前沿 agent 的 rubric 通过率从 83.9% 拖到 57.6%,其环境整备把九个下游模型均值拉回 72.7%。限定:综述自述『收录不代表所列系统已完全自主』;工作区与环境实验为作者自报,无第三方复现。 §5 产业案例：Theseus 研究环境重构，飞书 Lark 研究知识与失败归因，小红书 IMA 结合记忆与后训练，Humanlaya 迭代质检规则，ModelBest Forge 自动化工程实现，腾讯 Hyra 复用实验经验，Agent-Native Research Lab 保存可重放证据，Frontis Horizon／MA1 研究跨任务改进。各案例的证据强度不同。Theseus 表 9 验证的是环境阶段，完整的环境、数据、模型共同演进仍是研究方案。",
       "url": "https://arxiv.org/abs/2609.11873",
       "tags": [
         "RSI",
