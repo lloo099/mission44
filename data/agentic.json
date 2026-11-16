@@ -1750,6 +1750,74 @@
       "confidence": "secondary"
     },
     {
+      "title": "ModHarness-RL: Recasting Harnesses as Learnable and Evolving Programs for Agentic RL",
+      "org": "Zelin He +7",
+      "year": "2026-11-13",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Agentic reinforcement learning (RL) increasingly relies on a harness, the scaffold around the model that decides what it sees of its own interaction and what guidance it receives. Most existing approaches train under a hand-written harness that stays fixed throughout. However, an…",
+      "url": "https://arxiv.org/abs/2611.18533",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "ARCHER: From Rationale Imitation to Executable Reasoning in Small Language Models",
+      "org": "Dhruv Dixit +3",
+      "year": "2026-11-13",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Small language models are attractive for local, low-cost, and privacy-sensitive deployment, but they remain unreliable on mathematical reasoning tasks that require decomposition, exact computation, tool use, and verification. We introduce \\textbf{ARCHER}: \\textbf{A}ction-trace \\t…",
+      "url": "https://arxiv.org/abs/2611.18494",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "Who Should Be on the Panel? Task-Conditioned Persona Selection for LLM Trading Agents",
+      "org": "Boming Yang +4",
+      "year": "2026-11-13",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Multi-agent LLM systems are built by fixing a cast of roles and then designing how the cast coordinates. Which agents should make up the group for a given task is left to the designer, and the same cast is reused for every task. Financial trading makes the cost of that choice vis…",
+      "url": "https://arxiv.org/abs/2611.18150",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "Skill Adapter: Personalized Modification and Online Routing of General-Purpose Skills",
+      "org": "Qijia Zhuang +3",
+      "year": "2026-11-12",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Large language model (LLM) agents use external skills to reuse task procedures and experience with tools. General-purpose skills describe shared execution procedures, while specific tool choices, operating practices, and output requirements vary across users. In long-horizon task…",
+      "url": "https://arxiv.org/abs/2611.17007",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
       "title": "Open Challenges and Opportunities in Human-Agent Systems",
       "org": "Reuth Mirsky +9",
       "year": "2026-11-10",
@@ -1883,70 +1951,6 @@
       ],
       "confidence": "self-reported",
       "source": "arXiv · 自动抓取",
-      "auto": true
-    },
-    {
-      "title": "Video-Coder: Reinforcing Agentic Coding for Video Generation",
-      "org": "Chaoyang Wang +9",
-      "year": "2026-11",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Recent years have witnessed remarkable progress in video generation in terms of visual quality and temporal consistency. However, generating videos with precise spatial structure, coherent motion dynamics, and controllable scene composition remains challenging. In this paper, we …",
-      "url": "https://arxiv.org/abs/2611.09894",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "self-reported",
-      "auto": true
-    },
-    {
-      "title": "Sharing the Road: LLM-Based Bargaining in Mixed-Autonomy Traffic",
-      "org": "Lingxiao Zhou +2",
-      "year": "2026-11",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Mixed-autonomy traffic involves heterogeneous driving populations competing for shared road space. Previous studies have shown the existence and emergence of collective rationality using game-theoretic and reinforcement learning approaches, which rely on explicitly specified beha…",
-      "url": "https://arxiv.org/abs/2611.09004",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "self-reported",
-      "auto": true
-    },
-    {
-      "title": "NeutronGym: Physics-Graded Neutron Instrument Design for LLM Agents",
-      "org": "Lijie Ding +1",
-      "year": "2026-10",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Designing a scientific instrument tests whether language-model agents can do physics rather than recall it, provided the grading cannot be argued with. We introduce NeutronGym, to our knowledge the first executable environment for neutron instrument design: agents build instrumen…",
-      "url": "https://arxiv.org/abs/2610.03631",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "self-reported",
-      "auto": true
-    },
-    {
-      "title": "VenusRL: A Fully Disaggregated Agentic RL System with Priority Scheduling and Scalable Interaction",
-      "org": "Mingjun Zhang +17",
-      "year": "2026-10",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Agentic Reinforcement Learning (RL) trains LLM agents through multi-turn interactions with external tool environments. Its multi-turn nature exposes two system-level bottlenecks unaddressed by existing agentic RL frameworks. First, end-to-end training throughput is constrained by…",
-      "url": "https://arxiv.org/abs/2610.03286",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "self-reported",
       "auto": true
     }
   ]
