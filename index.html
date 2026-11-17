@@ -44,7 +44,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap"
     media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap" /></noscript>
-  <link rel="stylesheet" href="css/styles.css?v=20261113-loadfix" />
+  <link rel="stylesheet" href="css/styles.css?v=20261117-deepswe" />
   <script defer src="js/vendor/mermaid.min.js?v=20260907e"
     onload="window.__initMermaid && window.__initMermaid(); document.dispatchEvent(new CustomEvent('mermaid-ready'));"
     onerror="window.__mermaidFailed = true; document.dispatchEvent(new CustomEvent('mermaid-failed'));"></script>
@@ -221,6 +221,43 @@
         <h2>时间线 · Timeline</h2>
         <p class="panel-sub">RL、Agentic RL、昇腾与大模型动态，按日期由新到旧排列。</p>
       </div>
+      <section class="timeline-comparison" aria-labelledby="deepswe-comparison">
+        <h3 id="deepswe-comparison">昇腾 DeepSWE · 四项工作对比</h3>
+        <p class="timeline-comparison-intro">当前项目证据来自 512 沙箱实验。下面的迁移方案和验收指标分别对应生成、编排、执行环境与工程优化。</p>
+        <div class="timeline-table-scroll" tabindex="0" role="region" aria-label="DeepSWE 技术对比表，可横向滚动">
+          <table aria-labelledby="deepswe-comparison">
+            <thead>
+              <tr><th scope="col">工作</th><th scope="col">优化哪一层</th><th scope="col">DeepSWE 可借鉴</th><th scope="col">还要实测</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><a href="https://arxiv.org/html/2611.08864v2" target="_blank" rel="noopener">ASP</a></th>
+                <td><strong>训推调度</strong><br />多实例 rollout 按预估生成长度组批，再平衡派发顺序，平滑 learner 的样本供应。</td>
+                <td>固定推理和 learner 资源，对照现有派发与长度组批。分别记录各轮生成、工具执行和验收耗时，再判断哪些信号能预测整条轨迹。</td>
+                <td>生成长度预测质量、learner 等样时间、策略版本滞后、有效 rollout／小时。论文在 910B3 上以数学和迷宫任务为主。</td>
+              </tr>
+              <tr>
+                <th scope="row"><a href="https://arxiv.org/html/2610.11959#S6" target="_blank" rel="noopener">MiMo-V2.6</a></th>
+                <td><strong>Agent rollout 编排与轨迹流</strong><br />Harness Pool 托管多条 Agent Loop，控制面传元数据，轨迹单独传输，Sample Mixer 维持任务配比。</td>
+                <td>用少量长驻 worker 承载多个 Loop，统一记录模型 token、行为 logprob、工具结果、loss mask 和 policy_version。多任务混合时跟踪各类样本的实际保留率。</td>
+                <td>512 并发下的控制面延迟和轨迹带宽。固定输入校验昇腾训推 logprob、权重刷新、长任务完成率与进入 learner 的样本分布。</td>
+              </tr>
+              <tr>
+                <th scope="row"><a href="https://arxiv.org/html/2609.22978#S4.SS3" target="_blank" rel="noopener">DSec</a></th>
+                <td><strong>CPU 沙箱与环境生命周期</strong><br />高密度资源共享，基础镜像、工具和工作区分层，支持有状态执行与中断恢复。</td>
+                <td>复用只读镜像层，给每条 rollout 独立可写工作区。保持环境存活，按节点限制同时执行的重验收任务。</td>
+                <td>以 512 并发为对照，测创建和首条命令 P99、验收排队与执行时间、节点 CPU／内存／I/O 和超时。确认收益后再试 768 或 1,000。</td>
+              </tr>
+              <tr>
+                <th scope="row"><a href="https://arxiv.org/html/2609.13645#S3" target="_blank" rel="noopener">Forge</a></th>
+                <td><strong>训练引擎和算子本身</strong><br /><a href="https://arxiv.org/html/2611.04998#S3" target="_blank" rel="noopener">ForgeKernel</a> 用真机反馈迭代算子。ForgeTrain 对照参考实现验证整个训练引擎。</td>
+                <td>先 profile rollout 或 learner，挑真实热点。Agent 在多镜像工作区改代码，提交给 NPU Runner，平台 Gate 用固定参考与计时条件验收。</td>
+                <td>生产 shape、dtype 和所需梯度的正确性，候选在目标卡型与软件栈上的耗时、整步收益，以及编译、排队和设备回收成本。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
       <div id="timeline-body" class="tl-wrap"><div class="empty">Loading…</div></div>
     </section>
 
