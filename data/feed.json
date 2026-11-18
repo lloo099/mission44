@@ -1,21 +1,22 @@
 {
-  "updated": "2026-11-17T16:05:44Z",
-  "checked": "2026-11-17T16:05:44Z",
+  "updated": "2026-11-18T15:45:35Z",
+  "checked": "2026-11-18T15:45:35Z",
   "stale": false,
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 34,
+  "count": 15,
   "pinned": 8,
-  "live": 26,
+  "live": 7,
   "buckets_ok": [
+    "fp8-lowprec",
+    "efficient-llm"
+  ],
+  "buckets_failed": [
     "rl-llm",
     "reasoning-rl",
     "agentic-rl",
     "ascend-npu",
-    "sparse-attention",
-    "fp8-lowprec",
-    "efficient-llm"
+    "sparse-attention"
   ],
-  "buckets_failed": [],
   "items": [
     {
       "title": "Inkling 2 Small · 11 月 12 日开放权重",
@@ -174,150 +175,75 @@
       "verified": "2026-11-13"
     },
     {
-      "title": "ALIVE: Making Streaming Video Models Interactive",
-      "org": "Jinzhao Li +15",
-      "year": "2026-11-16",
-      "summary": "Streaming video LLMs can continuously observe the world, yet often handle user requests in isolation. We introduce ALIVE, an interactive streaming video model supporting proactive monitoring, streaming task coordination, and feedback-seeking interaction. We construct ALIVE-SFT-288K and ALIVE-RL-3K f…",
-      "url": "https://arxiv.org/abs/2611.21366",
-      "category": "rl-llm",
+      "title": "HADVQ: Hessian Aware Directional Vector Quantization",
+      "org": "Daniil Li +6",
+      "year": "2026-11-17",
+      "summary": "Ultra-low-bit quantization of large language models is a challenging task because aggressive compression severely distorts model parameters and disproportionately harms a small number of highly sensitive channels. We present a vector quantization method tailored for this regime. Our approach begins …",
+      "url": "https://arxiv.org/abs/2611.22721",
+      "category": "efficient-llm",
       "tags": [
         "live",
-        "rl-llm",
+        "efficient-llm",
         "auto"
       ],
       "confidence": "self-reported",
       "source": "arXiv · 自动抓取"
     },
     {
-      "title": "Deep Learning for Physicists: From Linear Regression to Reasoning Models",
-      "org": "Masanori Hanada",
-      "year": "2026-11-16",
-      "summary": "These lecture notes are based on an introductory course on neural networks and deep learning that the author taught in the School of Mathematical Sciences at Queen Mary University of London in 2023/24 and 2024/25. The author, however, is a physicist, and it shows: wherever possible, ideas are explai…",
-      "url": "https://arxiv.org/abs/2611.21295",
-      "category": "rl-llm",
+      "title": "Communicate the Change: Efficient Expert Parallelism via Activation Compression",
+      "org": "Fengyuan Liu +3",
+      "year": "2026-11-17",
+      "summary": "Scaling has driven the success of large language models (LLM), with sparse mixture-of-experts (MoE) architectures enabling greater parameter capacity without a proportional increase in computation. At large scales, MoE models rely on expert parallelism to distribute experts across devices. Each MoE …",
+      "url": "https://arxiv.org/abs/2611.22215",
+      "category": "efficient-llm",
       "tags": [
         "live",
-        "rl-llm",
+        "efficient-llm",
         "auto"
       ],
       "confidence": "self-reported",
       "source": "arXiv · 自动抓取"
     },
     {
-      "title": "Jev-as-a-Reward: Validating Probabilistic Safety Judges for Reinforcement Learning",
-      "org": "Eunkyeong Lee +3",
-      "year": "2026-11-16",
-      "summary": "Probabilistic safety judges return the probability of a safety label and cheaply score reinforcement learning rollouts. A confidence gate sends only uncertain verdicts to a stronger LLM judge, which leaves confidently passed harm in a blind spot. Policies can exploit this blind spot, and commercial …",
-      "url": "https://arxiv.org/abs/2611.20955",
-      "category": "rl-llm",
+      "title": "What MoE Routing Controls: Causal Interventions on Expert Trajectories",
+      "org": "Mukund Athmaram +2",
+      "year": "2026-11-17",
+      "summary": "In mixture-of-experts (MoE) language models, a token is routed to a sequence of experts across layers. We investigate how forcing tokens onto chosen expert paths influences model behavior. We build a target path from the experts that a concept's or role's tokens most often use, and we add a fixed bi…",
+      "url": "https://arxiv.org/abs/2611.22120",
+      "category": "efficient-llm",
       "tags": [
         "live",
-        "rl-llm",
+        "efficient-llm",
         "auto"
       ],
       "confidence": "self-reported",
       "source": "arXiv · 自动抓取"
     },
     {
-      "title": "GPRM: Global Perspective Process Reward Model",
-      "org": "Zifan Zhang +12",
+      "title": "Beyond Bitwidth: Deployment-Constrained Mixed-Precision Quantization for Multilingual LLM Inference on NVIDIA Blackwell",
+      "org": "Hyojung Han",
       "year": "2026-11-16",
-      "summary": "Process Reward Models (PRMs) are widely used for step-level evaluation of multi-step reasoning in large language models, but existing methods are often limited by weak historical dependency modeling and insufficient global awareness. They typically fail to leverage prior step evaluations for coheren…",
-      "url": "https://arxiv.org/abs/2611.20755",
-      "category": "rl-llm",
+      "summary": "Low-bit LLM quantization is useful only if a model preserves service-relevant accuracy, executes through supported GPU kernels, and meets measured memory and latency limits. We study Qwen3-8B on NVIDIA B200 with vLLM, including INT2/INT3, GPTQ, NVFP4, and mixed-precision configurations. We verify na…",
+      "url": "https://arxiv.org/abs/2611.21974",
+      "category": "efficient-llm",
       "tags": [
         "live",
-        "rl-llm",
+        "efficient-llm",
         "auto"
       ],
       "confidence": "self-reported",
       "source": "arXiv · 自动抓取"
     },
     {
-      "title": "SpeCal: Spectral Calibration for Unsupervised RLVR",
-      "org": "Kai Tang +9",
+      "title": "The Hidden Cost of MoE Diffusion Decoding: Profiling and Fixing the Sampler",
+      "org": "Harshit Samrat +1",
       "year": "2026-11-16",
-      "summary": "Reinforcement learning with verifiable rewards (RLVR) has substantially improved the reasoning abilities of large language models, but its dependence on ground-truth answers or external verifiers limits its ability to exploit abundant unlabeled reasoning data. Unsupervised RLVR alleviates this bottl…",
-      "url": "https://arxiv.org/abs/2611.20691",
-      "category": "rl-llm",
+      "summary": "Masked diffusion language models (dLLMs) decode by iteratively denoising a full canvas of tokens, so every forward pass runs a per-token sampling and stopping pipeline over the entire canvas-by-vocabulary logits tensor. We profile single-user decoding of a 26B-parameter diffusion Mixture-of-Experts …",
+      "url": "https://arxiv.org/abs/2611.21852",
+      "category": "efficient-llm",
       "tags": [
         "live",
-        "rl-llm",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "Contrastive Activation-Guided Zeroth-Order Preference Optimisation for Memory-Efficient LLM Alignment",
-      "org": "Weiyun Huang +1",
-      "year": "2026-11-16",
-      "summary": "Direct Preference Optimisation (DPO) simplifies reinforcement learning from human feedback, but still relies on traditional backpropagation and its associated activation-memory cost. Zeroth-order (ZO) optimisation avoids backpropagation, yet isotropic perturbations can produce noisy updates for pref…",
-      "url": "https://arxiv.org/abs/2611.20635",
-      "category": "rl-llm",
-      "tags": [
-        "live",
-        "rl-llm",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "Optimistic Verifiers Get Hacked: Reward Hacking Under an Exact Process Oracle",
-      "org": "Arunkumar V +4",
-      "year": "2026-11-16",
-      "summary": "Reinforcement learning from verifiable rewards inherits whatever its verifier gets wrong. Outside mathematics and code the verifier is a proxy, a rubric, a learned judge or a hand-written checker, and its distance from the true objective is never measured, so a rising reward cannot be told apart fro…",
-      "url": "https://arxiv.org/abs/2611.21538",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "Procedure without Judgment: What Small Language Models Learn under an Exact Verifier",
-      "org": "Arunkumar V +4",
-      "year": "2026-11-16",
-      "summary": "When an authorization policy blocks an agent's tool call, the audit log should name the facts that forced the decision and nothing more. For an executable policy over an enumerable context space this minimal sufficient reason can be computed exactly, so an explanation is scored against ground truth …",
-      "url": "https://arxiv.org/abs/2611.21529",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "K2-Horizon: A Frontier Fleet of Open Source Language Models",
-      "org": " K2 Team +94",
-      "year": "2026-11-16",
-      "summary": "We present K2-Horizon, a fleet of six fully open language models, from a 0.9B dense model to a 375B-A23B MoE, built for general-purpose reasoning and agentic work across math and science, software engineering, deep research, office automation, and beyond. The models lead or are competitive with stro…",
-      "url": "https://arxiv.org/abs/2611.21003",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "Learning Design Taste through Verifiable Synthetic Environments and Agentic Reinforcement Learning",
-      "org": "Sujay choubey +3",
-      "year": "2026-11-16",
-      "summary": "Code-generating language models produce user interfaces that build and run, but the pages are often weak in hierarchy, spacing, typography and composition. We study whether a small code model can learn design taste through reinforcement learning in verifiable synthetic environments. The method has t…",
-      "url": "https://arxiv.org/abs/2611.20612",
-      "category": "agentic-rl",
-      "tags": [
-        "live",
-        "agentic-rl",
+        "efficient-llm",
         "auto"
       ],
       "confidence": "self-reported",
@@ -329,205 +255,10 @@
       "year": "2026-11-16",
       "summary": "Modern large language models (LLMs) increasingly support longer contexts and serve more concurrent requests, increasing both sequence lengths and batch sizes. Both trends increase KV-cache size and memory traffic during inference. KV-cache quantization reduces these costs, with recent approaches usi…",
       "url": "https://arxiv.org/abs/2611.21216",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "ScoutCache: Efficient Few-Step Autoregressive Video Diffusion via Conditional Readout and Selective Caching",
-      "org": "Hao Tan +2",
-      "year": "2026-11-16",
-      "summary": "Few-step autoregressive video diffusion enables efficient long video generation, but inference still incurs substantial computational costs from repeated denoising and KV cache operations. Existing acceleration methods reduce parts of this overhead, while historical KV reading and cache construction…",
-      "url": "https://arxiv.org/abs/2611.21038",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "QASK-Edit: Adaptive Sparse Attention Across Queries and Key Sources for Efficient Video Editing",
-      "org": "Hengrui Liu +3",
-      "year": "2026-11-16",
-      "summary": "Diffusion Transformers (DiTs) have achieved strong performance in generation based video editing, but suffer from high inference latency due to the long token sequences formed by conditioning inputs and generated videos. Although training-free sparse attention reduces this cost, existing methods typ…",
-      "url": "https://arxiv.org/abs/2611.20704",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "GaugeRoPE: RoPE-Compatible Executable Latent Attention",
-      "org": "Yuanhang Gao +4",
-      "year": "2026-11-16",
-      "summary": "Latent KV cache compression reduces memory footprint by mapping historical keys and values into compact representations. However, generic compressed key states require reconstruction to native dimension before applying RoPE and computing attention scores, adding sequence-scaling overhead to the deco…",
-      "url": "https://arxiv.org/abs/2611.20524",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "KVMARK: Fragile Watermarking for KV-Cache Integrity in Latent Multi-Agent Systems",
-      "org": "Marjan Beheshti +1",
-      "year": "2026-11-16",
-      "summary": "Latent multi-agent communication directly transfers Key-Value (KV) cache tensors between transformer-based agents, bypassing text serialization entirely. While computationally efficient and reasoning accurate, this communication channel is opaque and vulnerable to man-in-the-middle tampering, a thre…",
-      "url": "https://arxiv.org/abs/2611.20454",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "ProSE: Probing Reconstruction Error for Semantic-guided Expert Skipping in MoE-MLLMs",
-      "org": "Jiameng Li +2",
-      "year": "2026-11-16",
-      "summary": "Mixture-of-Experts Multimodal Large Language Models (MoE-MLLMs) offer scalable inference through sparse expert activation, yet substantial computational redundancy remains among the activated experts. Existing expert skipping methods typically calibrate thresholds based on target skipping ratios or …",
-      "url": "https://arxiv.org/abs/2611.20885",
       "category": "efficient-llm",
       "tags": [
         "live",
         "efficient-llm",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "ParGLU: Partial Gating Improves Language Modeling in MoE Transformers",
-      "org": "Yuting Ge",
-      "year": "2026-11-16",
-      "summary": "Multiplicative gating improves Transformer feed-forward networks (FFNs), but it reduces intermediate representation width under a fixed parameter budget. This trade-off is particularly relevant to Mixture-of-Experts (MoE) models, where individual experts have limited capacity. We introduce ParGLU, a…",
-      "url": "https://arxiv.org/abs/2611.20663",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "GEAR$^2$: Pruned Experts Live On through Gated Reuse of Activated Experts and a Missing-Mass Residual",
-      "org": "Linliang Chen +5",
-      "year": "2026-11-16",
-      "summary": "Mixture-of-Experts (MoE) Large Language Models (LLMs) activate only a few experts per token while generally keeping all the experts in GPU memory for high efficiency. Expert pruning reduces this GPU memory footprint cost, yet discards the contribution of pruned experts. Existing remedies either rely…",
-      "url": "https://arxiv.org/abs/2611.20616",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "Interactive Structured Environment Scaling for Large Language Model Agentic Reasoning",
-      "org": "Peng Yu +3",
-      "year": "2026-11-15",
-      "summary": "Reinforcement learning via environmental interaction is a cornerstone post-training paradigm for evolving large language models into autonomous agents capable of multi-turn tool use and exploration. Because the environment defines what the policy observes and how actions are verified, its structure …",
-      "url": "https://arxiv.org/abs/2611.19871",
-      "category": "reasoning-rl",
-      "tags": [
-        "live",
-        "reasoning-rl",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "LENS: Replacing LayerNorm and Softmax in Transformers with Learnable Normalization States",
-      "org": "Yuhao Liu +2",
-      "year": "2026-11-15",
-      "summary": "LayerNorm and attention Softmax are critical operations in Transformers. However, they cannot be efficiently mapped to General Matrix Multiplication (GEMM) computations on hardware. Therefore, modern hardware accelerator designs, such as NPUs on ASIC/FPGA, consume a large amount of hardware resource…",
-      "url": "https://arxiv.org/abs/2611.20331",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "PoCoAttn: Position-Content Collaborative Sparse Attention for Fast and High-Fidelity Video Generation",
-      "org": "Jianwen Wu +4",
-      "year": "2026-11-15",
-      "summary": "Video diffusion transformers rely on 3D full attention over tens of thousands of spatiotemporal tokens, and its quadratic cost dominates inference latency. Sparse attention reduces this cost, but existing methods face a dilemma: static methods apply predefined masks and cannot capture input-dependen…",
-      "url": "https://arxiv.org/abs/2611.20307",
-      "category": "sparse-attention",
-      "tags": [
-        "live",
-        "sparse-attention",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "Benchmarking LLM Inference on Desktop-Scale NVIDIA Grace Blackwell Clusters",
-      "org": "Kevin Bhimani +4",
-      "year": "2026-11-15",
-      "summary": "Two NVIDIA DGX Spark GB10 systems connect directly over 200 GbE to serve larger language models and increase inference capacity, but the benefits depend on how they are deployed. We benchmark 17 open-weight checkpoints spanning dense and mixture-of-experts architectures, 8B to 235B parameters and fo…",
-      "url": "https://arxiv.org/abs/2611.20289",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "CECAR: Cache & Expert Co-Aware Routing Accelerates On-Device Inference of MoE LLMs",
-      "org": "Byeongju Kim +6",
-      "year": "2026-11-15",
-      "summary": "Despite growing interest in on-device LLM deployment, large-scale Mixture-of-Experts (MoE) models remain impractical on resource-constrained devices, as sparse expert activation still requires all expert weights to be memory-resident. To address this, we identify three key observations for on-device…",
-      "url": "https://arxiv.org/abs/2611.20119",
-      "category": "efficient-llm",
-      "tags": [
-        "live",
-        "efficient-llm",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "AscendGYM: A Cost-Aware Kernel Optimization Benchmark for Real-World Workloads on Ascend NPUs",
-      "org": " AI Training Platform Team +26",
-      "year": "2026-11-13",
-      "summary": "Kernel optimization is essential for efficient large language model (LLM) training and inference on Ascend NPUs. Existing Ascend kernel benchmarks primarily focus on kernel generation, with less emphasis on the ability of agents to optimize existing implementations under input configurations drawn f…",
-      "url": "https://arxiv.org/abs/2611.17621",
-      "category": "ascend-npu",
-      "tags": [
-        "live",
-        "ascend-npu",
         "auto"
       ],
       "confidence": "self-reported",
@@ -539,21 +270,6 @@
       "year": "2026-11-12",
       "summary": "Low-bit quantization reduces the memory footprint and inference cost of large language models (LLMs), yet accurate FP4 quantization remains challenging. Practical formats such as MXFP4, NVFP4, and HiF4 pair a 4-bit floating-point payload with block-wise or hierarchical scale codes, making accuracy h…",
       "url": "https://arxiv.org/abs/2611.16426",
-      "category": "fp8-lowprec",
-      "tags": [
-        "live",
-        "fp8-lowprec",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "What the Loss Curve Misses: FP4 Pretraining Slows the Acquisition of Rare Facts",
-      "org": "Chang Lu +1",
-      "year": "2026-11-09",
-      "summary": "Low-precision pretraining is usually judged by validation loss. We ask whether matching loss also means learning rare facts as efficiently. We train transformers from scratch with emulated 4-bit matrix multiplications on synthetic biographies with controlled exposure counts, on their own and mixed i…",
-      "url": "https://arxiv.org/abs/2611.12832",
       "category": "fp8-lowprec",
       "tags": [
         "live",
