@@ -1,21 +1,21 @@
 {
-  "updated": "2026-11-18T15:45:35Z",
-  "checked": "2026-11-18T15:45:35Z",
+  "updated": "2026-11-19T15:51:01Z",
+  "checked": "2026-11-19T15:51:01Z",
   "stale": false,
   "source": "curated (data/feed_pinned.json) + arXiv API",
-  "count": 15,
+  "count": 27,
   "pinned": 8,
-  "live": 7,
+  "live": 19,
   "buckets_ok": [
+    "agentic-rl",
+    "ascend-npu",
+    "sparse-attention",
     "fp8-lowprec",
     "efficient-llm"
   ],
   "buckets_failed": [
     "rl-llm",
-    "reasoning-rl",
-    "agentic-rl",
-    "ascend-npu",
-    "sparse-attention"
+    "reasoning-rl"
   ],
   "items": [
     {
@@ -175,105 +175,285 @@
       "verified": "2026-11-13"
     },
     {
-      "title": "HADVQ: Hessian Aware Directional Vector Quantization",
-      "org": "Daniil Li +6",
+      "title": "Depth Before Breadth: Reverse-to-Forward Curriculum with Advantage Decomposition for LLM Agent",
+      "org": "Siyuan Du +6",
+      "year": "2026-11-18",
+      "summary": "Reinforcement learning (RL) has become a common approach for training large language model (LLM) agents on long-horizon tasks. However, learning from sparse terminal rewards makes credit assignment and exploration difficult. We approach these challenges through a policy-induced capability region, th…",
+      "url": "https://arxiv.org/abs/2611.24697",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "PIPETTE: Prompt Injection Purple-Teaming for Robust LLM Agents",
+      "org": "Lipeng He +3",
+      "year": "2026-11-18",
+      "summary": "Large language model (LLM) agents routinely interact with untrusted external data, exposing them to indirect prompt injection (IPI) attacks that hijack agents into executing attacker-chosen tasks. To uncover these vulnerabilities at scale, automated red-teaming methods often leverage reinforcement l…",
+      "url": "https://arxiv.org/abs/2611.24362",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "Beyond Corpus-Driven Imitation: Evolving Musical Mindsets in the Agentic Orchestra via Quantum Reinforcement Learning",
+      "org": "Eduardo Reck Miranda +1",
+      "year": "2026-11-18",
+      "summary": "This paper presents a framework for computer-aided music composition and performance based on quantum reinforcement learning and multi-agent interaction. We introduce the agentic orchestra, where musical agents evolve distinct mindsets through trial-and-error engagement with a musical environment, r…",
+      "url": "https://arxiv.org/abs/2611.24290",
+      "category": "agentic-rl",
+      "tags": [
+        "live",
+        "agentic-rl",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "Every Query Routes Itself: Accelerating Video Diffusion Transformers with Per-Query Routed Sparse Attention",
+      "org": "Zhen Huang +11",
+      "year": "2026-11-18",
+      "summary": "Self-attention over long token sequences dominates the inference cost of video diffusion transformers. Clustering-based sparse attention clusters both queries and keys and lets all queries in a cluster share one selection of key clusters. We show that this sharing limits accuracy: with key clusters …",
+      "url": "https://arxiv.org/abs/2611.24479",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "LoopCache: Accelerating Long-Context Self-Speculative Decoding for Looped Transformers",
+      "org": "Zizhuo Fu +6",
+      "year": "2026-11-18",
+      "summary": "Looped Transformers achieve large effective depth with compact models by repeatedly applying a weight-shared block across R recurrent steps, each maintaining a loop-specific key-value (KV) cache. To accelerate sequential loop execution, recent wave-style self-speculative methods like WaveFront Decod…",
+      "url": "https://arxiv.org/abs/2611.24301",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "When Shuffling Fails: Token Recovery from Obfuscated KV Caches",
+      "org": "Chengzhi Yi +3",
+      "year": "2026-11-18",
+      "summary": "LLM serving systems store, offload, and share KV caches, exposing token-level representations to infrastructure operators and co-tenants. Shuffled obfuscation combines secret linear transforms with fresh permutations, claiming security from b! possible shufflings. We show that input symmetry invalid…",
+      "url": "https://arxiv.org/abs/2611.24276",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "Measuring and Charging for Retained Context in Long-Context LLM Services",
+      "org": "Yi Lu +3",
+      "year": "2026-11-18",
+      "summary": "Long-context large language model (LLM) services charge for repeated context, yet billing weights need not reflect its contribution to answer quality. We present a three-layer framework separating content relevance, observable proxies and auditable positional weights. Context-ablation experiments sh…",
+      "url": "https://arxiv.org/abs/2611.24071",
+      "category": "sparse-attention",
+      "tags": [
+        "live",
+        "sparse-attention",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "Clover-35B-A3B-Preview Technical Report",
+      "org": " DiffuSpace Technical Team",
+      "year": "2026-11-18",
+      "summary": "We introduce Clover-35B-A3B-Preview (Clover), a mixture-of-experts diffusion language model with 35 billion total parameters and 3 billion activated parameters, supporting thinking-mode generation. Clover adapts Gated Delta Networks to block diffusion by combining recurrent memory of previously gene…",
+      "url": "https://arxiv.org/abs/2611.24636",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "Do Frontier Model Ingredients Add Up? A Replicated Factorial Study of Small Language Models",
+      "org": "Biswa Sengupta",
+      "year": "2026-11-18",
+      "summary": "Building a small language model requires choosing which published improvements to combine. We compare five changes in the same model, using the same data and training budget. We test selected combinations and repeat each one with a second random seed. Mixture-of-experts layers, Muon optimisation and…",
+      "url": "https://arxiv.org/abs/2611.24540",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "Harvesting Expert-Parallel Bubbles for Fine-Tuning",
+      "org": "Oana Balmau +7",
+      "year": "2026-11-18",
+      "summary": "GPUs are expensive, yet latency-critical large language model (LLM) inference leaves part of them idle. Colocation reclaims this capacity by running best-effort work, such as fine-tuning, alongside serving. Many leading LLMs now use a Mixture-of-Experts (MoE) architecture, which adds a new source of…",
+      "url": "https://arxiv.org/abs/2611.24496",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "On Demand, Not Uniformity: Adaptive Expert Orchestration for Multimodal Continual Instruction Tuning",
+      "org": "Mengxin Qin +5",
+      "year": "2026-11-18",
+      "summary": "Multimodal Continual Instruction Tuning (MCIT) enables Multimodal Large Language Models (MLLMs) to adapt to sequential instruction data while retaining previously acquired knowledge. While recent Mixture-of-Experts (MoE)-based methods mitigate forgetting by freezing historical experts and introducin…",
+      "url": "https://arxiv.org/abs/2611.23865",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "Plug-and-Play Multi-Licensee Robust Watermarking for Mixture-of-Experts LLMs",
+      "org": "Jianshuo Liu +2",
+      "year": "2026-11-18",
+      "summary": "Mixture-of-Experts (MoE) architectures enable high-capacity large language models (LLMs) with high sparse computation, making them attractive for deployment on private hardware. However, distributing model weights exposes valuable intellectual property (IP) to leakage and unauthorized redistribution…",
+      "url": "https://arxiv.org/abs/2611.23838",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "MoMoVL: Modality-Aware Adaptive Compression for On-Device Sparsely-Activated Vision-Language Models",
+      "org": "Dongkeun Lee +1",
+      "year": "2026-11-18",
+      "summary": "The rise of the agentic web has been accompanied by growing demand for on-device Vision-Language Models (VLMs) that perform diverse cross-modal web tasks with enhanced privacy and reduced latency. Mixture-of-Experts (MoE) models are widely adopted in modern VLMs for compute-efficient scalability, ye…",
+      "url": "https://arxiv.org/abs/2611.23695",
+      "category": "efficient-llm",
+      "tags": [
+        "live",
+        "efficient-llm",
+        "auto"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取"
+    },
+    {
+      "title": "How well does graph superoptimization transfer? Adapting tensor-graph superoptimizer to a Triton-based NPU",
+      "org": "Weronika Hryniewska-Guzik +6",
       "year": "2026-11-17",
-      "summary": "Ultra-low-bit quantization of large language models is a challenging task because aggressive compression severely distorts model parameters and disproportionately harms a small number of highly sensitive channels. We present a vector quantization method tailored for this regime. Our approach begins …",
-      "url": "https://arxiv.org/abs/2611.22721",
-      "category": "efficient-llm",
+      "summary": "For automatic optimization systems, performance portability across increasingly diverse AI accelerators remains a challenge. We investigate how well graph-level superoptimization transfers across architectures by adapting Mirage from its CUDA-oriented design to the Huawei Ascend 910B3 through a Trit…",
+      "url": "https://arxiv.org/abs/2611.22844",
+      "category": "ascend-npu",
       "tags": [
         "live",
-        "efficient-llm",
+        "ascend-npu",
         "auto"
       ],
       "confidence": "self-reported",
       "source": "arXiv · 自动抓取"
     },
     {
-      "title": "Communicate the Change: Efficient Expert Parallelism via Activation Compression",
-      "org": "Fengyuan Liu +3",
+      "title": "TeleChat to Xing4: Advancing Frontier Agentic Models on Domestic Chips and Frameworks",
+      "org": "Xingchen AGI Lab +139",
       "year": "2026-11-17",
-      "summary": "Scaling has driven the success of large language models (LLM), with sparse mixture-of-experts (MoE) architectures enabling greater parameter capacity without a proportional increase in computation. At large scales, MoE models rely on expert parallelism to distribute experts across devices. Each MoE …",
-      "url": "https://arxiv.org/abs/2611.22215",
-      "category": "efficient-llm",
+      "summary": "We present Xing 4, a series of large language models that extends the TeleChat lineage through coordinated advances in model architecture and training infrastructure on Ascend. This report describes the design principles and systems engineering behind the series, spanning architecture selection, lar…",
+      "url": "https://arxiv.org/abs/2611.22115",
+      "category": "ascend-npu",
       "tags": [
         "live",
-        "efficient-llm",
+        "ascend-npu",
         "auto"
       ],
       "confidence": "self-reported",
       "source": "arXiv · 自动抓取"
     },
     {
-      "title": "What MoE Routing Controls: Causal Interventions on Expert Trajectories",
-      "org": "Mukund Athmaram +2",
+      "title": "LaFlash: Capacity-Driven Acceleration for Coding Agent Workflows via QLC-HBF",
+      "org": "Yuseon Choi +5",
       "year": "2026-11-17",
-      "summary": "In mixture-of-experts (MoE) language models, a token is routed to a sequence of experts across layers. We investigate how forcing tokens onto chosen expert paths influences model behavior. We build a target path from the experts that a concept's or role's tokens most often use, and we add a fixed bi…",
-      "url": "https://arxiv.org/abs/2611.22120",
-      "category": "efficient-llm",
+      "summary": "As large language models (LLMs) evolve toward agentic AI, coding agents are emerging as memory-intensive workloads that repeatedly reuse persistent states, including contexts and KV caches. Emerging agentic workflows, including Loop/Graph Engineering, cause state amplification through frequent activ…",
+      "url": "https://arxiv.org/abs/2611.22746",
+      "category": "sparse-attention",
       "tags": [
         "live",
-        "efficient-llm",
+        "sparse-attention",
         "auto"
       ],
       "confidence": "self-reported",
       "source": "arXiv · 自动抓取"
     },
     {
-      "title": "Beyond Bitwidth: Deployment-Constrained Mixed-Precision Quantization for Multilingual LLM Inference on NVIDIA Blackwell",
-      "org": "Hyojung Han",
-      "year": "2026-11-16",
-      "summary": "Low-bit LLM quantization is useful only if a model preserves service-relevant accuracy, executes through supported GPU kernels, and meets measured memory and latency limits. We study Qwen3-8B on NVIDIA B200 with vLLM, including INT2/INT3, GPTQ, NVFP4, and mixed-precision configurations. We verify na…",
-      "url": "https://arxiv.org/abs/2611.21974",
-      "category": "efficient-llm",
+      "title": "Optimize the Cob, Then the Kernel: Optimizing Beam Search for Generative Recommendation Inference",
+      "org": "Shing Wai Pun +5",
+      "year": "2026-11-17",
+      "summary": "Generative recommendation (GR) inference differs substantially from conventional LLM serving, featuring long input sequences, wide beam search, and only a few fixed output tokens. Existing LLM serving engines such as vLLM process beams as batched independent sequences, causing redundant KV cache acc…",
+      "url": "https://arxiv.org/abs/2611.23339",
+      "category": "sparse-attention",
       "tags": [
         "live",
-        "efficient-llm",
+        "sparse-attention",
         "auto"
       ],
       "confidence": "self-reported",
       "source": "arXiv · 自动抓取"
     },
     {
-      "title": "The Hidden Cost of MoE Diffusion Decoding: Profiling and Fixing the Sampler",
-      "org": "Harshit Samrat +1",
-      "year": "2026-11-16",
-      "summary": "Masked diffusion language models (dLLMs) decode by iteratively denoising a full canvas of tokens, so every forward pass runs a per-token sampling and stopping pipeline over the entire canvas-by-vocabulary logits tensor. We profile single-user decoding of a 26B-parameter diffusion Mixture-of-Experts …",
-      "url": "https://arxiv.org/abs/2611.21852",
-      "category": "efficient-llm",
+      "title": "EviDARL: Evidence-Centric Dual-Agent Reasoning via Alternating Reinforcement Learning for Multi-Table Question Answering",
+      "org": "Dunhan Li +6",
+      "year": "2026-11-17",
+      "summary": "Despite advances in LLM-based table reasoning, most studies focus on single-table settings. Multi-table QA requires multi-hop reasoning over complex table relationships and evidence dispersed across long contexts, often without verifiable intermediate traces. To address these challenges, we introduc…",
+      "url": "https://arxiv.org/abs/2611.22310",
+      "category": "sparse-attention",
       "tags": [
         "live",
-        "efficient-llm",
+        "sparse-attention",
         "auto"
       ],
       "confidence": "self-reported",
       "source": "arXiv · 自动抓取"
     },
     {
-      "title": "MiSTiQ: MicroScaling Trellis Quantization for Extreme KV Cache Compression",
-      "org": "Ofir Gordon +5",
-      "year": "2026-11-16",
-      "summary": "Modern large language models (LLMs) increasingly support longer contexts and serve more concurrent requests, increasing both sequence lengths and batch sizes. Both trends increase KV-cache size and memory traffic during inference. KV-cache quantization reduces these costs, with recent approaches usi…",
-      "url": "https://arxiv.org/abs/2611.21216",
+      "title": "QDA: Closed-Loop LLM Quantization Design with Agents",
+      "org": "Xingyang Li +3",
+      "year": "2026-11-17",
+      "summary": "Post-training quantization is the standard way to serve large language models at low cost. However, the best quantization recipe differs across models and precisions. As a result, experts must redesign it for every new model, which is time-consuming and often sub-optimal. Fortunately, an LLM agent c…",
+      "url": "https://arxiv.org/abs/2611.23388",
       "category": "efficient-llm",
       "tags": [
         "live",
         "efficient-llm",
-        "auto"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取"
-    },
-    {
-      "title": "SoScale: Second-Order Scale Search for FP4 Quantization",
-      "org": "Pengxiang Zhao +5",
-      "year": "2026-11-12",
-      "summary": "Low-bit quantization reduces the memory footprint and inference cost of large language models (LLMs), yet accurate FP4 quantization remains challenging. Practical formats such as MXFP4, NVFP4, and HiF4 pair a 4-bit floating-point payload with block-wise or hierarchical scale codes, making accuracy h…",
-      "url": "https://arxiv.org/abs/2611.16426",
-      "category": "fp8-lowprec",
-      "tags": [
-        "live",
-        "fp8-lowprec",
         "auto"
       ],
       "confidence": "self-reported",
