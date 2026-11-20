@@ -48,6 +48,50 @@ flowchart TB
 
 普通 SWE 的文件编辑和 CPU 测试可以在 CPU 沙箱完成。需要 GPU/NPU 的算子或模型测试，可连接受配额管理的设备验收池，并记录设备、驱动和测试版本。若验收复用训练设备，就必须纳入同一个设备资源调度，测量其对训练的干扰。
 
+### Sandbox、Harness 与 Agent Loop 的独立模块边界
+
+三者可以分别开发、测试和替换。建议先定义独立接口，在第一版把 Harness 与 Agent Loop 放在同一 CPU Worker，通过适配器访问 Sandbox Service。需要不同语言、依赖隔离或独立扩缩容时，再调整进程和节点部署。下图按外置 Harness 绘制。
+
+```mermaid
+flowchart TB
+  J["Controller / Mixer<br/>派发 · 暂停 · 恢复"]
+  subgraph CPU["CPU 执行与编排"]
+    A["Agent Loop<br/>一次尝试的生命周期与记录"]
+    H["Harness<br/>提示 · 上下文策略 · 动作选择"]
+    S["Sandbox Service<br/>隔离环境 · 文件 · 进程"]
+    A -->|"启动 / 恢复 Harness"| H
+    H <-->|"模型请求 / 生成结果"| A
+    H <-->|"工具命令 / 执行观察"| S
+    A -->|"创建 / 租约 / 暂停 / 回收"| S
+  end
+  subgraph GPU["GPU 或昇腾 NPU"]
+    R["Rollout Engine<br/>模型生成与 KV"]
+    L["Learner<br/>损失与参数更新"]
+    R ~~~ L
+  end
+  D["轨迹数据面<br/>tokens · logprob · mask · 版本"]
+  J -->|"任务与阶段"| A
+  A <-->|"真实采样输入输出"| R
+  A -->|"提交载荷与引用"| D
+  D -->|"Packer / Loader"| L
+  J -.->|"共卡阶段控制"| R
+  J -.->|"共卡阶段控制"| L
+```
+
+*图 2 为三个模块独立设计的架构建议。Agent Loop 控制尝试与环境生命周期，Harness 发起模型请求并选择工具，Sandbox 返回执行观察。Harness 与 Agent Loop 可以同进程部署，模型前向和训练计算在 GPU/NPU 上执行。*
+
+| 模块 | 回答的问题 | 建议接口 | 状态归属 |
+|---|---|---|---|
+| Harness | 下一步怎样完成任务 | start、handle_model_result、handle_tool_result、export_state | 行为配置、上下文组织、待执行动作与可恢复进度 |
+| Agent Loop | 这次尝试怎样执行、记录与恢复 | run_episode、generate、checkpoint、resume、finalize | episode 身份、模型请求、实际采样记录、恢复点与结束状态 |
+| Sandbox Service | 命令在哪里执行，现场如何保留 | create、exec、get_command、pause、resume、reset、destroy | 文件与进程、命令结果、环境修订与租约 |
+
+操作时，Agent Loop 创建环境并把受限的模型端点和工具适配器交给 Harness。Harness 请求模型生成“运行测试”的动作，再调用 Sandbox 执行。Sandbox 将结果返回 Harness，后者组织下一轮上下文。Agent Loop 记录每次真实生成并管理最终验证和清理。工具适配器将命令及可见输出登记到统一事件记录，使用 episode_id、sandbox_id、generation_id 和 command_id 关联。
+
+这里将 Agent Loop 定义为一次尝试的运行与记录外壳，Harness 封装具体 Agent 行为。若现有框架的 AgentLoop 已经实现 ReAct 决策循环，可以把 Harness 做成其行为插件，复用现有循环。框架中的同名组件应按实际职责映射。
+
+模块间调用可通过函数、进程消息或 RPC 实现。控制器重连时，同时恢复 Harness 的待决动作、Agent Loop 的请求状态和 Sandbox 的命令状态。对仅支持整进程运行的现成 CLI，还需要进程保活或实际 checkpoint 能力；对话记录只能恢复其已记录的信息。环境执行可以继续时，训练窗口内的新模型请求进入等待队列，待已发布策略可服务后再放行。
+
 MiMo 把 Harness 与 Agent Loop 分别池化，Payload Porter 通过分布式存储让调度器只处理轻量引用，Sample Mixer 维护混合任务训练配比。这些机制可分别借鉴到执行、传输与供数层。[MiMo §6.1–6.3](https://arxiv.org/html/2610.11959v1#S6)
 
 ## 2 控制链路与数据链路怎样接起来
@@ -78,7 +122,7 @@ flowchart TB
   C -.->|"训练窗口"| L
 ```
 
-*图 2 为集成架构建议。实线表示任务、调用与数据，虚线表示状态和阶段控制。镜像与环境工作区存储由 Sandbox Service 管理，轨迹存储由数据面管理，二者按不同访问模式规划。*
+*图 3 为集成架构建议。实线表示任务、调用与数据，虚线表示状态和阶段控制。镜像与环境工作区存储由 Sandbox Service 管理，轨迹存储由数据面管理，二者按不同访问模式规划。*
 
 | 接口 | 发出什么 | 接收方完成什么 |
 |---|---|---|
@@ -160,7 +204,7 @@ sequenceDiagram
   Note over A,R: 新片段标为 v43，历史采样记录保留 v42
 ```
 
-*图 3 为共卡操作协议。第一版选择排空当前生成请求，在工具轮次之间续接。长解码可增加经验证的中断与续接机制。排空生成的等待、设备卸载、训练状态恢复、权重传输和推理恢复应分别计时。*
+*图 4 为共卡操作协议。第一版选择排空当前生成请求，在工具轮次之间续接。长解码可增加经验证的中断与续接机制。排空生成的等待、设备卸载、训练状态恢复、权重传输和推理恢复应分别计时。*
 
 vLLM-Ascend 官方文档描述同卡的 sleep mode 与 IPC 权重传输，以及分卡的 HCCL 传输。Level 2 sleep 会丢弃权重和 KV，恢复顺序为权重分配、装载新权重、KV 分配。额外清理可能增加 HCCL 和图恢复成本。具体调用顺序需与训练框架的显存与权重生命周期配合。[vLLM-Ascend RL 文档](https://docs.vllm.ai/projects/ascend/en/latest/user_guide/feature_guide/rl.html)
 
