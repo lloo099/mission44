@@ -22,7 +22,7 @@ DSec §6.2 描述，从 DeepSeek-V4.1 开始将 rollout 执行移到 DSec，并�
 
 ![DSec 式内置 Harness 部署](../../reads/img/dispatch-48-deepswe-cpu-npu-runtime/dsec-placement.svg)
 
-*方案 B 将 Worker Container 与 Agent Sandbox 画进 Sandbox Platform 的 CPU 执行资源域，Harness 和工具位于各自的 Agent Sandbox 内。多个环境中的 Harness 实例在本报告中合称逻辑 Harness Pool。图中的池化名称、模型端点接线和昇腾共卡协议为项目集成映射，内部放置依据 DSec §6.2。*
+*方案 B 将 Worker Container 与 Agent Sandbox 画进 Sandbox Platform 的 CPU 执行资源域，Harness 和工具位于各自的 Agent Sandbox 内。多个环境中的 Harness 实例在本报告中合称逻辑 Harness Pool。图中增加 Uni-Agent Gateway 作为可选 CPU 模型接入层。池化名称、Uni-Agent 接线和昇腾共卡协议为项目集成映射，内部放置依据 DSec §6.2。*
 
 | 对象 | 按 DSec 路线的放置 | 职责 |
 |---|---|---|
@@ -37,6 +37,26 @@ MiMo 的 Harness Pool 描述多租户 Host 如何池化承载 Harness 与 Agent 
 对已有、依赖本地文件系统和子进程的 Coding Harness，可以采用方案 B，把 Harness 直接运行在任务环境中，通过会话级模型端点调用共享推理引擎。工具的本地读写与测试在该环境完成；Worker 的外部执行接口用于启动、管理和恢复等操作。具体模型 Gateway 接线以及内部工具协议应按所用 Harness 实现确认。
 
 下文的通用职责说明同时适用于两种方案，图 1 至图 3 以及操作示例采用方案 A 的外置接线。
+
+### Uni-Agent 在两种部署图中承担什么职责
+
+这里的 Uni-Agent 指 verl-project/uni-agent。它提供 Task、Agent、Tool、Sandbox 和 Gateway 等可组合的软件接口，可以覆盖图中多个 CPU 模块的实现。采用它时，本报告的 Agent Loop 职责可以映射到 Task/Runner 的执行生命周期，以及 Gateway 的模型会话与轨迹采集；Agent 或外部 Harness 负责具体解题行为。[Uni-Agent 核心抽象](https://uni-agent.readthedocs.io/en/latest/concepts/index.html)
+
+| 架构位置 | 方案 A 外置 Harness | 方案 B 内置 Harness |
+|---|---|---|
+| Agent 行为 | Uni-Agent 白盒 Agent 在 CPU Worker 中运行，通过工具接口访问环境 | Uni-Agent 黑盒 Agent 适配器启动 Sandbox 内的外部 Harness |
+| 生命周期 | Task/Runner 准备环境、运行 Agent 并组织验证 | 在 Worker 控制层接入 Task/Runner，管理环境内的 Harness 进程 |
+| 模型调用 | CPU Agent → Gateway → Rollout Engine | Sandbox 内 Harness → 外部 CPU Gateway → Rollout Engine |
+| 工具执行 | Agent/Toolbox → Sandbox Backend → 执行环境 | Harness 直接使用本环境的工具，外部接口负责管理操作 |
+| 训练数据 | Gateway 采集实际生成记录，Framework 组织结果并导出 | 同一路径采集 Harness 的模型调用，环境部署位置独立选择 |
+
+Uni-Agent 的白盒 Agent 自己执行交互循环；黑盒 Agent 则将外部 Harness 作为沙箱内进程启动，并注入会话级模型端点。方案 B 中的 Uni-Agent 接线属于本项目对 DSec 部署方式的集成建议，Worker 的持久恢复仍按实际实现验收。[Uni-Agent Agent 接口](https://uni-agent.readthedocs.io/en/latest/concepts/agent.html)
+
+Gateway 向 Harness 提供兼容的模型 API，将请求转换为 token 输入，交给 verl 管理的推理引擎，并组织模型输出和多轮轨迹。训练记录保留实际 token、生成区域 mask 和配置支持的行为 logprob。Framework 在尝试结束后结合 Runner 结果完成记录导出，并可通过 TransferQueue 接入训练数据通路。图中 Payload Porter 的数据通路可以复用相应接口，批次配比和打包布局仍需与所选训练框架对齐。[Gateway 与轨迹](https://uni-agent.readthedocs.io/en/latest/concepts/gateway-and-trajectories.html)
+
+接入沙箱平台时，Uni-Agent 的 Sandbox provider 将 start、stop、exec 和文件操作映射到真实后端。使用 DSec 或自建平台，需要实现并验证相应适配，环境租约和暂停恢复也要与 Task 生命周期协调。[Sandbox 接口](https://uni-agent.readthedocs.io/en/latest/concepts/sandbox.html)
+
+部署建议是将 Gateway 放在沙箱外的可信 CPU 服务中，结合 Runner 按 session ID 关联尝试、奖励与载荷引用。跨步训练时延续同一次尝试及其模型会话；跨进程故障恢复时，还需恢复 Gateway 的轨迹状态。文档描述的活跃 session 保存在 Gateway 内存中，因此环境保活与模型会话恢复需要分别验收。Learner 使用实际训练后端执行梯度更新，Uni-Agent 提供通向该训练链路的 Agent 执行和数据入口。
 
 ### 上方控制面决定发什么任务以及何时切换设备
 
