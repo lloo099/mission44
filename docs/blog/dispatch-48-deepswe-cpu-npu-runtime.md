@@ -1,16 +1,16 @@
-# Dispatch 48 · 昇腾 DeepSWE 的 CPU 与 NPU 分工及共卡跨步实施方案
+# Dispatch 48 · 昇腾 RL infra
 
 *2026-11-20 · NPU Frontier Dispatch · Sandbox / Harness / Rollout / Learner*
 
-DeepSWE 的一次学习闭环需要同时维持模型计算、Agent 决策和代码执行。建议将长期存活的会话与环境放在 CPU 执行层，将模型生成和梯度更新放在 GPU 或昇腾 NPU 计算层，通过明确的阶段协议分时共卡。已经完成并通过数据验收的题目组进入训练队列，未完成尝试保存现场，在后续生成窗口继续。
+昇腾 RL infra 面向多任务、多 Harness 的 Agentic RL，协调模型计算、Agent 决策与隔离环境执行。本报告以 DeepSWE 编码任务为实例，说明 CPU 与 NPU 分工及共卡跨步方案。建议将长期存活的会话与环境放在 CPU 执行层，将模型生成和梯度更新放在 GPU 或昇腾 NPU 计算层，通过明确的阶段协议分时共卡。已经完成并通过数据验收的题目组进入训练队列，未完成尝试保存现场，在后续生成窗口继续。
 
-本文承接 [D46 DSec 与 MiMo 基础设施](../../reads/dispatch-46-dsec-mimo-rl-infra.html) 和 [D47 910B 异步 RL](../../reads/dispatch-47-910b-async-rl.html)。下文的拓扑、版本字段、切换协议和实验顺序均为面向本项目的实施设计。项目已有观察是开启 512 个沙箱时，部分环境的采样 CPU 用量低于 0.01 核；节点总体用量、峰值和采样窗口仍需复核。本文的 v42、v43 与题目组数字均用于解释机制。
+本文承接 [D46 DSec 与 MiMo 基础设施](../../reads/dispatch-46-dsec-mimo-rl-infra.html) 和 [D47 910B 异步 RL](../../reads/dispatch-47-910b-async-rl.html)。下文的拓扑、版本字段、切换协议和实验顺序均为面向本项目的实施设计。DeepSWE 实例中已有观察是开启 512 个沙箱时，部分环境的采样 CPU 用量低于 0.01 核；节点总体用量、峰值和采样窗口仍需复核。本文的 v42、v43 与题目组数字均用于解释机制。
 
 ## 0 架构总览怎样读
 
 大框划分职责与资源边界，小框表示模块，叠放方框表示一个池承载多个独立实例。实现可以将相邻的可信模块放在同一进程，按接口保持可替换性。先沿左侧 CPU 任务执行链路读图，再看右侧模型计算，最后沿底部数据面回到 Learner。
 
-![昇腾 DeepSWE 系统架构总览](../../reads/img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg)
+![昇腾 RL infra 系统架构总览](../../reads/img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg)
 
 *架构总览采用嵌套模块、池化实例和分类连线，将 CPU 控制面、Harness Pool、Agent Loop Pool、Sandbox Platform、轨迹数据面，以及共卡的 Learner 与 Rollout Engine 放在一张图中。红线表示阶段与生命周期控制，蓝线表示模型调用，绿线表示工具执行，橙线表示轨迹载荷，灰色虚线表示轻量元数据。沙箱后端按实际任务选择，共卡阶段由 Controller 协调。*
 
@@ -224,9 +224,9 @@ v43 是示意性的策略发布编号，代表一份已经装载并允许生成�
 
 | 字段 | 示例 | 作用 |
 |---|---|---|
-| run_id | deepswe-run-A | 区分独立训练运行 |
-| policy_id | deepswe-run-A/p43 | 标识不可变的已发布策略 |
-| parent_policy_id | deepswe-run-A/p42 | 追踪权重来源 |
+| run_id | rl-run-A | 区分独立训练运行 |
+| policy_id | rl-run-A/p43 | 标识不可变的已发布策略 |
+| parent_policy_id | rl-run-A/p42 | 追踪权重来源 |
 | optimizer_step | 1200 | 记录真实训练进度，数值为示例 |
 | weights_digest | 权重清单摘要 | 校验目标权重制品或分片清单 |
 | inference_config_digest | tokenizer、模板、量化等配置摘要 | 标识影响生成行为的推理配置 |
@@ -332,6 +332,6 @@ DSec 描述将 Worker 与 Agent Sandbox 放在可抢占训练池之外共同保�
 | DSec §6 | 环境与执行状态跨训练作业保留、暂停恢复 | 实际后端的内存回收、命令恢复、环境重置 |
 | vLLM-Ascend 官方 RL 文档 | 同卡 sleep、权重传输、暂停恢复的基础能力 | 目标芯片、模型与固定软件版本下的正确性和切换成本 |
 
-部署图、状态契约、v42→v43 协议与分阶段验收均为集成设计。昇腾 DeepSWE 上的跨步收益、可承载密度和训练效果需要通过上述实验获得。
+部署图、状态契约、v42→v43 协议与分阶段验收均为集成设计。昇腾 RL infra 在具体任务上的跨步收益、可承载密度和训练效果需要通过上述实验获得。
 
 来源链接见 [MiMo-V2.6 技术报告](https://arxiv.org/html/2610.11959v1#S6)、[DSec 技术报告](https://arxiv.org/html/2609.22978v1#S6)、[vLLM-Ascend RL 文档](https://docs.vllm.ai/projects/ascend/en/latest/user_guide/feature_guide/rl.html)。网页能力核对日期为 2026-11-20，复现实验应固定实际安装版本。

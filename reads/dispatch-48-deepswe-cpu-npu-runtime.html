@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dispatch 48 · 昇腾 DeepSWE 的 CPU 与 NPU 分工及共卡跨步实施方案</title>
+<title>Dispatch 48 · 昇腾 RL infra</title>
 <meta name="description" content="新增参考 MiMo 与 DSec 分区布局绘制的系统总览，结合四张配套图梳理 Sandbox、Harness、Agent Loop、Rollout 与 Learner 的硬件分工、独立接口和状态归属。以 v42→v43 解释策略发布、显存切换、完整组消费与跨步恢复，给出 512 路环境的分层配额和三阶段验收方案。拓扑与协议为项目设计，昇腾性能收益待实测。">
 <link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-48-deepswe-cpu-npu-runtime.html">
-<meta property="og:title" content="Dispatch 48 · 昇腾 DeepSWE 的 CPU 与 NPU 分工及共卡跨步实施方案">
+<meta property="og:title" content="Dispatch 48 · 昇腾 RL infra">
 <meta property="og:description" content="新增参考 MiMo 与 DSec 分区布局绘制的系统总览，结合四张配套图梳理 Sandbox、Harness、Agent Loop、Rollout 与 Learner 的硬件分工、独立接口和状态归属。以 v42→v43 解释策略发布、显存切换、完整组消费与跨步恢复，给出 512 路环境的分层配额和三阶段验收方案。拓扑与协议为项目设计，昇腾性能收益待实测。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-48-deepswe-cpu-npu-runtime.html">
@@ -17,7 +17,7 @@
 </head>
 <body><div class="wrap">
 <div class="readbar"><a class="brand" href="../index.html">RL on NPU · Research Dashboard</a><a href="../index.html#blog/dispatch-48-deepswe-cpu-npu-runtime">看板内阅读原文</a><a href="../docs/blog/dispatch-48-deepswe-cpu-npu-runtime.md">Markdown 源</a><span class="spacer"></span><button id="theme-toggle" type="button" aria-label="切换深浅色主题">切换深浅色</button></div>
-<header class="masthead"><div class="kicker">NPU Frontier Dispatch 48 · 2026-11-20</div><h1>昇腾 DeepSWE 的 CPU 与 NPU 分工及共卡跨步实施方案</h1><p class="standfirst">DeepSWE 的一次学习闭环需要同时维持模型计算、Agent 决策和代码执行。建议将长期存活的会话与环境放在 CPU 执行层，将模型生成和梯度更新放在 GPU 或昇腾 NPU 计算层，通过明确的阶段协议分时共卡。已经完成并通过数据验收的题目组进入训练队列，未完成尝试保存现场，在后续生成窗口继续。</p><div class="byline"><span>承接 D46 / D47</span><span>模块部署 · 接口 · 操作时序</span><span>本站实施设计 · 性能待实测</span></div></header>
+<header class="masthead"><div class="kicker">NPU Frontier Dispatch 48 · 2026-11-20</div><h1>昇腾 RL infra</h1><p class="standfirst">昇腾 RL infra 面向多任务、多 Harness 的 Agentic RL，协调模型计算、Agent 决策与隔离环境执行。本报告以 DeepSWE 编码任务为实例，说明 CPU 与 NPU 分工及共卡跨步方案。建议将长期存活的会话与环境放在 CPU 执行层，将模型生成和梯度更新放在 GPU 或昇腾 NPU 计算层，通过明确的阶段协议分时共卡。已经完成并通过数据验收的题目组进入训练队列，未完成尝试保存现场，在后续生成窗口继续。</p><div class="byline"><span>承接 D46 / D47</span><span>模块部署 · 接口 · 操作时序</span><span>本站实施设计 · 性能待实测</span></div></header>
 <nav class="toc"><ol><li><a href="#s0">00 架构总览怎样读</a></li>
 <li><a href="#s1">01 四个模块分别运行在哪里</a></li>
 <li><a href="#s2">02 控制链路与数据链路怎样接起来</a></li>
@@ -29,10 +29,10 @@
 <li><a href="#s8">08 512 路环境怎样配资源</a></li>
 <li><a href="#s9">09 三阶段落地和验收</a></li>
 <li><a href="#s10">10 来源与方案边界</a></li></ol></nav>
-<main><p>本文承接 <a href="dispatch-46-dsec-mimo-rl-infra.html" target="_blank" rel="noopener">D46 DSec 与 MiMo 基础设施</a> 和 <a href="dispatch-47-910b-async-rl.html" target="_blank" rel="noopener">D47 910B 异步 RL</a>。下文的拓扑、版本字段、切换协议和实验顺序均为面向本项目的实施设计。项目已有观察是开启 512 个沙箱时，部分环境的采样 CPU 用量低于 0.01 核；节点总体用量、峰值和采样窗口仍需复核。本文的 v42、v43 与题目组数字均用于解释机制。</p>
+<main><p>本文承接 <a href="dispatch-46-dsec-mimo-rl-infra.html" target="_blank" rel="noopener">D46 DSec 与 MiMo 基础设施</a> 和 <a href="dispatch-47-910b-async-rl.html" target="_blank" rel="noopener">D47 910B 异步 RL</a>。下文的拓扑、版本字段、切换协议和实验顺序均为面向本项目的实施设计。DeepSWE 实例中已有观察是开启 512 个沙箱时，部分环境的采样 CPU 用量低于 0.01 核；节点总体用量、峰值和采样窗口仍需复核。本文的 v42、v43 与题目组数字均用于解释机制。</p>
 <h2 id="s0"><span class="hnum">00</span>架构总览怎样读</h2>
 <p>大框划分职责与资源边界，小框表示模块，叠放方框表示一个池承载多个独立实例。实现可以将相邻的可信模块放在同一进程，按接口保持可替换性。先沿左侧 CPU 任务执行链路读图，再看右侧模型计算，最后沿底部数据面回到 Learner。</p>
-<figure id="architecture"><a href="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg" target="_blank" rel="noopener"><img src="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg" alt="昇腾 DeepSWE 系统架构总览，参考 MiMo 与 DSec 的分区布局绘制"></a><figcaption>架构总览 · 本站集成设计 · <a href="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg" target="_blank" rel="noopener">打开矢量图</a> · <a href="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.png" target="_blank" rel="noopener">高清 PNG</a></figcaption><div class="readout"><h5>模块与连线</h5><p>架构总览采用嵌套模块、池化实例和分类连线，将 CPU 控制面、Harness Pool、Agent Loop Pool、Sandbox Platform、轨迹数据面，以及共卡的 Learner 与 Rollout Engine 放在一张图中。红线表示阶段与生命周期控制，蓝线表示模型调用，绿线表示工具执行，橙线表示轨迹载荷，灰色虚线表示轻量元数据。沙箱后端按实际任务选择，共卡阶段由 Controller 协调。</p></div></figure>
+<figure id="architecture"><a href="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg" target="_blank" rel="noopener"><img src="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg" alt="昇腾 RL infra 系统架构总览，参考 MiMo 与 DSec 的分区布局绘制"></a><figcaption>架构总览 · 本站集成设计 · <a href="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg" target="_blank" rel="noopener">打开矢量图</a> · <a href="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.png" target="_blank" rel="noopener">高清 PNG</a></figcaption><div class="readout"><h5>模块与连线</h5><p>架构总览采用嵌套模块、池化实例和分类连线，将 CPU 控制面、Harness Pool、Agent Loop Pool、Sandbox Platform、轨迹数据面，以及共卡的 Learner 与 Rollout Engine 放在一张图中。红线表示阶段与生命周期控制，蓝线表示模型调用，绿线表示工具执行，橙线表示轨迹载荷，灰色虚线表示轻量元数据。沙箱后端按实际任务选择，共卡阶段由 Controller 协调。</p></div></figure>
 <p>分区表达参考 MiMo-V2.6 Figure 14 的控制面、数据面和执行池，以及 DSec Figure 1 的集群服务、节点运行时和后端展开方式。图中的组件部署、独立接口、资源布局与共卡协议属于本项目的集成设计，图中规模符号表示池化实例，实际容量由实验确定。<a href="https://arxiv.org/html/2610.11959v1#S6" target="_blank" rel="noopener">MiMo Figure 14</a>、<a href="https://arxiv.org/html/2609.22978v1#S3" target="_blank" rel="noopener">DSec Figure 1</a></p>
 <h3>上方控制面决定发什么任务以及何时切换设备</h3>
 <p>Sample Mixer 管任务供给，依据目标训练配比、各源耗时、组接受率和资源预算派发尝试。RL Controller 管训练与生成阶段，协调停止新生成、显存装卸、参数更新和权重发布。Run State Registry 保存组成员、尝试进度、奖励、策略版本、载荷引用和批次消费状态。三者配合后，调度器能够依据元数据判断训练条件，执行端能够查询自己的恢复位置。</p>
@@ -82,7 +82,7 @@
 <h2 id="s4"><span class="hnum">04</span>v43 是什么</h2>
 <p>v43 是示意性的策略发布编号，代表一份已经装载并允许生成的模型权重快照。在例子里，Learner 从 v42 对应的参数继续更新，准备出下一份权重，Controller 完成发布后将其标为 v43。数字 43 与模型品牌、参数量、GPU 编号和工具轮次分别使用不同字段表示。</p>
 <p>一次发布可以包含一个或多个 optimizer step，也可以因为恢复、验证或发布频率而跳过若干训练步。系统需要同时记录训练进度、发布版本和引擎实例。重启后重新加载同一份权重，可以沿用原策略 ID，并分配新的实例 ID。</p>
-<div class="tbl"><table><tr><th>字段</th><th>示例</th><th>作用</th></tr><tr><td>run_id</td><td>deepswe-run-A</td><td>区分独立训练运行</td></tr><tr><td>policy_id</td><td>deepswe-run-A/p43</td><td>标识不可变的已发布策略</td></tr><tr><td>parent_policy_id</td><td>deepswe-run-A/p42</td><td>追踪权重来源</td></tr><tr><td>optimizer_step</td><td>1200</td><td>记录真实训练进度，数值为示例</td></tr><tr><td>weights_digest</td><td>权重清单摘要</td><td>校验目标权重制品或分片清单</td></tr><tr><td>inference_config_digest</td><td>tokenizer、模板、量化等配置摘要</td><td>标识影响生成行为的推理配置</td></tr><tr><td>publication_state</td><td>PREPARING / COMMITTED</td><td>区分准备中和可服务状态</td></tr></table></div>
+<div class="tbl"><table><tr><th>字段</th><th>示例</th><th>作用</th></tr><tr><td>run_id</td><td>rl-run-A</td><td>区分独立训练运行</td></tr><tr><td>policy_id</td><td>rl-run-A/p43</td><td>标识不可变的已发布策略</td></tr><tr><td>parent_policy_id</td><td>rl-run-A/p42</td><td>追踪权重来源</td></tr><tr><td>optimizer_step</td><td>1200</td><td>记录真实训练进度，数值为示例</td></tr><tr><td>weights_digest</td><td>权重清单摘要</td><td>校验目标权重制品或分片清单</td></tr><tr><td>inference_config_digest</td><td>tokenizer、模板、量化等配置摘要</td><td>标识影响生成行为的推理配置</td></tr><tr><td>publication_state</td><td>PREPARING / COMMITTED</td><td>区分准备中和可服务状态</td></tr></table></div>
 <p>这些是本项目建议字段。权重重切分或量化后，各 rank 校验应使用对应分片与转换配置；训练权重文件的摘要无法直接替代转换后推理张量的校验。跨版本统计按同一 run 的发布序号和 lineage 计算，回滚与分支需要另行处理。</p>
 <h2 id="s5"><span class="hnum">05</span>共卡时怎样从 v42 切到 v43</h2>
 <figure><a href="img/dispatch-48-deepswe-cpu-npu-runtime/fig-4.svg" target="_blank" rel="noopener"><img class="diagram" src="img/dispatch-48-deepswe-cpu-npu-runtime/fig-4.svg" alt="共卡模式下 v42 到 v43 的操作时序"></a><figcaption>图 4 · 共卡模式下 v42 到 v43 的操作时序 · 本站实施设计 · <a href="img/dispatch-48-deepswe-cpu-npu-runtime/fig-4.svg" target="_blank" rel="noopener">打开原图</a></figcaption><div class="readout"><h5>操作关系</h5><p>本图展示共卡操作协议。第一版选择排空当前生成请求，在工具轮次之间续接。长解码可增加经验证的中断与续接机制。排空生成的等待、设备卸载、训练状态恢复、权重传输和推理恢复应分别计时。</p></div></figure>
@@ -108,7 +108,7 @@
 <p>每次实验记录模型、任务与环境修订、芯片及卡数、CANN / torch_npu / 训练和推理版本、并行策略、长度分布、随机种子和预算。分别测量排空、卸载、训练、权重装载、缓存恢复、工具排队和验证时间，再比较有效训练组吞吐及同预算任务效果。</p>
 <h2 id="s10"><span class="hnum">10</span>来源与方案边界</h2>
 <div class="tbl"><table><tr><th>来源</th><th>本文采用的机制</th><th>在本项目中需要验证的部分</th></tr><tr><td>MiMo §6</td><td>Agent Loop、Harness 池化、载荷引用与混合任务供数</td><td>与现有框架的接口映射、版本记录、训练数据消费</td></tr><tr><td>DSec §6</td><td>环境与执行状态跨训练作业保留、暂停恢复</td><td>实际后端的内存回收、命令恢复、环境重置</td></tr><tr><td>vLLM-Ascend 官方 RL 文档</td><td>同卡 sleep、权重传输、暂停恢复的基础能力</td><td>目标芯片、模型与固定软件版本下的正确性和切换成本</td></tr></table></div>
-<p>部署图、状态契约、v42→v43 协议与分阶段验收均为集成设计。昇腾 DeepSWE 上的跨步收益、可承载密度和训练效果需要通过上述实验获得。</p>
+<p>部署图、状态契约、v42→v43 协议与分阶段验收均为集成设计。昇腾 RL infra 在具体任务上的跨步收益、可承载密度和训练效果需要通过上述实验获得。</p>
 <p>来源链接见 <a href="https://arxiv.org/html/2610.11959v1#S6" target="_blank" rel="noopener">MiMo-V2.6 技术报告</a>、<a href="https://arxiv.org/html/2609.22978v1#S6" target="_blank" rel="noopener">DSec 技术报告</a>、<a href="https://docs.vllm.ai/projects/ascend/en/latest/user_guide/feature_guide/rl.html" target="_blank" rel="noopener">vLLM-Ascend RL 文档</a>。网页能力核对日期为 2026-11-20，复现实验应固定实际安装版本。</p></main>
 <footer>RL on NPU · Dispatch 48 · 2026-11-20 · 方案中的 v42 与 v43 为策略发布示例。<a href="../index.html#blog/dispatch-48-deepswe-cpu-npu-runtime">返回 Mission44</a></footer>
 </div><script>(function(){var b=document.getElementById('theme-toggle');if(!b)return;b.addEventListener('click',function(){var r=document.documentElement;var dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);var next=dark?'light':'dark';r.setAttribute('data-theme',next);try{localStorage.setItem('theme',next);}catch(e){}});})();</script></body></html>
