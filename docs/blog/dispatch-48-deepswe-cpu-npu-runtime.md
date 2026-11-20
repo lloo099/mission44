@@ -6,6 +6,12 @@ DeepSWE 的一次学习闭环需要同时维持模型计算、Agent 决策和代
 
 本文承接 [D46 DSec 与 MiMo 基础设施](../../reads/dispatch-46-dsec-mimo-rl-infra.html) 和 [D47 910B 异步 RL](../../reads/dispatch-47-910b-async-rl.html)。下文的拓扑、版本字段、切换协议和实验顺序均为面向本项目的实施设计。项目已有观察是开启 512 个沙箱时，部分环境的采样 CPU 用量低于 0.01 核；节点总体用量、峰值和采样窗口仍需复核。本文的 v42、v43 与题目组数字均用于解释机制。
 
+![昇腾 DeepSWE 系统架构总览](../../reads/img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg)
+
+*架构总览采用嵌套模块、池化实例和分类连线，将 CPU 控制面、Harness Pool、Agent Loop Pool、Sandbox Platform、轨迹数据面，以及共卡的 Learner 与 Rollout Engine 放在一张图中。红线表示阶段与生命周期控制，蓝线表示模型调用，绿线表示工具执行，橙线表示轨迹载荷，灰色虚线表示轻量元数据。沙箱后端按实际任务选择，共卡阶段由 Controller 协调。*
+
+分区表达参考 MiMo-V2.6 Figure 14 的控制面、数据面和执行池，以及 DSec Figure 1 的集群服务、节点运行时和后端展开方式。图中的组件部署、独立接口、资源布局与共卡协议属于本项目的集成设计，图中规模符号表示池化实例，实际容量由实验确定。[MiMo Figure 14](https://arxiv.org/html/2610.11959v1#S6)、[DSec Figure 1](https://arxiv.org/html/2609.22978v1#S3)
+
 ## 1 四个模块分别运行在哪里
 
 Sandbox 执行命令和保存工作区，Harness 组织 Agent 的提示、工具与行为，Rollout Engine 执行模型前向生成，Learner 执行训练计算。一次完整 rollout 还包含 CPU 上的多轮交互、环境等待和验证。推理引擎只是这段工作流中的模型计算部分。

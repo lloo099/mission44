@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dispatch 48 · 昇腾 DeepSWE 的 CPU 与 NPU 分工及共卡跨步实施方案</title>
-<meta name="description" content="四张图梳理 Sandbox、Harness、Agent Loop、Rollout 与 Learner 的硬件分工和操作关系，并明确三个执行模块的独立接口与状态归属。以 v42→v43 解释策略发布、显存切换、完整组消费与跨步恢复，给出 512 路环境的分层配额和三阶段验收方案。拓扑与协议为项目设计，昇腾性能收益待实测。">
+<meta name="description" content="新增参考 MiMo 与 DSec 分区布局绘制的系统总览，结合四张配套图梳理 Sandbox、Harness、Agent Loop、Rollout 与 Learner 的硬件分工、独立接口和状态归属。以 v42→v43 解释策略发布、显存切换、完整组消费与跨步恢复，给出 512 路环境的分层配额和三阶段验收方案。拓扑与协议为项目设计，昇腾性能收益待实测。">
 <link rel="canonical" href="https://lloo099.github.io/mission44/reads/dispatch-48-deepswe-cpu-npu-runtime.html">
 <meta property="og:title" content="Dispatch 48 · 昇腾 DeepSWE 的 CPU 与 NPU 分工及共卡跨步实施方案">
-<meta property="og:description" content="四张图梳理 Sandbox、Harness、Agent Loop、Rollout 与 Learner 的硬件分工和操作关系，并明确三个执行模块的独立接口与状态归属。以 v42→v43 解释策略发布、显存切换、完整组消费与跨步恢复，给出 512 路环境的分层配额和三阶段验收方案。拓扑与协议为项目设计，昇腾性能收益待实测。">
+<meta property="og:description" content="新增参考 MiMo 与 DSec 分区布局绘制的系统总览，结合四张配套图梳理 Sandbox、Harness、Agent Loop、Rollout 与 Learner 的硬件分工、独立接口和状态归属。以 v42→v43 解释策略发布、显存切换、完整组消费与跨步恢复，给出 512 路环境的分层配额和三阶段验收方案。拓扑与协议为项目设计，昇腾性能收益待实测。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://lloo099.github.io/mission44/reads/dispatch-48-deepswe-cpu-npu-runtime.html">
 <meta property="og:image" content="https://lloo099.github.io/mission44/assets/og/dispatch-48-deepswe-cpu-npu-runtime.png">
@@ -29,6 +29,8 @@
 <li><a href="#s9">09 三阶段落地和验收</a></li>
 <li><a href="#s10">10 来源与方案边界</a></li></ol></nav>
 <main><p>本文承接 <a href="dispatch-46-dsec-mimo-rl-infra.html" target="_blank" rel="noopener">D46 DSec 与 MiMo 基础设施</a> 和 <a href="dispatch-47-910b-async-rl.html" target="_blank" rel="noopener">D47 910B 异步 RL</a>。下文的拓扑、版本字段、切换协议和实验顺序均为面向本项目的实施设计。项目已有观察是开启 512 个沙箱时，部分环境的采样 CPU 用量低于 0.01 核；节点总体用量、峰值和采样窗口仍需复核。本文的 v42、v43 与题目组数字均用于解释机制。</p>
+<figure id="architecture"><a href="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg" target="_blank" rel="noopener"><img src="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg" alt="昇腾 DeepSWE 系统架构总览，参考 MiMo 与 DSec 的分区布局绘制"></a><figcaption>架构总览 · 本站集成设计 · <a href="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg" target="_blank" rel="noopener">打开矢量图</a> · <a href="img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.png" target="_blank" rel="noopener">高清 PNG</a></figcaption><div class="readout"><h5>模块与连线</h5><p>架构总览采用嵌套模块、池化实例和分类连线，将 CPU 控制面、Harness Pool、Agent Loop Pool、Sandbox Platform、轨迹数据面，以及共卡的 Learner 与 Rollout Engine 放在一张图中。红线表示阶段与生命周期控制，蓝线表示模型调用，绿线表示工具执行，橙线表示轨迹载荷，灰色虚线表示轻量元数据。沙箱后端按实际任务选择，共卡阶段由 Controller 协调。</p></div></figure>
+<p>分区表达参考 MiMo-V2.6 Figure 14 的控制面、数据面和执行池，以及 DSec Figure 1 的集群服务、节点运行时和后端展开方式。图中的组件部署、独立接口、资源布局与共卡协议属于本项目的集成设计，图中规模符号表示池化实例，实际容量由实验确定。<a href="https://arxiv.org/html/2610.11959v1#S6" target="_blank" rel="noopener">MiMo Figure 14</a>、<a href="https://arxiv.org/html/2609.22978v1#S3" target="_blank" rel="noopener">DSec Figure 1</a></p>
 <h2 id="s1"><span class="hnum">01</span>四个模块分别运行在哪里</h2>
 <p>Sandbox 执行命令和保存工作区，Harness 组织 Agent 的提示、工具与行为，Rollout Engine 执行模型前向生成，Learner 执行训练计算。一次完整 rollout 还包含 CPU 上的多轮交互、环境等待和验证。推理引擎只是这段工作流中的模型计算部分。</p>
 <figure><a href="img/dispatch-48-deepswe-cpu-npu-runtime/fig-1.svg" target="_blank" rel="noopener"><img class="diagram" src="img/dispatch-48-deepswe-cpu-npu-runtime/fig-1.svg" alt="CPU 与 GPU 或昇腾 NPU 的模块分工"></a><figcaption>图 1 · CPU 与 GPU 或昇腾 NPU 的模块分工 · 本站实施设计 · <a href="img/dispatch-48-deepswe-cpu-npu-runtime/fig-1.svg" target="_blank" rel="noopener">打开原图</a></figcaption><div class="readout"><h5>操作关系</h5><p>本图展示硬件部署建议。CPU 执行层可以先部署在现有节点，也可以独立扩容。加速服务器本身也有 CPU，Rollout 与 Learner 都有主机侧进程和设备侧计算。共卡表示它们轮流占用同一组设备，具体参数、梯度与优化器状态的驻留和卸载由训练后端管理。</p></div></figure>

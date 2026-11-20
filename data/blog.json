@@ -5,7 +5,7 @@
     {
       "id": "dispatch-48-deepswe-cpu-npu-runtime",
       "title": "Dispatch 48 · 昇腾 DeepSWE 的 CPU 与 NPU 分工及共卡跨步实施方案",
-      "subtitle": "四张图梳理 Sandbox、Harness、Agent Loop、Rollout 与 Learner 的硬件分工和操作关系，并明确三个执行模块的独立接口与状态归属。以 v42→v43 解释策略发布、显存切换、完整组消费与跨步恢复，给出 512 路环境的分层配额和三阶段验收方案。拓扑与协议为项目设计，昇腾性能收益待实测。",
+      "subtitle": "新增参考 MiMo 与 DSec 分区布局绘制的系统总览，结合四张配套图梳理 Sandbox、Harness、Agent Loop、Rollout 与 Learner 的硬件分工、独立接口和状态归属。以 v42→v43 解释策略发布、显存切换、完整组消费与跨步恢复，给出 512 路环境的分层配额和三阶段验收方案。拓扑与协议为项目设计，昇腾性能收益待实测。",
       "date": "2026-11-20",
       "tags": [
         "DeepSWE",
