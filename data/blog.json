@@ -1,7 +1,24 @@
 {
-  "updated": "2026-11-12",
+  "updated": "2026-11-20",
   "note": "NPU Frontier Dispatch — periodic analysis of where RL, the open-weight frontier, and the Ascend stack are heading. Add a post: drop a markdown file in docs/blog/ and prepend an entry here.",
   "posts": [
+    {
+      "id": "dispatch-48-deepswe-cpu-npu-runtime",
+      "title": "Dispatch 48 · 昇腾 DeepSWE 的 CPU 与 NPU 分工及共卡跨步实施方案",
+      "subtitle": "三张图梳理 Sandbox、Harness、Agent Loop、Rollout 与 Learner 的硬件分工和操作关系。以 v42→v43 解释策略发布、显存切换、完整组消费与跨步恢复，给出 512 路环境的分层配额和三阶段验收方案。拓扑与协议为项目设计，昇腾性能收益待实测。",
+      "date": "2026-11-20",
+      "tags": [
+        "DeepSWE",
+        "agentic-RL",
+        "sandbox",
+        "Harness",
+        "Ascend",
+        "colocated-RL",
+        "partial-rollout"
+      ],
+      "file": "docs/blog/dispatch-48-deepswe-cpu-npu-runtime.md",
+      "read": "reads/dispatch-48-deepswe-cpu-npu-runtime.html"
+    },
     {
       "id": "dispatch-47-910b-async-rl",
       "title": "Dispatch 47 · 910B 异步 RL：吞吐、策略滞后与训推一致性",
