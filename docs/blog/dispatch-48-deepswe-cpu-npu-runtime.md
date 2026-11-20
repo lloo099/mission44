@@ -12,9 +12,31 @@
 
 ![昇腾 RL infra 系统架构总览](../../reads/img/dispatch-48-deepswe-cpu-npu-runtime/system-architecture.svg)
 
-*架构总览采用嵌套模块、池化实例和分类连线，将 CPU 控制面、Harness Pool、Agent Loop Pool、Sandbox Platform、轨迹数据面，以及共卡的 Learner 与 Rollout Engine 放在一张图中。红线表示阶段与生命周期控制，蓝线表示模型调用，绿线表示工具执行，橙线表示轨迹载荷，灰色虚线表示轻量元数据。沙箱后端按实际任务选择，共卡阶段由 Controller 协调。*
+*方案 A 采用外置 Harness。架构总览采用嵌套模块、池化实例和分类连线，将 CPU 控制面、Harness Pool、Agent Loop Pool、Sandbox Platform、轨迹数据面，以及共卡的 Learner 与 Rollout Engine 放在一张图中。红线表示阶段与生命周期控制，蓝线表示模型调用，绿线表示工具执行，橙线表示轨迹载荷，灰色虚线表示轻量元数据。沙箱后端按实际任务选择，共卡阶段由 Controller 协调。*
 
 分区表达参考 MiMo-V2.6 Figure 14 的控制面、数据面和执行池，以及 DSec Figure 1 的集群服务、节点运行时和后端展开方式。图中的组件部署、独立接口、资源布局与共卡协议属于本项目的集成设计，图中规模符号表示池化实例，实际容量由实验确定。[MiMo Figure 14](https://arxiv.org/html/2610.11959v1#S6)、[DSec Figure 1](https://arxiv.org/html/2609.22978v1#S3)
+
+### 采用 DSec 路线时 Harness 放在哪里
+
+DSec §6.2 描述，从 DeepSeek-V4.1 开始将 rollout 执行移到 DSec，并拆为 Worker Container 和 Agent Sandbox。Worker Container 管理沙箱，提供与具体 scaffold 解耦的 rollout 控制层；Agent Sandbox 承载 scaffold，例如 DeepSeek Harness，以及它的工具。两者都运行在可抢占 GPU 池之外，共同保留完整 rollout 状态。[DSec §6.2](https://arxiv.org/html/2609.22978v1#S6.SS2)
+
+![DSec 式内置 Harness 部署](../../reads/img/dispatch-48-deepswe-cpu-npu-runtime/dsec-placement.svg)
+
+*方案 B 将 Worker Container 与 Agent Sandbox 画进 Sandbox Platform 的 CPU 执行资源域，Harness 和工具位于各自的 Agent Sandbox 内。多个环境中的 Harness 实例在本报告中合称逻辑 Harness Pool。图中的池化名称、模型端点接线和昇腾共卡协议为项目集成映射，内部放置依据 DSec §6.2。*
+
+| 对象 | 按 DSec 路线的放置 | 职责 |
+|---|---|---|
+| Harness 实例 | Agent Sandbox 内 | 驱动 Agent 行为，使用本环境的工具和工作区 |
+| Worker Container | DSec 上的独立执行容器 | 管理环境、执行进度和恢复协调 |
+| 模型生成与学习计算 | GPU/NPU 作业 | 执行模型前向和训练更新 |
+
+因此，Harness Pool 可以在平台的 CPU 执行资源域内，由多个 Agent Sandbox 中的实例组成。Harness 作为租户任务运行，平台的 API、调度与节点管理进程承担基础设施职责。CPU 资源域的归属、沙箱隔离边界和逻辑池化分别在图中表达。
+
+MiMo 的 Harness Pool 描述多租户 Host 如何池化承载 Harness 与 Agent Loop；DSec 的上述安排描述 rollout 状态的部署与生命周期。将两者接起来时，需要明确每个实例落在哪个环境、由哪个 Worker 管理。DSec 的执行循环由 Worker 与 Agent Sandbox 共同承载，接入本报告的模型端会话、真实采样记录和数据面接口时，再逐项映射 Agent Loop 职责。[MiMo §6.2](https://arxiv.org/html/2610.11959v1#S6.SS2)
+
+对已有、依赖本地文件系统和子进程的 Coding Harness，可以采用方案 B，把 Harness 直接运行在任务环境中，通过会话级模型端点调用共享推理引擎。工具的本地读写与测试在该环境完成；Worker 的外部执行接口用于启动、管理和恢复等操作。具体模型 Gateway 接线以及内部工具协议应按所用 Harness 实现确认。
+
+下文的通用职责说明同时适用于两种方案，图 1 至图 3 以及操作示例采用方案 A 的外置接线。
 
 ### 上方控制面决定发什么任务以及何时切换设备
 
