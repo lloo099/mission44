@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-16",
+  "updated": "2026-11-23",
   "trends": [
     {
       "title": "长程化:agent 评测与训练的新标尺",
@@ -1750,6 +1750,176 @@
       "confidence": "secondary"
     },
     {
+      "title": "Hierarchical Agentic Mid-Band Agility for Reliable Low-Latency Space-Air-Ground Integrated V2X Networks",
+      "org": "Liu Cao +5",
+      "year": "2026-11-20",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Upper-mid-band spectrum offers bandwidth opportunities for the integrated networks of ground vehicles, unmanned aerial vehicles (UAVs), and low Earth orbit (LEO) satellites to support 6G wide-area vehicle-to-everything (V2X) connectivity. However, V2X services' latency and reliab…",
+      "url": "https://arxiv.org/abs/2611.27659",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "WEIR: Watershed Exploration and Drift-Aware Prefix Shrinkage for Multi-Turn Agent Reinforcement Learning",
+      "org": "Pixel Nomand +3",
+      "year": "2026-11-20",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Multi-turn language model agents often receive only a single binary reward at the end of a long interaction trajectory, making it difficult to separate decisive decisions from routine steps or estimate accurate intermediate values. Prefix-tree methods improve sample efficiency by…",
+      "url": "https://arxiv.org/abs/2611.27570",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "agentic-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "Breaking the Long Horizon: Short-Horizon Process Supervision for Long-Form Generation in LLMs",
+      "org": "Heyang Xu +6",
+      "year": "2026-11-20",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Long-form generation is increasingly important for agentic LLM systems, yet current reinforcement learning methods typically optimize an entire document with a single outcome-level reward. This delayed and coarse-grained supervision makes it difficult to localize errors and assig…",
+      "url": "https://arxiv.org/abs/2611.27348",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "Training LLMs to Follow Reasoning Instructions with Minimal Edits",
+      "org": "Alexandra Yakovleva +4",
+      "year": "2026-11-19",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Large language models increasingly rely on extended reasoning traces, yet the training signals used to shape this behavior remain coarse. Supervised fine-tuning on full trajectories forces the model to imitate an entire demonstration, overconstraining its output distribution, whi…",
+      "url": "https://arxiv.org/abs/2611.26342",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "Goal-Guided Reinforcement Learning via Fine-Tuning Vision-Language Models",
+      "org": "Yajie Qi +4",
+      "year": "2026-11-19",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Exploration remains a major challenge for reinforcement learning (RL) agents in Craftax-style environments due to sparse rewards and long horizons. Large language models (LLMs) can guide exploration by generating high-level goals, but methods using models without explicit task ad…",
+      "url": "https://arxiv.org/abs/2611.25742",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "Forget Freely, Grep Later: Lossless, Index-Free Memory for Long-Horizon LLM Agents",
+      "org": "Ziyan Yang +2",
+      "year": "2026-11-18",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Long-horizon LLM agents often exceed their context windows, forcing them to discard information that may be needed later. Existing context management strategies rely on summarization, masking, or structured memory, requiring decisions about what to preserve or how to retrieve it …",
+      "url": "https://arxiv.org/abs/2611.25123",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "Depth Before Breadth: Reverse-to-Forward Curriculum with Advantage Decomposition for LLM Agent",
+      "org": "Siyuan Du +6",
+      "year": "2026-11-18",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Reinforcement learning (RL) has become a common approach for training large language model (LLM) agents on long-horizon tasks. However, learning from sparse terminal rewards makes credit assignment and exploration difficult. We approach these challenges through a policy-induced c…",
+      "url": "https://arxiv.org/abs/2611.24697",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "Option-GRPO: Hierarchical RL Against AI Slop in Code Generation for Unseen SDKs",
+      "org": "Prashank Kadam",
+      "year": "2026-11-17",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Large language models increasingly produce AI slop in generated code: verbose, redundant, non-idiomatic implementations that pass functional checks but bloat codebases. The problem compounds on SDKs released after the model's training cutoff, where the model has neither idiomatic…",
+      "url": "https://arxiv.org/abs/2611.23633",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "Learning In-Context Adaptivity for LLMs through Continual Gameplay",
+      "org": "Jiale Liu +2",
+      "year": "2026-11-16",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "LLM agents are increasingly deployed in long-horizon tasks where they must explore, gather experience, and adapt their decisions accordingly. We name this capability in-context adaptivity: improving decisions across episodes from experience accumulated in context. We propose to e…",
+      "url": "https://arxiv.org/abs/2611.21710",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
+      "title": "ALIVE: Making Streaming Video Models Interactive",
+      "org": "Jinzhao Li +15",
+      "year": "2026-11-16",
+      "category": "algorithm",
+      "track": "academic",
+      "summary": "Streaming video LLMs can continuously observe the world, yet often handle user requests in isolation. We introduce ALIVE, an interactive streaming video model supporting proactive monitoring, streaming task coordination, and feedback-seeking interaction. We construct ALIVE-SFT-28…",
+      "url": "https://arxiv.org/abs/2611.21366",
+      "tags": [
+        "academic",
+        "agentic-rl",
+        "long-horizon-rl"
+      ],
+      "confidence": "self-reported",
+      "source": "arXiv · 自动抓取",
+      "auto": true
+    },
+    {
       "title": "ModHarness-RL: Recasting Harnesses as Learnable and Evolving Programs for Agentic RL",
       "org": "Zelin He +7",
       "year": "2026-11-13",
@@ -1778,176 +1948,6 @@
         "academic",
         "agentic-rl",
         "agentic-rl"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取",
-      "auto": true
-    },
-    {
-      "title": "Who Should Be on the Panel? Task-Conditioned Persona Selection for LLM Trading Agents",
-      "org": "Boming Yang +4",
-      "year": "2026-11-13",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Multi-agent LLM systems are built by fixing a cast of roles and then designing how the cast coordinates. Which agents should make up the group for a given task is left to the designer, and the same cast is reused for every task. Financial trading makes the cost of that choice vis…",
-      "url": "https://arxiv.org/abs/2611.18150",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取",
-      "auto": true
-    },
-    {
-      "title": "Skill Adapter: Personalized Modification and Online Routing of General-Purpose Skills",
-      "org": "Qijia Zhuang +3",
-      "year": "2026-11-12",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Large language model (LLM) agents use external skills to reuse task procedures and experience with tools. General-purpose skills describe shared execution procedures, while specific tool choices, operating practices, and output requirements vary across users. In long-horizon task…",
-      "url": "https://arxiv.org/abs/2611.17007",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取",
-      "auto": true
-    },
-    {
-      "title": "Open Challenges and Opportunities in Human-Agent Systems",
-      "org": "Reuth Mirsky +9",
-      "year": "2026-11-10",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Agentic AI systems increasingly undertake extended tasks and act on people's behalf, making human-agent interaction central to their effectiveness. Successful interaction requires understanding human perspectives, coordinating complementary capabilities, and maintaining productiv…",
-      "url": "https://arxiv.org/abs/2611.14846",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取",
-      "auto": true
-    },
-    {
-      "title": "Reframe: Observation-Aligned Multi-Teacher On-Policy Distillation for Agentic Visual Reasoning",
-      "org": "Haozhi Yuan +3",
-      "year": "2026-11-09",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Agentic reinforcement learning (RL) and multi-teacher on-policy distillation (MOPD) offer complementary routes to post-training. For visual agents, however, tool use presents two related challenges. Models may overlook useful tool-returned observations, while poorly grounded acti…",
-      "url": "https://arxiv.org/abs/2611.12886",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "agentic-rl"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取",
-      "auto": true
-    },
-    {
-      "title": "Agent-R$^2$: Scaling Agents for Realistic Productivity Work via Real-Source Data Synthesis",
-      "org": "Teng Pan +7",
-      "year": "2026-11-05",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Large language models have made rapid progress in agentic reasoning and tool use, raising expectations for agents that can take over realistic productivity work from humans. However, current agents still struggle to finish such tasks, where success requires following long-horizon…",
-      "url": "https://arxiv.org/abs/2611.08219",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取",
-      "auto": true
-    },
-    {
-      "title": "AttnSR: Attention Step Reward for Long-Horizon Agentic RL",
-      "org": "Mengsong Wu +5",
-      "year": "2026-11-05",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Long-horizon LLM agents make multi-step decisions, yet outcome-reward-only reinforcement learning provides little direct supervision for individual steps. We introduce AttnSR, a step-level reward augmentation method that derives reward allocations from policy attention extracted …",
-      "url": "https://arxiv.org/abs/2611.07932",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取",
-      "auto": true
-    },
-    {
-      "title": "Catalyzing Interactive HTML Generation Capabilities via High-Fidelity Reinforcement Learning",
-      "org": "Xujia Wang +6",
-      "year": "2026-11-03",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Generating HTML from natural-language specifications is an important application of code large language models (LLMs). Despite producing renderable pages, current models often fail to ensure functionality and visual quality during actual interaction. Existing methods typically ta…",
-      "url": "https://arxiv.org/abs/2611.05151",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取",
-      "auto": true
-    },
-    {
-      "title": "BLPO: Beyond-Local Policy Optimization for Long-Horizon LLM Agents",
-      "org": "Xuanren Chen +6",
-      "year": "2026-11-02",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "Long-horizon tasks require large language model (LLM) agents to coordinate interdependent actions, a capability central to automating complex workflows. Stepwise group-based reinforcement learning provides finer credit than trajectory-level supervision, but reliable comparisons m…",
-      "url": "https://arxiv.org/abs/2611.03005",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取",
-      "auto": true
-    },
-    {
-      "title": "SGR-OPSD: Learning from Subgoal Plans with Graph-Regularized Credit Assignment for Agentic Reinforcement Learning",
-      "org": "Shu Liu +3",
-      "year": "2026-11-02",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "OPSD provides dense supervision for agentic reinforcement learning through privileged information feedback. However, existing privileged information often lacks explicit task-progression planning, while teacher-student log-probability gaps reflect shifts in model preference rathe…",
-      "url": "https://arxiv.org/abs/2611.02414",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
-      ],
-      "confidence": "self-reported",
-      "source": "arXiv · 自动抓取",
-      "auto": true
-    },
-    {
-      "title": "Don't Guess, Ask Wisely: Benchmarking and Training Proactive Elicitation in Open-Domain LLM Conversations",
-      "org": "Rongyu Zhang +10",
-      "year": "2026-11-01",
-      "category": "algorithm",
-      "track": "academic",
-      "summary": "When user queries are incomplete, large language models should ask targeted questions before committing to an answer, a capability we call proactive elicitation, yet evaluation on real user-assistant queries across seven LLMs (8B to frontier) shows that fewer than 11% of underspe…",
-      "url": "https://arxiv.org/abs/2611.01878",
-      "tags": [
-        "academic",
-        "agentic-rl",
-        "long-horizon-rl"
       ],
       "confidence": "self-reported",
       "source": "arXiv · 自动抓取",
